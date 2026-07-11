@@ -14,6 +14,7 @@ from app.api.routers.price_list import router as price_list_router
 from app.api.routers.price_list_item import (
     router as price_list_item_router,
 )
+from app.api.routers.device import router as device_router
 
 app = FastAPI(title="Sphere")
 app.include_router(organization.router)
@@ -29,6 +30,7 @@ app.include_router(warehouse_stock_router)
 app.include_router(warehouse_movement_router)
 app.include_router(price_list_router)
 app.include_router(price_list_item_router)
+app.include_router(device_router)
 
 @app.get("/health")
 def health():
