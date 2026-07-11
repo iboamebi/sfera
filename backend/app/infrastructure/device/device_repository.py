@@ -4,7 +4,8 @@ from sqlalchemy.orm import Session
 
 from app.domains.device.entities.device import Device
 from app.domains.device.repositories.device_repository import DeviceRepository
-from app.domains.device.value_objects.serial_number import SerialNumber
+#from app.domains.device.value_objects.serial_number import SerialNumber
+from app.domains.device.factories.device_factory import DeviceFactory
 
 from app.models.instrument import Instrument
 
@@ -24,11 +25,8 @@ class DeviceRepositorySQLAlchemy(DeviceRepository):
         if not instrument:
             return None
 
-        return Device(
-            id=instrument.id,
-            serial_number=SerialNumber(
-                instrument.serial_number
-            ),
+        return DeviceFactory.from_instrument(
+            instrument
         )
 
     def save(self, device: Device) -> None:
