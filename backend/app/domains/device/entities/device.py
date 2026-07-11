@@ -1,22 +1,28 @@
 from dataclasses import dataclass
 
 from app.domains.device.value_objects.serial_number import SerialNumber
+from app.domains.device.value_objects.device_status import DeviceStatus
+
 from app.shared.base.aggregate import AggregateRoot
 
 
 @dataclass(eq=False)
 class Device(AggregateRoot):
     serial_number: SerialNumber
-    connected: bool = False
+    status: DeviceStatus = DeviceStatus.AVAILABLE
 
     def connect(self) -> None:
-        if self.connected:
-            raise ValueError("Device is already connected")
+        if self.status != DeviceStatus.AVAILABLE:
+            raise ValueError(
+                "Device is not available"
+            )
 
-        self.connected = True
+        self.status = DeviceStatus.IN_WORK
 
     def disconnect(self) -> None:
-        if not self.connected:
-            raise ValueError("Device is not connected")
+        if self.status != DeviceStatus.IN_WORK:
+            raise ValueError(
+                "Device is not in work"
+            )
 
-        self.connected = False
+        self.status = DeviceStatus.COMPLETED

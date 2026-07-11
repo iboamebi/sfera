@@ -12,6 +12,7 @@ from app.application.device.commands.disconnect_device import (
 
 from app.domains.device.entities.device import Device
 from app.domains.device.value_objects.serial_number import SerialNumber
+from app.domains.device.value_objects.device_status import DeviceStatus
 
 
 def test_device_connect_disconnect_flow():
@@ -25,12 +26,14 @@ def test_device_connect_disconnect_flow():
         ConnectDeviceCommand(device)
     )
 
-    assert device.connected is True
+#    assert device.connected is True
+    assert device.status == DeviceStatus.IN_WORK
     assert connected_event.device_id == str(device.id)
 
     disconnected_event = DisconnectDeviceHandler().handle(
         DisconnectDeviceCommand(device)
     )
 
-    assert device.connected is False
+#    assert device.connected is False
+    assert device.status == DeviceStatus.COMPLETED
     assert disconnected_event.device_id == str(device.id)

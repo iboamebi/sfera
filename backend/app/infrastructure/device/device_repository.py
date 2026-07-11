@@ -14,6 +14,7 @@ class DeviceRepositorySQLAlchemy(DeviceRepository):
 
     def __init__(self, db: Session):
         self.db = db
+        self._statuses = {}
 
     def get(self, device_id: UUID) -> Device | None:
         instrument = (
@@ -25,9 +26,14 @@ class DeviceRepositorySQLAlchemy(DeviceRepository):
         if not instrument:
             return None
 
-        return DeviceFactory.from_instrument(
+        device = DeviceFactory.from_instrument(
             instrument
         )
+
+        if device.id in self._statuses:
+            device.status = self._statuses[device.id]
+
+        return device
 
     def save(self, device: Device) -> None:
         instrument = (
