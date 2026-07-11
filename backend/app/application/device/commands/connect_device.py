@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 from app.domains.device.entities.device import Device
 from app.domains.device.events.device_connected import DeviceConnected
+from app.domains.device.services.device_service import DeviceService
 
 
 @dataclass(frozen=True)
@@ -16,7 +17,10 @@ class ConnectDeviceHandler:
         command: ConnectDeviceCommand,
     ) -> DeviceConnected:
 
-        command.device.connect()
+#        command.device.connect()
+        DeviceService().connect(
+            command.device
+        )
 
         return DeviceConnected(
             device_id=str(command.device.id)
