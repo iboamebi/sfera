@@ -1,0 +1,49 @@
+import uuid
+
+from sqlalchemy import ForeignKey, String, Text
+from sqlalchemy.orm import Mapped, mapped_column
+
+from app.models.base_model import BaseModel
+
+
+class Instrument(BaseModel):
+    __tablename__ = "instruments"
+
+    instrument_type_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("instrument_types.id"),
+        nullable=False,
+    )
+
+    serial_number: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False,
+    )
+
+    registry_number: Mapped[str | None] = mapped_column(
+        String(50),
+        nullable=True,
+    )
+
+    modification: Mapped[str | None] = mapped_column(
+        String(255),
+        nullable=True,
+    )
+
+    factory_number: Mapped[str | None] = mapped_column(
+        String(100),
+        nullable=True,
+    )
+
+    manufacture_year: Mapped[int | None] = mapped_column(
+        nullable=True,
+    )
+
+    inventory_number: Mapped[str | None] = mapped_column(
+        String(100),
+        nullable=True,
+    )
+
+    comment: Mapped[str | None] = mapped_column(
+        Text,
+        nullable=True,
+    )

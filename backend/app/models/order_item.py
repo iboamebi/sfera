@@ -1,0 +1,58 @@
+import uuid
+
+from sqlalchemy import ForeignKey, String, Text
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from app.models.base_model import BaseModel
+
+
+class OrderItem(BaseModel):
+    __tablename__ = "order_items"
+
+    order_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("orders.id"),
+        nullable=False,
+    )
+
+    instrument_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("instruments.id"),
+        nullable=True,
+    )
+
+    line_number: Mapped[int] = mapped_column(
+        nullable=False,
+    )
+
+    customer_inventory_number: Mapped[str | None] = mapped_column(
+        String(100),
+        nullable=True,
+    )
+
+    customer_comment: Mapped[str | None] = mapped_column(
+        Text,
+        nullable=True,
+    )
+
+    order = relationship(
+        "Order",
+        back_populates="order_items",
+    )
+
+    instrument = relationship(
+        "Instrument",
+    )
+
+    verifications = relationship(
+        "Verification",
+        cascade="all, delete-orphan",
+    )
+
+    diagnostics = relationship(
+        "Diagnostic",
+        cascade="all, delete-orphan",
+    )
+
+    repairs = relationship(
+        "Repair",
+        cascade="all, delete-orphan",
+    )
