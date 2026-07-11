@@ -1,3 +1,4 @@
+from decimal import Decimal
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict
@@ -7,7 +8,7 @@ class PriceListItemBase(BaseModel):
     price_list_id: UUID
     name: str
     service_type: str | None = None
-    unit_price: float
+    unit_price: Decimal
 
 
 class PriceListItemCreate(PriceListItemBase):
@@ -17,7 +18,7 @@ class PriceListItemCreate(PriceListItemBase):
 class PriceListItemUpdate(BaseModel):
     name: str | None = None
     service_type: str | None = None
-    unit_price: float | None = None
+    unit_price: Decimal | None = None
 
 
 class PriceListItemRead(PriceListItemBase):
