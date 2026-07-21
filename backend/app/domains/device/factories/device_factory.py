@@ -4,15 +4,11 @@ from app.models.instrument import Instrument
 
 
 class DeviceFactory:
-
     @staticmethod
     def from_instrument(
         instrument: Instrument,
     ) -> Device:
-
         return Device(
             id=instrument.id,
-            serial_number=SerialNumber(
-                instrument.serial_number
-            ),
+            serial_number=SerialNumber(instrument.serial_number),
         )

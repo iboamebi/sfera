@@ -10,14 +10,16 @@ class OrderStatus(str, Enum):
     ISSUED = "ISSUED"
     CLOSED = "CLOSED"
 
+
 class OrderItemStatus(str, Enum):
-    RECEIVED = "RECEIVED"        # принят в работу
+    RECEIVED = "RECEIVED"  # принят в работу
     IN_DIAGNOSTIC = "IN_DIAGNOSTIC"
     IN_VERIFICATION = "IN_VERIFICATION"
     IN_REPAIR = "IN_REPAIR"
     WAITING = "WAITING"
     COMPLETED = "COMPLETED"
     ISSUED = "ISSUED"
+
 
 class VerificationResult(str, Enum):
     SUITABLE = "SUITABLE"

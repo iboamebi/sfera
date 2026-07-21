@@ -14,9 +14,7 @@ def test_order_register():
         customer_id=uuid4(),
     )
 
-    order.add_item(
-        OrderItem(id=uuid4())
-    )
+    order.add_item(OrderItem(id=uuid4()))
 
     order.register()
 

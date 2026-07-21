@@ -4,7 +4,6 @@ from app.domains.verification.entities.verification import Verification
 
 
 class VerificationService:
-
     def approve(
         self,
         verification: Verification,

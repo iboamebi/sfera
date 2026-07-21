@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 from datetime import date
 
-from app.shared.base.aggregate import AggregateRoot
 from app.domains.verification.value_objects.verification_result import (
     VerificationResult,
 )
+from app.shared.base.aggregate import AggregateRoot
 
 
 @dataclass(eq=False)
@@ -20,7 +20,6 @@ class Verification(AggregateRoot):
         self,
         valid_until: date,
     ) -> None:
-
         self.result = VerificationResult.SUITABLE
         self.valid_until = valid_until
         self.unsuitable_reason = None
@@ -29,11 +28,8 @@ class Verification(AggregateRoot):
         self,
         reason: str,
     ) -> None:
-
         if not reason:
-            raise ValueError(
-                "Unsuitable reason is required"
-            )
+            raise ValueError("Unsuitable reason is required")
 
         self.result = VerificationResult.UNSUITABLE
         self.valid_until = None

@@ -16,7 +16,6 @@ from app.domains.verification.value_objects.verification_result import (
 
 
 def test_approve_verification():
-
     verification = Verification(
         id=uuid4(),
         verification_date=date.today(),
@@ -35,7 +34,6 @@ def test_approve_verification():
 
 
 def test_reject_verification():
-
     verification = Verification(
         id=uuid4(),
         verification_date=date.today(),

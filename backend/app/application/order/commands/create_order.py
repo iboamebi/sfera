@@ -13,12 +13,10 @@ class CreateOrderCommand:
 
 
 class CreateOrderHandler:
-
     def handle(
         self,
         command: CreateOrderCommand,
     ) -> Order:
-
         return Order(
             id=command.order_id,
             number=OrderNumber(command.number),

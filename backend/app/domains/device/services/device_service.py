@@ -2,7 +2,6 @@ from app.domains.device.entities.device import Device
 
 
 class DeviceService:
-
     def connect(
         self,
         device: Device,

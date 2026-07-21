@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 from uuid import UUID
 
-from app.domains.order.entities.order_item import OrderItem
 from app.domains.order.entities.order import Order
+from app.domains.order.entities.order_item import OrderItem
 
 
 @dataclass(frozen=True)
@@ -13,12 +13,10 @@ class AddOrderItemCommand:
 
 
 class AddOrderItemHandler:
-
     def handle(
         self,
         command: AddOrderItemCommand,
     ) -> Order:
-
         command.order.add_item(
             OrderItem(
                 id=command.item_id,

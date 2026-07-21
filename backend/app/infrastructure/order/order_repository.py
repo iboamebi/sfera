@@ -4,21 +4,15 @@ from sqlalchemy.orm import Session
 
 from app.domains.order.entities.order import Order as DomainOrder
 from app.domains.order.repositories.order_repository import OrderRepository
-
 from app.models.order import Order as ORMOrder
 
 
 class OrderRepositorySQLAlchemy(OrderRepository):
-
     def __init__(self, db: Session):
         self.db = db
 
     def get(self, order_id: UUID) -> DomainOrder | None:
-        obj = (
-            self.db.query(ORMOrder)
-            .filter(ORMOrder.id == order_id)
-            .first()
-        )
+        obj = self.db.query(ORMOrder).filter(ORMOrder.id == order_id).first()
 
         if not obj:
             return None
@@ -30,11 +24,7 @@ class OrderRepositorySQLAlchemy(OrderRepository):
         )
 
     def save(self, order: DomainOrder) -> None:
-        obj = (
-            self.db.query(ORMOrder)
-            .filter(ORMOrder.id == order.id)
-            .first()
-        )
+        obj = self.db.query(ORMOrder).filter(ORMOrder.id == order.id).first()
 
         if obj:
             obj.number = order.number.value

@@ -1,25 +1,20 @@
 from uuid import UUID
 
 from fastapi import APIRouter, Depends
-
 from sqlalchemy.orm import Session
-
-from app.db.database import get_db
 
 from app.application.device.commands.connect_device import (
     ConnectDeviceCommand,
     ConnectDeviceHandler,
 )
-
 from app.application.device.commands.disconnect_device import (
     DisconnectDeviceCommand,
     DisconnectDeviceHandler,
 )
-
+from app.db.database import get_db
 from app.infrastructure.device.device_repository import (
     DeviceRepositorySQLAlchemy,
 )
-
 
 router = APIRouter(
     prefix="/devices",
@@ -39,9 +34,7 @@ def connect_device(
     if device is None:
         return {"error": "Device not found"}
 
-    event = ConnectDeviceHandler().handle(
-        ConnectDeviceCommand(device)
-    )
+    event = ConnectDeviceHandler().handle(ConnectDeviceCommand(device))
 
     repository.save(device)
 
@@ -63,9 +56,7 @@ def disconnect_device(
     if device is None:
         return {"error": "Device not found"}
 
-    event = DisconnectDeviceHandler().handle(
-        DisconnectDeviceCommand(device)
-    )
+    event = DisconnectDeviceHandler().handle(DisconnectDeviceCommand(device))
 
     repository.save(device)
 

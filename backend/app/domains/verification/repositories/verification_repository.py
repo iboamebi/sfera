@@ -7,17 +7,14 @@ from app.domains.verification.entities.verification import (
 
 
 class VerificationRepository(ABC):
-
     @abstractmethod
     def get(
         self,
         verification_id: UUID,
-    ) -> Verification | None:
-        ...
+    ) -> Verification | None: ...
 
     @abstractmethod
     def save(
         self,
         verification: Verification,
-    ) -> None:
-        ...
+    ) -> None: ...

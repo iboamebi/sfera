@@ -16,6 +16,4 @@ class PriceListItemCRUD(
     pass
 
 
-price_list_item_crud = PriceListItemCRUD(
-    PriceListItem
-)
+price_list_item_crud = PriceListItemCRUD(PriceListItem)

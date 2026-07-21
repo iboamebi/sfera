@@ -1,17 +1,16 @@
 from collections import defaultdict
-from typing import Callable, Type
+from collections.abc import Callable
 
 from app.shared.events.domain_event import DomainEvent
 
 
 class EventDispatcher:
-
     def __init__(self):
         self._handlers = defaultdict(list)
 
     def register(
         self,
-        event_type: Type[DomainEvent],
+        event_type: type[DomainEvent],
         handler: Callable,
     ):
         self._handlers[event_type].append(handler)
@@ -20,9 +19,7 @@ class EventDispatcher:
         self,
         event: DomainEvent,
     ):
-        handlers = self._handlers[
-            type(event)
-        ]
+        handlers = self._handlers[type(event)]
 
         for handler in handlers:
             handler(event)

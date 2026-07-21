@@ -14,12 +14,10 @@ class ApproveVerificationCommand:
 
 
 class ApproveVerificationHandler:
-
     def handle(
         self,
         command: ApproveVerificationCommand,
     ) -> None:
-
         VerificationService().approve(
             command.verification,
             command.valid_until,

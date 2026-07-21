@@ -1,11 +1,32 @@
-.venv/
+# Python
 __pycache__/
-*.pyc
-.pytest_cache/
-.mypy_cache/
-.vscode/
-.idea/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+**/.venv/
+
+# Environment
 .env
 .env.*
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Tests
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Coverage
+.coverage
+htmlcov/
+
+# Logs
 *.log
-alembic/versions/__pycache__/

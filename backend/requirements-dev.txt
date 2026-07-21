@@ -1,0 +1,11 @@
+-r requirements.txt
+
+pytest
+pytest-asyncio
+pytest-cov
+
+black
+isort
+ruff
+
+mypy

@@ -16,6 +16,4 @@ class WarehouseMovementCRUD(
     pass
 
 
-warehouse_movement_crud = WarehouseMovementCRUD(
-    WarehouseMovement
-)
+warehouse_movement_crud = WarehouseMovementCRUD(WarehouseMovement)

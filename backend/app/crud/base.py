@@ -24,20 +24,14 @@ class BaseCRUD(
         self.archive_field = archive_field
 
     def get(self, db: Session, obj_id):
-        result = db.execute(
-            select(self.model).where(
-                self.model.id == obj_id
-            )
-        )
+        result = db.execute(select(self.model).where(self.model.id == obj_id))
         return result.scalar_one_or_none()
 
     def get_all(self, db: Session):
         stmt = select(self.model)
 
         if hasattr(self.model, self.archive_field):
-            stmt = stmt.where(
-                getattr(self.model, self.archive_field).is_(False)
-            )
+            stmt = stmt.where(getattr(self.model, self.archive_field).is_(False))
 
         result = db.execute(stmt)
         return result.scalars().all()
@@ -50,9 +44,7 @@ class BaseCRUD(
         return obj
 
     def update(self, db: Session, obj, data):
-        for key, value in data.model_dump(
-            exclude_unset=True
-        ).items():
+        for key, value in data.model_dump(exclude_unset=True).items():
             setattr(obj, key, value)
 
         db.commit()

@@ -1,23 +1,18 @@
-from app.shared.events.event_dispatcher import EventDispatcher
 from app.domains.device.events.device_connected import DeviceConnected
+from app.shared.events.event_dispatcher import EventDispatcher
 
 
 def test_event_dispatcher():
-
     result = []
 
     dispatcher = EventDispatcher()
 
     dispatcher.register(
         DeviceConnected,
-        lambda event: result.append(
-            event.device_id
-        ),
+        lambda event: result.append(event.device_id),
     )
 
-    event = DeviceConnected(
-        device_id="123"
-    )
+    event = DeviceConnected(device_id="123")
 
     dispatcher.dispatch(event)
 

@@ -4,12 +4,8 @@ from app.models.instrument import Instrument
 
 
 class OrderDeviceService:
-
     def get_device(
         self,
         instrument: Instrument,
     ) -> Device:
-
-        return DeviceFactory.from_instrument(
-            instrument
-        )
+        return DeviceFactory.from_instrument(instrument)

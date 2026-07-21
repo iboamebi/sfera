@@ -9,12 +9,10 @@ class RegisterOrderCommand:
 
 
 class RegisterOrderHandler:
-
     def handle(
         self,
         command: RegisterOrderCommand,
     ) -> Order:
-
         command.order.register()
 
         return command.order

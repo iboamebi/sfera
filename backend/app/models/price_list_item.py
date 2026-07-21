@@ -1,8 +1,7 @@
 import uuid
 
 from sqlalchemy import ForeignKey, Numeric, String
-from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base_model import BaseModel
 
@@ -30,6 +29,4 @@ class PriceListItem(BaseModel):
         nullable=False,
     )
 
-    price_list: Mapped["PriceList"] = relationship(
-        back_populates="items"
-    )
+    price_list: Mapped["PriceList"] = relationship(back_populates="items")

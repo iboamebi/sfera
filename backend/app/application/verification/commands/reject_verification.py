@@ -13,12 +13,10 @@ class RejectVerificationCommand:
 
 
 class RejectVerificationHandler:
-
     def handle(
         self,
         command: RejectVerificationCommand,
     ) -> None:
-
         VerificationService().reject(
             command.verification,
             command.reason,

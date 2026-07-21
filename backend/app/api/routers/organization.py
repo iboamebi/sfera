@@ -1,12 +1,11 @@
 from uuid import UUID
 
 from fastapi import APIRouter, Depends
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
 from app.models.organization import Organization
-from pydantic import BaseModel
-
 
 router = APIRouter(
     prefix="/organizations",
@@ -53,8 +52,4 @@ def get_organization(
     organization_id: UUID,
     db: Session = Depends(get_db),
 ):
-    return (
-        db.query(Organization)
-        .filter(Organization.id == organization_id)
-        .first()
-    )
+    return db.query(Organization).filter(Organization.id == organization_id).first()

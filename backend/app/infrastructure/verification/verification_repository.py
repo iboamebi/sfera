@@ -14,10 +14,7 @@ from app.domains.verification.repositories.verification_repository import (
 from app.models.verification import Verification as VerificationModel
 
 
-class VerificationRepositorySQLAlchemy(
-    VerificationRepository
-):
-
+class VerificationRepositorySQLAlchemy(VerificationRepository):
     def __init__(
         self,
         session: Session,
@@ -28,44 +25,32 @@ class VerificationRepositorySQLAlchemy(
         self,
         verification_id: UUID,
     ) -> Verification | None:
-
         model = (
             self.session.query(VerificationModel)
-            .filter(
-                VerificationModel.id == verification_id
-            )
+            .filter(VerificationModel.id == verification_id)
             .first()
         )
 
         if model is None:
             return None
 
-        return VerificationFactory.from_model(
-            model
-        )
+        return VerificationFactory.from_model(model)
 
     def save(
         self,
         verification: Verification,
     ) -> None:
-
         model = (
             self.session.query(VerificationModel)
-            .filter(
-                VerificationModel.id == verification.id
-            )
+            .filter(VerificationModel.id == verification.id)
             .first()
         )
 
         if model is None:
-            raise ValueError(
-                "Verification not found"
-            )
+            raise ValueError("Verification not found")
 
         model.result = verification.result
         model.valid_until = verification.valid_until
-        model.unsuitable_reason = (
-            verification.unsuitable_reason
-        )
+        model.unsuitable_reason = verification.unsuitable_reason
 
         self.session.commit()

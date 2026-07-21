@@ -10,16 +10,13 @@ from app.domains.verification.value_objects.verification_result import (
 
 
 def test_mark_suitable():
-
     verification = Verification(
         id=uuid4(),
         verification_date=date.today(),
         result=VerificationResult.UNSUITABLE,
     )
 
-    verification.mark_suitable(
-        date(2030, 1, 1)
-    )
+    verification.mark_suitable(date(2030, 1, 1))
 
     assert verification.result == VerificationResult.SUITABLE
     assert verification.valid_until == date(2030, 1, 1)
@@ -27,16 +24,13 @@ def test_mark_suitable():
 
 
 def test_mark_unsuitable():
-
     verification = Verification(
         id=uuid4(),
         verification_date=date.today(),
         result=VerificationResult.SUITABLE,
     )
 
-    verification.mark_unsuitable(
-        "Broken seal"
-    )
+    verification.mark_unsuitable("Broken seal")
 
     assert verification.result == VerificationResult.UNSUITABLE
     assert verification.valid_until is None
@@ -44,7 +38,6 @@ def test_mark_unsuitable():
 
 
 def test_unsuitable_requires_reason():
-
     verification = Verification(
         id=uuid4(),
         verification_date=date.today(),

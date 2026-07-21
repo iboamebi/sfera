@@ -11,17 +11,11 @@ class ConnectDeviceCommand:
 
 
 class ConnectDeviceHandler:
-
     def handle(
         self,
         command: ConnectDeviceCommand,
     ) -> DeviceConnected:
+        #        command.device.connect()
+        DeviceService().connect(command.device)
 
-#        command.device.connect()
-        DeviceService().connect(
-            command.device
-        )
-
-        return DeviceConnected(
-            device_id=str(command.device.id)
-        )
+        return DeviceConnected(device_id=str(command.device.id))

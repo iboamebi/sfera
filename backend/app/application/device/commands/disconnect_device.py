@@ -11,17 +11,11 @@ class DisconnectDeviceCommand:
 
 
 class DisconnectDeviceHandler:
-
     def handle(
         self,
         command: DisconnectDeviceCommand,
     ) -> DeviceDisconnected:
+        #        command.device.disconnect()
+        DeviceService().disconnect(command.device)
 
-#        command.device.disconnect()
-        DeviceService().disconnect(
-            command.device
-        )
-
-        return DeviceDisconnected(
-            device_id=str(command.device.id)
-        )
+        return DeviceDisconnected(device_id=str(command.device.id))

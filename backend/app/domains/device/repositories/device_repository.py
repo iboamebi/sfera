@@ -5,7 +5,6 @@ from app.domains.device.entities.device import Device
 
 
 class DeviceRepository(ABC):
-
     @abstractmethod
     def get(self, device_id: UUID) -> Device | None:
         pass

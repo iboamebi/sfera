@@ -6,12 +6,10 @@ from app.models.verification import Verification as VerificationModel
 
 
 class VerificationFactory:
-
     @staticmethod
     def from_model(
         model: VerificationModel,
     ) -> Verification:
-
         return Verification(
             id=model.id,
             verification_date=model.verification_date,
