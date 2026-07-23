@@ -42,4 +42,5 @@ class Repair(BaseModel):
 
     order_item = relationship(
         "OrderItem",
+        back_populates="repairs",
     )

@@ -1,17 +1,11 @@
-from sqlalchemy import create_engine
-from sqlalchemy.orm import DeclarativeBase, sessionmaker
+"""
+SQLAlchemy declarative base.
+"""
 
-from app.core.config import settings
+from sqlalchemy.orm import DeclarativeBase
 
 
 class Base(DeclarativeBase):
+    """Base class for ORM models."""
+
     pass
-
-
-engine = create_engine(settings.DATABASE_URL)
-
-SessionLocal = sessionmaker(
-    autocommit=False,
-    autoflush=False,
-    bind=engine,
-)

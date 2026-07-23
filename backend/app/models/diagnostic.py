@@ -37,4 +37,5 @@ class Diagnostic(BaseModel):
 
     order_item = relationship(
         "OrderItem",
+        back_populates="diagnostics",
     )

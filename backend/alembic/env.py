@@ -2,6 +2,7 @@ from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config, pool
 
+import app.db.model_registry  # noqa: F401
 from alembic import context
 from app.core.config import Settings
 from app.db.base import Base

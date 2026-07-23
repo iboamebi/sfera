@@ -3,7 +3,7 @@ Database configuration.
 """
 
 from sqlalchemy import create_engine
-from sqlalchemy.orm import DeclarativeBase, sessionmaker
+from sqlalchemy.orm import sessionmaker
 
 from app.core.config import settings
 
@@ -12,6 +12,7 @@ engine = create_engine(
     pool_pre_ping=True,
 )
 
+
 SessionLocal = sessionmaker(
     bind=engine,
     autoflush=False,
@@ -19,12 +20,11 @@ SessionLocal = sessionmaker(
 )
 
 
-class Base(DeclarativeBase):
-    """Base class for ORM models."""
-
-
 def get_db():
+    """Provide database session."""
+
     db = SessionLocal()
+
     try:
         yield db
     finally:

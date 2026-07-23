@@ -44,15 +44,18 @@ class OrderItem(BaseModel):
 
     verifications = relationship(
         "Verification",
+        back_populates="order_item",
         cascade="all, delete-orphan",
     )
 
     diagnostics = relationship(
         "Diagnostic",
+        back_populates="order_item",
         cascade="all, delete-orphan",
     )
 
     repairs = relationship(
         "Repair",
+        back_populates="order_item",
         cascade="all, delete-orphan",
     )
