@@ -26,3 +26,6 @@ from app.models.verification import Verification as Verification
 from app.models.warehouse import Warehouse as Warehouse
 from app.models.warehouse_movement import WarehouseMovement as WarehouseMovement
 from app.models.warehouse_stock import WarehouseStock as WarehouseStock
+from app.models.workflow import Workflow as Workflow
+from app.models.workflow_instance import WorkflowInstance as WorkflowInstance
+from app.models.workflow_stage import WorkflowStage as WorkflowStage
