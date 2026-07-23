@@ -1,39 +1,62 @@
 """
 Workflow factory.
-
-Creates Workflow aggregates with validation and default state.
 """
 
-from __future__ import annotations
-
 from app.domains.workflow.entities.workflow import Workflow
+from app.domains.workflow.entities.workflow_stage import WorkflowStage
 
 
 class WorkflowFactory:
-    """Factory for Workflow aggregate."""
+    """Creates standard workflows."""
 
     @staticmethod
-    def create(
-        *,
-        code: str,
-        name: str,
-        description: str | None = None,
-        is_active: bool = True,
-    ) -> Workflow:
-        """Create a new Workflow aggregate."""
+    def verification_workflow() -> Workflow:
+        """Create verification workflow."""
 
-        code = code.strip().upper()
-        name = name.strip()
-
-        if not code:
-            raise ValueError("Workflow code cannot be empty.")
-
-        if not name:
-            raise ValueError("Workflow name cannot be empty.")
-
-        return Workflow(
-            code=code,
-            name=name,
-            description=description,
-            is_active=is_active,
+        workflow = Workflow(
+            name="Verification workflow",
+            code="VERIFICATION",
+            description="Workflow for measuring instrument verification",
         )
+
+        workflow.add_stage(
+            WorkflowStage(
+                workflow_id=workflow.id,
+                order=1,
+                code="RECEIVED",
+                name="Received",
+                performer_role="MASTER",
+            )
+        )
+
+        workflow.add_stage(
+            WorkflowStage(
+                workflow_id=workflow.id,
+                order=2,
+                code="DIAGNOSTIC",
+                name="Diagnostic",
+                performer_role="MASTER",
+            )
+        )
+
+        workflow.add_stage(
+            WorkflowStage(
+                workflow_id=workflow.id,
+                order=3,
+                code="VERIFICATION",
+                name="Verification",
+                performer_role="METROLOGIST",
+            )
+        )
+
+        workflow.add_stage(
+            WorkflowStage(
+                workflow_id=workflow.id,
+                order=4,
+                code="ISSUED",
+                name="Issued",
+                performer_role="MANAGER",
+            )
+        )
+
+        return workflow

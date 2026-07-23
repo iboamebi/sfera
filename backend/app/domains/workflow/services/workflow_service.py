@@ -1,54 +1,34 @@
 """
 Workflow domain service.
-
-Contains business operations for workflow processing.
 """
 
-from __future__ import annotations
-
 from app.domains.workflow.entities.workflow import Workflow
-from app.domains.workflow.entities.workflow_stage import WorkflowStage
+from app.domains.workflow.entities.workflow_instance import WorkflowInstance
 
 
 class WorkflowService:
-    """Workflow business service."""
+    """Workflow business rules."""
 
-    def add_stage(
+    def start(
         self,
-        workflow: Workflow,
-        stage: WorkflowStage,
-    ) -> Workflow:
-        """Add stage to workflow."""
+        instance: WorkflowInstance,
+    ) -> None:
+        """Start workflow execution."""
+        instance.start()
 
-        workflow.add_stage(stage)
-
-        return workflow
-
-    def get_next_stage(
+    def next_stage(
         self,
+        instance: WorkflowInstance,
         workflow: Workflow,
-        current_order: int,
-    ) -> WorkflowStage | None:
-        """Return next stage after current stage."""
-
-        return next(
-            (stage for stage in workflow.stages if stage.order > current_order),
-            None,
+    ) -> None:
+        """Move workflow to next stage."""
+        instance.move_next(
+            last_stage=len(workflow.stages),
         )
 
-    def can_complete(
+    def complete(
         self,
-        workflow: Workflow,
-        stage_order: int,
-    ) -> bool:
-        """Check if stage can be completed."""
-
-        stage = workflow.get_stage(stage_order)
-
-        if stage is None:
-            return False
-
-        if stage.required and stage_order != len(workflow.stages):
-            return False
-
-        return True
+        instance: WorkflowInstance,
+    ) -> None:
+        """Complete workflow."""
+        instance.status = instance.status.COMPLETED
