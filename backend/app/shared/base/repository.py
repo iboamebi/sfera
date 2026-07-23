@@ -1,5 +1,7 @@
-from abc import ABC
+"""
+Base repository marker.
+"""
 
 
-class Repository(ABC):
-    pass
+class Repository:
+    """Base repository."""

@@ -1,7 +1,7 @@
-from abc import ABC
+"""
+Base repository marker.
+"""
 
 
-class BaseRepository(ABC):
+class BaseRepository:
     """Base repository interface."""
-
-    pass

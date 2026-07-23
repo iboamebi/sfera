@@ -1,7 +1,7 @@
-from enum import Enum
+from enum import StrEnum
 
 
-class DeviceStatus(str, Enum):
+class DeviceStatus(StrEnum):
     AVAILABLE = "AVAILABLE"
     IN_WORK = "IN_WORK"
     WAITING = "WAITING"

@@ -1,4 +1,4 @@
-from typing import Generic, TypeVar
+from typing import TypeVar
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -8,13 +8,7 @@ CreateSchemaType = TypeVar("CreateSchemaType")
 UpdateSchemaType = TypeVar("UpdateSchemaType")
 
 
-class BaseCRUD(
-    Generic[
-        ModelType,
-        CreateSchemaType,
-        UpdateSchemaType,
-    ]
-):
+class BaseCRUD[ModelType, CreateSchemaType, UpdateSchemaType]:
     def __init__(
         self,
         model,

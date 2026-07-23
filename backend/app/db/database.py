@@ -1,8 +1,11 @@
+"""
+Database configuration.
+"""
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
 from app.core.config import settings
-from app.db.base import SessionLocal
 
 engine = create_engine(
     settings.DATABASE_URL,
@@ -17,7 +20,7 @@ SessionLocal = sessionmaker(
 
 
 class Base(DeclarativeBase):
-    pass
+    """Base class for ORM models."""
 
 
 def get_db():

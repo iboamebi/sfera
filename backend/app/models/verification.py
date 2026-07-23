@@ -1,6 +1,6 @@
 import uuid
 from datetime import date
-from enum import Enum
+from enum import StrEnum
 
 from sqlalchemy import Date, ForeignKey, String, Text
 from sqlalchemy import Enum as SqlEnum
@@ -9,7 +9,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.models.base_model import BaseModel
 
 
-class VerificationResult(str, Enum):
+class VerificationResult(StrEnum):
     SUITABLE = "SUITABLE"
     UNSUITABLE = "UNSUITABLE"
 

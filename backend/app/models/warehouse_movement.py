@@ -1,5 +1,5 @@
 import uuid
-from enum import Enum
+from enum import StrEnum
 
 from sqlalchemy import Enum as SqlEnum
 from sqlalchemy import ForeignKey, Numeric, Text
@@ -8,7 +8,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 from app.models.base_model import BaseModel
 
 
-class MovementType(str, Enum):
+class MovementType(StrEnum):
     RECEIPT = "RECEIPT"
     ISSUE = "ISSUE"
     RESERVATION = "RESERVATION"

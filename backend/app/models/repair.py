@@ -1,5 +1,5 @@
 import uuid
-from enum import Enum
+from enum import StrEnum
 
 from sqlalchemy import Enum as SqlEnum
 from sqlalchemy import ForeignKey, Text
@@ -8,7 +8,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.models.base_model import BaseModel
 
 
-class RepairStatus(str, Enum):
+class RepairStatus(StrEnum):
     NEW = "NEW"
     IN_WORK = "IN_WORK"
     WAITING = "WAITING"

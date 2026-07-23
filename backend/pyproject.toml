@@ -25,7 +25,9 @@ select = [
     "B",
 ]
 
-ignore = []
+extend-ignore = [
+    "B008",
+]
 
 [tool.pytest.ini_options]
 pythonpath = [
@@ -38,4 +40,8 @@ testpaths = [
 
 python_files = [
     "test_*.py"
+]
+
+addopts = [
+    "--import-mode=importlib"
 ]

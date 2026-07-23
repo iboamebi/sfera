@@ -1,9 +1,19 @@
+"""
+Price list item model.
+"""
+
+from __future__ import annotations
+
 import uuid
+from typing import TYPE_CHECKING
 
 from sqlalchemy import ForeignKey, Numeric, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base_model import BaseModel
+
+if TYPE_CHECKING:
+    from app.models.price_list import PriceList
 
 
 class PriceListItem(BaseModel):
@@ -29,4 +39,6 @@ class PriceListItem(BaseModel):
         nullable=False,
     )
 
-    price_list: Mapped["PriceList"] = relationship(back_populates="items")
+    price_list: Mapped[PriceList] = relationship(
+        back_populates="items",
+    )

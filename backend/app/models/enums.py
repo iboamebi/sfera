@@ -1,7 +1,7 @@
-from enum import Enum
+from enum import StrEnum
 
 
-class OrderStatus(str, Enum):
+class OrderStatus(StrEnum):
     NEW = "NEW"
     REGISTERED = "REGISTERED"
     IN_WORK = "IN_WORK"
@@ -11,7 +11,7 @@ class OrderStatus(str, Enum):
     CLOSED = "CLOSED"
 
 
-class OrderItemStatus(str, Enum):
+class OrderItemStatus(StrEnum):
     RECEIVED = "RECEIVED"  # принят в работу
     IN_DIAGNOSTIC = "IN_DIAGNOSTIC"
     IN_VERIFICATION = "IN_VERIFICATION"
@@ -21,6 +21,6 @@ class OrderItemStatus(str, Enum):
     ISSUED = "ISSUED"
 
 
-class VerificationResult(str, Enum):
+class VerificationResult(StrEnum):
     SUITABLE = "SUITABLE"
     UNSUITABLE = "UNSUITABLE"

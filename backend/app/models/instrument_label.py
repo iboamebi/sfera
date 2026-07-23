@@ -1,5 +1,5 @@
 import uuid
-from enum import Enum
+from enum import StrEnum
 
 from sqlalchemy import Enum as SqlEnum
 from sqlalchemy import ForeignKey, String, Text
@@ -8,7 +8,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 from app.models.base_model import BaseModel
 
 
-class LabelType(str, Enum):
+class LabelType(StrEnum):
     QR = "QR"
     BARCODE = "BARCODE"
     DATAMATRIX = "DATAMATRIX"

@@ -1,6 +1,6 @@
-from enum import Enum
+from enum import StrEnum
 
 
-class VerificationResult(str, Enum):
+class VerificationResult(StrEnum):
     SUITABLE = "SUITABLE"
     UNSUITABLE = "UNSUITABLE"

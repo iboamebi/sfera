@@ -30,6 +30,6 @@ def test_empty_order_cannot_register():
 
     try:
         order.register()
-        assert False
+        raise AssertionError()
     except OrderException:
         assert True
