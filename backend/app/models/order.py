@@ -24,9 +24,8 @@ class Order(BaseModel):
 
     number: Mapped[str] = mapped_column(
         String(50),
-        unique=True,
         nullable=False,
-        index=True,
+        unique=True,
     )
 
     customer_id: Mapped[uuid.UUID] = mapped_column(
