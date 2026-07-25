@@ -38,4 +38,4 @@ class OrderRepositorySQLAlchemy(OrderRepository):
 
             self.db.add(obj)
 
-        self.db.commit()
+        self.db.flush()

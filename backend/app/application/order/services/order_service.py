@@ -8,6 +8,7 @@ from app.domains.order.entities.order import Order
 from app.domains.order.entities.order_item import OrderItem
 from app.domains.order.repositories.order_repository import OrderRepository
 from app.domains.order.value_objects.order_number import OrderNumber
+from app.shared.unit_of_work.unit_of_work import UnitOfWork
 
 
 class OrderService:
@@ -16,8 +17,10 @@ class OrderService:
     def __init__(
         self,
         repository: OrderRepository,
+        unit_of_work: UnitOfWork,
     ) -> None:
         self._repository = repository
+        self._uow = unit_of_work
 
     def create(
         self,
@@ -25,13 +28,14 @@ class OrderService:
         customer_id: UUID,
         number: str,
     ) -> Order:
-        order = Order(
-            id=order_id,
-            number=OrderNumber(number),
-            customer_id=customer_id,
-        )
+        with self._uow:
+            order = Order(
+                id=order_id,
+                number=OrderNumber(number),
+                customer_id=customer_id,
+            )
 
-        self._repository.save(order)
+            self._repository.save(order)
 
         return order
 
@@ -52,16 +56,17 @@ class OrderService:
         item_id: UUID,
         instrument_id: UUID | None = None,
     ) -> Order:
-        order = self.get(order_id)
+        with self._uow:
+            order = self.get(order_id)
 
-        order.add_item(
-            OrderItem(
-                id=item_id,
-                instrument_id=instrument_id,
+            order.add_item(
+                OrderItem(
+                    id=item_id,
+                    instrument_id=instrument_id,
+                )
             )
-        )
 
-        self._repository.save(order)
+            self._repository.save(order)
 
         return order
 
@@ -69,10 +74,11 @@ class OrderService:
         self,
         order_id: UUID,
     ) -> Order:
-        order = self.get(order_id)
+        with self._uow:
+            order = self.get(order_id)
 
-        order.register()
+            order.register()
 
-        self._repository.save(order)
+            self._repository.save(order)
 
         return order

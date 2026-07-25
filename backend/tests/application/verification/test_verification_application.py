@@ -19,6 +19,15 @@ from app.domains.verification.repositories.verification_repository import (
 from app.domains.verification.value_objects.verification_result import (
     VerificationResult,
 )
+from app.shared.unit_of_work.unit_of_work import UnitOfWork
+
+
+class FakeUnitOfWork(UnitOfWork):
+    def commit(self) -> None:
+        pass
+
+    def rollback(self) -> None:
+        pass
 
 
 class FakeVerificationRepository(VerificationRepository):
@@ -49,7 +58,10 @@ def test_approve_verification():
 
     repository.save(verification)
 
-    service = VerificationApplicationService(repository)
+    service = VerificationApplicationService(
+        repository,
+        FakeUnitOfWork(),
+    )
 
     ApproveVerificationHandler(service).handle(
         ApproveVerificationCommand(
@@ -73,7 +85,10 @@ def test_reject_verification():
 
     repository.save(verification)
 
-    service = VerificationApplicationService(repository)
+    service = VerificationApplicationService(
+        repository,
+        FakeUnitOfWork(),
+    )
 
     RejectVerificationHandler(service).handle(
         RejectVerificationCommand(

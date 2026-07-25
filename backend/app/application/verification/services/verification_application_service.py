@@ -12,6 +12,7 @@ from app.domains.verification.repositories.verification_repository import (
 from app.domains.verification.services.verification_service import (
     VerificationService,
 )
+from app.shared.unit_of_work.unit_of_work import UnitOfWork
 
 
 class VerificationApplicationService:
@@ -20,8 +21,10 @@ class VerificationApplicationService:
     def __init__(
         self,
         repository: VerificationRepository,
+        unit_of_work: UnitOfWork,
     ) -> None:
         self._repository = repository
+        self._uow = unit_of_work
         self._service = VerificationService()
 
     def get(
@@ -40,14 +43,15 @@ class VerificationApplicationService:
         verification_id: UUID,
         valid_until: date,
     ) -> Verification:
-        verification = self.get(verification_id)
+        with self._uow:
+            verification = self.get(verification_id)
 
-        self._service.approve(
-            verification,
-            valid_until,
-        )
+            self._service.approve(
+                verification,
+                valid_until,
+            )
 
-        self._repository.save(verification)
+            self._repository.save(verification)
 
         return verification
 
@@ -56,13 +60,14 @@ class VerificationApplicationService:
         verification_id: UUID,
         reason: str,
     ) -> Verification:
-        verification = self.get(verification_id)
+        with self._uow:
+            verification = self.get(verification_id)
 
-        self._service.reject(
-            verification,
-            reason,
-        )
+            self._service.reject(
+                verification,
+                reason,
+            )
 
-        self._repository.save(verification)
+            self._repository.save(verification)
 
         return verification

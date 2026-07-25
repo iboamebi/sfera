@@ -34,7 +34,7 @@ def create_organization(
     organization = Organization(**data.model_dump())
 
     db.add(organization)
-    db.commit()
+    db.flush()
     db.refresh(organization)
 
     return organization

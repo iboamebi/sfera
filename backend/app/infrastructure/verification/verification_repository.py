@@ -38,7 +38,6 @@ class VerificationRepositorySQLAlchemy(VerificationRepository):
         if model is None:
             return None
 
-        # return VerificationFactory.from_model(model)
         return VerificationMapper().to_domain(model)
 
     def save(
@@ -55,7 +54,6 @@ class VerificationRepositorySQLAlchemy(VerificationRepository):
             model = VerificationModel(id=verification.id)
             self.session.add(model)
 
-        # model.verification_date = verification.verification_date
         VerificationMapper().to_model(
             verification,
             model,
@@ -65,4 +63,4 @@ class VerificationRepositorySQLAlchemy(VerificationRepository):
         model.unsuitable_reason = verification.unsuitable_reason
         model.methodology = verification.methodology
 
-        self.session.commit()
+        self.session.flush()

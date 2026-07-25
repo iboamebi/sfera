@@ -33,7 +33,7 @@ class BaseCRUD[ModelType, CreateSchemaType, UpdateSchemaType]:
     def create(self, db: Session, data):
         obj = self.model(**data.model_dump())
         db.add(obj)
-        db.commit()
+        db.flush()
         db.refresh(obj)
         return obj
 
@@ -41,7 +41,7 @@ class BaseCRUD[ModelType, CreateSchemaType, UpdateSchemaType]:
         for key, value in data.model_dump(exclude_unset=True).items():
             setattr(obj, key, value)
 
-        db.commit()
+        db.flush()
         db.refresh(obj)
         return obj
 
@@ -49,6 +49,6 @@ class BaseCRUD[ModelType, CreateSchemaType, UpdateSchemaType]:
         if hasattr(obj, self.archive_field):
             setattr(obj, self.archive_field, True)
 
-        db.commit()
+        db.flush()
         db.refresh(obj)
         return obj

@@ -15,6 +15,15 @@ from app.application.order.commands.register_order import (
 from app.application.order.services.order_service import OrderService
 from app.domains.order.entities.order import Order
 from app.domains.order.repositories.order_repository import OrderRepository
+from app.shared.unit_of_work.unit_of_work import UnitOfWork
+
+
+class FakeUnitOfWork(UnitOfWork):
+    def commit(self) -> None:
+        pass
+
+    def rollback(self) -> None:
+        pass
 
 
 class FakeOrderRepository(OrderRepository):
@@ -30,7 +39,10 @@ class FakeOrderRepository(OrderRepository):
 
 def test_create_register_order_flow():
     repository = FakeOrderRepository()
-    service = OrderService(repository)
+    service = OrderService(
+        repository,
+        FakeUnitOfWork(),
+    )
 
     order_id = uuid4()
     customer_id = uuid4()

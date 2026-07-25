@@ -57,4 +57,4 @@ class DeviceRepositorySQLAlchemy(DeviceRepository):
             instrument,
         )
 
-        self.db.commit()
+        self.db.flush()
