@@ -19,6 +19,7 @@ class OrderMapper(BaseMapper[Order, OrderModel]):
             id=model.id,
             number=OrderNumber(model.number),
             customer_id=model.customer_id,
+            status=model.status,
         )
 
     def to_model(

@@ -1,21 +1,28 @@
 from dataclasses import dataclass
+from uuid import UUID
 
-from app.domains.device.entities.device import Device
+from app.application.device.services.device_service import DeviceService
 from app.domains.device.events.device_connected import DeviceConnected
-from app.domains.device.services.device_service import DeviceService
 
 
 @dataclass(frozen=True)
 class ConnectDeviceCommand:
-    device: Device
+    device_id: UUID
 
 
 class ConnectDeviceHandler:
+    def __init__(
+        self,
+        service: DeviceService,
+    ) -> None:
+        self._service = service
+
     def handle(
         self,
         command: ConnectDeviceCommand,
     ) -> DeviceConnected:
-        #        command.device.connect()
-        DeviceService().connect(command.device)
+        device = self._service.connect(command.device_id)
 
-        return DeviceConnected(device_id=str(command.device.id))
+        return DeviceConnected(
+            device_id=str(device.id),
+        )

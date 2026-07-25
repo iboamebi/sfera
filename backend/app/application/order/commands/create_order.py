@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 from uuid import UUID
 
+from app.application.order.services.order_service import OrderService
 from app.domains.order.entities.order import Order
-from app.domains.order.value_objects.order_number import OrderNumber
 
 
 @dataclass(frozen=True)
@@ -13,12 +13,18 @@ class CreateOrderCommand:
 
 
 class CreateOrderHandler:
+    def __init__(
+        self,
+        service: OrderService,
+    ) -> None:
+        self._service = service
+
     def handle(
         self,
         command: CreateOrderCommand,
     ) -> Order:
-        return Order(
-            id=command.order_id,
-            number=OrderNumber(command.number),
+        return self._service.create(
+            order_id=command.order_id,
             customer_id=command.customer_id,
+            number=command.number,
         )

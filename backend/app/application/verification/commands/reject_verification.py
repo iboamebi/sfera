@@ -3,6 +3,7 @@ Reject verification command.
 """
 
 from dataclasses import dataclass
+from uuid import UUID
 
 from app.application.verification.services.verification_application_service import (
     VerificationApplicationService,
@@ -12,7 +13,7 @@ from app.domains.verification.entities.verification import Verification
 
 @dataclass(frozen=True)
 class RejectVerificationCommand:
-    verification: Verification
+    verification_id: UUID
     reason: str
 
 
@@ -21,15 +22,15 @@ class RejectVerificationHandler:
 
     def __init__(
         self,
-        service: VerificationApplicationService | None = None,
+        service: VerificationApplicationService,
     ) -> None:
-        self.service = service or VerificationApplicationService()
+        self._service = service
 
     def handle(
         self,
         command: RejectVerificationCommand,
-    ) -> None:
-        self.service.reject(
-            command.verification,
+    ) -> Verification:
+        return self._service.reject(
+            command.verification_id,
             command.reason,
         )

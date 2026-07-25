@@ -1,21 +1,28 @@
 from dataclasses import dataclass
+from uuid import UUID
 
-from app.domains.device.entities.device import Device
+from app.application.device.services.device_service import DeviceService
 from app.domains.device.events.device_disconnected import DeviceDisconnected
-from app.domains.device.services.device_service import DeviceService
 
 
 @dataclass(frozen=True)
 class DisconnectDeviceCommand:
-    device: Device
+    device_id: UUID
 
 
 class DisconnectDeviceHandler:
+    def __init__(
+        self,
+        service: DeviceService,
+    ) -> None:
+        self._service = service
+
     def handle(
         self,
         command: DisconnectDeviceCommand,
     ) -> DeviceDisconnected:
-        #        command.device.disconnect()
-        DeviceService().disconnect(command.device)
+        device = self._service.disconnect(command.device_id)
 
-        return DeviceDisconnected(device_id=str(command.device.id))
+        return DeviceDisconnected(
+            device_id=str(device.id),
+        )

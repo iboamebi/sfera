@@ -4,6 +4,7 @@ Approve verification command.
 
 from dataclasses import dataclass
 from datetime import date
+from uuid import UUID
 
 from app.application.verification.services.verification_application_service import (
     VerificationApplicationService,
@@ -13,7 +14,7 @@ from app.domains.verification.entities.verification import Verification
 
 @dataclass(frozen=True)
 class ApproveVerificationCommand:
-    verification: Verification
+    verification_id: UUID
     valid_until: date
 
 
@@ -22,15 +23,15 @@ class ApproveVerificationHandler:
 
     def __init__(
         self,
-        service: VerificationApplicationService | None = None,
+        service: VerificationApplicationService,
     ) -> None:
-        self.service = service or VerificationApplicationService()
+        self._service = service
 
     def handle(
         self,
         command: ApproveVerificationCommand,
-    ) -> None:
-        self.service.approve(
-            command.verification,
+    ) -> Verification:
+        return self._service.approve(
+            command.verification_id,
             command.valid_until,
         )
