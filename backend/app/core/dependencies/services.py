@@ -11,6 +11,9 @@ from app.application.device.services.device_application_service import (
     DeviceApplicationService,
 )
 from app.application.order.services.order_service import OrderService
+from app.application.organization.services.organization_application_service import (
+    OrganizationApplicationService,
+)
 from app.application.verification.services.verification_application_service import (
     VerificationApplicationService,
 )
@@ -18,6 +21,7 @@ from app.core.dependencies.repositories import (
     get_customer_repository,
     get_device_repository,
     get_order_repository,
+    get_organization_repository,
     get_verification_repository,
 )
 from app.core.dependencies.uow import get_unit_of_work
@@ -74,5 +78,15 @@ def get_customer_service(
     """Provide Customer application service."""
 
     return CustomerApplicationService(
+        repository,
+    )
+
+
+def get_organization_service(
+    repository=Depends(get_organization_repository),
+) -> OrganizationApplicationService:
+    """Provide Organization application service."""
+
+    return OrganizationApplicationService(
         repository,
     )

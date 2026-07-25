@@ -15,9 +15,20 @@ from app.infrastructure.device.device_repository import (
 from app.infrastructure.order.order_repository import (
     OrderRepositorySQLAlchemy,
 )
+from app.infrastructure.organization.organization_repository import (
+    OrganizationRepositorySQLAlchemy,
+)
 from app.infrastructure.verification.verification_repository import (
     VerificationRepositorySQLAlchemy,
 )
+
+
+def get_organization_repository(
+    session: Session = Depends(get_session),
+) -> OrganizationRepositorySQLAlchemy:
+    """Provide Organization repository."""
+
+    return OrganizationRepositorySQLAlchemy(session)
 
 
 def get_customer_repository(
