@@ -4,15 +4,22 @@ Application service dependency providers.
 
 from fastapi import Depends
 
+from app.application.device.services.device_application_service import (
+    DeviceApplicationService,
+)
 from app.application.order.services.order_service import OrderService
 from app.application.verification.services.verification_application_service import (
     VerificationApplicationService,
 )
 from app.core.dependencies.repositories import (
+    get_device_repository,
     get_order_repository,
     get_verification_repository,
 )
 from app.core.dependencies.uow import get_unit_of_work
+from app.domains.device.repositories.device_repository import (
+    DeviceRepository,
+)
 from app.domains.order.repositories.order_repository import OrderRepository
 from app.domains.verification.repositories.verification_repository import (
     VerificationRepository,
@@ -41,4 +48,14 @@ def get_verification_service(
     return VerificationApplicationService(
         repository,
         uow,
+    )
+
+
+def get_device_service(
+    repository: DeviceRepository = Depends(get_device_repository),
+) -> DeviceApplicationService:
+    """Provide Device application service."""
+
+    return DeviceApplicationService(
+        repository,
     )

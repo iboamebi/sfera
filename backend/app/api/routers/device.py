@@ -1,20 +1,15 @@
+"""
+Device actions.
+"""
+
 from uuid import UUID
 
 from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
 
-from app.application.device.commands.connect_device import (
-    ConnectDeviceCommand,
-    ConnectDeviceHandler,
+from app.application.device.services.device_application_service import (
+    DeviceApplicationService,
 )
-from app.application.device.commands.disconnect_device import (
-    DisconnectDeviceCommand,
-    DisconnectDeviceHandler,
-)
-from app.db.database import get_db
-from app.infrastructure.device.device_repository import (
-    DeviceRepositorySQLAlchemy,
-)
+from app.core.dependencies.services import get_device_service
 
 router = APIRouter(
     prefix="/devices",
@@ -25,42 +20,24 @@ router = APIRouter(
 @router.post("/{device_id}/connect")
 def connect_device(
     device_id: UUID,
-    db: Session = Depends(get_db),
+    service: DeviceApplicationService = Depends(get_device_service),
 ):
-    repository = DeviceRepositorySQLAlchemy(db)
-
-    device = repository.get(device_id)
-
-    if device is None:
-        return {"error": "Device not found"}
-
-    event = ConnectDeviceHandler().handle(ConnectDeviceCommand(device))
-
-    repository.save(device)
+    device = service.connect(device_id)
 
     return {
         "event": "DeviceConnected",
-        "device_id": event.device_id,
+        "device_id": device.id,
     }
 
 
 @router.post("/{device_id}/disconnect")
 def disconnect_device(
     device_id: UUID,
-    db: Session = Depends(get_db),
+    service: DeviceApplicationService = Depends(get_device_service),
 ):
-    repository = DeviceRepositorySQLAlchemy(db)
-
-    device = repository.get(device_id)
-
-    if device is None:
-        return {"error": "Device not found"}
-
-    event = DisconnectDeviceHandler().handle(DisconnectDeviceCommand(device))
-
-    repository.save(device)
+    device = service.disconnect(device_id)
 
     return {
         "event": "DeviceDisconnected",
-        "device_id": event.device_id,
+        "device_id": device.id,
     }

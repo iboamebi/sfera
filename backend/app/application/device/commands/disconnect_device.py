@@ -1,8 +1,13 @@
+"""
+Disconnect device command.
+"""
+
 from dataclasses import dataclass
 from uuid import UUID
 
-from app.application.device.services.device_service import DeviceService
-from app.domains.device.events.device_disconnected import DeviceDisconnected
+from app.application.device.services.device_application_service import (
+    DeviceApplicationService,
+)
 
 
 @dataclass(frozen=True)
@@ -11,18 +16,18 @@ class DisconnectDeviceCommand:
 
 
 class DisconnectDeviceHandler:
+    """Disconnect device."""
+
     def __init__(
         self,
-        service: DeviceService,
+        service: DeviceApplicationService,
     ) -> None:
-        self._service = service
+        self.service = service
 
     def handle(
         self,
         command: DisconnectDeviceCommand,
-    ) -> DeviceDisconnected:
-        device = self._service.disconnect(command.device_id)
-
-        return DeviceDisconnected(
-            device_id=str(device.id),
+    ):
+        return self.service.disconnect(
+            command.device_id,
         )

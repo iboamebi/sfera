@@ -1,8 +1,13 @@
+"""
+Connect device command.
+"""
+
 from dataclasses import dataclass
 from uuid import UUID
 
-from app.application.device.services.device_service import DeviceService
-from app.domains.device.events.device_connected import DeviceConnected
+from app.application.device.services.device_application_service import (
+    DeviceApplicationService,
+)
 
 
 @dataclass(frozen=True)
@@ -11,18 +16,18 @@ class ConnectDeviceCommand:
 
 
 class ConnectDeviceHandler:
+    """Connect device."""
+
     def __init__(
         self,
-        service: DeviceService,
+        service: DeviceApplicationService,
     ) -> None:
-        self._service = service
+        self.service = service
 
     def handle(
         self,
         command: ConnectDeviceCommand,
-    ) -> DeviceConnected:
-        device = self._service.connect(command.device_id)
-
-        return DeviceConnected(
-            device_id=str(device.id),
+    ):
+        return self.service.connect(
+            command.device_id,
         )
