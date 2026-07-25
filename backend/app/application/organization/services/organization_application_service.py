@@ -2,7 +2,7 @@
 Application service: Organization.
 """
 
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from app.domains.organization.entities.organization import Organization
 from app.domains.organization.repositories.organization_repository import (
@@ -18,6 +18,21 @@ class OrganizationApplicationService:
         repository: OrganizationRepository,
     ) -> None:
         self._repository = repository
+
+    def create(
+        self,
+        data: dict,
+    ) -> Organization:
+        """Create organization."""
+
+        organization = Organization(
+            id=uuid4(),
+            **data,
+        )
+
+        return self._repository.save(
+            organization,
+        )
 
     def get(
         self,

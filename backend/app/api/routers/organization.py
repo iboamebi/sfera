@@ -2,10 +2,11 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
-from sqlalchemy.orm import Session
 
-from app.db.database import get_db
-from app.models.organization import Organization
+from app.application.organization.services.organization_application_service import (
+    OrganizationApplicationService,
+)
+from app.core.dependencies.services import get_organization_service
 
 router = APIRouter(
     prefix="/organizations",
@@ -29,27 +30,31 @@ class OrganizationCreate(BaseModel):
 @router.post("/")
 def create_organization(
     data: OrganizationCreate,
-    db: Session = Depends(get_db),
+    service: OrganizationApplicationService = Depends(
+        get_organization_service,
+    ),
 ):
-    organization = Organization(**data.model_dump())
-
-    db.add(organization)
-    db.flush()
-    db.refresh(organization)
-
-    return organization
+    return service.create(
+        data.model_dump(),
+    )
 
 
 @router.get("/")
 def get_organizations(
-    db: Session = Depends(get_db),
+    service: OrganizationApplicationService = Depends(
+        get_organization_service,
+    ),
 ):
-    return db.query(Organization).all()
+    return service.get_all()
 
 
 @router.get("/{organization_id}")
 def get_organization(
     organization_id: UUID,
-    db: Session = Depends(get_db),
+    service: OrganizationApplicationService = Depends(
+        get_organization_service,
+    ),
 ):
-    return db.query(Organization).filter(Organization.id == organization_id).first()
+    return service.get(
+        organization_id,
+    )
