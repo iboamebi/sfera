@@ -6,7 +6,6 @@ from app.api.routers.device import router as device_router
 from app.api.routers.diagnostic import router as diagnostic_router
 from app.api.routers.material import router as material_router
 from app.api.routers.order import router as order_router
-from app.api.routers.order_actions import router as order_actions_router
 from app.api.routers.order_item import router as order_item_router
 from app.api.routers.price_list import router as price_list_router
 from app.api.routers.price_list_item import (
@@ -26,7 +25,6 @@ app = FastAPI(title="Sphere")
 app.include_router(organization.router)
 app.include_router(customer_router)
 app.include_router(order_router)
-app.include_router(order_actions_router)
 app.include_router(order_item_router)
 app.include_router(verification_router)
 app.include_router(verification_actions_router)
