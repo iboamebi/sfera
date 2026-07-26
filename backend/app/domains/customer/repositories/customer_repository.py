@@ -9,20 +9,39 @@ from app.domains.customer.entities.customer import Customer
 
 
 class CustomerRepository(ABC):
-    """
-    Abstract customer repository.
-    """
+    """Abstract customer repository."""
 
     @abstractmethod
-    def get_by_id(self, customer_id: UUID) -> Customer | None:
-        """
-        Get customer by identifier.
-        """
+    def get(
+        self,
+        customer_id: UUID,
+    ) -> Customer | None:
+        """Get customer by identifier."""
+
         raise NotImplementedError
 
     @abstractmethod
-    def save(self, customer: Customer) -> Customer:
-        """
-        Save customer.
-        """
+    def get_all(
+        self,
+    ) -> list[Customer]:
+        """Get all customers."""
+
+        raise NotImplementedError
+
+    @abstractmethod
+    def save(
+        self,
+        customer: Customer,
+    ) -> Customer:
+        """Save customer."""
+
+        raise NotImplementedError
+
+    @abstractmethod
+    def delete(
+        self,
+        customer_id: UUID,
+    ) -> None:
+        """Delete customer."""
+
         raise NotImplementedError
