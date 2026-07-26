@@ -2,7 +2,7 @@
 Application service: Customer.
 """
 
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from app.domains.customer.entities.customer import Customer
 from app.domains.customer.repositories.customer_repository import (
@@ -36,6 +36,19 @@ class CustomerApplicationService:
         """Get all customers."""
 
         return self._repository.get_all()
+
+    def create(
+        self,
+        data: dict,
+    ) -> Customer:
+        """Create customer."""
+
+        customer = Customer(
+            id=uuid4(),
+            **data,
+        )
+
+        return self._repository.save(customer)
 
     def save(
         self,

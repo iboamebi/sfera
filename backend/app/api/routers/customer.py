@@ -1,4 +1,4 @@
-from uuid import UUID, uuid4
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
 
@@ -6,7 +6,6 @@ from app.application.customer.services.customer_application_service import (
     CustomerApplicationService,
 )
 from app.core.dependencies.services import get_customer_service
-from app.domains.customer.entities.customer import Customer
 from app.schemas.customer import (
     CustomerCreate,
     CustomerRead,
@@ -62,18 +61,9 @@ def create_customer(
         get_customer_service,
     ),
 ):
-    customer = Customer(
-        id=uuid4(),
-        organization_id=data.organization_id,
-        name=data.name,
-        contact_person=data.contact_person,
-        phone=data.phone,
-        email=data.email,
-        comment=data.comment,
-        discount_percent=data.discount_percent,
+    return service.create(
+        data.model_dump(),
     )
-
-    return service.save(customer)
 
 
 @router.delete(
