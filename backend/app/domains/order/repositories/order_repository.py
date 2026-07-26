@@ -1,3 +1,7 @@
+"""
+Order repository interface.
+"""
+
 from abc import ABC, abstractmethod
 from uuid import UUID
 
@@ -5,10 +9,20 @@ from app.domains.order.entities.order import Order
 
 
 class OrderRepository(ABC):
-    @abstractmethod
-    def get(self, order_id: UUID) -> Order | None:
-        pass
+    """Abstract order repository."""
 
     @abstractmethod
-    def save(self, order: Order) -> None:
-        pass
+    def get(
+        self,
+        order_id: UUID,
+    ) -> Order | None:
+        """Get order by identifier."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def save(
+        self,
+        order: Order,
+    ) -> None:
+        """Save order."""
+        raise NotImplementedError
