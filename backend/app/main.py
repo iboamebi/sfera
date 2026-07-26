@@ -20,6 +20,7 @@ from app.api.routers.verification_actions import (
 from app.api.routers.warehouse import router as warehouse_router
 from app.api.routers.warehouse_movement import router as warehouse_movement_router
 from app.api.routers.warehouse_stock import router as warehouse_stock_router
+from app.api.routers.workflow import router as workflow_router
 
 app = FastAPI(title="Sphere")
 app.include_router(organization.router)
@@ -38,6 +39,7 @@ app.include_router(warehouse_movement_router)
 app.include_router(price_list_router)
 app.include_router(price_list_item_router)
 app.include_router(device_router)
+app.include_router(workflow_router)
 
 
 @app.get("/health")

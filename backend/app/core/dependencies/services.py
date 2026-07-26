@@ -17,6 +17,9 @@ from app.application.organization.services.organization_application_service impo
 from app.application.verification.services.verification_application_service import (
     VerificationApplicationService,
 )
+from app.application.workflow.services.workflow_application_service import (
+    WorkflowApplicationService,
+)
 from app.core.dependencies.repositories import (
     get_customer_repository,
     get_device_repository,
@@ -90,3 +93,9 @@ def get_organization_service(
     return OrganizationApplicationService(
         repository,
     )
+
+
+def get_workflow_service() -> WorkflowApplicationService:
+    """Provide Workflow application service."""
+
+    return WorkflowApplicationService()
