@@ -1,16 +1,64 @@
-from app.api.base_router import BaseRouter
-from app.crud.order import order_crud
+"""
+Order API router.
+"""
+
+from uuid import UUID, uuid4
+
+from fastapi import APIRouter, Depends, HTTPException
+
+from app.application.order.services.order_service import OrderService
+from app.core.dependencies.services import get_order_service
 from app.schemas.order import (
     OrderCreate,
     OrderRead,
-    OrderUpdate,
 )
 
-router = BaseRouter(
-    crud=order_crud,
-    read_schema=OrderRead,
-    create_schema=OrderCreate,
-    update_schema=OrderUpdate,
+router = APIRouter(
     prefix="/orders",
     tags=["Orders"],
-).router
+)
+
+
+@router.post(
+    "/",
+    response_model=OrderRead,
+    status_code=201,
+)
+def create_order(
+    data: OrderCreate,
+    service: OrderService = Depends(
+        get_order_service,
+    ),
+):
+    try:
+        return service.create(
+            order_id=uuid4(),
+            customer_id=data.customer_id,
+            number=data.number,
+        )
+
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=400,
+            detail=str(exc),
+        ) from exc
+
+
+@router.get(
+    "/{order_id}",
+    response_model=OrderRead,
+)
+def get_order(
+    order_id: UUID,
+    service: OrderService = Depends(
+        get_order_service,
+    ),
+):
+    try:
+        return service.get(order_id)
+
+    except ValueError:
+        raise HTTPException(
+            status_code=404,
+            detail="Order not found",
+        ) from None
