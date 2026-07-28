@@ -1,123 +1,601 @@
-# SFERA Domain Map
+# Sfera Domain Map
 
-## Core
+## Назначение документа
 
-- Order
-- Customer
-- Organization
-- Instrument
-- InstrumentType
-- Methodology
+Документ описывает карту доменных областей системы Сфера.
 
-## Production
+Цель:
 
-- Verification
-- Calibration
-- Diagnostic
-- Repair
-- ProductionOperation
+- определить границы модулей;
+- зафиксировать зависимости между контекстами;
+- предотвратить смешивание бизнес-логики;
+- использовать как основу для дальнейшей разработки.
 
-## Warehouse
 
-- Warehouse
-- Material
-- Stock
-- Movement
-- Purchase
-- Supplier
+# Архитектурный подход
 
-## Finance
+Проект использует:
 
-- PriceList
-- Quote
-- Invoice
+- Domain Driven Design;
+- Clean Architecture;
+- Application Service Pattern.
 
-## Documents
 
-- Document
-- Template
-- Label
-- PrintJob
+Основное правило зависимостей:
 
-## Identity
+```
 
-- User
-- Role
-- Permission
+API
 
-## Integration
+↓
 
-- ArshinExport
-- DeviceGateway
-- Notification
+Application
 
-## System
+↓
 
-- Audit
-- Settings
-- ReferenceData
+Domain
 
----
+↓
 
-# Aggregate Roots
+Infrastructure
 
-- Order
-- Customer
-- Organization
-- Warehouse
-- Material
-- PriceList
-- Document
-- User
-- Role
-- Methodology
-- InstrumentType
-- Supplier
-- Purchase
+```
 
----
 
-# Child Entities
+Domain Context не зависит от:
 
-- OrderItem
-- Verification
-- Calibration
-- Diagnostic
-- Repair
-- Movement
-- Stock
-- QuoteItem
-- InvoiceItem
-- Label
+- FastAPI;
+- SQLAlchemy;
+- PostgreSQL;
+- внешних интеграций.
 
----
 
-# Value Objects
+# Bounded Contexts
 
-- OrderNumber
-- SerialNumber
-- InventoryNumber
-- RegistryNumber
-- Money
-- Address
-- Phone
-- Email
-- Temperature
-- Pressure
-- Humidity
-- DateRange
-- Priority
-- OrderStatus
-- VerificationResult
+
+## Customer Context
+
+Назначение:
+
+Управление заказчиками.
+
+
+Ответственность:
+
+- организации;
+- контактные лица;
+- реквизиты;
+- условия обслуживания;
+- скидки клиента.
+
+
+Основная сущность:
+
+```
+
+Customer
+
+```
+
+
+Связи:
+
+```
+
+Customer
+
+```
+|
+v
+```
+
+Order
+
+```
+
 
 ---
 
-# Engines
+# Device Context
 
-- MetrologyEngine
-- CalculationEngine
-- RuleEngine
-- DocumentEngine
-- PrintEngine
-- ExportEngine
-- NotificationEngine
+Назначение:
+
+Управление средствами измерений.
+
+
+Ответственность:
+
+- регистрация приборов;
+- типы средств измерений;
+- заводские номера;
+- характеристики;
+- принадлежность владельцу.
+
+
+Основные сущности:
+
+```
+
+Device
+
+DeviceType
+
+```
+
+
+Связи:
+
+```
+
+Customer
+
+```
+|
+```
+
+Device
+
+```
+|
+```
+
+Order
+
+```
+
+
+---
+
+# Order Context
+
+Назначение:
+
+Центральный бизнес-контекст системы.
+
+
+Ответственность:
+
+- регистрация заказа;
+- жизненный цикл заказа;
+- объединение работ;
+- контроль выполнения.
+
+
+Aggregate Root:
+
+```
+
+Order
+
+```
+
+
+Статусы:
+
+
+```
+
+NEW
+
+REGISTERED
+
+IN_WORK
+
+WAITING
+
+COMPLETED
+
+ISSUED
+
+CLOSED
+
+```
+
+
+Связи:
+
+
+```
+
+Customer
+|
+v
+Order
+|
++---- OrderItem
+|
++---- Verification
+|
++---- Repair
+|
++---- Diagnostic
+
+```
+
+
+---
+
+# Verification Context
+
+Назначение:
+
+Управление поверкой средств измерений.
+
+
+Ответственность:
+
+- проведение поверки;
+- результаты;
+- даты;
+- методики;
+- подготовка данных для Аршин.
+
+
+Основная сущность:
+
+```
+
+Verification
+
+```
+
+
+Связи:
+
+
+```
+
+Order
+
+|
+
+Verification
+
+|
+
+Arshin Export
+
+```
+
+
+---
+
+# Repair Context
+
+Назначение:
+
+Управление ремонтом оборудования.
+
+
+Ответственность:
+
+- диагностика;
+- ремонтные работы;
+- замена компонентов;
+- результаты ремонта.
+
+
+Основные сущности:
+
+
+```
+
+Repair
+
+RepairOperation
+
+```
+
+
+Связь:
+
+
+```
+
+Order
+
+|
+
+Repair
+
+```
+
+
+---
+
+# Workflow Context
+
+Назначение:
+
+Управление технологическими процессами.
+
+
+Ответственность:
+
+- этапы работ;
+- переходы состояний;
+- шаблоны процессов.
+
+
+Основные сущности:
+
+
+```
+
+Workflow
+
+WorkflowTemplate
+
+WorkflowStep
+
+```
+
+
+Связь:
+
+
+```
+
+Order
+
+|
+
+Workflow
+
+```
+
+
+---
+
+# PriceList Context
+
+Назначение:
+
+Управление стоимостью.
+
+
+Ответственность:
+
+- прайс-листы;
+- услуги;
+- материалы;
+- расчёт стоимости.
+
+
+Aggregate Root:
+
+```
+
+PriceList
+
+```
+
+
+Структура:
+
+
+```
+
+PriceList
+
+|
+
++---- PriceListItem
+
++---- PriceListItem
+
+```
+
+
+Связи:
+
+
+```
+
+PriceList
+
+```
+ |
+```
+
+Application Service
+
+```
+ |
+```
+
+Order
+
+```
+
+
+---
+
+# Arshin Integration Context
+
+Назначение:
+
+Интеграция с ФГИС Аршин.
+
+
+Ответственность:
+
+- получение данных;
+- подготовка экспорта;
+- контроль отправленных результатов.
+
+
+Основные сущности:
+
+
+```
+
+ArshinExport
+
+ArshinRecord
+
+```
+
+
+Правило:
+
+
+Arshin является внешней системой.
+
+Внутренняя БД Сфера является источником бизнес-истины.
+
+
+---
+
+# Context Map
+
+
+Общая схема:
+
+
+```
+
+```
+            Customer
+               |
+               |
+               v
+```
+
+Device -------> Order <------ PriceList
+
+```
+               |
+               |
+    +----------+----------+
+
+    |          |          |
+
+    v          v          v
+```
+
+Verification   Repair   Diagnostic
+
+```
+               |
+
+               v
+
+           Workflow
+
+
+               |
+
+               v
+
+       Arshin Integration
+```
+
+```
+
+
+# Application Layer Integration
+
+
+Каждый контекст имеет собственный Application Service.
+
+
+Пример:
+
+
+```
+
+CustomerApplicationService
+
+DeviceApplicationService
+
+OrderApplicationService
+
+VerificationApplicationService
+
+WorkflowApplicationService
+
+PriceListApplicationService
+
+```
+
+
+# Repository Boundaries
+
+
+Каждый домен имеет собственный Repository Interface:
+
+
+```
+
+CustomerRepository
+
+DeviceRepository
+
+OrderRepository
+
+VerificationRepository
+
+WorkflowRepository
+
+PriceListRepository
+
+```
+
+
+Реализация:
+
+
+```
+
+Infrastructure Layer
+
+```
+
+
+# Development Rules
+
+
+При добавлении нового модуля:
+
+
+1. определить bounded context;
+
+2. описать Aggregate Root;
+
+3. создать Domain Entity;
+
+4. определить Repository Interface;
+
+5. реализовать Application Service;
+
+6. добавить API;
+
+7. покрыть тестами.
+
+
+# Current Architecture Status
+
+
+Sfera v2.0 Architecture:
+
+
+```
+
+✓ Customer
+
+✓ Device
+
+✓ Order
+
+✓ Verification
+
+✓ Workflow
+
+✓ PriceList (design stage)
+
+```
+
+
+Документ является базовой картой доменной архитектуры проекта.
+```
