@@ -18,6 +18,9 @@ from app.infrastructure.order.order_repository import (
 from app.infrastructure.organization.organization_repository import (
     OrganizationRepositorySQLAlchemy,
 )
+from app.infrastructure.price_list.price_list_repository import (
+    PriceListRepositorySQLAlchemy,
+)
 from app.infrastructure.verification.verification_repository import (
     VerificationRepositorySQLAlchemy,
 )
@@ -61,3 +64,11 @@ def get_verification_repository(
     """Provide Verification repository."""
 
     return VerificationRepositorySQLAlchemy(session)
+
+
+def get_price_list_repository(
+    session: Session = Depends(get_session),
+) -> PriceListRepositorySQLAlchemy:
+    """Provide PriceList repository."""
+
+    return PriceListRepositorySQLAlchemy(session)
