@@ -14,6 +14,9 @@ from app.application.order.services.order_service import OrderService
 from app.application.organization.services.organization_application_service import (
     OrganizationApplicationService,
 )
+from app.application.price_list.services.price_list_application_service import (
+    PriceListApplicationService,
+)
 from app.application.verification.services.verification_application_service import (
     VerificationApplicationService,
 )
@@ -25,6 +28,7 @@ from app.core.dependencies.repositories import (
     get_device_repository,
     get_order_repository,
     get_organization_repository,
+    get_price_list_repository,
     get_verification_repository,
 )
 from app.core.dependencies.uow import get_unit_of_work
@@ -35,6 +39,9 @@ from app.domains.device.repositories.device_repository import (
     DeviceRepository,
 )
 from app.domains.order.repositories.order_repository import OrderRepository
+from app.domains.price_list.repositories.price_list_repository import (
+    PriceListRepository,
+)
 from app.domains.verification.repositories.verification_repository import (
     VerificationRepository,
 )
@@ -99,3 +106,13 @@ def get_workflow_service() -> WorkflowApplicationService:
     """Provide Workflow application service."""
 
     return WorkflowApplicationService()
+
+
+def get_price_list_service(
+    repository: PriceListRepository = Depends(get_price_list_repository),
+) -> PriceListApplicationService:
+    """Provide PriceList application service."""
+
+    return PriceListApplicationService(
+        repository,
+    )
