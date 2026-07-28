@@ -89,4 +89,4 @@ async def update(
         raise HTTPException(
             status_code=404,
             detail="Object not found",
-        )
+        ) from None
