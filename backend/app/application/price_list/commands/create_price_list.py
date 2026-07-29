@@ -12,3 +12,4 @@ class CreatePriceListCommand:
 
     name: str
     description: str | None = None
+    is_active: bool = True
