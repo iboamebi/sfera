@@ -4,70 +4,71 @@
 
 Переход от CRUD-архитектуры к DDD/Clean Architecture.
 
-Текущая схема:
+## Текущая схема
 
 API
 → CRUD
 → SQLAlchemy Model
 
-Целевая схема:
+## Целевая схема
 
 API
 → Application Service
-→ Repository
-→ Infrastructure
+→ Repository Interface
+→ Infrastructure Repository
 → Database
-
 
 ---
 
-# Выполнено
+## Статус миграции модулей
 
-## Organization
+### Organization
 
 Статус:
 
 COMPLETED
 
-Сделано:
+Выполнено:
 
 - Domain entity
 - Repository interface
 - SQLAlchemy repository
-- Application service
-- Dependency injection
+- Application Service
+- Dependency Injection
 - API migration
-
 
 ---
 
-# В работе
-
-## PriceList
+### PriceList
 
 Статус:
 
 IN_PROGRESS
 
+Выполнено:
 
-Создано:
-
-- domain repository interface
+- Domain entity
+- Repository interface
 - SQLAlchemy repository
 - Application Service
-
+- Dependency Injection
+- API Router migration
+- Architecture documentation
 
 Осталось:
 
-- подключить dependency injection;
-- перевести API router;
-- проверить тесты;
-- удалить зависимость от price_list_crud.
+- Синхронизация Domain модели и SQLAlchemy модели
+- Alembic migration
+- Проверка Repository integration
+- Тесты Application Service
+- API тесты
+- Удаление legacy CRUD зависимости
 
+PriceList используется как эталонный модуль перехода CRUD → DDD.
 
 ---
 
-# Следующие кандидаты миграции
+## Следующие кандидаты миграции
 
 Порядок:
 
@@ -80,17 +81,48 @@ IN_PROGRESS
 7. Repair
 8. Diagnostic
 
+---
+
+## Правила миграции
+
+Во время перехода:
+
+- Legacy CRUD используется только как источник текущей бизнес-логики.
+- Новые функции реализуются только через DDD/Clean Architecture.
+- Бизнес-логика не добавляется в CRUD.
+- Каждый модуль мигрируется по схеме:
+
+Domain
+↓
+Application Service
+↓
+Repository Interface
+↓
+Infrastructure Repository
+↓
+API
 
 ---
 
-# Правила миграции
+## Текущий архитектурный checkpoint
 
-Для каждой сущности:
+Дата:
 
-1. Создать Repository Interface.
-2. Создать Infrastructure Repository.
-3. Создать Application Service.
-4. Подключить Dependency Injection.
-5. Перевести API.
-6. Проверить тесты.
-7. Удалить старый CRUD после подтверждения.
+2026-07-29
+
+Baseline:
+
+Sfera Architecture v2.0
+
+Завершено:
+
+- Архитектурные стандарты
+- Project Constitution
+- Layer Standards
+- Начата миграция PriceList
+
+Следующий этап:
+
+Завершить PriceList.
+
+После этого продолжить миграцию модулей по очереди.
