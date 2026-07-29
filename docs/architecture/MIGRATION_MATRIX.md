@@ -1,13 +1,50 @@
-# Architecture Migration Matrix
+# Sfera Migration Matrix
 
-Краткая матрица контроля перехода модулей от CRUD к DDD/Clean Architecture.
+| Module | CRUD | Domain | Application Service | Repository | API | Status |
+|--------|------|--------|---------------------|------------|-----|--------|
+| PriceList | archived | ✓ | ✓ | ✓ | ✓ | COMPLETED |
+| Customer | legacy | | | | | NEXT |
+| Order | legacy | | | | | PLANNED |
+| Material | legacy | | | | | PLANNED |
+| Warehouse | legacy | | | | | PLANNED |
+| Verification | legacy | | | | | PLANNED |
+| Repair | legacy | | | | | PLANNED |
+| Diagnostic | legacy | | | | | PLANNED |
 
-Подробный статус миграции:
-`docs/MIGRATION_STATUS.md`
+---
 
-| Module       | CRUD   | Domain | Service | Repository | API | Status      |
-| ------------ | ------ | ------ | ------- | ---------- | --- | ----------- |
-| PriceList    | legacy | ✓      | ✓       | ✓          | ✓   | IN_PROGRESS |
-| Customer     |        |        |         |            |     |             |
-| Instrument   |        |        |         |            |     |             |
-| Verification |        |        |         |            |     |             |
+## Migration flow
+
+Каждый модуль переводится по схеме:
+
+Domain
+↓
+Application Service
+↓
+Repository Interface
+↓
+Infrastructure Repository
+↓
+API
+
+---
+
+## Completed migrations
+
+### PriceList
+
+Completed:
+
+- Domain entity
+- Repository interface
+- Infrastructure repository
+- Application Service
+- Dependency Injection
+- API migration
+- Legacy implementation archived
+
+Archive:
+
+`docs/archive/legacy_price_list/`
+
+PriceList используется как эталон миграции CRUD → DDD/Clean Architecture.

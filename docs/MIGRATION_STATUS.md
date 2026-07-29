@@ -43,7 +43,7 @@ COMPLETED
 
 Статус:
 
-IN_PROGRESS
+COMPLETED
 
 Выполнено:
 
@@ -55,16 +55,16 @@ IN_PROGRESS
 - API Router migration
 - Architecture documentation
 
+Legacy implementation archived:
+
+- docs/archive/legacy_price_list/
+
 Осталось:
 
-- Синхронизация Domain модели и SQLAlchemy модели
-- Alembic migration
-- Проверка Repository integration
-- Тесты Application Service
-- API тесты
-- Удаление legacy CRUD зависимости
+- Удаление legacy CRUD зависимости выполнено
+- Миграция завершена
 
-PriceList используется как эталонный модуль перехода CRUD → DDD.
+PriceList использовался как эталонный модуль перехода CRUD → DDD.
 
 ---
 
@@ -72,14 +72,13 @@ PriceList используется как эталонный модуль пер
 
 Порядок:
 
-1. PriceList
-2. Customer
-3. Order
-4. Material
-5. Warehouse
-6. Verification
-7. Repair
-8. Diagnostic
+1. Customer
+2. Order
+3. Material
+4. Warehouse
+5. Verification
+6. Repair
+7. Diagnostic
 
 ---
 
@@ -119,10 +118,11 @@ Sfera Architecture v2.0
 - Архитектурные стандарты
 - Project Constitution
 - Layer Standards
-- Начата миграция PriceList
+- PriceList DDD migration
+- Legacy PriceList implementation archived
 
 Следующий этап:
 
-Завершить PriceList.
+Миграция следующего модуля по стандартной схеме.
 
 После этого продолжить миграцию модулей по очереди.
