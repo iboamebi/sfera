@@ -4,13 +4,17 @@
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
 
-from app.application.services.price_list_service import PriceListService
-from app.db.database import get_db
-from app.infrastructure.repositories.sqlalchemy_price_list_repository import (
-    SQLAlchemyPriceListRepository,
+from app.application.price_list.commands.create_price_list import (
+    CreatePriceListCommand,
 )
+from app.application.price_list.commands.update_price_list import (
+    UpdatePriceListCommand,
+)
+from app.application.price_list.services.price_list_application_service import (
+    PriceListApplicationService,
+)
+from app.core.dependencies.services import get_price_list_service
 from app.schemas.price_list import (
     PriceListCreate,
     PriceListRead,
@@ -23,26 +27,23 @@ router = APIRouter(
 )
 
 
-def get_price_list_service(
-    db: Session = Depends(get_db),
-):
-    repository = SQLAlchemyPriceListRepository(db)
-    return PriceListService(repository)
-
-
 @router.get("/", response_model=list[PriceListRead])
-def get_all(
-    service: PriceListService = Depends(get_price_list_service),
+async def get_all(
+    service: PriceListApplicationService = Depends(
+        get_price_list_service,
+    ),
 ):
-    return service.get_price_lists()
+    return await service.list_price_lists()
 
 
 @router.get("/{obj_id}", response_model=PriceListRead)
-def get_one(
+async def get_one(
     obj_id: UUID,
-    service: PriceListService = Depends(get_price_list_service),
+    service: PriceListApplicationService = Depends(
+        get_price_list_service,
+    ),
 ):
-    obj = service.get_price_list(obj_id)
+    obj = await service.get_price_list(obj_id)
 
     if obj is None:
         raise HTTPException(
@@ -54,25 +55,38 @@ def get_one(
 
 
 @router.post("/", response_model=PriceListRead, status_code=201)
-def create(
+async def create(
     data: PriceListCreate,
-    service: PriceListService = Depends(get_price_list_service),
+    service: PriceListApplicationService = Depends(
+        get_price_list_service,
+    ),
 ):
-    return service.create_price_list(data)
+    command = CreatePriceListCommand(
+        name=data.name,
+        description=data.description,
+    )
+
+    return await service.create(command)
 
 
 @router.patch("/{obj_id}", response_model=PriceListRead)
-def update(
+async def update(
     obj_id: UUID,
     data: PriceListUpdate,
-    service: PriceListService = Depends(get_price_list_service),
+    service: PriceListApplicationService = Depends(
+        get_price_list_service,
+    ),
 ):
-    obj = service.update_price_list(obj_id, data)
+    command = UpdatePriceListCommand(
+        price_list_id=obj_id,
+        name=data.name,
+        description=data.description,
+    )
 
-    if obj is None:
+    try:
+        return await service.update(command)
+    except ValueError:
         raise HTTPException(
             status_code=404,
             detail="Object not found",
         )
-
-    return obj
