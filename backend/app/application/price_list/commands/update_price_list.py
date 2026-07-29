@@ -12,5 +12,6 @@ class UpdatePriceListCommand:
     """
 
     price_list_id: UUID
-    name: str
+    name: str | None = None
     description: str | None = None
+    is_active: bool | None = None
