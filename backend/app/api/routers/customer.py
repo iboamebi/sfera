@@ -2,10 +2,17 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
 
+from app.application.customer.commands.create_customer import (
+    CreateCustomerCommand,
+)
+from app.application.customer.commands.update_customer import (
+    UpdateCustomerCommand,
+)
 from app.application.customer.services.customer_application_service import (
     CustomerApplicationService,
 )
 from app.core.dependencies.services import get_customer_service
+from app.domains.customer.exceptions import CustomerNotFoundError
 from app.schemas.customer import (
     CustomerCreate,
     CustomerRead,
@@ -43,7 +50,7 @@ def get_customer(
     try:
         return service.get(customer_id)
 
-    except ValueError:
+    except CustomerNotFoundError:
         raise HTTPException(
             status_code=404,
             detail="Customer not found",
@@ -61,9 +68,17 @@ def create_customer(
         get_customer_service,
     ),
 ):
-    return service.create(
-        data.model_dump(),
+    command = CreateCustomerCommand(
+        organization_id=data.organization_id,
+        name=data.name,
+        contact_person=data.contact_person,
+        phone=data.phone,
+        email=data.email,
+        comment=data.comment,
+        discount_percent=data.discount_percent,
     )
+
+    return service.create(command)
 
 
 @router.delete(
@@ -90,11 +105,11 @@ def update_customer(
         get_customer_service,
     ),
 ):
-    customer = service.get(customer_id)
+    command = UpdateCustomerCommand(
+        customer_id=customer_id,
+        **data.model_dump(
+            exclude_unset=True,
+        ),
+    )
 
-    for key, value in data.model_dump(
-        exclude_unset=True,
-    ).items():
-        setattr(customer, key, value)
-
-    return service.save(customer)
+    return service.update(command)
