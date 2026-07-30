@@ -100,7 +100,7 @@ Checkpoint:
 Порядок:
 
 1. Customer ✅
-2. Order
+2. Order ✅
 3. Material
 4. Warehouse
 5. Verification

@@ -10,6 +10,9 @@ from app.application.customer.services.customer_application_service import (
 from app.application.device.services.device_application_service import (
     DeviceApplicationService,
 )
+from app.application.material.services.material_application_service import (
+    MaterialApplicationService,
+)
 from app.application.order.services.order_application_service import (
     OrderApplicationService,
 )
@@ -28,6 +31,7 @@ from app.application.workflow.services.workflow_application_service import (
 from app.core.dependencies.repositories import (
     get_customer_repository,
     get_device_repository,
+    get_material_repository,
     get_order_repository,
     get_organization_repository,
     get_price_list_repository,
@@ -39,6 +43,9 @@ from app.domains.customer.repositories.customer_repository import (
 )
 from app.domains.device.repositories.device_repository import (
     DeviceRepository,
+)
+from app.domains.material.repositories.material_repository import (
+    MaterialRepository,
 )
 from app.domains.order.repositories.order_repository import OrderRepository
 from app.domains.price_list.repositories.price_list_repository import (
@@ -90,6 +97,16 @@ def get_customer_service(
     """Provide Customer application service."""
 
     return CustomerApplicationService(
+        repository,
+    )
+
+
+def get_material_service(
+    repository: MaterialRepository = Depends(get_material_repository),
+) -> MaterialApplicationService:
+    """Provide Material application service."""
+
+    return MaterialApplicationService(
         repository,
     )
 
