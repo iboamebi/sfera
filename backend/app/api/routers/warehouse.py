@@ -1,16 +1,55 @@
-from app.api.base_router import BaseRouter
-from app.crud.warehouse import warehouse_crud
+"""
+Warehouse API router.
+"""
+
+from uuid import uuid4
+
+from fastapi import APIRouter, Depends, HTTPException
+
+from app.application.warehouse.commands.create_warehouse import (
+    CreateWarehouseCommand,
+)
+from app.application.warehouse.services.warehouse_application_service import (
+    WarehouseApplicationService,
+)
+from app.core.dependencies.services import (
+    get_warehouse_service,
+)
 from app.schemas.warehouse import (
     WarehouseCreate,
     WarehouseRead,
-    WarehouseUpdate,
 )
 
-router = BaseRouter(
-    crud=warehouse_crud,
-    read_schema=WarehouseRead,
-    create_schema=WarehouseCreate,
-    update_schema=WarehouseUpdate,
+router = APIRouter(
     prefix="/warehouses",
     tags=["Warehouses"],
-).router
+)
+
+
+@router.post(
+    "/",
+    response_model=WarehouseRead,
+    status_code=201,
+)
+def create_warehouse(
+    data: WarehouseCreate,
+    service: WarehouseApplicationService = Depends(
+        get_warehouse_service,
+    ),
+):
+    try:
+        return service.create(
+            CreateWarehouseCommand(
+                warehouse_id=uuid4(),
+                name=data.name,
+                address=data.address,
+                responsible_person=data.responsible_person,
+                comment=data.comment,
+            )
+        )
+
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=400,
+            detail=str(exc),
+        ) from exc

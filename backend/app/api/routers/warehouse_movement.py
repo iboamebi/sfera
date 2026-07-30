@@ -1,16 +1,50 @@
-from app.api.base_router import BaseRouter
-from app.crud.warehouse_movement import warehouse_movement_crud
+"""
+Warehouse movement API router.
+"""
+
+from uuid import uuid4
+
+from fastapi import APIRouter, Depends
+
+from app.application.warehouse.commands.create_movement import (
+    CreateMovementCommand,
+)
+from app.application.warehouse.services.warehouse_application_service import (
+    WarehouseApplicationService,
+)
+from app.core.dependencies.services import (
+    get_warehouse_service,
+)
 from app.schemas.warehouse_movement import (
     WarehouseMovementCreate,
     WarehouseMovementRead,
-    WarehouseMovementUpdate,
 )
 
-router = BaseRouter(
-    crud=warehouse_movement_crud,
-    read_schema=WarehouseMovementRead,
-    create_schema=WarehouseMovementCreate,
-    update_schema=WarehouseMovementUpdate,
+router = APIRouter(
     prefix="/warehouse-movements",
     tags=["Warehouse Movements"],
-).router
+)
+
+
+@router.post(
+    "/",
+    response_model=WarehouseMovementRead,
+    status_code=201,
+)
+def create_movement(
+    data: WarehouseMovementCreate,
+    service: WarehouseApplicationService = Depends(
+        get_warehouse_service,
+    ),
+):
+    return service.create_movement(
+        CreateMovementCommand(
+            movement_id=uuid4(),
+            warehouse_id=data.warehouse_id,
+            material_id=data.material_id,
+            movement_type=data.movement_type,
+            quantity=data.quantity,
+            order_id=data.order_id,
+            comment=data.comment,
+        )
+    )

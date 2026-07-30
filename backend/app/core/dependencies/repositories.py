@@ -27,6 +27,15 @@ from app.infrastructure.price_list.price_list_repository import (
 from app.infrastructure.verification.verification_repository import (
     VerificationRepositorySQLAlchemy,
 )
+from app.infrastructure.warehouse.warehouse_movement_repository import (
+    WarehouseMovementRepositorySQLAlchemy,
+)
+from app.infrastructure.warehouse.warehouse_repository import (
+    WarehouseRepositorySQLAlchemy,
+)
+from app.infrastructure.warehouse.warehouse_stock_repository import (
+    WarehouseStockRepositorySQLAlchemy,
+)
 
 
 def get_material_repository(
@@ -35,6 +44,30 @@ def get_material_repository(
     """Provide Material repository."""
 
     return MaterialRepositorySQLAlchemy(session)
+
+
+def get_warehouse_repository(
+    session: Session = Depends(get_session),
+) -> WarehouseRepositorySQLAlchemy:
+    """Provide Warehouse repository."""
+
+    return WarehouseRepositorySQLAlchemy(session)
+
+
+def get_warehouse_stock_repository(
+    session: Session = Depends(get_session),
+) -> WarehouseStockRepositorySQLAlchemy:
+    """Provide WarehouseStock repository."""
+
+    return WarehouseStockRepositorySQLAlchemy(session)
+
+
+def get_warehouse_movement_repository(
+    session: Session = Depends(get_session),
+) -> WarehouseMovementRepositorySQLAlchemy:
+    """Provide WarehouseMovement repository."""
+
+    return WarehouseMovementRepositorySQLAlchemy(session)
 
 
 def get_organization_repository(

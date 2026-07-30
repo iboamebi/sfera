@@ -25,6 +25,9 @@ from app.application.price_list.services.price_list_application_service import (
 from app.application.verification.services.verification_application_service import (
     VerificationApplicationService,
 )
+from app.application.warehouse.services.warehouse_application_service import (
+    WarehouseApplicationService,
+)
 from app.application.workflow.services.workflow_application_service import (
     WorkflowApplicationService,
 )
@@ -36,6 +39,9 @@ from app.core.dependencies.repositories import (
     get_organization_repository,
     get_price_list_repository,
     get_verification_repository,
+    get_warehouse_movement_repository,
+    get_warehouse_repository,
+    get_warehouse_stock_repository,
 )
 from app.core.dependencies.uow import get_unit_of_work
 from app.domains.customer.repositories.customer_repository import (
@@ -53,6 +59,15 @@ from app.domains.price_list.repositories.price_list_repository import (
 )
 from app.domains.verification.repositories.verification_repository import (
     VerificationRepository,
+)
+from app.domains.warehouse.repositories.warehouse_movement_repository import (
+    WarehouseMovementRepository,
+)
+from app.domains.warehouse.repositories.warehouse_repository import (
+    WarehouseRepository,
+)
+from app.domains.warehouse.repositories.warehouse_stock_repository import (
+    WarehouseStockRepository,
 )
 from app.shared.unit_of_work.unit_of_work import UnitOfWork
 
@@ -108,6 +123,28 @@ def get_material_service(
 
     return MaterialApplicationService(
         repository,
+    )
+
+
+def get_warehouse_service(
+    warehouse_repository: WarehouseRepository = Depends(
+        get_warehouse_repository,
+    ),
+    stock_repository: WarehouseStockRepository = Depends(
+        get_warehouse_stock_repository,
+    ),
+    movement_repository: WarehouseMovementRepository = Depends(
+        get_warehouse_movement_repository,
+    ),
+    uow: UnitOfWork = Depends(get_unit_of_work),
+) -> WarehouseApplicationService:
+    """Provide Warehouse application service."""
+
+    return WarehouseApplicationService(
+        warehouse_repository,
+        stock_repository,
+        movement_repository,
+        uow,
     )
 
 
