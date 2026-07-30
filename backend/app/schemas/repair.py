@@ -1,29 +1,38 @@
+"""
+Repair API schemas.
+"""
+
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict
 
-from app.models.repair import RepairStatus
+from app.domains.repair.value_objects.repair_status import (
+    RepairStatus,
+)
 
 
-class RepairBase(BaseModel):
+class RepairCreate(BaseModel):
+    """Create repair request."""
+
     order_item_id: UUID
-    status: RepairStatus = RepairStatus.NEW
     description: str | None = None
-    result: str | None = None
 
 
-class RepairCreate(RepairBase):
-    pass
+class RepairComplete(BaseModel):
+    """Complete repair request."""
+
+    result: str
 
 
-class RepairUpdate(BaseModel):
-    status: RepairStatus | None = None
-    description: str | None = None
-    result: str | None = None
+class RepairRead(BaseModel):
+    """Repair response."""
 
-
-class RepairRead(RepairBase):
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(
+        from_attributes=True,
+    )
 
     id: UUID
-    archived: bool
+    order_item_id: UUID
+    status: RepairStatus
+    description: str | None = None
+    result: str | None = None

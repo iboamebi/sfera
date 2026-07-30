@@ -22,6 +22,9 @@ from app.application.organization.services.organization_application_service impo
 from app.application.price_list.services.price_list_application_service import (
     PriceListApplicationService,
 )
+from app.application.repair.services.repair_application_service import (
+    RepairApplicationService,
+)
 from app.application.verification.services.verification_application_service import (
     VerificationApplicationService,
 )
@@ -38,6 +41,7 @@ from app.core.dependencies.repositories import (
     get_order_repository,
     get_organization_repository,
     get_price_list_repository,
+    get_repair_repository,
     get_verification_repository,
     get_warehouse_movement_repository,
     get_warehouse_repository,
@@ -56,6 +60,9 @@ from app.domains.material.repositories.material_repository import (
 from app.domains.order.repositories.order_repository import OrderRepository
 from app.domains.price_list.repositories.price_list_repository import (
     PriceListRepository,
+)
+from app.domains.repair.repositories.repair_repository import (
+    RepairRepository,
 )
 from app.domains.verification.repositories.verification_repository import (
     VerificationRepository,
@@ -171,4 +178,16 @@ def get_price_list_service(
 
     return PriceListApplicationService(
         repository,
+    )
+
+
+def get_repair_service(
+    repository: RepairRepository = Depends(get_repair_repository),
+    uow: UnitOfWork = Depends(get_unit_of_work),
+) -> RepairApplicationService:
+    """Provide Repair application service."""
+
+    return RepairApplicationService(
+        repository,
+        uow,
     )

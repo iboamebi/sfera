@@ -24,6 +24,9 @@ from app.infrastructure.organization.organization_repository import (
 from app.infrastructure.price_list.price_list_repository import (
     PriceListRepositorySQLAlchemy,
 )
+from app.infrastructure.repair.repair_repository import (
+    RepairRepositorySQLAlchemy,
+)
 from app.infrastructure.verification.verification_repository import (
     VerificationRepositorySQLAlchemy,
 )
@@ -116,3 +119,11 @@ def get_price_list_repository(
     """Provide PriceList repository."""
 
     return PriceListRepositorySQLAlchemy(session)
+
+
+def get_repair_repository(
+    session: Session = Depends(get_session),
+) -> RepairRepositorySQLAlchemy:
+    """Provide Repair repository."""
+
+    return RepairRepositorySQLAlchemy(session)
