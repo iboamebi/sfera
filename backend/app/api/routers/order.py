@@ -9,13 +9,16 @@ from pydantic import BaseModel
 
 from app.application.order.commands.add_order_item import (
     AddOrderItemCommand,
-    AddOrderItemHandler,
+)
+from app.application.order.commands.create_order import (
+    CreateOrderCommand,
 )
 from app.application.order.commands.register_order import (
     RegisterOrderCommand,
-    RegisterOrderHandler,
 )
-from app.application.order.services.order_service import OrderService
+from app.application.order.services.order_application_service import (
+    OrderApplicationService,
+)
 from app.core.dependencies.services import get_order_service
 from app.schemas.order import (
     OrderCreate,
@@ -39,22 +42,17 @@ class OrderItemCreate(BaseModel):
 )
 def create_order(
     data: OrderCreate,
-    service: OrderService = Depends(
+    service: OrderApplicationService = Depends(
         get_order_service,
     ),
 ):
-    try:
-        return service.create(
+    return service.create(
+        CreateOrderCommand(
             order_id=uuid4(),
             customer_id=data.customer_id,
             number=data.number,
         )
-
-    except ValueError as exc:
-        raise HTTPException(
-            status_code=400,
-            detail=str(exc),
-        ) from exc
+    )
 
 
 @router.post(
@@ -64,13 +62,11 @@ def create_order(
 def add_order_item(
     order_id: UUID,
     data: OrderItemCreate,
-    service: OrderService = Depends(
+    service: OrderApplicationService = Depends(
         get_order_service,
     ),
 ):
-    return AddOrderItemHandler(
-        service,
-    ).handle(
+    return service.add_item(
         AddOrderItemCommand(
             order_id=order_id,
             item_id=uuid4(),
@@ -85,13 +81,11 @@ def add_order_item(
 )
 def register_order(
     order_id: UUID,
-    service: OrderService = Depends(
+    service: OrderApplicationService = Depends(
         get_order_service,
     ),
 ):
-    return RegisterOrderHandler(
-        service,
-    ).handle(
+    return service.register(
         RegisterOrderCommand(
             order_id=order_id,
         )
@@ -104,7 +98,7 @@ def register_order(
 )
 def get_order(
     order_id: UUID,
-    service: OrderService = Depends(
+    service: OrderApplicationService = Depends(
         get_order_service,
     ),
 ):

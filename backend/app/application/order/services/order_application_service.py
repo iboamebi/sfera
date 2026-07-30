@@ -4,14 +4,24 @@ Application service for Order.
 
 from uuid import UUID
 
+from app.application.order.commands.add_order_item import (
+    AddOrderItemCommand,
+)
+from app.application.order.commands.create_order import (
+    CreateOrderCommand,
+)
+from app.application.order.commands.register_order import (
+    RegisterOrderCommand,
+)
 from app.domains.order.entities.order import Order
 from app.domains.order.entities.order_item import OrderItem
+from app.domains.order.exceptions.order_exception import OrderException
 from app.domains.order.repositories.order_repository import OrderRepository
 from app.domains.order.value_objects.order_number import OrderNumber
 from app.shared.unit_of_work.unit_of_work import UnitOfWork
 
 
-class OrderService:
+class OrderApplicationService:
     """Coordinates Order use cases."""
 
     def __init__(
@@ -24,15 +34,13 @@ class OrderService:
 
     def create(
         self,
-        order_id: UUID,
-        customer_id: UUID,
-        number: str,
+        command: CreateOrderCommand,
     ) -> Order:
         with self._uow:
             order = Order(
-                id=order_id,
-                number=OrderNumber(number),
-                customer_id=customer_id,
+                id=command.order_id,
+                number=OrderNumber(command.number),
+                customer_id=command.customer_id,
             )
 
             self._repository.save(order)
@@ -46,23 +54,21 @@ class OrderService:
         order = self._repository.get(order_id)
 
         if order is None:
-            raise ValueError("Order not found")
+            raise OrderException("Order not found")
 
         return order
 
     def add_item(
         self,
-        order_id: UUID,
-        item_id: UUID,
-        instrument_id: UUID | None = None,
+        command: AddOrderItemCommand,
     ) -> Order:
         with self._uow:
-            order = self.get(order_id)
+            order = self.get(command.order_id)
 
             order.add_item(
                 OrderItem(
-                    id=item_id,
-                    instrument_id=instrument_id,
+                    id=command.item_id,
+                    instrument_id=command.instrument_id,
                 )
             )
 
@@ -72,10 +78,10 @@ class OrderService:
 
     def register(
         self,
-        order_id: UUID,
+        command: RegisterOrderCommand,
     ) -> Order:
         with self._uow:
-            order = self.get(order_id)
+            order = self.get(command.order_id)
 
             order.register()
 

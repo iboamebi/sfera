@@ -10,7 +10,9 @@ from app.application.customer.services.customer_application_service import (
 from app.application.device.services.device_application_service import (
     DeviceApplicationService,
 )
-from app.application.order.services.order_service import OrderService
+from app.application.order.services.order_application_service import (
+    OrderApplicationService,
+)
 from app.application.organization.services.organization_application_service import (
     OrganizationApplicationService,
 )
@@ -51,10 +53,10 @@ from app.shared.unit_of_work.unit_of_work import UnitOfWork
 def get_order_service(
     repository: OrderRepository = Depends(get_order_repository),
     uow: UnitOfWork = Depends(get_unit_of_work),
-) -> OrderService:
+) -> OrderApplicationService:
     """Provide Order application service."""
 
-    return OrderService(
+    return OrderApplicationService(
         repository,
         uow,
     )

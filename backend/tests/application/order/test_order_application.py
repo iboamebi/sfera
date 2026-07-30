@@ -2,17 +2,16 @@ from uuid import uuid4
 
 from app.application.order.commands.add_order_item import (
     AddOrderItemCommand,
-    AddOrderItemHandler,
 )
 from app.application.order.commands.create_order import (
     CreateOrderCommand,
-    CreateOrderHandler,
 )
 from app.application.order.commands.register_order import (
     RegisterOrderCommand,
-    RegisterOrderHandler,
 )
-from app.application.order.services.order_service import OrderService
+from app.application.order.services.order_application_service import (
+    OrderApplicationService,
+)
 from app.domains.order.entities.order import Order
 from app.domains.order.repositories.order_repository import OrderRepository
 from app.shared.unit_of_work.unit_of_work import UnitOfWork
@@ -39,7 +38,7 @@ class FakeOrderRepository(OrderRepository):
 
 def test_create_register_order_flow():
     repository = FakeOrderRepository()
-    service = OrderService(
+    service = OrderApplicationService(
         repository,
         FakeUnitOfWork(),
     )
@@ -47,7 +46,7 @@ def test_create_register_order_flow():
     order_id = uuid4()
     customer_id = uuid4()
 
-    order = CreateOrderHandler(service).handle(
+    order = service.create(
         CreateOrderCommand(
             order_id=order_id,
             customer_id=customer_id,
@@ -55,14 +54,14 @@ def test_create_register_order_flow():
         )
     )
 
-    AddOrderItemHandler(service).handle(
+    service.add_item(
         AddOrderItemCommand(
             order_id=order.id,
             item_id=uuid4(),
         )
     )
 
-    order = RegisterOrderHandler(service).handle(
+    order = service.register(
         RegisterOrderCommand(order.id),
     )
 
