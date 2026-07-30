@@ -12,6 +12,9 @@ from app.infrastructure.customer.customer_repository import (
 from app.infrastructure.device.device_repository import (
     DeviceRepositorySQLAlchemy,
 )
+from app.infrastructure.diagnostic.diagnostic_repository import (
+    DiagnosticRepositorySQLAlchemy,
+)
 from app.infrastructure.material.material_repository import (
     MaterialRepositorySQLAlchemy,
 )
@@ -47,6 +50,14 @@ def get_material_repository(
     """Provide Material repository."""
 
     return MaterialRepositorySQLAlchemy(session)
+
+
+def get_diagnostic_repository(
+    session: Session = Depends(get_session),
+) -> DiagnosticRepositorySQLAlchemy:
+    """Provide Diagnostic repository."""
+
+    return DiagnosticRepositorySQLAlchemy(session)
 
 
 def get_warehouse_repository(
