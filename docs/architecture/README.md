@@ -11,6 +11,7 @@
 - поддержки разработки;
 - сохранения истории изменений.
 
+---
 
 # Architecture Baseline
 
@@ -48,6 +49,7 @@ Dependency Injection
 
 ```
 
+---
 
 # Documentation Structure
 
@@ -57,24 +59,24 @@ docs/
 
 ├── adr/
 │   └── Architecture Decision Records
-│
+
 ├── architecture/
 │   └── Общая архитектура проекта
-│
+
 ├── domain/
 │   └── Доменные модели
-│
+
 ├── api/
 │   └── API документация
-│
+
 └── engines/
 └── Внутренние механизмы системы
 
 ```
 
+---
 
 # Architecture Layers
-
 
 ## API Layer
 
@@ -85,7 +87,6 @@ docs/
 - преобразование DTO;
 - вызов Application Services.
 
-
 Расположение:
 
 ```
@@ -93,7 +94,6 @@ docs/
 backend/app/api/
 
 ```
-
 
 ---
 
@@ -105,7 +105,6 @@ backend/app/api/
 - координация действий;
 - управление транзакционными операциями.
 
-
 Расположение:
 
 ```
@@ -114,9 +113,7 @@ backend/app/application/
 
 ```
 
-
 Примеры:
-
 
 ```
 
@@ -130,7 +127,6 @@ WorkflowApplicationService
 
 ```
 
-
 ---
 
 ## Domain Layer
@@ -142,7 +138,6 @@ WorkflowApplicationService
 - сущности;
 - доменные события.
 
-
 Расположение:
 
 ```
@@ -151,9 +146,7 @@ backend/app/domains/
 
 ```
 
-
 Основные контексты:
-
 
 ```
 
@@ -171,7 +164,6 @@ PriceList
 
 ```
 
-
 ---
 
 ## Infrastructure Layer
@@ -182,7 +174,6 @@ PriceList
 - внешние сервисы;
 - технические реализации.
 
-
 Расположение:
 
 ```
@@ -191,9 +182,7 @@ backend/app/infrastructure/
 
 ```
 
-
 Примеры:
-
 
 ```
 
@@ -205,9 +194,9 @@ External integrations
 
 ```
 
+---
 
 # Domain Contexts
-
 
 ## Customer
 
@@ -217,6 +206,7 @@ External integrations
 - организации;
 - контактные данные.
 
+---
 
 ## Device
 
@@ -226,11 +216,11 @@ External integrations
 - типы приборов;
 - характеристики.
 
+---
 
 ## Order
 
 Центральный бизнес-контекст.
-
 
 Ответственность:
 
@@ -238,9 +228,7 @@ External integrations
 - жизненный цикл;
 - управление работами.
 
-
 Статусы:
-
 
 ```
 
@@ -260,6 +248,7 @@ CLOSED
 
 ```
 
+---
 
 ## Verification
 
@@ -269,6 +258,7 @@ CLOSED
 - результаты;
 - подготовка данных Аршин.
 
+---
 
 ## Workflow
 
@@ -278,6 +268,7 @@ CLOSED
 - этапы выполнения;
 - переходы состояний.
 
+---
 
 ## PriceList
 
@@ -287,12 +278,11 @@ CLOSED
 - стоимость материалов;
 - расчёт цены.
 
+---
 
 # Development Process
 
-
 Новый модуль создаётся в следующем порядке:
-
 
 ```
 
@@ -316,17 +306,15 @@ CLOSED
 
 ```
 
+---
 
 # Architecture Rules
-
 
 ## Rule 1
 
 Domain не зависит от внешних технологий.
 
-
 Запрещено:
-
 
 ```
 
@@ -342,16 +330,13 @@ SQLAlchemy
 
 ```
 
-
 ---
 
 ## Rule 2
 
 API не содержит бизнес-логику.
 
-
 Правильно:
-
 
 ```
 
@@ -367,13 +352,11 @@ Domain
 
 ```
 
-
 ---
 
 ## Rule 3
 
 Repository Interface находится в Domain.
-
 
 Реализация:
 
@@ -383,16 +366,15 @@ Infrastructure
 
 ```
 
-
 ---
 
 ## Rule 4
 
 Каждый новый бизнес-контекст имеет собственную границу ответственности.
 
+---
 
 # Current Status
-
 
 ```
 
@@ -406,17 +388,17 @@ Order                       ✓
 
 Verification                ✓
 
-Customer                    ✓
+Customer                    NEXT
 
 Workflow                    ✓
 
-PriceList                   IN PROGRESS
+PriceList                   ✓
 
 ```
 
+---
 
 # Related Documents
-
 
 ## ADR
 
@@ -426,7 +408,6 @@ docs/adr/
 
 ```
 
-
 ## Domain Documentation
 
 ```
@@ -435,7 +416,6 @@ docs/domain/
 
 ```
 
-
 ## API Documentation
 
 ```
@@ -443,7 +423,6 @@ docs/domain/
 docs/api/
 
 ```
-
 
 ## Development Planning
 
@@ -457,15 +436,13 @@ checklist.md
 
 ```
 
+---
 
 # Version History
 
-
 ## v2.0 Architecture
 
-
 Включает:
-
 
 ```
 
@@ -481,14 +458,15 @@ checklist.md
 
 ✓ Documentation Baseline
 
+✓ PriceList DDD Migration
+
 ```
 
+---
 
 # Future Architecture Work
 
-
 Планируется:
-
 
 ```
 
@@ -506,6 +484,7 @@ Finance Domain
 
 ```
 
+---
 
 # Rule
 
