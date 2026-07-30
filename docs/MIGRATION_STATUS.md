@@ -68,11 +68,38 @@ PriceList использовался как эталонный модуль пе
 
 ---
 
+### Customer
+
+Статус:
+
+COMPLETED
+
+Выполнено:
+
+- Domain entity
+- Domain exceptions
+- Repository interface
+- SQLAlchemy repository
+- Mapper
+- CreateCustomerCommand
+- UpdateCustomerCommand
+- Application Service migration
+- API Router migration
+- Domain state change methods
+- Tests validation
+
+Checkpoint:
+
+- Customer application flow migrated to DDD commands
+- API no longer contains update logic
+
+---
+
 ## Следующие кандидаты миграции
 
 Порядок:
 
-1. Customer
+1. Customer ✅
 2. Order
 3. Material
 4. Warehouse
@@ -107,7 +134,7 @@ API
 
 Дата:
 
-2026-07-29
+2026-07-30
 
 Baseline:
 
@@ -120,9 +147,10 @@ Sfera Architecture v2.0
 - Layer Standards
 - PriceList DDD migration
 - Legacy PriceList implementation archived
+- Customer DDD migration
 
 Следующий этап:
 
-Миграция следующего модуля по стандартной схеме.
+Миграция Order по стандартной схеме.
 
 После этого продолжить миграцию модулей по очереди.
