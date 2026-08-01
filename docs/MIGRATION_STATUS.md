@@ -33,38 +33,11 @@ COMPLETED
 - Domain entity
 - Repository interface
 - SQLAlchemy repository
+- Mapper
 - Application Service
 - Dependency Injection
 - API migration
-
----
-
-### PriceList
-
-Статус:
-
-COMPLETED
-
-Выполнено:
-
-- Domain entity
-- Repository interface
-- SQLAlchemy repository
-- Application Service
-- Dependency Injection
-- API Router migration
-- Architecture documentation
-
-Legacy implementation archived:
-
-- docs/archive/legacy_price_list/
-
-Осталось:
-
-- Удаление legacy CRUD зависимости выполнено
-- Миграция завершена
-
-PriceList использовался как эталонный модуль перехода CRUD → DDD.
+- Schemas migration
 
 ---
 
@@ -95,28 +68,171 @@ Checkpoint:
 
 ---
 
-## Следующие кандидаты миграции
+### Order
 
-Порядок:
+Статус:
 
-1. Customer ✅
-2. Order ✅
-3. Material
-4. Warehouse
-5. Verification
-6. Repair
-7. Diagnostic
+COMPLETED
+
+Выполнено:
+
+- Domain entity
+- Value Objects
+- Repository interface
+- SQLAlchemy repository
+- Mapper
+- Application services
+- Commands
+- API migration
 
 ---
 
-## Правила миграции
+### Material
 
-Во время перехода:
+Статус:
+
+COMPLETED
+
+Выполнено:
+
+- Domain entity
+- Repository interface
+- SQLAlchemy repository
+- Mapper
+- Application Service
+- API migration
+
+---
+
+### Warehouse
+
+Статус:
+
+COMPLETED
+
+Выполнено:
+
+- Domain entities
+- Value Objects
+- Repository interfaces
+- SQLAlchemy repositories
+- Application services
+- API migration
+
+---
+
+### Verification
+
+Статус:
+
+COMPLETED
+
+Выполнено:
+
+- Domain entity
+- Value Objects
+- Repository interface
+- SQLAlchemy repository
+- Mapper
+- Application Service
+- Commands
+- API migration
+
+---
+
+### Repair
+
+Статус:
+
+COMPLETED
+
+Выполнено:
+
+- Domain entity
+- Value Objects
+- Repository interface
+- SQLAlchemy repository
+- Mapper
+- Application Service
+- Commands
+- API migration
+
+---
+
+### Diagnostic
+
+Статус:
+
+COMPLETED
+
+Выполнено:
+
+- Domain entity
+- Repository interface
+- SQLAlchemy repository
+- Mapper
+- Application Service
+- Commands
+- API Router
+- Schemas
+- Legacy CRUD archived
+
+---
+
+## Legacy CRUD
+
+Статус:
+
+ARCHIVED
+
+Правила:
 
 - Legacy CRUD используется только как источник текущей бизнес-логики.
-- Новые функции реализуются только через DDD/Clean Architecture.
-- Бизнес-логика не добавляется в CRUD.
-- Каждый модуль мигрируется по схеме:
+- Новые функции через CRUD не добавляются.
+- Новые изменения выполняются только через DDD/Clean Architecture.
+
+---
+
+## Архитектурный checkpoint
+
+Дата:
+
+2026-08-01
+
+Baseline:
+
+Sfera Architecture v2.0
+
+Завершено:
+
+- Project Constitution
+- Architecture Standards
+- Layer Standards
+- PriceList DDD migration
+- Organization DDD migration
+- Customer DDD migration
+- Order DDD migration
+- Material DDD migration
+- Warehouse DDD migration
+- Verification DDD migration
+- Repair DDD migration
+- Diagnostic DDD migration
+
+---
+
+## Следующий этап
+
+Провести анализ оставшихся модулей:
+
+- определить следующий кандидат миграции;
+- проверить зависимости;
+- подготовить вертикальный DDD срез.
+
+Перед началом следующей миграции:
+
+1. Проверить структуру существующего модуля.
+2. Сравнить с эталонными DDD модулями.
+3. Выполнить миграцию:
 
 Domain
 ↓
@@ -127,30 +243,5 @@ Repository Interface
 Infrastructure Repository
 ↓
 API
-
----
-
-## Текущий архитектурный checkpoint
-
-Дата:
-
-2026-07-30
-
-Baseline:
-
-Sfera Architecture v2.0
-
-Завершено:
-
-- Архитектурные стандарты
-- Project Constitution
-- Layer Standards
-- PriceList DDD migration
-- Legacy PriceList implementation archived
-- Customer DDD migration
-
-Следующий этап:
-
-Миграция Order по стандартной схеме.
-
-После этого продолжить миграцию модулей по очереди.
+↓
+Tests
