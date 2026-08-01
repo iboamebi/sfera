@@ -15,6 +15,9 @@ from app.application.price_list.commands.remove_price_list_item import (
 from app.application.price_list.commands.update_price_list_item import (
     UpdatePriceListItemCommand,
 )
+from app.application.price_list.exceptions import (
+    PriceListItemNotFoundApplicationError,
+)
 from app.application.price_list.services.price_list_application_service import (
     PriceListApplicationService,
 )
@@ -68,7 +71,7 @@ async def update(
                 description=data.service_type,
             )
         )
-    except ValueError:
+    except PriceListItemNotFoundApplicationError:
         raise HTTPException(
             status_code=404,
             detail="Price list item not found",
@@ -92,7 +95,7 @@ async def delete(
                 item_id=item_id,
             )
         )
-    except ValueError:
+    except PriceListItemNotFoundApplicationError:
         raise HTTPException(
             status_code=404,
             detail="Price list item not found",

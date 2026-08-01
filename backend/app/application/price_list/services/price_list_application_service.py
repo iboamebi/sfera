@@ -21,6 +21,10 @@ from app.application.price_list.commands.update_price_list import (
 from app.application.price_list.commands.update_price_list_item import (
     UpdatePriceListItemCommand,
 )
+from app.application.price_list.exceptions import (
+    PriceListItemNotFoundApplicationError,
+    PriceListNotFoundApplicationError,
+)
 from app.domains.price_list.entities.price_list import PriceList
 from app.domains.price_list.entities.price_list_item import PriceListItem
 from app.domains.price_list.repositories.price_list_repository import (
@@ -93,7 +97,7 @@ class PriceListApplicationService:
         price_list = await self.repository.get_by_id(command.price_list_id)
 
         if price_list is None:
-            raise ValueError("PriceList not found")
+            raise PriceListNotFoundApplicationError
 
         price_list.update_name(command.name)
 
@@ -112,7 +116,7 @@ class PriceListApplicationService:
         price_list = await self.repository.get_by_id(command.price_list_id)
 
         if price_list is None:
-            raise ValueError("PriceList not found")
+            raise PriceListNotFoundApplicationError
 
         price_list.activate()
 
@@ -129,7 +133,7 @@ class PriceListApplicationService:
         price_list = await self.repository.get_by_id(command.price_list_id)
 
         if price_list is None:
-            raise ValueError("PriceList not found")
+            raise PriceListNotFoundApplicationError
 
         item = PriceListItem(
             service_code=command.service_code,
@@ -154,7 +158,7 @@ class PriceListApplicationService:
         price_list = await self.repository.get_by_id(command.price_list_id)
 
         if price_list is None:
-            raise ValueError("PriceList not found")
+            raise PriceListNotFoundApplicationError
 
         price_list.remove_item(command.item_id)
 
@@ -171,12 +175,12 @@ class PriceListApplicationService:
         price_list = await self.repository.get_by_id(command.price_list_id)
 
         if price_list is None:
-            raise ValueError("PriceList not found")
+            raise PriceListNotFoundApplicationError
 
         item = price_list.find_item_by_id(command.item_id)
 
         if item is None:
-            raise ValueError("PriceList item not found")
+            raise PriceListItemNotFoundApplicationError
 
         if command.price is not None:
             item.update_price(command.price)
