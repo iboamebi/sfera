@@ -1,19 +1,17 @@
 """
-Domain entity: Organization.
+Command: update organization.
 """
 
 from dataclasses import dataclass
+from uuid import UUID
 
-from app.shared.base.entity import Entity
 
+@dataclass(frozen=True)
+class UpdateOrganizationCommand:
+    """Update organization command."""
 
-@dataclass(eq=False)
-class Organization(Entity):
-    """
-    Organization domain entity.
-    """
-
-    name: str
+    organization_id: UUID
+    name: str | None = None
     short_name: str | None = None
     inn: str | None = None
     kpp: str | None = None

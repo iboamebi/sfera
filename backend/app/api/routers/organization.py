@@ -1,12 +1,27 @@
+"""
+Organization API router.
+"""
+
 from uuid import UUID
 
-from fastapi import APIRouter, Depends
-from pydantic import BaseModel
+from fastapi import APIRouter, Depends, HTTPException
 
+from app.application.organization.commands.create_organization import (
+    CreateOrganizationCommand,
+)
+from app.application.organization.commands.update_organization import (
+    UpdateOrganizationCommand,
+)
 from app.application.organization.services.organization_application_service import (
     OrganizationApplicationService,
 )
 from app.core.dependencies.services import get_organization_service
+from app.domains.organization.exceptions import OrganizationNotFoundError
+from app.schemas.organization import (
+    OrganizationCreate,
+    OrganizationRead,
+    OrganizationUpdate,
+)
 
 router = APIRouter(
     prefix="/organizations",
@@ -14,32 +29,28 @@ router = APIRouter(
 )
 
 
-class OrganizationCreate(BaseModel):
-    name: str
-    short_name: str | None = None
-    inn: str | None = None
-    kpp: str | None = None
-    ogrn: str | None = None
-    address: str | None = None
-    phone: str | None = None
-    email: str | None = None
-    website: str | None = None
-    comment: str | None = None
-
-
-@router.post("/")
+@router.post(
+    "/",
+    response_model=OrganizationRead,
+    status_code=201,
+)
 def create_organization(
     data: OrganizationCreate,
     service: OrganizationApplicationService = Depends(
         get_organization_service,
     ),
 ):
-    return service.create(
-        data.model_dump(),
+    command = CreateOrganizationCommand(
+        **data.model_dump(),
     )
 
+    return service.create(command)
 
-@router.get("/")
+
+@router.get(
+    "/",
+    response_model=list[OrganizationRead],
+)
 def get_organizations(
     service: OrganizationApplicationService = Depends(
         get_organization_service,
@@ -48,13 +59,42 @@ def get_organizations(
     return service.get_all()
 
 
-@router.get("/{organization_id}")
+@router.get(
+    "/{organization_id}",
+    response_model=OrganizationRead,
+)
 def get_organization(
     organization_id: UUID,
     service: OrganizationApplicationService = Depends(
         get_organization_service,
     ),
 ):
-    return service.get(
-        organization_id,
+    try:
+        return service.get(organization_id)
+
+    except OrganizationNotFoundError:
+        raise HTTPException(
+            status_code=404,
+            detail="Organization not found",
+        ) from None
+
+
+@router.patch(
+    "/{organization_id}",
+    response_model=OrganizationRead,
+)
+def update_organization(
+    organization_id: UUID,
+    data: OrganizationUpdate,
+    service: OrganizationApplicationService = Depends(
+        get_organization_service,
+    ),
+):
+    command = UpdateOrganizationCommand(
+        organization_id=organization_id,
+        **data.model_dump(
+            exclude_unset=True,
+        ),
     )
+
+    return service.update(command)

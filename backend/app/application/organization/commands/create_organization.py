@@ -1,17 +1,13 @@
 """
-Domain entity: Organization.
+Command: create organization.
 """
 
 from dataclasses import dataclass
 
-from app.shared.base.entity import Entity
 
-
-@dataclass(eq=False)
-class Organization(Entity):
-    """
-    Organization domain entity.
-    """
+@dataclass(frozen=True)
+class CreateOrganizationCommand:
+    """Create organization command."""
 
     name: str
     short_name: str | None = None
