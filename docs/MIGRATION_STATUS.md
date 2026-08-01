@@ -239,6 +239,35 @@ COMPLETED
 
 ---
 
+## Application/API Layer Isolation
+
+Статус:
+
+COMPLETED
+
+Выполнено:
+
+- Removed ORM imports from Application layer
+- Removed Infrastructure imports from Application layer
+- Removed legacy CRUD dependencies from Application layer
+- Removed legacy service dependencies from Application layer
+- API uses Application Services only
+- Infrastructure has no dependency on Application or API
+
+Проверки:
+
+- No imports from `app.models` in `app/application`
+- No imports from `app.infrastructure` in `app/application`
+- No imports from `app.crud` in `app/application`
+- No imports from `app.services` in `app/application`
+- No imports from `app.models` in `app/api`
+- No imports from `app.infrastructure` in `app/api`
+- No imports from `app.application` in `app/infrastructure`
+- No imports from `app.api` in `app/infrastructure`
+- pytest: 16 passed
+
+---
+
 ## Архитектурный checkpoint
 
 Дата:
@@ -265,6 +294,7 @@ Sfera Architecture v2.0
 - PriceList DDD migration
 - Legacy layer removal
 - Domain Layer Isolation
+- Application/API Layer Isolation
 
 ---
 
@@ -276,8 +306,6 @@ API
 Application Service
 ↓
 Domain
-
-Application
 ↓
 Repository Interface
 ↑
@@ -288,8 +316,13 @@ Database
 Правила:
 
 Domain не зависит от внешних слоев.
-API не содержит бизнес-логику.
+
 Application Service реализует use cases.
+
+API не содержит бизнес-логику.
+
 Repository скрывает детали хранения.
+
 Infrastructure содержит реализацию доступа к данным.
+
 Новые функции создаются только через DDD/Clean Architecture.
