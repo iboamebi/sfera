@@ -13,6 +13,9 @@ from app.application.order.commands.create_order import (
 from app.application.order.commands.register_order import (
     RegisterOrderCommand,
 )
+from app.application.order.exceptions import (
+    OrderNotFoundApplicationError,
+)
 from app.domains.order.entities.order import Order
 from app.domains.order.entities.order_item import OrderItem
 from app.domains.order.exceptions.order_exception import OrderException
@@ -54,7 +57,9 @@ class OrderApplicationService:
         order = self._repository.get(order_id)
 
         if order is None:
-            raise OrderException("Order not found")
+            raise OrderNotFoundApplicationError from OrderException(
+                "Order not found",
+            )
 
         return order
 

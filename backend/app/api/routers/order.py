@@ -16,6 +16,9 @@ from app.application.order.commands.create_order import (
 from app.application.order.commands.register_order import (
     RegisterOrderCommand,
 )
+from app.application.order.exceptions import (
+    OrderNotFoundApplicationError,
+)
 from app.application.order.services.order_application_service import (
     OrderApplicationService,
 )
@@ -105,7 +108,7 @@ def get_order(
     try:
         return service.get(order_id)
 
-    except ValueError:
+    except OrderNotFoundApplicationError:
         raise HTTPException(
             status_code=404,
             detail="Order not found",
