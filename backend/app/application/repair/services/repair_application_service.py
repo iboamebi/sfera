@@ -7,6 +7,9 @@ from uuid import UUID, uuid4
 from app.application.repair.commands.create_repair import (
     CreateRepairCommand,
 )
+from app.application.repair.exceptions import (
+    RepairNotFoundApplicationError,
+)
 from app.domains.repair.entities.repair import Repair
 from app.domains.repair.repositories.repair_repository import (
     RepairRepository,
@@ -39,7 +42,7 @@ class RepairApplicationService:
         )
 
         if repair is None:
-            raise ValueError("Repair not found")
+            raise RepairNotFoundApplicationError
 
         return repair
 

@@ -9,6 +9,9 @@ from fastapi import APIRouter, Depends, HTTPException
 from app.application.repair.commands.create_repair import (
     CreateRepairCommand,
 )
+from app.application.repair.exceptions import (
+    RepairNotFoundApplicationError,
+)
 from app.application.repair.services.repair_application_service import (
     RepairApplicationService,
 )
@@ -40,7 +43,7 @@ def get_repair(
             repair_id,
         )
 
-    except ValueError:
+    except RepairNotFoundApplicationError:
         raise HTTPException(
             status_code=404,
             detail="Repair not found",
