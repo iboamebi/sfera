@@ -17,6 +17,9 @@ from app.application.warehouse.commands.release_stock import (
 from app.application.warehouse.commands.reserve_stock import (
     ReserveStockCommand,
 )
+from app.application.warehouse.exceptions import (
+    StockNotFoundApplicationError,
+)
 from app.domains.warehouse.entities.warehouse import Warehouse
 from app.domains.warehouse.entities.warehouse_movement import (
     WarehouseMovement,
@@ -95,7 +98,7 @@ class WarehouseApplicationService:
             )
 
             if stock is None:
-                raise ValueError("Stock not found")
+                raise StockNotFoundApplicationError
 
             stock.reserve(command.quantity)
 
@@ -114,7 +117,7 @@ class WarehouseApplicationService:
             )
 
             if stock is None:
-                raise ValueError("Stock not found")
+                raise StockNotFoundApplicationError
 
             stock.release(command.quantity)
 

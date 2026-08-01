@@ -9,6 +9,9 @@ from fastapi import APIRouter, Depends, HTTPException
 from app.application.warehouse.commands.create_warehouse import (
     CreateWarehouseCommand,
 )
+from app.application.warehouse.exceptions import (
+    StockNotFoundApplicationError,
+)
 from app.application.warehouse.services.warehouse_application_service import (
     WarehouseApplicationService,
 )
@@ -48,7 +51,7 @@ def create_warehouse(
             )
         )
 
-    except ValueError as exc:
+    except StockNotFoundApplicationError as exc:
         raise HTTPException(
             status_code=400,
             detail=str(exc),
