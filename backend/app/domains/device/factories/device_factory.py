@@ -1,14 +1,16 @@
+from uuid import UUID
+
 from app.domains.device.entities.device import Device
 from app.domains.device.value_objects.serial_number import SerialNumber
-from app.models.instrument import Instrument
 
 
 class DeviceFactory:
     @staticmethod
-    def from_instrument(
-        instrument: Instrument,
+    def create(
+        device_id: UUID,
+        serial_number: str,
     ) -> Device:
         return Device(
-            id=instrument.id,
-            serial_number=SerialNumber(instrument.serial_number),
+            id=device_id,
+            serial_number=SerialNumber(serial_number),
         )
