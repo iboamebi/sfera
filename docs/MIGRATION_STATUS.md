@@ -326,3 +326,35 @@ Repository скрывает детали хранения.
 Infrastructure содержит реализацию доступа к данным.
 
 Новые функции создаются только через DDD/Clean Architecture.
+
+---
+
+## Application Exceptions Isolation
+
+Статус:
+
+COMPLETED
+
+Выполнено:
+
+- Introduced application layer exceptions
+- Replaced generic ValueError in Application Services
+- API routers handle application-specific exceptions
+- Removed generic exception coupling between API and Application
+
+Модули:
+
+- Order
+- Material
+- Diagnostic
+- PriceList
+- PriceListItem
+- Repair
+- Verification
+- Warehouse
+
+Проверки:
+
+- No `except ValueError` in `app/api`
+- No `ValueError` raises for application use cases
+- pytest: 16 passed

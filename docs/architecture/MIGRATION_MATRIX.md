@@ -48,3 +48,37 @@ Archive:
 `docs/archive/legacy_price_list/`
 
 PriceList используется как эталон миграции CRUD → DDD/Clean Architecture.
+
+---
+
+## Architecture checkpoints
+
+### Application Exceptions Isolation
+
+Status:
+
+COMPLETED
+
+Completed:
+
+- Application layer exceptions introduced
+- Generic ValueError replaced in Application Services
+- API routers migrated to application exceptions
+- Exception boundaries isolated between API and Application layers
+
+Modules:
+
+- Order
+- Material
+- Diagnostic
+- PriceList
+- PriceListItem
+- Repair
+- Verification
+- Warehouse
+
+Validation:
+
+- No `except ValueError` in `app/api`
+- No application use cases raising generic `ValueError`
+- pytest: 16 passed
