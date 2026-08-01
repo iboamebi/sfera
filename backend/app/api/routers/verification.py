@@ -6,6 +6,9 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
 
+from app.application.verification.exceptions import (
+    VerificationNotFoundApplicationError,
+)
 from app.application.verification.services.verification_application_service import (
     VerificationApplicationService,
 )
@@ -33,7 +36,7 @@ def get_verification(
             verification_id,
         )
 
-    except ValueError:
+    except VerificationNotFoundApplicationError:
         raise HTTPException(
             status_code=404,
             detail="Verification not found",

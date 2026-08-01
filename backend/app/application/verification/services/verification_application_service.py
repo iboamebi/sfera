@@ -5,6 +5,9 @@ Application service for verification use cases.
 from datetime import date
 from uuid import UUID
 
+from app.application.verification.exceptions import (
+    VerificationNotFoundApplicationError,
+)
 from app.domains.verification.entities.verification import Verification
 from app.domains.verification.repositories.verification_repository import (
     VerificationRepository,
@@ -34,7 +37,7 @@ class VerificationApplicationService:
         verification = self._repository.get(verification_id)
 
         if verification is None:
-            raise ValueError("Verification not found")
+            raise VerificationNotFoundApplicationError
 
         return verification
 
