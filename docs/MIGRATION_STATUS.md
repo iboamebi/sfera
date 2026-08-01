@@ -7,12 +7,6 @@
 ## Текущая схема
 
 API
-→ CRUD
-→ SQLAlchemy Model
-
-## Целевая схема
-
-API
 → Application Service
 → Repository Interface
 → Infrastructure Repository
@@ -175,21 +169,52 @@ COMPLETED
 - Commands
 - API Router
 - Schemas
-- Legacy CRUD archived
 
 ---
 
-## Legacy CRUD
+### PriceList
 
 Статус:
 
-ARCHIVED
+COMPLETED
 
-Правила:
+Выполнено:
 
-- Legacy CRUD используется только как источник текущей бизнес-логики.
-- Новые функции через CRUD не добавляются.
-- Новые изменения выполняются только через DDD/Clean Architecture.
+- Domain entity
+- Repository interface
+- Infrastructure repository
+- Mapper
+- Application Service
+- Commands
+- PriceListItem migration
+- API Router migration
+- Dependency Injection
+
+Checkpoint:
+
+- PriceList migrated to DDD flow
+- Legacy PriceList service removed
+- Legacy CRUD dependency removed
+
+---
+
+## Legacy Layers
+
+Статус:
+
+REMOVED
+
+Удалено:
+
+- `app/crud`
+- `app/services/price_list_service.py`
+- `app/api/base_router.py`
+
+Проверки:
+
+- No active imports from `app.crud`
+- No active imports from `app.services`
+- No BaseRouter usage
 
 ---
 
@@ -208,7 +233,6 @@ Sfera Architecture v2.0
 - Project Constitution
 - Architecture Standards
 - Layer Standards
-- PriceList DDD migration
 - Organization DDD migration
 - Customer DDD migration
 - Order DDD migration
@@ -217,31 +241,30 @@ Sfera Architecture v2.0
 - Verification DDD migration
 - Repair DDD migration
 - Diagnostic DDD migration
+- PriceList DDD migration
+- Legacy layer removal
 
 ---
 
-## Следующий этап
+## Текущее состояние архитектуры
 
-Провести анализ оставшихся модулей:
-
-- определить следующий кандидат миграции;
-- проверить зависимости;
-- подготовить вертикальный DDD срез.
-
-Перед началом следующей миграции:
-
-1. Проверить структуру существующего модуля.
-2. Сравнить с эталонными DDD модулями.
-3. Выполнить миграцию:
-
-Domain
+```text
+API
 ↓
 Application Service
+↓
+Domain
 ↓
 Repository Interface
 ↓
 Infrastructure Repository
 ↓
-API
-↓
-Tests
+Database
+
+Правила:
+
+Domain не зависит от внешних слоев.
+API не содержит бизнес-логику.
+Application Service реализует use cases.
+Repository скрывает детали хранения.
+Новые функции создаются только через DDD/Clean Architecture.
