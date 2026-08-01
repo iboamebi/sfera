@@ -8,11 +8,13 @@ from app.application.customer.commands.create_customer import (
 from app.application.customer.commands.update_customer import (
     UpdateCustomerCommand,
 )
+from app.application.customer.exceptions import (
+    CustomerNotFoundApplicationError,
+)
 from app.application.customer.services.customer_application_service import (
     CustomerApplicationService,
 )
 from app.core.dependencies.services import get_customer_service
-from app.domains.customer.exceptions import CustomerNotFoundError
 from app.schemas.customer import (
     CustomerCreate,
     CustomerRead,
@@ -50,7 +52,7 @@ def get_customer(
     try:
         return service.get(customer_id)
 
-    except CustomerNotFoundError:
+    except CustomerNotFoundApplicationError:
         raise HTTPException(
             status_code=404,
             detail="Customer not found",

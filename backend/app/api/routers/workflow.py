@@ -2,15 +2,24 @@
 Workflow API router.
 """
 
+from uuid import UUID
+
 from fastapi import APIRouter, Depends
 
+from app.application.workflow.commands.move_workflow_stage import (
+    MoveWorkflowStageCommand,
+)
+from app.application.workflow.commands.start_workflow import (
+    StartWorkflowCommand,
+)
 from app.application.workflow.services.workflow_application_service import (
     WorkflowApplicationService,
 )
 from app.core.dependencies.services import get_workflow_service
-from app.domains.workflow.entities.workflow import Workflow
-from app.domains.workflow.entities.workflow_instance import (
-    WorkflowInstance,
+from app.schemas.workflow import (
+    WorkflowInstanceCreate,
+    WorkflowInstanceRead,
+    WorkflowMoveRequest,
 )
 
 router = APIRouter(
@@ -19,51 +28,55 @@ router = APIRouter(
 )
 
 
-@router.post("/start")
+@router.post(
+    "/start",
+    response_model=WorkflowInstanceRead,
+)
 def start_workflow(
-    instance: WorkflowInstance,
+    data: WorkflowInstanceCreate,
     service: WorkflowApplicationService = Depends(
         get_workflow_service,
     ),
 ):
-    result = service.start(instance)
-
-    return {
-        "id": result.id,
-        "status": result.status,
-    }
-
-
-@router.post("/move-next")
-def move_workflow_stage(
-    instance: WorkflowInstance,
-    workflow: Workflow,
-    service: WorkflowApplicationService = Depends(
-        get_workflow_service,
-    ),
-):
-    result = service.move_next(
-        instance,
-        workflow,
+    command = StartWorkflowCommand(
+        workflow_id=data.workflow_id,
+        order_item_id=data.order_item_id,
     )
 
-    return {
-        "id": result.id,
-        "current_stage": result.current_stage,
-        "status": result.status,
-    }
+    return service.start(command)
 
 
-@router.post("/complete")
-def complete_workflow(
-    instance: WorkflowInstance,
+@router.post(
+    "/move-next",
+    response_model=WorkflowInstanceRead,
+)
+def move_workflow_stage(
+    workflow_instance_id: UUID,
+    data: WorkflowMoveRequest,
     service: WorkflowApplicationService = Depends(
         get_workflow_service,
     ),
 ):
-    result = service.complete(instance)
+    command = MoveWorkflowStageCommand(
+        workflow_id=data.workflow_id,
+        workflow_instance_id=workflow_instance_id,
+    )
 
-    return {
-        "id": result.id,
-        "status": result.status,
-    }
+    return service.move_next(command)
+
+
+@router.post(
+    "/complete",
+    response_model=WorkflowInstanceRead,
+)
+def complete_workflow(
+    workflow_instance_id: UUID,
+    service: WorkflowApplicationService = Depends(
+        get_workflow_service,
+    ),
+):
+    return service.complete(
+        service.get_instance(
+            workflow_instance_id,
+        ),
+    )

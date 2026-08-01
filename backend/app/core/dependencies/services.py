@@ -50,6 +50,8 @@ from app.core.dependencies.repositories import (
     get_warehouse_movement_repository,
     get_warehouse_repository,
     get_warehouse_stock_repository,
+    get_workflow_instance_repository,
+    get_workflow_repository,
 )
 from app.core.dependencies.uow import get_unit_of_work
 from app.domains.customer.repositories.customer_repository import (
@@ -65,6 +67,9 @@ from app.domains.material.repositories.material_repository import (
     MaterialRepository,
 )
 from app.domains.order.repositories.order_repository import OrderRepository
+from app.domains.organization.repositories.organization_repository import (
+    OrganizationRepository,
+)
 from app.domains.price_list.repositories.price_list_repository import (
     PriceListRepository,
 )
@@ -82,6 +87,10 @@ from app.domains.warehouse.repositories.warehouse_repository import (
 )
 from app.domains.warehouse.repositories.warehouse_stock_repository import (
     WarehouseStockRepository,
+)
+from app.domains.workflow.repositories.workflow_repository import (
+    WorkflowInstanceRepository,
+    WorkflowRepository,
 )
 from app.shared.unit_of_work.unit_of_work import UnitOfWork
 
@@ -115,9 +124,7 @@ def get_device_service(
 ) -> DeviceApplicationService:
     """Provide Device application service."""
 
-    return DeviceApplicationService(
-        repository,
-    )
+    return DeviceApplicationService(repository)
 
 
 def get_customer_service(
@@ -125,9 +132,7 @@ def get_customer_service(
 ) -> CustomerApplicationService:
     """Provide Customer application service."""
 
-    return CustomerApplicationService(
-        repository,
-    )
+    return CustomerApplicationService(repository)
 
 
 def get_material_service(
@@ -135,9 +140,7 @@ def get_material_service(
 ) -> MaterialApplicationService:
     """Provide Material application service."""
 
-    return MaterialApplicationService(
-        repository,
-    )
+    return MaterialApplicationService(repository)
 
 
 def get_warehouse_service(
@@ -163,19 +166,29 @@ def get_warehouse_service(
 
 
 def get_organization_service(
-    repository=Depends(get_organization_repository),
+    repository: OrganizationRepository = Depends(
+        get_organization_repository,
+    ),
 ) -> OrganizationApplicationService:
     """Provide Organization application service."""
 
-    return OrganizationApplicationService(
-        repository,
-    )
+    return OrganizationApplicationService(repository)
 
 
-def get_workflow_service() -> WorkflowApplicationService:
+def get_workflow_service(
+    repository: WorkflowRepository = Depends(
+        get_workflow_repository,
+    ),
+    instance_repository: WorkflowInstanceRepository = Depends(
+        get_workflow_instance_repository,
+    ),
+) -> WorkflowApplicationService:
     """Provide Workflow application service."""
 
-    return WorkflowApplicationService()
+    return WorkflowApplicationService(
+        repository,
+        instance_repository,
+    )
 
 
 def get_price_list_service(
@@ -183,9 +196,7 @@ def get_price_list_service(
 ) -> PriceListApplicationService:
     """Provide PriceList application service."""
 
-    return PriceListApplicationService(
-        repository,
-    )
+    return PriceListApplicationService(repository)
 
 
 def get_repair_service(

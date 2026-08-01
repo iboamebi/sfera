@@ -10,6 +10,9 @@ from app.application.customer.commands.create_customer import (
 from app.application.customer.commands.update_customer import (
     UpdateCustomerCommand,
 )
+from app.application.customer.exceptions import (
+    CustomerNotFoundApplicationError,
+)
 from app.domains.customer.entities.customer import Customer
 from app.domains.customer.exceptions import CustomerNotFoundError
 from app.domains.customer.repositories.customer_repository import (
@@ -35,7 +38,7 @@ class CustomerApplicationService:
         customer = self._repository.get(customer_id)
 
         if customer is None:
-            raise CustomerNotFoundError
+            raise CustomerNotFoundApplicationError from CustomerNotFoundError
 
         return customer
 

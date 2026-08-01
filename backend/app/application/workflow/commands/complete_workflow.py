@@ -1,5 +1,5 @@
 """
-Move workflow stage command.
+Complete workflow command.
 """
 
 from dataclasses import dataclass
@@ -7,8 +7,7 @@ from uuid import UUID
 
 
 @dataclass(frozen=True)
-class MoveWorkflowStageCommand:
-    """Move workflow stage command."""
+class CompleteWorkflowCommand:
+    """Complete workflow."""
 
-    workflow_id: UUID
     workflow_instance_id: UUID

@@ -12,11 +12,13 @@ from app.application.organization.commands.create_organization import (
 from app.application.organization.commands.update_organization import (
     UpdateOrganizationCommand,
 )
+from app.application.organization.exceptions import (
+    OrganizationNotFoundApplicationError,
+)
 from app.application.organization.services.organization_application_service import (
     OrganizationApplicationService,
 )
 from app.core.dependencies.services import get_organization_service
-from app.domains.organization.exceptions import OrganizationNotFoundError
 from app.schemas.organization import (
     OrganizationCreate,
     OrganizationRead,
@@ -72,7 +74,7 @@ def get_organization(
     try:
         return service.get(organization_id)
 
-    except OrganizationNotFoundError:
+    except OrganizationNotFoundApplicationError:
         raise HTTPException(
             status_code=404,
             detail="Organization not found",

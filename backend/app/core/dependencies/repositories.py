@@ -42,6 +42,12 @@ from app.infrastructure.warehouse.warehouse_repository import (
 from app.infrastructure.warehouse.warehouse_stock_repository import (
     WarehouseStockRepositorySQLAlchemy,
 )
+from app.infrastructure.workflow.workflow_instance_repository import (
+    WorkflowInstanceRepositorySQLAlchemy,
+)
+from app.infrastructure.workflow.workflow_repository import (
+    WorkflowRepositorySQLAlchemy,
+)
 
 
 def get_material_repository(
@@ -138,3 +144,19 @@ def get_repair_repository(
     """Provide Repair repository."""
 
     return RepairRepositorySQLAlchemy(session)
+
+
+def get_workflow_repository(
+    session: Session = Depends(get_session),
+) -> WorkflowRepositorySQLAlchemy:
+    """Provide Workflow repository."""
+
+    return WorkflowRepositorySQLAlchemy(session)
+
+
+def get_workflow_instance_repository(
+    session: Session = Depends(get_session),
+) -> WorkflowInstanceRepositorySQLAlchemy:
+    """Provide Workflow instance repository."""
+
+    return WorkflowInstanceRepositorySQLAlchemy(session)

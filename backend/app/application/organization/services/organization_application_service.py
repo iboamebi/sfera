@@ -10,6 +10,9 @@ from app.application.organization.commands.create_organization import (
 from app.application.organization.commands.update_organization import (
     UpdateOrganizationCommand,
 )
+from app.application.organization.exceptions import (
+    OrganizationNotFoundApplicationError,
+)
 from app.domains.organization.entities.organization import Organization
 from app.domains.organization.exceptions import OrganizationNotFoundError
 from app.domains.organization.repositories.organization_repository import (
@@ -59,7 +62,7 @@ class OrganizationApplicationService:
         )
 
         if organization is None:
-            raise OrganizationNotFoundError
+            raise OrganizationNotFoundApplicationError from OrganizationNotFoundError
 
         return organization
 
