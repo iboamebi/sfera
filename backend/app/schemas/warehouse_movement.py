@@ -2,7 +2,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict
 
-from app.models.warehouse_movement import MovementType
+from app.domains.warehouse.value_objects.movement_type import MovementType
 
 
 class WarehouseMovementBase(BaseModel):

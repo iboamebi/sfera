@@ -3,7 +3,9 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict
 
-from app.models.verification import VerificationResult
+from app.domains.verification.value_objects.verification_result import (
+    VerificationResult,
+)
 
 
 class VerificationBase(BaseModel):

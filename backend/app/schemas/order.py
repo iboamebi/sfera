@@ -3,7 +3,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict
 
-from app.models.order import OrderStatus
+from app.domains.order.value_objects.order_status import OrderStatus
 
 
 class OrderBase(BaseModel):
