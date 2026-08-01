@@ -218,6 +218,27 @@ REMOVED
 
 ---
 
+## Domain Layer Isolation
+
+Статус:
+
+COMPLETED
+
+Выполнено:
+
+- Removed ORM imports from Domain layer
+- Removed Infrastructure imports from Domain layer
+- Domain factories create only domain entities
+- ORM mapping moved to Infrastructure mappers
+
+Проверки:
+
+- No imports from `app.models` in `app/domains`
+- No imports from `app.infrastructure` in `app/domains`
+- pytest: 16 passed
+
+---
+
 ## Архитектурный checkpoint
 
 Дата:
@@ -243,6 +264,7 @@ Sfera Architecture v2.0
 - Diagnostic DDD migration
 - PriceList DDD migration
 - Legacy layer removal
+- Domain Layer Isolation
 
 ---
 
@@ -254,9 +276,11 @@ API
 Application Service
 ↓
 Domain
+
+Application
 ↓
 Repository Interface
-↓
+↑
 Infrastructure Repository
 ↓
 Database
@@ -267,4 +291,5 @@ Domain не зависит от внешних слоев.
 API не содержит бизнес-логику.
 Application Service реализует use cases.
 Repository скрывает детали хранения.
+Infrastructure содержит реализацию доступа к данным.
 Новые функции создаются только через DDD/Clean Architecture.
