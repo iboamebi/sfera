@@ -12,6 +12,9 @@ from app.application.material.commands.create_material import (
 from app.application.material.commands.update_material import (
     UpdateMaterialCommand,
 )
+from app.application.material.exceptions import (
+    MaterialNotFoundApplicationError,
+)
 from app.application.material.services.material_application_service import (
     MaterialApplicationService,
 )
@@ -53,7 +56,7 @@ def get_material(
     try:
         return service.get(material_id)
 
-    except ValueError:
+    except MaterialNotFoundApplicationError:
         raise HTTPException(
             status_code=404,
             detail="Material not found",

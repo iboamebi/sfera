@@ -10,6 +10,9 @@ from app.application.material.commands.create_material import (
 from app.application.material.commands.update_material import (
     UpdateMaterialCommand,
 )
+from app.application.material.exceptions import (
+    MaterialNotFoundApplicationError,
+)
 from app.domains.material.entities.material import Material
 from app.domains.material.repositories.material_repository import (
     MaterialRepository,
@@ -34,7 +37,7 @@ class MaterialApplicationService:
         material = self._repository.get(material_id)
 
         if material is None:
-            raise ValueError("Material not found")
+            raise MaterialNotFoundApplicationError
 
         return material
 
