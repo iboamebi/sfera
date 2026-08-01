@@ -18,6 +18,9 @@ from app.application.price_list.commands.remove_price_list_item import (
 from app.application.price_list.commands.update_price_list import (
     UpdatePriceListCommand,
 )
+from app.application.price_list.commands.update_price_list_item import (
+    UpdatePriceListItemCommand,
+)
 from app.domains.price_list.entities.price_list import PriceList
 from app.domains.price_list.entities.price_list_item import PriceListItem
 from app.domains.price_list.repositories.price_list_repository import (
@@ -154,5 +157,31 @@ class PriceListApplicationService:
             raise ValueError("PriceList not found")
 
         price_list.remove_item(command.item_id)
+
+        return await self.repository.save(price_list)
+
+    async def update_item(
+        self,
+        command: UpdatePriceListItemCommand,
+    ) -> PriceList:
+        """
+        Updates item in PriceList.
+        """
+
+        price_list = await self.repository.get_by_id(command.price_list_id)
+
+        if price_list is None:
+            raise ValueError("PriceList not found")
+
+        item = price_list.find_item_by_id(command.item_id)
+
+        if item is None:
+            raise ValueError("PriceList item not found")
+
+        if command.price is not None:
+            item.update_price(command.price)
+
+        if command.description is not None:
+            item.update_description(command.description)
 
         return await self.repository.save(price_list)

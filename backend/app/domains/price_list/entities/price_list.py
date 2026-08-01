@@ -77,6 +77,20 @@ class PriceList(AggregateRoot):
 
         self.updated_at = datetime.utcnow()
 
+    def find_item_by_id(
+        self,
+        item_id: UUID,
+    ) -> PriceListItem | None:
+        """
+        Поиск позиции по идентификатору.
+        """
+
+        for item in self.items:
+            if item.id == item_id:
+                return item
+
+        return None
+
     def find_item_by_code(
         self,
         service_code: str,
