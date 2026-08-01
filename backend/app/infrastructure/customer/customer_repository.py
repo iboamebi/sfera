@@ -14,7 +14,7 @@ from app.infrastructure.mappers.customer_mapper import CustomerMapper
 from app.models.customer import Customer as CustomerModel
 
 
-class SqlAlchemyCustomerRepository(CustomerRepository):
+class CustomerRepositorySQLAlchemy(CustomerRepository):
     """SQLAlchemy customer repository."""
 
     def __init__(
