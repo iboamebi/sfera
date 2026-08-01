@@ -11,6 +11,9 @@ from app.application.price_list.commands.create_price_list import (
 from app.application.price_list.commands.update_price_list import (
     UpdatePriceListCommand,
 )
+from app.application.price_list.exceptions import (
+    PriceListNotFoundApplicationError,
+)
 from app.application.price_list.services.price_list_application_service import (
     PriceListApplicationService,
 )
@@ -85,7 +88,8 @@ async def update(
 
     try:
         return await service.update(command)
-    except ValueError:
+
+    except PriceListNotFoundApplicationError:
         raise HTTPException(
             status_code=404,
             detail="Object not found",
