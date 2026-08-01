@@ -9,6 +9,9 @@ from fastapi import APIRouter, Depends, HTTPException
 from app.application.diagnostic.commands.create_diagnostic import (
     CreateDiagnosticCommand,
 )
+from app.application.diagnostic.exceptions import (
+    DiagnosticNotFoundApplicationError,
+)
 from app.application.diagnostic.services.diagnostic_application_service import (
     DiagnosticApplicationService,
 )
@@ -41,7 +44,7 @@ def get_diagnostic(
             diagnostic_id,
         )
 
-    except ValueError:
+    except DiagnosticNotFoundApplicationError:
         raise HTTPException(
             status_code=404,
             detail="Diagnostic not found",

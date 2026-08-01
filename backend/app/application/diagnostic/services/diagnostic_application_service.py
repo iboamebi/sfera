@@ -7,6 +7,9 @@ from uuid import UUID, uuid4
 from app.application.diagnostic.commands.create_diagnostic import (
     CreateDiagnosticCommand,
 )
+from app.application.diagnostic.exceptions import (
+    DiagnosticNotFoundApplicationError,
+)
 from app.domains.diagnostic.entities.diagnostic import Diagnostic
 from app.domains.diagnostic.repositories.diagnostic_repository import (
     DiagnosticRepository,
@@ -37,7 +40,7 @@ class DiagnosticApplicationService:
         )
 
         if diagnostic is None:
-            raise ValueError("Diagnostic not found")
+            raise DiagnosticNotFoundApplicationError
 
         return diagnostic
 
