@@ -116,6 +116,33 @@ Validation:
 
 ---
 
+## Domain Exceptions Isolation
+
+Status:
+
+COMPLETED
+
+Completed:
+
+- Specialized domain exceptions
+- Generic ValueError removed from migrated domain logic
+- Domain validation boundaries isolated
+
+Modules:
+
+- Device
+- Order
+- Verification
+- Warehouse
+
+Validation:
+
+- Domain has no ORM dependencies
+- Domain has no Infrastructure dependencies
+- pytest: 16 passed
+
+---
+
 # Next Architecture Audit
 
 Следующий этап развития архитектуры:

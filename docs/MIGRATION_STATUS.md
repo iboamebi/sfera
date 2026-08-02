@@ -272,7 +272,7 @@ COMPLETED
 
 Дата:
 
-2026-08-01
+2026-08-02
 
 Baseline:
 
@@ -295,6 +295,7 @@ Sfera Architecture v2.0
 - Legacy layer removal
 - Domain Layer Isolation
 - Application/API Layer Isolation
+- Domain Exceptions Isolation
 
 ---
 
@@ -358,3 +359,37 @@ COMPLETED
 - No `except ValueError` in `app/api`
 - No `ValueError` raises for application use cases
 - pytest: 16 passed
+
+---
+
+## Domain Exceptions Isolation
+
+Статус:
+
+COMPLETED
+
+Выполнено:
+
+- Introduced domain-specific exceptions
+- Replaced generic ValueError in domain entities and value objects
+- Added domain exception boundaries
+- Isolated domain validation failures
+
+Модули:
+
+- Device
+- Order
+- Verification
+- Warehouse
+
+Проверки:
+
+- No `raise ValueError` in migrated domain modules
+- No imports from `app.models` in `app/domains`
+- No imports from `app.infrastructure` in `app/domains`
+- pytest: 16 passed
+
+Checkpoint:
+
+- Domain exception isolation completed
+- Domain layer validation errors separated from generic Python exceptions
