@@ -393,3 +393,35 @@ Checkpoint:
 
 - Domain exception isolation completed
 - Domain layer validation errors separated from generic Python exceptions
+
+---
+
+## Architecture Dependency Audit
+
+Статус:
+
+COMPLETED
+
+Проверено:
+
+- API isolation
+- Application isolation
+- Domain isolation
+- Repository interface boundaries
+- Infrastructure dependency direction
+- Application Service consistency
+
+Проверки:
+
+- No repositories in API
+- No ORM in Application
+- No ORM in Domain
+- No Infrastructure in Application
+- No API/Application dependency in Infrastructure
+- pytest: 16 passed
+
+Checkpoint:
+
+- Clean Architecture dependency rules verified
+- Layer boundaries validated
+- All migrated modules follow architecture standards
