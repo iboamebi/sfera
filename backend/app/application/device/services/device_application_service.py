@@ -4,6 +4,9 @@ Application service for Device.
 
 from uuid import UUID
 
+from app.application.device.exceptions import (
+    DeviceNotFoundApplicationError,
+)
 from app.domains.device.entities.device import Device
 from app.domains.device.repositories.device_repository import (
     DeviceRepository,
@@ -26,7 +29,7 @@ class DeviceApplicationService:
         device = self._repository.get(device_id)
 
         if device is None:
-            raise ValueError("Device not found")
+            raise DeviceNotFoundApplicationError
 
         return device
 
