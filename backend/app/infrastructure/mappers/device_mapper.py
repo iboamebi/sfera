@@ -16,10 +16,18 @@ class DeviceMapper(BaseMapper[Device, Instrument]):
         self,
         model: Instrument,
     ) -> Device:
+        status = DeviceStatus.AVAILABLE
+
+        if model.device_status:
+            try:
+                status = DeviceStatus(model.device_status)
+            except ValueError:
+                status = DeviceStatus.AVAILABLE
+
         return Device(
             id=model.id,
             serial_number=SerialNumber(model.serial_number),
-            status=DeviceStatus.AVAILABLE,
+            status=status,
         )
 
     def to_model(
@@ -28,4 +36,6 @@ class DeviceMapper(BaseMapper[Device, Instrument]):
         model: Instrument,
     ) -> Instrument:
         model.serial_number = entity.serial_number.value
+        model.device_status = entity.status.value
+
         return model

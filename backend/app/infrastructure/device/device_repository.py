@@ -21,7 +21,6 @@ class DeviceRepositorySQLAlchemy(DeviceRepository):
     ) -> None:
         self.db = db
         self._mapper = DeviceMapper()
-        self._statuses: dict[UUID, object] = {}
 
     def get(
         self,
@@ -36,12 +35,7 @@ class DeviceRepositorySQLAlchemy(DeviceRepository):
         if instrument is None:
             return None
 
-        device = self._mapper.to_domain(instrument)
-
-        if device.id in self._statuses:
-            device.status = self._statuses[device.id]
-
-        return device
+        return self._mapper.to_domain(instrument)
 
     def save(
         self,

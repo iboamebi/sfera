@@ -19,6 +19,13 @@ class Instrument(BaseModel):
         nullable=False,
     )
 
+    device_status: Mapped[str] = mapped_column(
+        String(50),
+        nullable=False,
+        default="AVAILABLE",
+        server_default="AVAILABLE",
+    )
+
     registry_number: Mapped[str | None] = mapped_column(
         String(50),
         nullable=True,
