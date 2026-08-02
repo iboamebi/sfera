@@ -4,6 +4,9 @@ from uuid import uuid4
 import pytest
 
 from app.domains.verification.entities.verification import Verification
+from app.domains.verification.exceptions import (
+    InvalidUnsuitableReasonDomainError,
+)
 from app.domains.verification.value_objects.verification_result import (
     VerificationResult,
 )
@@ -44,5 +47,5 @@ def test_unsuitable_requires_reason():
         result=VerificationResult.SUITABLE,
     )
 
-    with pytest.raises(ValueError):
+    with pytest.raises(InvalidUnsuitableReasonDomainError):
         verification.mark_unsuitable("")

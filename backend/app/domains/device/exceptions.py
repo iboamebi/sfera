@@ -13,3 +13,7 @@ class DeviceNotAvailableDomainError(DeviceDomainError):
 
 class DeviceNotInWorkDomainError(DeviceDomainError):
     """Device cannot be disconnected because it is not in work."""
+
+
+class InvalidSerialNumberDomainError(DeviceDomainError):
+    """Serial number is invalid."""

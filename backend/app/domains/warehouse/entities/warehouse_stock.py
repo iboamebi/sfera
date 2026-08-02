@@ -5,6 +5,11 @@ Warehouse stock domain entity.
 from dataclasses import dataclass
 from uuid import UUID
 
+from app.domains.warehouse.exceptions import (
+    InsufficientReservedQuantityDomainError,
+    InsufficientWarehouseStockDomainError,
+    InvalidWarehouseQuantityDomainError,
+)
 from app.shared.base.entity import Entity
 
 
@@ -23,21 +28,21 @@ class WarehouseStock(Entity):
         available = self.quantity - self.reserved_quantity
 
         if amount <= 0:
-            raise ValueError("Reserve amount must be positive")
+            raise InvalidWarehouseQuantityDomainError
 
         if amount > available:
-            raise ValueError("Insufficient available quantity")
+            raise InsufficientWarehouseStockDomainError
 
         self.reserved_quantity += amount
 
     def release(self, amount: float) -> None:
-        """Release reserved material quantity."""
+        """Release reserved quantity."""
 
         if amount <= 0:
-            raise ValueError("Release amount must be positive")
+            raise InvalidWarehouseQuantityDomainError
 
         if amount > self.reserved_quantity:
-            raise ValueError("Release amount exceeds reserved quantity")
+            raise InsufficientReservedQuantityDomainError
 
         self.reserved_quantity -= amount
 
@@ -45,7 +50,7 @@ class WarehouseStock(Entity):
         """Add material quantity."""
 
         if amount <= 0:
-            raise ValueError("Quantity must be positive")
+            raise InvalidWarehouseQuantityDomainError
 
         self.quantity += amount
 
@@ -55,9 +60,9 @@ class WarehouseStock(Entity):
         available = self.quantity - self.reserved_quantity
 
         if amount <= 0:
-            raise ValueError("Quantity must be positive")
+            raise InvalidWarehouseQuantityDomainError
 
         if amount > available:
-            raise ValueError("Insufficient stock quantity")
+            raise InsufficientWarehouseStockDomainError
 
         self.quantity -= amount

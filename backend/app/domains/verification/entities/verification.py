@@ -1,6 +1,9 @@
 from dataclasses import dataclass
 from datetime import date
 
+from app.domains.verification.exceptions import (
+    InvalidUnsuitableReasonDomainError,
+)
 from app.domains.verification.value_objects.verification_result import (
     VerificationResult,
 )
@@ -29,7 +32,7 @@ class Verification(AggregateRoot):
         reason: str,
     ) -> None:
         if not reason:
-            raise ValueError("Unsuitable reason is required")
+            raise InvalidUnsuitableReasonDomainError
 
         self.result = VerificationResult.UNSUITABLE
         self.valid_until = None

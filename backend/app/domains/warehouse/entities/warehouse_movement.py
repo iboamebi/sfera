@@ -5,6 +5,9 @@ Warehouse movement domain entity.
 from dataclasses import dataclass
 from uuid import UUID
 
+from app.domains.warehouse.exceptions import (
+    InvalidWarehouseQuantityDomainError,
+)
 from app.domains.warehouse.value_objects.movement_type import (
     MovementType,
 )
@@ -24,6 +27,4 @@ class WarehouseMovement(Entity):
 
     def __post_init__(self) -> None:
         if self.quantity <= 0:
-            raise ValueError(
-                "Movement quantity must be positive",
-            )
+            raise InvalidWarehouseQuantityDomainError
