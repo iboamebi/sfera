@@ -31,4 +31,4 @@ class WorkflowService:
         instance: WorkflowInstance,
     ) -> None:
         """Complete workflow."""
-        instance.status = instance.status.COMPLETED
+        instance.complete()

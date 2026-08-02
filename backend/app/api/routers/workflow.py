@@ -4,13 +4,17 @@ Workflow API router.
 
 from uuid import UUID
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 
 from app.application.workflow.commands.move_workflow_stage import (
     MoveWorkflowStageCommand,
 )
 from app.application.workflow.commands.start_workflow import (
     StartWorkflowCommand,
+)
+from app.application.workflow.exceptions import (
+    WorkflowInstanceNotFoundApplicationError,
+    WorkflowNotFoundApplicationError,
 )
 from app.application.workflow.services.workflow_application_service import (
     WorkflowApplicationService,
@@ -62,7 +66,20 @@ def move_workflow_stage(
         workflow_instance_id=workflow_instance_id,
     )
 
-    return service.move_next(command)
+    try:
+        return service.move_next(command)
+
+    except WorkflowInstanceNotFoundApplicationError:
+        raise HTTPException(
+            status_code=404,
+            detail="Workflow instance not found",
+        ) from None
+
+    except WorkflowNotFoundApplicationError:
+        raise HTTPException(
+            status_code=404,
+            detail="Workflow not found",
+        ) from None
 
 
 @router.post(
@@ -75,8 +92,15 @@ def complete_workflow(
         get_workflow_service,
     ),
 ):
-    return service.complete(
-        service.get_instance(
-            workflow_instance_id,
-        ),
-    )
+    try:
+        return service.complete(
+            service.get_instance(
+                workflow_instance_id,
+            ),
+        )
+
+    except WorkflowInstanceNotFoundApplicationError:
+        raise HTTPException(
+            status_code=404,
+            detail="Workflow instance not found",
+        ) from None

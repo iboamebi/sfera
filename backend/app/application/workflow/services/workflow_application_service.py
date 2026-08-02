@@ -2,13 +2,17 @@
 Application service for Workflow.
 """
 
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 from app.application.workflow.commands.move_workflow_stage import (
     MoveWorkflowStageCommand,
 )
 from app.application.workflow.commands.start_workflow import (
     StartWorkflowCommand,
+)
+from app.application.workflow.exceptions import (
+    WorkflowInstanceNotFoundApplicationError,
+    WorkflowNotFoundApplicationError,
 )
 from app.domains.workflow.entities.workflow_instance import (
     WorkflowInstance,
@@ -70,9 +74,7 @@ class WorkflowApplicationService:
         )
 
         if workflow is None:
-            raise ValueError(
-                "Workflow not found",
-            )
+            raise WorkflowNotFoundApplicationError
 
         self._service.next_stage(
             instance,
@@ -101,7 +103,7 @@ class WorkflowApplicationService:
 
     def get_instance(
         self,
-        instance_id,
+        instance_id: UUID,
     ) -> WorkflowInstance:
         """Get workflow instance."""
 
@@ -110,8 +112,6 @@ class WorkflowApplicationService:
         )
 
         if instance is None:
-            raise ValueError(
-                "Workflow instance not found",
-            )
+            raise WorkflowInstanceNotFoundApplicationError
 
         return instance

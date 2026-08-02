@@ -1,59 +1,68 @@
 # Sfera Migration Matrix
 
-| Module | CRUD | Domain | Application Service | Repository | API | Status |
-|--------|------|--------|---------------------|------------|-----|--------|
-| PriceList | archived | ✓ | ✓ | ✓ | ✓ | COMPLETED |
-| Customer | legacy | | | | | NEXT |
-| Order | legacy | | | | | PLANNED |
-| Material | legacy | | | | | PLANNED |
-| Warehouse | legacy | | | | | PLANNED |
-| Verification | legacy | | | | | PLANNED |
-| Repair | legacy | | | | | PLANNED |
-| Diagnostic | legacy | | | | | PLANNED |
+| Module | Legacy | Domain | Application Service | Repository | Infrastructure | API | Exceptions | Status |
+|--------|--------|--------|---------------------|------------|----------------|-----|------------|--------|
+| Organization | removed | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | COMPLETED |
+| Customer | removed | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | COMPLETED |
+| Order | removed | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | COMPLETED |
+| Material | removed | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | COMPLETED |
+| Warehouse | removed | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | COMPLETED |
+| Verification | removed | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | COMPLETED |
+| Repair | removed | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | COMPLETED |
+| Diagnostic | removed | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | COMPLETED |
+| PriceList | removed | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | COMPLETED |
+| PriceListItem | removed | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | COMPLETED |
+| Device | removed | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | COMPLETED |
+| Workflow | removed | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | COMPLETED |
 
 ---
 
-## Migration flow
+# Current Architecture
 
-Каждый модуль переводится по схеме:
-
-Domain
+```
+API
 ↓
 Application Service
 ↓
-Repository Interface
+Domain
 ↓
+Repository Interface
+↑
 Infrastructure Repository
 ↓
-API
+Database
+```
 
 ---
 
-## Completed migrations
+# Migration Standard
 
-### PriceList
+Каждый новый функционал реализуется исключительно по цепочке:
 
-Completed:
+```
+Application Service
+        ↓
+Repository Interface
+        ↓
+Infrastructure Repository
+        ↓
+Database
+```
 
-- Domain entity
-- Repository interface
-- Infrastructure repository
-- Application Service
-- Dependency Injection
-- API migration
-- Legacy implementation archived
+Правила:
 
-Archive:
-
-`docs/archive/legacy_price_list/`
-
-PriceList используется как эталон миграции CRUD → DDD/Clean Architecture.
+- Domain не зависит от внешних слоев.
+- Application не зависит от Infrastructure.
+- API не содержит бизнес-логику.
+- SQLAlchemy используется только в Infrastructure.
+- Legacy CRUD запрещён.
+- Новые use cases создаются только через Application Services.
 
 ---
 
-## Architecture checkpoints
+# Completed Architecture Checkpoints
 
-### Application Exceptions Isolation
+## DDD/Clean Architecture
 
 Status:
 
@@ -61,10 +70,28 @@ COMPLETED
 
 Completed:
 
-- Application layer exceptions introduced
-- Generic ValueError replaced in Application Services
-- API routers migrated to application exceptions
-- Exception boundaries isolated between API and Application layers
+- Domain isolation
+- Application isolation
+- Infrastructure isolation
+- API migration
+- Repository abstraction
+- Legacy CRUD removal
+- Device
+- Workflow
+
+---
+
+## Application Exceptions Isolation
+
+Status:
+
+COMPLETED
+
+Completed:
+
+- Specialized application exceptions
+- Generic ValueError removed
+- API exception boundaries isolated
 
 Modules:
 
@@ -76,9 +103,26 @@ Modules:
 - Repair
 - Verification
 - Warehouse
+- Device
+- Workflow
 
 Validation:
 
-- No `except ValueError` in `app/api`
-- No application use cases raising generic `ValueError`
+- API imports only Application layer
+- Application imports no Infrastructure
+- Domain imports no external layers
+- SQLAlchemy isolated in Infrastructure
 - pytest: 16 passed
+
+---
+
+# Next Architecture Audit
+
+Следующий этап развития архитектуры:
+
+- аудит полноты DDD-миграции всех модулей;
+- поиск оставшихся нарушений зависимостей;
+- проверка единообразия Application Services;
+- проверка единообразия Repository Interfaces;
+- проверка единообразия Infrastructure Repositories;
+- актуализация архитектурной документации после аудита.

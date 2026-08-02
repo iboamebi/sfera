@@ -38,6 +38,10 @@ class WorkflowInstance:
 
         self.current_stage += 1
 
+    def complete(self) -> None:
+        """Complete workflow."""
+        self.status = WorkflowStatus.COMPLETED
+
     def cancel(self) -> None:
         """Cancel workflow."""
         self.status = WorkflowStatus.CANCELLED
