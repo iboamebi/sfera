@@ -7,7 +7,9 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException
 
 from app.application.device.exceptions import (
+    DeviceNotAvailableApplicationError,
     DeviceNotFoundApplicationError,
+    DeviceNotInWorkApplicationError,
 )
 from app.application.device.services.device_application_service import (
     DeviceApplicationService,
@@ -34,6 +36,12 @@ def connect_device(
             detail="Device not found",
         ) from None
 
+    except DeviceNotAvailableApplicationError:
+        raise HTTPException(
+            status_code=409,
+            detail="Device is not available",
+        ) from None
+
     return {
         "event": "DeviceConnected",
         "device_id": device.id,
@@ -52,6 +60,12 @@ def disconnect_device(
         raise HTTPException(
             status_code=404,
             detail="Device not found",
+        ) from None
+
+    except DeviceNotInWorkApplicationError:
+        raise HTTPException(
+            status_code=409,
+            detail="Device is not in work",
         ) from None
 
     return {
