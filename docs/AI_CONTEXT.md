@@ -16,8 +16,17 @@
 - финансы;
 - интеграция с ФГИС Аршин.
 
-Ключевой бизнес-процесс:
+Основная бизнес-ценность системы:
 
+- управление жизненным циклом средств измерений;
+- проведение поверок;
+- фиксация результатов;
+- подготовка документов;
+- экспорт данных в ФГИС Аршин.
+
+---
+
+# Ключевой бизнес-процесс
 
 Order
 ↓
@@ -29,151 +38,260 @@ Technological Card
 ↓
 Verification / Repair / Diagnostic
 
+Текущие реализованные объекты:
 
-Основная бизнес-ценность системы:
+Order;
+Workflow;
+Verification;
+Repair;
+Diagnostic.
 
-- управление жизненным циклом средств измерений;
-- проведение поверок;
-- фиксация результатов;
-- подготовка документов;
-- экспорт данных в ФГИС Аршин.
+Будущие доменные объекты:
 
----
+Case;
+Technological Card.
 
-# Технологический стек
+Статус:
+
+PLANNED
+
+Технологический стек
 
 Backend:
 
-- Python 3.12
-- FastAPI
-- PostgreSQL
-- SQLAlchemy
-- Alembic
-- Pydantic
-- Docker / Docker Compose
+Python 3.12;
+FastAPI;
+PostgreSQL;
+SQLAlchemy;
+Alembic;
+Pydantic;
+Docker / Docker Compose.
 
 Инструменты качества:
 
-- pytest
-- ruff
-- pre-commit
+pytest;
+ruff;
+pre-commit.
 
 Репозиторий:
-
 
 GitHub:
 iboamebi/sfera
 
-
-Основная ветка:
-
+Основная рабочая ветка:
 
 develop
+Структура проекта
 
+Основной backend:
 
----
+backend/app/
 
-# Архитектура
+api/
+application/
+domains/
+infrastructure/
+models/
+schemas/
+shared/
+
+Назначение слоёв:
+
+api
+HTTP интерфейс
+
+application
+Use Cases
+
+domains
+Бизнес-правила
+
+infrastructure
+Persistence и внешние интеграции
+
+models
+SQLAlchemy ORM модели
+
+schemas
+Pydantic API схемы
+
+shared
+Общие компоненты
+Архитектура
 
 Проект использует:
 
-
 DDD + Clean Architecture
 
-
 Целевая структура:
-
 
 API
 ↓
 Application Service
 ↓
-Domain
+Domain Model
 ↓
 Repository Interface
 ↑
 Infrastructure Repository
 ↓
 Database
+Архитектурные правила
+Domain
 
+Domain содержит:
 
----
+Entity;
+Aggregate Root;
+Value Objects;
+Domain Services;
+Domain Exceptions;
+Repository Interfaces.
 
-# Архитектурные правила
+Разрешено:
 
-## Domain
-
-Domain:
-
-- содержит бизнес-правила;
-- содержит Entity;
-- содержит Aggregate Root;
-- содержит Value Objects;
-- содержит Domain Exceptions.
+бизнес-правила;
+валидация доменных объектов;
+изменение состояния сущностей.
 
 Запрещено:
 
-- SQLAlchemy;
-- ORM модели;
-- Infrastructure зависимости;
-- API зависимости.
+SQLAlchemy;
+ORM модели;
+Database Session;
+Infrastructure зависимости;
+API зависимости.
+Application
 
----
+Application содержит:
 
-## Application
+Use Cases;
+Application Services;
+Commands;
+Application Exceptions.
 
 Application:
 
-- реализует Use Cases;
-- содержит Application Services;
-- принимает Commands;
-- вызывает Repository Interfaces.
+управляет сценариями использования;
+вызывает Domain;
+работает через Repository Interfaces.
+
+Application зависит только от Domain и Repository Interfaces.
 
 Запрещено:
 
-- SQLAlchemy;
-- Database Session;
-- Infrastructure зависимости;
-- API зависимости.
+SQLAlchemy;
+Database Session;
+ORM модели;
+Infrastructure Repository;
+API зависимости.
+Infrastructure
 
----
+Infrastructure содержит:
 
-## Infrastructure
+SQLAlchemy Repository implementations;
+ORM mapping;
+database access;
+external integrations.
 
-Infrastructure:
+Разрешено:
 
-- содержит SQLAlchemy реализации;
-- содержит ORM mapping;
-- содержит Repository implementations.
+SQLAlchemy;
+Session;
+ORM models.
 
 Запрещено:
 
-- зависеть от API;
-- зависеть от Application.
+зависеть от API;
+зависеть от Application.
+API
 
----
+API содержит:
 
-## API
+FastAPI routers;
+request/response schemas;
+dependency injection;
+обработку Application Exceptions.
 
 API:
 
-- принимает HTTP запрос;
-- валидирует входные данные через schemas;
-- вызывает Application Services;
-- обрабатывает Application Exceptions.
+принимает HTTP запрос;
+вызывает Application Services;
+возвращает результат.
 
 Запрещено:
 
-- бизнес-логика;
-- Repository вызовы;
-- SQLAlchemy;
-- прямой доступ к Database.
+бизнес-логика;
+Repository вызовы;
+SQLAlchemy;
+прямой доступ к Database.
+Repository Boundary
+Domain Repository
 
----
+Расположение:
 
-# Migration Status
+app/domains/*/repositories/
 
-## Sfera Architecture v2.0
+Назначение:
+
+только интерфейсы;
+абстракции хранения.
+
+Запрещено:
+
+SQLAlchemy;
+Session;
+ORM.
+Infrastructure Repository
+
+Расположение:
+
+app/infrastructure/*/
+
+Назначение:
+
+реализация Repository Interface;
+работа с SQLAlchemy;
+преобразование ORM ↔ Domain через Mapper.
+
+Application зависит только от Repository Interface.
+
+Infrastructure Repository подключается через Dependency Injection.
+
+ORM Models Policy
+
+app/models сохраняется.
+
+Назначение:
+
+SQLAlchemy persistence models only
+
+Правила:
+
+используются только Infrastructure;
+не импортируются в Domain;
+не импортируются в Application;
+не импортируются в API.
+
+На текущем этапе app/models сохраняется как persistence layer.
+
+Возможная дальнейшая эволюция ORM mapping рассматривается отдельно через миграцию без нарушения архитектурных границ.
+
+Database Baseline
+
+Database:
+
+PostgreSQL
+
+Migration:
+
+Alembic enabled
+
+Источник миграций:
+
+backend/alembic
+Migration Status
+Sfera Architecture v2.0
 
 Статус:
 
@@ -181,39 +299,31 @@ COMPLETED
 
 Завершено:
 
-- Project Constitution;
-- Architecture Standards;
-- Layer Standards;
-- DDD migration;
-- Legacy CRUD removal;
-- Domain isolation;
-- Application isolation;
-- API isolation;
-- Domain Exceptions Isolation;
-- Architecture Dependency Audit.
-
----
-
-# Миграция модулей
-
-| Module | Status |
-|---|---|
-| Organization | COMPLETED |
-| Customer | COMPLETED |
-| Order | COMPLETED |
-| Material | COMPLETED |
-| Warehouse | COMPLETED |
-| Verification | COMPLETED |
-| Repair | COMPLETED |
-| Diagnostic | COMPLETED |
-| PriceList | COMPLETED |
-| PriceListItem | COMPLETED |
-| Device | COMPLETED |
-| Workflow | COMPLETED |
-
----
-
-# Legacy Layers
+Project Constitution;
+Architecture Standards;
+Layer Standards;
+DDD migration;
+Legacy CRUD removal;
+Domain isolation;
+Application isolation;
+API isolation;
+Domain Exceptions Isolation;
+Architecture Dependency Audit.
+Миграция модулей
+Module	Status
+Organization	COMPLETED
+Customer	COMPLETED
+Order	COMPLETED
+Material	COMPLETED
+Warehouse	COMPLETED
+Verification	COMPLETED
+Repair	COMPLETED
+Diagnostic	COMPLETED
+PriceList	COMPLETED
+PriceListItem	COMPLETED
+Device	COMPLETED
+Workflow	COMPLETED
+Legacy Layers
 
 Статус:
 
@@ -221,50 +331,50 @@ REMOVED
 
 Удалено:
 
-- app/crud;
-- app/services/price_list_service.py;
-- app/api/base_router.py.
+app/crud;
+app/services/price_list_service.py;
+app/api/base_router.py.
 
 Проверено:
 
-- нет активных импортов app.crud;
-- нет активных импортов legacy services;
-- нет использования BaseRouter.
-
----
-
-# Dependency Audit
+нет активных импортов app.crud;
+нет активных legacy services;
+нет BaseRouter.
+Dependency Audit
 
 Проверено:
 
-- API isolation;
-- Application isolation;
-- Domain isolation;
-- Repository boundaries;
-- Infrastructure dependency direction.
+API isolation;
+Application isolation;
+Domain isolation;
+Repository boundaries;
+Infrastructure dependency direction.
 
-Результаты:
-
+Результат:
 
 API
+
 ✓ no repositories
+✓ no ORM
+
 
 Application
+
 ✓ no Infrastructure
 ✓ no ORM
+
 
 Domain
+
 ✓ no ORM
 ✓ no Infrastructure
 
+
 Infrastructure
+
 ✓ no API
 ✓ no Application
-
-
----
-
-# Exceptions Isolation
+Exceptions Isolation
 
 Статус:
 
@@ -272,100 +382,104 @@ COMPLETED
 
 Выполнено:
 
-- Domain-specific exceptions;
-- Application-specific exceptions;
-- удаление generic ValueError из migrated domain/application logic;
-- разделение ошибок по слоям.
+Domain-specific exceptions;
+Application-specific exceptions;
+удаление generic ValueError из бизнес-слоёв;
+разделение ошибок по слоям.
 
-Модули Domain Exceptions:
+Domain Exceptions:
 
-- Device;
-- Order;
-- Verification;
-- Warehouse.
+Device;
+Order;
+Verification;
+Warehouse.
+Validation Baseline
 
----
+Последняя зафиксированная проверка:
 
-# Validation
+2026-08-02
 
-Последняя проверка:
+pytest tests/
 
-
-pytest: 16 passed
-
+16 passed
 
 Quality checks:
-
 
 ruff check
 ruff format
 pre-commit
 
+Не уменьшать количество тестов без отдельного решения.
 
----
+Architecture Validation Commands
+Domain isolation
+grep -R --exclude-dir=__pycache__ "app.models" -n app/domains
 
-# Current Checkpoint
+Ожидаемый результат:
+
+нет результатов
+Application isolation
+grep -R --exclude-dir=__pycache__ "app.infrastructure" -n app/application
+
+Ожидаемый результат:
+
+нет результатов
+Application ORM isolation
+grep -R --exclude-dir=__pycache__ "Session\|select\|commit\|flush" -n app/application
+
+Ожидаемый результат:
+
+нет результатов
+API isolation
+grep -R --exclude-dir=__pycache__ "repository" -n app/api
+
+Ожидаемый результат:
+
+нет Repository dependencies
+Infrastructure direction
+grep -R --exclude-dir=__pycache__ "app.api\|app.application" -n app/infrastructure
+
+Ожидаемый результат:
+
+нет результатов
+Current Checkpoint
 
 Branch:
 
-
 develop
-
 
 Baseline:
 
-
 Sfera Architecture v2.0
 
+Текущий checkpoint хранится в Git history.
 
-Last checkpoint:
+Перед началом работы проверить:
 
+git status
+git log --oneline -5
+Текущий этап развития
 
-cf0ad1e docs: add architecture dependency audit checkpoint
-
-
-Последние изменения:
-
-
-cf0ad1e docs: add architecture dependency audit checkpoint
-dbd38b9 docs: add domain exception isolation checkpoint
-80a0923 refactor: isolate domain exceptions
-
-
-Validation:
-
-
-pytest: 16 passed
-ruff: passed
-pre-commit: passed
-
-
----
-
-# Текущий этап развития
-
-После завершения миграции начинается этап:
-
+После завершения миграции начинается:
 
 Architecture Stabilization
 +
 Business Feature Development
 
+Business Feature Development начинается только после прохождения Architecture Stabilization Phase 1.
 
-Следующие направления:
+Architecture Stabilization Phase 1
 
-1. аудит Application Services;
-2. аудит Repository Interfaces;
-3. аудит Infrastructure Mappers;
-4. автоматические architecture tests;
-5. развитие бизнес-функций.
+Порядок:
 
----
-
-# Правила разработки новых функций
+Audit Application Services;
+Audit Repository Interfaces;
+Audit Infrastructure Mappers;
+Add automated Architecture Tests;
+Business Feature Development.
+Правила разработки новых функций
 
 Новый функционал создаётся только через:
-
 
 Application Service
 ↓
@@ -375,19 +489,14 @@ Infrastructure Repository
 ↓
 Database
 
-
 Не использовать:
 
-- CRUD;
-- прямой SQL из Application;
-- бизнес-логику в API.
-
----
-
-# Документация проекта
+CRUD;
+прямой SQL из Application;
+бизнес-логику в API.
+Документация проекта
 
 Основные документы:
-
 
 docs/
 
@@ -396,87 +505,78 @@ AI_CONTEXT.md
 MIGRATION_STATUS.md
 
 architecture/
+
 MIGRATION_MATRIX.md
 PROJECT_CONSTITUTION.md
 ARCHITECTURE.md
 
-
 Перед началом работы читать:
 
-1. AI_CONTEXT.md;
-2. MIGRATION_STATUS.md;
-3. соответствующий раздел архитектуры.
-
----
-
-# Инструкция для AI
+AI_CONTEXT.md;
+MIGRATION_STATUS.md;
+MIGRATION_MATRIX.md;
+соответствующий архитектурный документ.
+Инструкция для AI
 
 При подключении:
 
-1. Восстановить состояние через GitHub.
-2. Проверить текущий branch.
-3. Проверить последний commit.
-4. Проверить чистоту рабочего дерева.
-5. Прочитать архитектурную документацию.
+Восстановить состояние через GitHub.
+Проверить branch.
+Проверить последний commit.
+Проверить чистоту рабочего дерева.
+Прочитать архитектурную документацию.
 
 Не пересказывать документацию.
 
 Сообщить только:
 
-- восстановленный checkpoint;
-- текущий статус;
-- следующий логический этап.
-
----
-
-# Правила работы с кодом
+восстановленный checkpoint;
+текущий статус;
+следующий логический этап.
+Правила работы с кодом
 
 Перед изменениями:
 
-- читать актуальный код из репозитория;
-- проверять зависимости;
-- определить текущий модуль;
-- определить статус миграции модуля;
-- проверить MIGRATION_MATRIX;
-- проверить наличие legacy-кода;
-- учитывать модели, схемы и миграции;
-- не предполагать наличие файлов.
+читать актуальный код;
+проверять зависимости;
+определить модуль;
+определить статус миграции;
+проверить MIGRATION_MATRIX;
+проверить наличие legacy;
+учитывать модели, схемы и миграции;
+не предполагать наличие файлов.
 
 Работа:
 
-1. анализ;
-2. один файл;
-3. полный код файла;
-4. ожидание подтверждения перед следующим файлом.
+анализ;
+один файл;
+полный код файла;
+ожидание подтверждения перед следующим файлом.
 
-При изменении файлов:
+При изменениях:
 
-- не использовать diff как замену файла;
-- не создавать новый код без анализа текущей структуры.
-
----
-
-# После завершения логического этапа
+не использовать diff как замену файла;
+не создавать новый код без анализа текущей структуры.
+После завершения логического этапа
 
 Выполнить:
 
-
 pytest
+
 ruff check
+
 ruff format --check
+
 git status
-commit
-push origin develop
 
+git commit
 
----
-
-# Архитектурное ограничение
+git push origin develop
+Архитектурное ограничение
 
 Не предлагать переписывание архитектуры.
 
-Сохранять текущий:
-
+Сохранять:
 
 Sfera Architecture v2.0
 DDD + Clean Architecture baseline

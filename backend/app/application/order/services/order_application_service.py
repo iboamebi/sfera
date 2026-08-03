@@ -18,7 +18,6 @@ from app.application.order.exceptions import (
 )
 from app.domains.order.entities.order import Order
 from app.domains.order.entities.order_item import OrderItem
-from app.domains.order.exceptions.order_exception import OrderException
 from app.domains.order.repositories.order_repository import OrderRepository
 from app.domains.order.value_objects.order_number import OrderNumber
 from app.shared.unit_of_work.unit_of_work import UnitOfWork
@@ -54,12 +53,12 @@ class OrderApplicationService:
         self,
         order_id: UUID,
     ) -> Order:
+        """Get order."""
+
         order = self._repository.get(order_id)
 
         if order is None:
-            raise OrderNotFoundApplicationError from OrderException(
-                "Order not found",
-            )
+            raise OrderNotFoundApplicationError
 
         return order
 

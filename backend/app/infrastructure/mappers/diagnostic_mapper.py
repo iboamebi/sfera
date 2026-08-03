@@ -9,6 +9,7 @@ from app.domains.diagnostic.value_objects.recommendation import (
     Recommendation,
 )
 from app.models.diagnostic import Diagnostic as DiagnosticModel
+from app.models.diagnostic import Recommendation as RecommendationModel
 
 
 class DiagnosticMapper:
@@ -25,7 +26,9 @@ class DiagnosticMapper:
             order_item_id=model.order_item_id,
             conclusion=model.conclusion,
             recommendation=(
-                Recommendation(model.recommendation) if model.recommendation else None
+                Recommendation(model.recommendation.value)
+                if model.recommendation
+                else None
             ),
         )
 
@@ -39,5 +42,9 @@ class DiagnosticMapper:
             id=entity.id,
             order_item_id=entity.order_item_id,
             conclusion=entity.conclusion,
-            recommendation=entity.recommendation,
+            recommendation=(
+                RecommendationModel(entity.recommendation.value)
+                if entity.recommendation
+                else None
+            ),
         )

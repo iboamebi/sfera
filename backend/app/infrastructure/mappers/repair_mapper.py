@@ -7,6 +7,7 @@ from app.domains.repair.value_objects.repair_status import (
     RepairStatus,
 )
 from app.models.repair import Repair as RepairModel
+from app.models.repair import RepairStatus as RepairModelStatus
 
 
 class RepairMapper:
@@ -22,7 +23,7 @@ class RepairMapper:
             id=model.id,
             order_item_id=model.order_item_id,
             status=RepairStatus(
-                model.status,
+                model.status.value,
             ),
             description=model.description,
             result=model.result,
@@ -37,7 +38,9 @@ class RepairMapper:
         return RepairModel(
             id=entity.id,
             order_item_id=entity.order_item_id,
-            status=entity.status,
+            status=RepairModelStatus(
+                entity.status.value,
+            ),
             description=entity.description,
             result=entity.result,
         )
