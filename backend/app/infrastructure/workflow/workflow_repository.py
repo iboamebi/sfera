@@ -4,7 +4,7 @@ SQLAlchemy implementation of WorkflowRepository.
 
 from uuid import UUID
 
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 
 from app.domains.workflow.entities.workflow import (
     Workflow as DomainWorkflow,
@@ -36,7 +36,14 @@ class WorkflowRepositorySQLAlchemy(
 
         model = (
             self.session.query(ORMWorkflow)
-            .filter(ORMWorkflow.id == workflow_id)
+            .options(
+                selectinload(
+                    ORMWorkflow.stages,
+                ),
+            )
+            .filter(
+                ORMWorkflow.id == workflow_id,
+            )
             .first()
         )
 
@@ -53,7 +60,9 @@ class WorkflowRepositorySQLAlchemy(
 
         model = (
             self.session.query(ORMWorkflow)
-            .filter(ORMWorkflow.id == workflow.id)
+            .filter(
+                ORMWorkflow.id == workflow.id,
+            )
             .first()
         )
 
