@@ -2,13 +2,23 @@
 Workflow mapper.
 """
 
-from app.domains.workflow.entities.workflow import Workflow
+from app.domains.workflow.entities.workflow import (
+    Workflow,
+)
 from app.infrastructure.mappers.base_mapper import BaseMapper
-from app.models.workflow import Workflow as WorkflowModel
+from app.infrastructure.mappers.workflow_stage_mapper import (
+    WorkflowStageMapper,
+)
+from app.models.workflow import (
+    Workflow as WorkflowModel,
+)
 
 
 class WorkflowMapper(BaseMapper[Workflow, WorkflowModel]):
     """Workflow mapper."""
+
+    def __init__(self) -> None:
+        self.stage_mapper = WorkflowStageMapper()
 
     def to_domain(
         self,
@@ -20,6 +30,7 @@ class WorkflowMapper(BaseMapper[Workflow, WorkflowModel]):
             code=model.code,
             description=model.description,
             is_active=model.is_active,
+            stages=[self.stage_mapper.to_domain(stage) for stage in model.stages],
         )
 
     def to_model(
