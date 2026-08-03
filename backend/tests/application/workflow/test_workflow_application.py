@@ -17,6 +17,7 @@ from app.application.workflow.commands.start_workflow import (
 )
 from app.application.workflow.exceptions import (
     WorkflowInstanceNotFoundApplicationError,
+    WorkflowNotFoundApplicationError,
 )
 from app.application.workflow.services.workflow_application_service import (
     WorkflowApplicationService,
@@ -176,5 +177,31 @@ def test_complete_workflow_instance_not_found():
         service.complete(
             CompleteWorkflowCommand(
                 workflow_instance_id=uuid4(),
+            )
+        )
+
+
+def test_move_workflow_next_stage_workflow_not_found():
+    workflow_repository = FakeWorkflowRepository()
+    instance_repository = FakeWorkflowInstanceRepository()
+
+    instance = WorkflowInstance(
+        workflow_id=uuid4(),
+        order_item_id=uuid4(),
+    )
+    instance_repository.save_instance(instance)
+
+    service = WorkflowApplicationService(
+        workflow_repository,
+        instance_repository,
+    )
+
+    with pytest.raises(
+        WorkflowNotFoundApplicationError,
+    ):
+        service.move_next(
+            MoveWorkflowStageCommand(
+                workflow_id=instance.workflow_id,
+                workflow_instance_id=instance.id,
             )
         )
