@@ -4,6 +4,9 @@ Application service for Workflow.
 
 from uuid import UUID, uuid4
 
+from app.application.workflow.commands.complete_workflow import (
+    CompleteWorkflowCommand,
+)
 from app.application.workflow.commands.move_workflow_stage import (
     MoveWorkflowStageCommand,
 )
@@ -89,9 +92,13 @@ class WorkflowApplicationService:
 
     def complete(
         self,
-        instance: WorkflowInstance,
+        command: CompleteWorkflowCommand,
     ) -> WorkflowInstance:
         """Complete workflow."""
+
+        instance = self.get_instance(
+            command.workflow_instance_id,
+        )
 
         self._service.complete(instance)
 
