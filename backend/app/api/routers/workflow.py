@@ -6,6 +6,9 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
 
+from app.application.workflow.commands.complete_workflow import (
+    CompleteWorkflowCommand,
+)
 from app.application.workflow.commands.move_workflow_stage import (
     MoveWorkflowStageCommand,
 )
@@ -92,12 +95,12 @@ def complete_workflow(
         get_workflow_service,
     ),
 ):
+    command = CompleteWorkflowCommand(
+        workflow_instance_id=workflow_instance_id,
+    )
+
     try:
-        return service.complete(
-            service.get_instance(
-                workflow_instance_id,
-            ),
-        )
+        return service.complete(command)
 
     except WorkflowInstanceNotFoundApplicationError:
         raise HTTPException(

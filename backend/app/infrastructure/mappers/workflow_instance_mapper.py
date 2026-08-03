@@ -5,6 +5,9 @@ Workflow instance mapper.
 from app.domains.workflow.entities.workflow_instance import (
     WorkflowInstance,
 )
+from app.domains.workflow.value_objects.workflow_status import (
+    WorkflowStatus,
+)
 from app.infrastructure.mappers.base_mapper import BaseMapper
 from app.models.workflow_instance import (
     WorkflowInstance as WorkflowInstanceModel,
@@ -25,7 +28,7 @@ class WorkflowInstanceMapper(
             workflow_id=model.workflow_id,
             order_item_id=model.order_item_id,
             current_stage=model.current_stage,
-            status=model.status,
+            status=WorkflowStatus(model.status),
         )
 
     def to_model(
