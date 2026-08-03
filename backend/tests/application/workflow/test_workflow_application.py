@@ -4,6 +4,8 @@ Workflow application service tests.
 
 from uuid import UUID, uuid4
 
+import pytest
+
 from app.application.workflow.commands.complete_workflow import (
     CompleteWorkflowCommand,
 )
@@ -12,6 +14,9 @@ from app.application.workflow.commands.move_workflow_stage import (
 )
 from app.application.workflow.commands.start_workflow import (
     StartWorkflowCommand,
+)
+from app.application.workflow.exceptions import (
+    WorkflowInstanceNotFoundApplicationError,
 )
 from app.application.workflow.services.workflow_application_service import (
     WorkflowApplicationService,
@@ -154,3 +159,22 @@ def test_complete_workflow():
     )
 
     assert instance.status == WorkflowStatus.COMPLETED
+
+
+def test_complete_workflow_instance_not_found():
+    workflow_repository = FakeWorkflowRepository()
+    instance_repository = FakeWorkflowInstanceRepository()
+
+    service = WorkflowApplicationService(
+        workflow_repository,
+        instance_repository,
+    )
+
+    with pytest.raises(
+        WorkflowInstanceNotFoundApplicationError,
+    ):
+        service.complete(
+            CompleteWorkflowCommand(
+                workflow_instance_id=uuid4(),
+            )
+        )
