@@ -100,7 +100,9 @@ class WorkflowApplicationService:
             command.workflow_instance_id,
         )
 
-        self._service.complete(instance)
+        self._service.complete(
+            instance,
+        )
 
         self._instance_repository.save_instance(
             instance,
