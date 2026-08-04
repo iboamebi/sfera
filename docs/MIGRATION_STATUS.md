@@ -183,7 +183,7 @@ COMPLETED
 - Domain entity
 - Repository interface
 - Infrastructure repository
-- Mapper
+- Repository mapping implemented
 - Application Service
 - Commands
 - PriceListItem migration
@@ -261,10 +261,56 @@ COMPLETED
 - Removed ORM imports from Domain layer
 - Removed Infrastructure imports from Domain layer
 - Domain factories create only domain entities
-- ORM mapping moved to Infrastructure mappers
+- ORM mapping moved to Infrastructure layer
 
 Проверки:
 
 - No imports from `app.models` in `app/domains`
 - No imports from `app.infrastructure` in `app/domains`
-- pytest: 16 passed
+- pytest: 26 passed
+
+---
+
+## Architecture Audit
+
+Статус:
+
+COMPLETED
+
+Проверено:
+
+- Legacy dependency audit
+- Domain layer dependency isolation
+- Application layer dependency isolation
+- API layer isolation
+- Infrastructure dependency direction
+- Repository interface boundaries
+- Mapper consistency audit
+
+Результаты:
+
+- No active imports from `app.crud`
+- No active imports from `app.services`
+- No BaseRouter usage
+- Domain has no ORM dependencies
+- Domain has no Infrastructure dependencies
+- Application has no Infrastructure dependencies
+- Application has no ORM dependencies
+- API has no Repository dependencies
+- API has no Session dependencies
+- Infrastructure has no API/Application dependencies
+
+Technical debt found:
+
+- PriceList repository contains local `_to_domain()` mapping
+- PriceList mapper extraction required for full mapper consistency
+
+Audit checkpoint:
+
+- DDD/Clean Architecture dependency rules validated
+- Workflow migration architecture validated
+- Remaining technical debt isolated
+
+---
+
+## Architecture Audit
