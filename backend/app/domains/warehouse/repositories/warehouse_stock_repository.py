@@ -8,7 +8,7 @@ from uuid import UUID
 from app.domains.warehouse.entities.warehouse_stock import (
     WarehouseStock,
 )
-from app.shared.repositories.repository import Repository
+from app.shared.base.repository import Repository
 
 
 class WarehouseStockRepository(

@@ -7,7 +7,7 @@ from abc import abstractmethod
 from app.domains.warehouse.entities.warehouse_movement import (
     WarehouseMovement,
 )
-from app.shared.repositories.repository import Repository
+from app.shared.base.repository import Repository
 
 
 class WarehouseMovementRepository(

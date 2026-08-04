@@ -6,7 +6,7 @@ from abc import abstractmethod
 from uuid import UUID
 
 from app.domains.warehouse.entities.warehouse import Warehouse
-from app.shared.repositories.repository import Repository
+from app.shared.base.repository import Repository
 
 
 class WarehouseRepository(
