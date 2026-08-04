@@ -48,6 +48,13 @@ class WorkflowApplicationService:
     ) -> WorkflowInstance:
         """Start workflow."""
 
+        workflow = self._workflow_repository.get(
+            command.workflow_id,
+        )
+
+        if workflow is None:
+            raise WorkflowNotFoundApplicationError
+
         instance = WorkflowInstance(
             id=uuid4(),
             workflow_id=command.workflow_id,
