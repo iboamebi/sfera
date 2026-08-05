@@ -2,6 +2,8 @@
 Workflow domain tests.
 """
 
+from uuid import uuid4
+
 from app.domains.workflow.entities.workflow_instance import (
     WorkflowInstance,
 )
@@ -25,6 +27,7 @@ def test_workflow_instance_start():
     workflow = WorkflowFactory.verification_workflow()
 
     instance = WorkflowInstance(
+        id=uuid4(),
         workflow_id=workflow.id,
         order_item_id=workflow.id,
     )
@@ -38,6 +41,7 @@ def test_workflow_move_next_stage():
     workflow = WorkflowFactory.verification_workflow()
 
     instance = WorkflowInstance(
+        id=uuid4(),
         workflow_id=workflow.id,
         order_item_id=workflow.id,
     )

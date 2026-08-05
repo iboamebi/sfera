@@ -115,6 +115,7 @@ def test_move_workflow_next_stage():
     workflow_repository.save(workflow)
 
     instance = WorkflowInstance(
+        id=uuid4(),
         workflow_id=workflow.id,
         order_item_id=uuid4(),
     )
@@ -143,6 +144,7 @@ def test_complete_workflow():
     workflow_repository.save(workflow)
 
     instance = WorkflowInstance(
+        id=uuid4(),
         workflow_id=workflow.id,
         order_item_id=uuid4(),
     )
@@ -186,6 +188,7 @@ def test_move_workflow_next_stage_workflow_not_found():
     instance_repository = FakeWorkflowInstanceRepository()
 
     instance = WorkflowInstance(
+        id=uuid4(),
         workflow_id=uuid4(),
         order_item_id=uuid4(),
     )
