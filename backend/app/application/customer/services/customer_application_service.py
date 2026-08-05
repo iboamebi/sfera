@@ -7,6 +7,9 @@ from uuid import UUID, uuid4
 from app.application.customer.commands.create_customer import (
     CreateCustomerCommand,
 )
+from app.application.customer.commands.delete_customer import (
+    DeleteCustomerCommand,
+)
 from app.application.customer.commands.update_customer import (
     UpdateCustomerCommand,
 )
@@ -116,8 +119,14 @@ class CustomerApplicationService:
 
     def delete(
         self,
-        customer_id: UUID,
+        command: DeleteCustomerCommand,
     ) -> None:
         """Delete customer."""
 
-        self._repository.delete(customer_id)
+        customer = self.get(
+            command.customer_id,
+        )
+
+        self._repository.delete(
+            customer.id,
+        )

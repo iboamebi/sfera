@@ -5,6 +5,9 @@ from fastapi import APIRouter, Depends, HTTPException
 from app.application.customer.commands.create_customer import (
     CreateCustomerCommand,
 )
+from app.application.customer.commands.delete_customer import (
+    DeleteCustomerCommand,
+)
 from app.application.customer.commands.update_customer import (
     UpdateCustomerCommand,
 )
@@ -93,7 +96,11 @@ def delete_customer(
         get_customer_service,
     ),
 ):
-    service.delete(customer_id)
+    service.delete(
+        DeleteCustomerCommand(
+            customer_id=customer_id,
+        ),
+    )
 
 
 @router.patch(
