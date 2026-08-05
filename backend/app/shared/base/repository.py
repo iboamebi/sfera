@@ -1,7 +1,11 @@
 """
-Base repository marker.
+Base repository abstraction.
 """
 
 
-class Repository:
-    """Base repository."""
+class Repository[T]:
+    """
+    Base repository interface for domain entities.
+    """
+
+    pass

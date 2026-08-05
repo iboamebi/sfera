@@ -1,16 +1,16 @@
 from dataclasses import dataclass, field
 from datetime import date, datetime
-from uuid import UUID, uuid4
+from uuid import UUID
 
 from app.domains.price_list.entities.price_list_item import PriceListItem
 from app.domains.price_list.exceptions import (
     InvalidPriceListNameError,
     PriceListAlreadyActiveError,
 )
-from app.shared.domain.base import AggregateRoot
+from app.shared.base.aggregate import AggregateRoot
 
 
-@dataclass
+@dataclass(eq=False, kw_only=True)
 class PriceList(AggregateRoot):
     """
     Aggregate Root для управления прайс-листом.
@@ -18,20 +18,20 @@ class PriceList(AggregateRoot):
 
     name: str
     price_list_type: str
+
     currency: str = "RUB"
     description: str | None = None
     valid_from: date | None = None
     valid_to: date | None = None
     is_active: bool = False
 
-    id: UUID = field(default_factory=uuid4)
     items: list[PriceListItem] = field(default_factory=list)
 
     created_at: datetime = field(default_factory=datetime.utcnow)
 
     updated_at: datetime = field(default_factory=datetime.utcnow)
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if not self.name.strip():
             raise InvalidPriceListNameError()
 
@@ -73,7 +73,11 @@ class PriceList(AggregateRoot):
         Удаляет позицию из прайс-листа.
         """
 
-        self.items = [item for item in self.items if item.id != item_id]
+        self.items = [
+            item
+            for item in self.items
+            if item.id != item_id
+        ]
 
         self.updated_at = datetime.utcnow()
 

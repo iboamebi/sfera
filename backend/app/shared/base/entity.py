@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from uuid import UUID
 
 
-@dataclass(eq=False)
+@dataclass(eq=False, kw_only=True)
 class Entity:
     id: UUID
 
