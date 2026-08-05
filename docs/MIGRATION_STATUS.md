@@ -314,3 +314,24 @@ Audit checkpoint:
 ---
 
 ## Architecture Audit
+
+## Checkpoint — 2026-08-05
+
+Architecture Migration: COMPLETE
+
+Completed:
+- Workflow migration completed.
+- Repository mapper extraction completed.
+- PriceListMapper extracted.
+- Local repository mapping removed.
+- Repository boundaries verified.
+- Domain isolation verified.
+- Application isolation verified.
+- API isolation verified.
+- Infrastructure dependency direction verified.
+
+Result:
+DDD + Clean Architecture migration completed.
+
+Known architecture technical debt:
+None.

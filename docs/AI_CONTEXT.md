@@ -326,6 +326,21 @@ Infrastructure подключается только через Dependency Injec
 - API migration;
 - unit и architecture tests.
 
+Architecture Baseline
+
+Status:
+DDD + Clean Architecture migration completed.
+
+Current state:
+- Domain layer isolated.
+- Application layer independent from ORM.
+- API contains no business logic.
+- Infrastructure uses dedicated mappers.
+- Legacy CRUD removed.
+
+Current development focus:
+Business functionality only.
+Architecture cleanup is considered complete.
 ---
 
 # Технический долг
