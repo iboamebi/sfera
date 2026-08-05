@@ -19,11 +19,11 @@ class Diagnostic(Entity):
     conclusion: str | None = None
     recommendation: Recommendation | None = None
 
-    def update_conclusion(
+    def complete(
         self,
         conclusion: str,
     ) -> None:
-        """Update diagnostic conclusion."""
+        """Complete diagnostic with conclusion."""
 
         self.conclusion = conclusion
 

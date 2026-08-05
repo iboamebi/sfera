@@ -6,8 +6,14 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
 
+from app.application.diagnostic.commands.complete_diagnostic import (
+    CompleteDiagnosticCommand,
+)
 from app.application.diagnostic.commands.create_diagnostic import (
     CreateDiagnosticCommand,
+)
+from app.application.diagnostic.commands.set_recommendation import (
+    SetRecommendationCommand,
 )
 from app.application.diagnostic.exceptions import (
     DiagnosticNotFoundApplicationError,
@@ -72,16 +78,18 @@ def create_diagnostic(
     "/{diagnostic_id}/conclusion",
     response_model=DiagnosticRead,
 )
-def update_conclusion(
+def complete_diagnostic(
     diagnostic_id: UUID,
     data: DiagnosticConclusion,
     service: DiagnosticApplicationService = Depends(
         get_diagnostic_service,
     ),
 ):
-    return service.update_conclusion(
-        diagnostic_id,
-        data.conclusion,
+    return service.complete(
+        CompleteDiagnosticCommand(
+            diagnostic_id=diagnostic_id,
+            conclusion=data.conclusion,
+        ),
     )
 
 
@@ -97,6 +105,8 @@ def set_recommendation(
     ),
 ):
     return service.set_recommendation(
-        diagnostic_id,
-        data.recommendation,
+        SetRecommendationCommand(
+            diagnostic_id=diagnostic_id,
+            recommendation=data.recommendation,
+        ),
     )

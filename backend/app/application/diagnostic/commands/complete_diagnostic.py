@@ -1,5 +1,5 @@
 """
-Update diagnostic conclusion command.
+Complete diagnostic command.
 """
 
 from dataclasses import dataclass
@@ -7,8 +7,8 @@ from uuid import UUID
 
 
 @dataclass(frozen=True)
-class UpdateConclusionCommand:
-    """Update diagnostic conclusion data."""
+class CompleteDiagnosticCommand:
+    """Complete diagnostic data."""
 
     diagnostic_id: UUID
     conclusion: str
