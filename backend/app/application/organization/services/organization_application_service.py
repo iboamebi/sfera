@@ -84,34 +84,54 @@ class OrganizationApplicationService:
         )
 
         if command.name is not None:
-            organization.name = command.name
+            organization.change_name(
+                command.name,
+            )
 
         if command.short_name is not None:
-            organization.short_name = command.short_name
+            organization.change_short_name(
+                command.short_name,
+            )
 
         if command.inn is not None:
-            organization.inn = command.inn
+            organization.change_inn(
+                command.inn,
+            )
 
         if command.kpp is not None:
-            organization.kpp = command.kpp
+            organization.change_kpp(
+                command.kpp,
+            )
 
         if command.ogrn is not None:
-            organization.ogrn = command.ogrn
+            organization.change_ogrn(
+                command.ogrn,
+            )
 
         if command.address is not None:
-            organization.address = command.address
+            organization.change_address(
+                command.address,
+            )
 
         if command.phone is not None:
-            organization.phone = command.phone
+            organization.change_phone(
+                command.phone,
+            )
 
         if command.email is not None:
-            organization.email = command.email
+            organization.change_email(
+                command.email,
+            )
 
         if command.website is not None:
-            organization.website = command.website
+            organization.change_website(
+                command.website,
+            )
 
         if command.comment is not None:
-            organization.comment = command.comment
+            organization.change_comment(
+                command.comment,
+            )
 
         return self._repository.save(organization)
 
