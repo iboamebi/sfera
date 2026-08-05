@@ -50,7 +50,14 @@ def start_workflow(
         order_item_id=data.order_item_id,
     )
 
-    return service.start(command)
+    try:
+        return service.start(command)
+
+    except WorkflowNotFoundApplicationError:
+        raise HTTPException(
+            status_code=404,
+            detail="Workflow not found",
+        ) from None
 
 
 @router.post(
