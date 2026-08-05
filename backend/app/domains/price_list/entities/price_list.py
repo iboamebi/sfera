@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from datetime import date, datetime
+from decimal import Decimal
 from uuid import UUID
 
 from app.domains.price_list.entities.price_list_item import PriceListItem
@@ -54,6 +55,31 @@ class PriceList(AggregateRoot):
         self.is_active = False
         self.updated_at = datetime.utcnow()
 
+    def change_name(
+        self,
+        name: str,
+    ) -> None:
+        """
+        Change price list name.
+        """
+
+        if not name.strip():
+            raise InvalidPriceListNameError()
+
+        self.name = name
+        self.updated_at = datetime.utcnow()
+
+    def change_description(
+        self,
+        description: str | None,
+    ) -> None:
+        """
+        Change price list description.
+        """
+
+        self.description = description
+        self.updated_at = datetime.utcnow()
+
     def add_item(
         self,
         item: PriceListItem,
@@ -63,6 +89,54 @@ class PriceList(AggregateRoot):
         """
 
         self.items.append(item)
+        self.updated_at = datetime.utcnow()
+
+    def change_item_price(
+        self,
+        item_id: UUID,
+        price: Decimal,
+    ) -> None:
+        """
+        Change price list item price.
+        """
+
+        item = self.find_item_by_id(
+            item_id,
+        )
+
+        if item is None:
+            raise ValueError(
+                "Price list item not found",
+            )
+
+        item.update_price(
+            price,
+        )
+
+        self.updated_at = datetime.utcnow()
+
+    def change_item_description(
+        self,
+        item_id: UUID,
+        description: str | None,
+    ) -> None:
+        """
+        Change price list item description.
+        """
+
+        item = self.find_item_by_id(
+            item_id,
+        )
+
+        if item is None:
+            raise ValueError(
+                "Price list item not found",
+            )
+
+        item.update_description(
+            description,
+        )
+
         self.updated_at = datetime.utcnow()
 
     def remove_item(

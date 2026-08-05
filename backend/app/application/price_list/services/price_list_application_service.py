@@ -22,7 +22,6 @@ from app.application.price_list.commands.update_price_list_item import (
     UpdatePriceListItemCommand,
 )
 from app.application.price_list.exceptions import (
-    PriceListItemNotFoundApplicationError,
     PriceListNotFoundApplicationError,
 )
 from app.domains.price_list.entities.price_list import PriceList
@@ -99,9 +98,13 @@ class PriceListApplicationService:
         if price_list is None:
             raise PriceListNotFoundApplicationError
 
-        price_list.update_name(command.name)
+        price_list.change_name(
+            command.name,
+        )
 
-        price_list.update_description(command.description)
+        price_list.change_description(
+            command.description,
+        )
 
         return await self.repository.save(price_list)
 
@@ -177,15 +180,16 @@ class PriceListApplicationService:
         if price_list is None:
             raise PriceListNotFoundApplicationError
 
-        item = price_list.find_item_by_id(command.item_id)
-
-        if item is None:
-            raise PriceListItemNotFoundApplicationError
-
         if command.price is not None:
-            item.update_price(command.price)
+            price_list.change_item_price(
+                command.item_id,
+                command.price,
+            )
 
         if command.description is not None:
-            item.update_description(command.description)
+            price_list.change_item_description(
+                command.item_id,
+                command.description,
+            )
 
         return await self.repository.save(price_list)
