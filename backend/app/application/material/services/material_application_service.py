@@ -4,8 +4,14 @@ Application service for Material.
 
 from uuid import UUID
 
+from app.application.material.commands.archive_material import (
+    ArchiveMaterialCommand,
+)
 from app.application.material.commands.create_material import (
     CreateMaterialCommand,
+)
+from app.application.material.commands.restore_material import (
+    RestoreMaterialCommand,
 )
 from app.application.material.commands.update_material import (
     UpdateMaterialCommand,
@@ -70,26 +76,56 @@ class MaterialApplicationService:
     ) -> Material:
         """Update material."""
 
-        material = self.get(command.material_id)
+        material = self.get(
+            command.material_id,
+        )
 
         if command.name is not None:
-            material.name = command.name
+            material.change_name(
+                command.name,
+            )
 
         if command.article is not None:
-            material.article = command.article
+            material.change_article(
+                command.article,
+            )
 
         if command.unit is not None:
-            material.unit = command.unit
+            material.change_unit(
+                command.unit,
+            )
 
         if command.description is not None:
-            material.description = command.description
+            material.change_description(
+                command.description,
+            )
 
         return self._repository.save(material)
 
-    def delete(
+    def archive(
         self,
-        material_id: UUID,
-    ) -> None:
-        """Delete material."""
+        command: ArchiveMaterialCommand,
+    ) -> Material:
+        """Archive material."""
 
-        self._repository.delete(material_id)
+        material = self.get(
+            command.material_id,
+        )
+
+        material.archive()
+
+        return self._repository.save(material)
+
+    def restore(
+        self,
+        command: RestoreMaterialCommand,
+    ) -> Material:
+        """Restore material."""
+
+        material = self.get(
+            command.material_id,
+        )
+
+        material.restore()
+
+        return self._repository.save(material)

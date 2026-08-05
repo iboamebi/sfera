@@ -101,19 +101,3 @@ class MaterialRepositorySQLAlchemy(MaterialRepository):
         self.session.flush()
 
         return material
-
-    def delete(
-        self,
-        material_id: UUID,
-    ) -> None:
-        """Delete material."""
-
-        model = (
-            self.session.query(MaterialModel)
-            .filter(MaterialModel.id == material_id)
-            .first()
-        )
-
-        if model is not None:
-            self.session.delete(model)
-            self.session.flush()

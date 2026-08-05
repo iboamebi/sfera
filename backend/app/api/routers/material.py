@@ -6,6 +6,9 @@ from uuid import UUID, uuid4
 
 from fastapi import APIRouter, Depends, HTTPException
 
+from app.application.material.commands.archive_material import (
+    ArchiveMaterialCommand,
+)
 from app.application.material.commands.create_material import (
     CreateMaterialCommand,
 )
@@ -106,14 +109,18 @@ def update_material(
     return service.update(command)
 
 
-@router.delete(
-    "/{material_id}",
-    status_code=204,
+@router.post(
+    "/{material_id}/archive",
+    response_model=MaterialRead,
 )
-def delete_material(
+def archive_material(
     material_id: UUID,
     service: MaterialApplicationService = Depends(
         get_material_service,
     ),
 ):
-    service.delete(material_id)
+    command = ArchiveMaterialCommand(
+        material_id=material_id,
+    )
+
+    return service.archive(command)

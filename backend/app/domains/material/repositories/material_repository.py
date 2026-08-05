@@ -17,6 +17,7 @@ class MaterialRepository(ABC):
         material_id: UUID,
     ) -> Material | None:
         """Get material by identifier."""
+
         raise NotImplementedError
 
     @abstractmethod
@@ -24,6 +25,7 @@ class MaterialRepository(ABC):
         self,
     ) -> list[Material]:
         """Get all materials."""
+
         raise NotImplementedError
 
     @abstractmethod
@@ -32,12 +34,5 @@ class MaterialRepository(ABC):
         material: Material,
     ) -> Material:
         """Save material."""
-        raise NotImplementedError
 
-    @abstractmethod
-    def delete(
-        self,
-        material_id: UUID,
-    ) -> None:
-        """Delete material."""
         raise NotImplementedError
