@@ -16,6 +16,7 @@ class WorkflowFactory:
         """Create verification workflow."""
 
         workflow = Workflow(
+            id=uuid4(),
             name="Verification workflow",
             code="VERIFICATION",
             description="Workflow for measuring instrument verification",
