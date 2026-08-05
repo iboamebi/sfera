@@ -4,13 +4,10 @@ Warehouse API router.
 
 from uuid import uuid4
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 
 from app.application.warehouse.commands.create_warehouse import (
     CreateWarehouseCommand,
-)
-from app.application.warehouse.exceptions import (
-    StockNotFoundApplicationError,
 )
 from app.application.warehouse.services.warehouse_application_service import (
     WarehouseApplicationService,
@@ -40,19 +37,12 @@ def create_warehouse(
         get_warehouse_service,
     ),
 ):
-    try:
-        return service.create(
-            CreateWarehouseCommand(
-                warehouse_id=uuid4(),
-                name=data.name,
-                address=data.address,
-                responsible_person=data.responsible_person,
-                comment=data.comment,
-            )
+    return service.create(
+        CreateWarehouseCommand(
+            warehouse_id=uuid4(),
+            name=data.name,
+            address=data.address,
+            responsible_person=data.responsible_person,
+            comment=data.comment,
         )
-
-    except StockNotFoundApplicationError as exc:
-        raise HTTPException(
-            status_code=400,
-            detail=str(exc),
-        ) from exc
+    )
