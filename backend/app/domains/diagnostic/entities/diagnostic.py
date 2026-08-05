@@ -8,13 +8,13 @@ from uuid import UUID
 from app.domains.diagnostic.value_objects.recommendation import (
     Recommendation,
 )
+from app.shared.base.entity import Entity
 
 
-@dataclass
-class Diagnostic:
+@dataclass(eq=False)
+class Diagnostic(Entity):
     """Represents diagnostic process."""
 
-    id: UUID
     order_item_id: UUID
     conclusion: str | None = None
     recommendation: Recommendation | None = None

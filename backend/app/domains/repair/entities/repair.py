@@ -8,13 +8,13 @@ from uuid import UUID
 from app.domains.repair.value_objects.repair_status import (
     RepairStatus,
 )
+from app.shared.base.entity import Entity
 
 
-@dataclass
-class Repair:
+@dataclass(eq=False)
+class Repair(Entity):
     """Represents repair process."""
 
-    id: UUID
     order_item_id: UUID
     status: RepairStatus = RepairStatus.NEW
     description: str | None = None

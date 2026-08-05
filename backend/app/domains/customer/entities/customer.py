@@ -5,14 +5,15 @@ Domain entity: Customer.
 from dataclasses import dataclass
 from uuid import UUID
 
+from app.shared.base.entity import Entity
 
-@dataclass
-class Customer:
+
+@dataclass(eq=False)
+class Customer(Entity):
     """
     Customer domain entity.
     """
 
-    id: UUID
     organization_id: UUID
     name: str
     contact_person: str | None = None

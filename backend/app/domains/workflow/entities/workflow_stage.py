@@ -6,12 +6,14 @@ Represents a single stage of a workflow.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from uuid import UUID, uuid4
+from dataclasses import dataclass
+from uuid import UUID
+
+from app.shared.base.entity import Entity
 
 
-@dataclass(slots=True)
-class WorkflowStage:
+@dataclass(eq=False, slots=True)
+class WorkflowStage(Entity):
     """Workflow stage."""
 
     workflow_id: UUID
@@ -21,8 +23,6 @@ class WorkflowStage:
 
     performer_role: str | None = None
     required: bool = True
-
-    id: UUID = field(default_factory=uuid4)
 
     def is_first(self) -> bool:
         """Return True if stage is the first in workflow."""

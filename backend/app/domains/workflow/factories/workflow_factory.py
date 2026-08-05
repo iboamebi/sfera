@@ -2,6 +2,8 @@
 Workflow factory.
 """
 
+from uuid import uuid4
+
 from app.domains.workflow.entities.workflow import Workflow
 from app.domains.workflow.entities.workflow_stage import WorkflowStage
 
@@ -21,6 +23,7 @@ class WorkflowFactory:
 
         workflow.add_stage(
             WorkflowStage(
+                id=uuid4(),
                 workflow_id=workflow.id,
                 order=1,
                 code="RECEIVED",
@@ -31,6 +34,7 @@ class WorkflowFactory:
 
         workflow.add_stage(
             WorkflowStage(
+                id=uuid4(),
                 workflow_id=workflow.id,
                 order=2,
                 code="DIAGNOSTIC",
@@ -41,6 +45,7 @@ class WorkflowFactory:
 
         workflow.add_stage(
             WorkflowStage(
+                id=uuid4(),
                 workflow_id=workflow.id,
                 order=3,
                 code="VERIFICATION",
@@ -51,6 +56,7 @@ class WorkflowFactory:
 
         workflow.add_stage(
             WorkflowStage(
+                id=uuid4(),
                 workflow_id=workflow.id,
                 order=4,
                 code="ISSUED",
