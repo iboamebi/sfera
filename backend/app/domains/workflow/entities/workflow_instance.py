@@ -15,7 +15,7 @@ from app.domains.workflow.value_objects.workflow_status import (
 from app.shared.base.aggregate import AggregateRoot
 
 
-@dataclass(eq=False)
+@dataclass(eq=False, kw_only=True, slots=True)
 class WorkflowInstance(AggregateRoot):
     """Workflow execution instance."""
 
