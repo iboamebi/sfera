@@ -8,7 +8,7 @@ from app.domains.order.value_objects.order_status import OrderStatus
 from app.shared.base.aggregate import AggregateRoot
 
 
-@dataclass(eq=False)
+@dataclass(eq=False, kw_only=True)
 class Order(AggregateRoot):
     number: OrderNumber
     customer_id: UUID

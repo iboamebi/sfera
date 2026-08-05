@@ -13,7 +13,7 @@ from app.domains.warehouse.exceptions import (
 from app.shared.base.entity import Entity
 
 
-@dataclass(eq=False)
+@dataclass(eq=False, kw_only=True)
 class WarehouseStock(Entity):
     """Warehouse stock entity."""
 

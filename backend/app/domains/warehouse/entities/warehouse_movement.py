@@ -14,7 +14,7 @@ from app.domains.warehouse.value_objects.movement_type import (
 from app.shared.base.entity import Entity
 
 
-@dataclass(eq=False)
+@dataclass(eq=False, kw_only=True)
 class WarehouseMovement(Entity):
     """Warehouse movement entity."""
 

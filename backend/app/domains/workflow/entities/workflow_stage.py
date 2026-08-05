@@ -12,7 +12,7 @@ from uuid import UUID
 from app.shared.base.entity import Entity
 
 
-@dataclass(eq=False, slots=True)
+@dataclass(eq=False, kw_only=True, slots=True)
 class WorkflowStage(Entity):
     """Workflow stage."""
 

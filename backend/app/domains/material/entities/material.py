@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from app.shared.base.entity import Entity
 
 
-@dataclass(eq=False)
+@dataclass(eq=False, kw_only=True)
 class Material(Entity):
     """Material entity."""
 

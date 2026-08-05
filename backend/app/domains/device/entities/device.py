@@ -13,7 +13,7 @@ from app.domains.device.value_objects.serial_number import SerialNumber
 from app.shared.base.aggregate import AggregateRoot
 
 
-@dataclass(eq=False)
+@dataclass(eq=False, kw_only=True)
 class Device(AggregateRoot):
     """Device aggregate."""
 

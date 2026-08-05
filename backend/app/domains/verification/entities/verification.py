@@ -10,7 +10,7 @@ from app.domains.verification.value_objects.verification_result import (
 from app.shared.base.aggregate import AggregateRoot
 
 
-@dataclass(eq=False)
+@dataclass(eq=False, kw_only=True)
 class Verification(AggregateRoot):
     verification_date: date
     result: VerificationResult

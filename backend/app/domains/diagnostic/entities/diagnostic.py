@@ -11,7 +11,7 @@ from app.domains.diagnostic.value_objects.recommendation import (
 from app.shared.base.entity import Entity
 
 
-@dataclass(eq=False)
+@dataclass(eq=False, kw_only=True)
 class Diagnostic(Entity):
     """Represents diagnostic process."""
 
