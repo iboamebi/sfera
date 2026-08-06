@@ -39,7 +39,7 @@ class OrderApplicationService:
         command: CreateOrderCommand,
     ) -> Order:
         with self._uow:
-            order = Order(
+            order = Order.create(
                 id=command.order_id,
                 number=OrderNumber(command.number),
                 customer_id=command.customer_id,
