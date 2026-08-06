@@ -14,7 +14,6 @@ from app.domains.repair.entities.repair import Repair
 from app.domains.repair.repositories.repair_repository import (
     RepairRepository,
 )
-from app.domains.repair.services.repair_service import RepairService
 from app.domains.repair.value_objects.repair_status import (
     RepairStatus,
 )
@@ -31,7 +30,6 @@ class RepairApplicationService:
     ) -> None:
         self._repository = repository
         self._uow = unit_of_work
-        self._service = RepairService()
 
     def get(
         self,
@@ -73,9 +71,7 @@ class RepairApplicationService:
                 repair_id,
             )
 
-            self._service.start(
-                repair,
-            )
+            repair.start()
 
             self._repository.save(
                 repair,
@@ -93,8 +89,7 @@ class RepairApplicationService:
                 repair_id,
             )
 
-            self._service.complete(
-                repair,
+            repair.complete(
                 result,
             )
 
@@ -113,9 +108,7 @@ class RepairApplicationService:
                 repair_id,
             )
 
-            self._service.cancel(
-                repair,
-            )
+            repair.cancel()
 
             self._repository.save(
                 repair,
