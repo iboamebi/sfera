@@ -14,9 +14,6 @@ from app.domains.repair.entities.repair import Repair
 from app.domains.repair.repositories.repair_repository import (
     RepairRepository,
 )
-from app.domains.repair.value_objects.repair_status import (
-    RepairStatus,
-)
 from app.shared.unit_of_work.unit_of_work import UnitOfWork
 
 
@@ -48,10 +45,9 @@ class RepairApplicationService:
         self,
         command: CreateRepairCommand,
     ) -> Repair:
-        repair = Repair(
+        repair = Repair.create(
             id=uuid4(),
             order_item_id=command.order_item_id,
-            status=RepairStatus.NEW,
             description=command.description,
         )
 

@@ -20,6 +20,23 @@ class Repair(Entity):
     description: str | None = None
     result: str | None = None
 
+    @classmethod
+    def create(
+        cls,
+        *,
+        id: UUID,
+        order_item_id: UUID,
+        description: str | None = None,
+    ) -> "Repair":
+        """Create a new repair."""
+
+        return cls(
+            id=id,
+            order_item_id=order_item_id,
+            status=RepairStatus.NEW,
+            description=description,
+        )
+
     def start(self) -> None:
         """Start repair."""
 
