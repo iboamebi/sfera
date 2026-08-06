@@ -25,6 +25,22 @@ class WorkflowInstance(AggregateRoot):
     current_stage: int = 1
     status: WorkflowStatus = WorkflowStatus.CREATED
 
+    @classmethod
+    def create(
+        cls,
+        *,
+        id: UUID,
+        workflow_id: UUID,
+        order_item_id: UUID,
+    ) -> WorkflowInstance:
+        """Create a new workflow instance."""
+
+        return cls(
+            id=id,
+            workflow_id=workflow_id,
+            order_item_id=order_item_id,
+        )
+
     def start(self) -> None:
         """Start workflow."""
 

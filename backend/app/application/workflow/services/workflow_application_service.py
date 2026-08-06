@@ -55,7 +55,7 @@ class WorkflowApplicationService:
         if workflow is None:
             raise WorkflowNotFoundApplicationError
 
-        instance = WorkflowInstance(
+        instance = WorkflowInstance.create(
             id=uuid4(),
             workflow_id=command.workflow_id,
             order_item_id=command.order_item_id,
