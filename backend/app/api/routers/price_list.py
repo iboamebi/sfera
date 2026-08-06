@@ -66,6 +66,7 @@ async def create(
 ):
     command = CreatePriceListCommand(
         name=data.name,
+        price_list_type=data.price_list_type,
         description=data.description,
     )
 

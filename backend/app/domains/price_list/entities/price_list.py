@@ -1,3 +1,8 @@
+# app/domains/price_list/entities/price_list.py
+# PriceList aggregate root.
+
+from __future__ import annotations
+
 from dataclasses import dataclass, field
 from datetime import date, datetime
 from decimal import Decimal
@@ -29,12 +34,29 @@ class PriceList(AggregateRoot):
     items: list[PriceListItem] = field(default_factory=list)
 
     created_at: datetime = field(default_factory=datetime.utcnow)
-
     updated_at: datetime = field(default_factory=datetime.utcnow)
 
     def __post_init__(self) -> None:
         if not self.name.strip():
             raise InvalidPriceListNameError()
+
+    @classmethod
+    def create(
+        cls,
+        *,
+        name: str,
+        price_list_type: str,
+        description: str | None = None,
+    ) -> PriceList:
+        """
+        Create a new price list aggregate.
+        """
+
+        return cls(
+            name=name,
+            price_list_type=price_list_type,
+            description=description,
+        )
 
     def activate(self) -> None:
         """
@@ -100,18 +122,14 @@ class PriceList(AggregateRoot):
         Change price list item price.
         """
 
-        item = self.find_item_by_id(
-            item_id,
-        )
+        item = self.find_item_by_id(item_id)
 
         if item is None:
             raise ValueError(
                 "Price list item not found",
             )
 
-        item.update_price(
-            price,
-        )
+        item.update_price(price)
 
         self.updated_at = datetime.utcnow()
 
@@ -124,18 +142,14 @@ class PriceList(AggregateRoot):
         Change price list item description.
         """
 
-        item = self.find_item_by_id(
-            item_id,
-        )
+        item = self.find_item_by_id(item_id)
 
         if item is None:
             raise ValueError(
                 "Price list item not found",
             )
 
-        item.update_description(
-            description,
-        )
+        item.update_description(description)
 
         self.updated_at = datetime.utcnow()
 
@@ -147,11 +161,7 @@ class PriceList(AggregateRoot):
         Удаляет позицию из прайс-листа.
         """
 
-        self.items = [
-            item
-            for item in self.items
-            if item.id != item_id
-        ]
+        self.items = [item for item in self.items if item.id != item_id]
 
         self.updated_at = datetime.utcnow()
 

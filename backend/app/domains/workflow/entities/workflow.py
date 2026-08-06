@@ -39,11 +39,7 @@ class Workflow(AggregateRoot):
     ) -> None:
         """Remove stage from workflow."""
 
-        self.stages = [
-            stage
-            for stage in self.stages
-            if stage.id != stage_id
-        ]
+        self.stages = [stage for stage in self.stages if stage.id != stage_id]
 
     def get_stage(
         self,
@@ -52,11 +48,7 @@ class Workflow(AggregateRoot):
         """Return stage by order."""
 
         return next(
-            (
-                stage
-                for stage in self.stages
-                if stage.order == order
-            ),
+            (stage for stage in self.stages if stage.order == order),
             None,
         )
 

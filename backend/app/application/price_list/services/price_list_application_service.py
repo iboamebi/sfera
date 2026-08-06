@@ -1,3 +1,4 @@
+# app/application/price_list/services/price_list_application_service.py
 # PriceList application service.
 # Coordinates PriceList use cases between API layer and domain layer.
 
@@ -78,8 +79,9 @@ class PriceListApplicationService:
         Creates new PriceList.
         """
 
-        price_list = PriceList(
+        price_list = PriceList.create(
             name=command.name,
+            price_list_type=command.price_list_type,
             description=command.description,
         )
 
