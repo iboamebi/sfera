@@ -12,9 +12,6 @@ from app.domains.verification.entities.verification import Verification
 from app.domains.verification.repositories.verification_repository import (
     VerificationRepository,
 )
-from app.domains.verification.services.verification_service import (
-    VerificationService,
-)
 from app.shared.unit_of_work.unit_of_work import UnitOfWork
 
 
@@ -28,7 +25,6 @@ class VerificationApplicationService:
     ) -> None:
         self._repository = repository
         self._uow = unit_of_work
-        self._service = VerificationService()
 
     def get(
         self,
@@ -49,8 +45,7 @@ class VerificationApplicationService:
         with self._uow:
             verification = self.get(verification_id)
 
-            self._service.approve(
-                verification,
+            verification.mark_suitable(
                 valid_until,
             )
 
@@ -66,8 +61,7 @@ class VerificationApplicationService:
         with self._uow:
             verification = self.get(verification_id)
 
-            self._service.reject(
-                verification,
+            verification.mark_unsuitable(
                 reason,
             )
 
