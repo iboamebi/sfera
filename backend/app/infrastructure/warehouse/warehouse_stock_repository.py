@@ -30,12 +30,15 @@ class WarehouseStockRepositorySQLAlchemy(
         session: Session,
     ) -> None:
         self._session = session
+        self._mapper = WarehouseStockMapper()
 
     def get_by_material(
         self,
         warehouse_id: UUID,
         material_id: UUID,
     ) -> WarehouseStock | None:
+        """Get stock by warehouse and material."""
+
         model = (
             self._session.query(
                 WarehouseStockModel,
@@ -50,7 +53,7 @@ class WarehouseStockRepositorySQLAlchemy(
         if model is None:
             return None
 
-        return WarehouseStockMapper.to_domain(
+        return self._mapper.to_domain(
             model,
         )
 
@@ -58,10 +61,22 @@ class WarehouseStockRepositorySQLAlchemy(
         self,
         stock: WarehouseStock,
     ) -> None:
-        model = WarehouseStockMapper.to_model(
-            stock,
+        """Save warehouse stock."""
+
+        model = self._session.get(
+            WarehouseStockModel,
+            stock.id,
         )
 
-        self._session.merge(
+        if model is None:
+            model = WarehouseStockModel(
+                id=stock.id,
+            )
+            self._session.add(model)
+
+        self._mapper.to_model(
+            stock,
             model,
         )
+
+        self._session.flush()
