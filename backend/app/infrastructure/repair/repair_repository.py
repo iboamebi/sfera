@@ -10,9 +10,7 @@ from app.domains.repair.entities.repair import Repair
 from app.domains.repair.repositories.repair_repository import (
     RepairRepository,
 )
-from app.infrastructure.mappers.repair_mapper import (
-    RepairMapper,
-)
+from app.infrastructure.mappers.repair_mapper import RepairMapper
 from app.models.repair import Repair as RepairModel
 
 
@@ -24,11 +22,14 @@ class RepairRepositorySQLAlchemy(RepairRepository):
         session: Session,
     ) -> None:
         self._session = session
+        self._mapper = RepairMapper()
 
     def get(
         self,
         repair_id: UUID,
     ) -> Repair | None:
+        """Get repair by identifier."""
+
         model = self._session.get(
             RepairModel,
             repair_id,
@@ -37,7 +38,7 @@ class RepairRepositorySQLAlchemy(RepairRepository):
         if model is None:
             return None
 
-        return RepairMapper.to_domain(
+        return self._mapper.to_domain(
             model,
         )
 
@@ -45,10 +46,22 @@ class RepairRepositorySQLAlchemy(RepairRepository):
         self,
         repair: Repair,
     ) -> None:
-        model = RepairMapper.to_model(
-            repair,
+        """Save repair."""
+
+        model = self._session.get(
+            RepairModel,
+            repair.id,
         )
 
-        self._session.merge(
+        if model is None:
+            model = RepairModel(
+                id=repair.id,
+            )
+            self._session.add(model)
+
+        self._mapper.to_model(
+            repair,
             model,
         )
+
+        self._session.flush()

@@ -3,18 +3,22 @@ Repair mapper.
 """
 
 from app.domains.repair.entities.repair import Repair
-from app.domains.repair.value_objects.repair_status import (
-    RepairStatus,
-)
+from app.domains.repair.value_objects.repair_status import RepairStatus
+from app.infrastructure.mappers.base_mapper import BaseMapper
 from app.models.repair import Repair as RepairModel
 from app.models.repair import RepairStatus as RepairModelStatus
 
 
-class RepairMapper:
+class RepairMapper(
+    BaseMapper[
+        Repair,
+        RepairModel,
+    ],
+):
     """Maps repair between domain and persistence."""
 
-    @staticmethod
     def to_domain(
+        self,
         model: RepairModel,
     ) -> Repair:
         """Convert model to domain entity."""
@@ -29,18 +33,18 @@ class RepairMapper:
             result=model.result,
         )
 
-    @staticmethod
     def to_model(
+        self,
         entity: Repair,
+        model: RepairModel,
     ) -> RepairModel:
         """Convert domain entity to model."""
 
-        return RepairModel(
-            id=entity.id,
-            order_item_id=entity.order_item_id,
-            status=RepairModelStatus(
-                entity.status.value,
-            ),
-            description=entity.description,
-            result=entity.result,
+        model.order_item_id = entity.order_item_id
+        model.status = RepairModelStatus(
+            entity.status.value,
         )
+        model.description = entity.description
+        model.result = entity.result
+
+        return model
