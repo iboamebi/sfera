@@ -1,5 +1,5 @@
 # backend/app/api/routers/price_list.py
-# PriceList API router
+# PriceList API router.
 
 from uuid import UUID
 
@@ -67,6 +67,9 @@ async def create(
     command = CreatePriceListCommand(
         name=data.name,
         price_list_type=data.price_list_type,
+        currency=data.currency,
+        valid_from=data.valid_from,
+        valid_to=data.valid_to,
         description=data.description,
     )
 
@@ -84,6 +87,10 @@ async def update(
     command = UpdatePriceListCommand(
         price_list_id=obj_id,
         name=data.name,
+        price_list_type=data.price_list_type,
+        currency=data.currency,
+        valid_from=data.valid_from,
+        valid_to=data.valid_to,
         description=data.description,
     )
 

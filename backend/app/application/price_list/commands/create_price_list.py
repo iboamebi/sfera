@@ -2,6 +2,7 @@
 # Command for creating a new PriceList aggregate.
 
 from dataclasses import dataclass
+from datetime import date
 
 
 @dataclass(frozen=True)
@@ -12,5 +13,8 @@ class CreatePriceListCommand:
 
     name: str
     price_list_type: str
+    currency: str | None = None
+    valid_from: date | None = None
+    valid_to: date | None = None
     description: str | None = None
     is_active: bool = True

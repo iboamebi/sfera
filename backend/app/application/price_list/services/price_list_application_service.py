@@ -82,6 +82,9 @@ class PriceListApplicationService:
         price_list = PriceList.create(
             name=command.name,
             price_list_type=command.price_list_type,
+            currency=command.currency,
+            valid_from=command.valid_from,
+            valid_to=command.valid_to,
             description=command.description,
         )
 
@@ -100,13 +103,31 @@ class PriceListApplicationService:
         if price_list is None:
             raise PriceListNotFoundApplicationError
 
-        price_list.change_name(
-            command.name,
-        )
+        if command.name is not None:
+            price_list.change_name(
+                command.name,
+            )
 
-        price_list.change_description(
-            command.description,
-        )
+        if command.price_list_type is not None:
+            price_list.change_price_list_type(
+                command.price_list_type,
+            )
+
+        if command.currency is not None:
+            price_list.change_currency(
+                command.currency,
+            )
+
+        if command.valid_from is not None or command.valid_to is not None:
+            price_list.change_valid_period(
+                command.valid_from,
+                command.valid_to,
+            )
+
+        if command.description is not None:
+            price_list.change_description(
+                command.description,
+            )
 
         return await self.repository.save(price_list)
 

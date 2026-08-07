@@ -46,6 +46,9 @@ class PriceList(AggregateRoot):
         *,
         name: str,
         price_list_type: str,
+        currency: str = "RUB",
+        valid_from: date | None = None,
+        valid_to: date | None = None,
         description: str | None = None,
     ) -> PriceList:
         """
@@ -55,6 +58,9 @@ class PriceList(AggregateRoot):
         return cls(
             name=name,
             price_list_type=price_list_type,
+            currency=currency,
+            valid_from=valid_from,
+            valid_to=valid_to,
             description=description,
         )
 
@@ -89,6 +95,41 @@ class PriceList(AggregateRoot):
             raise InvalidPriceListNameError()
 
         self.name = name
+        self.updated_at = datetime.utcnow()
+
+    def change_price_list_type(
+        self,
+        price_list_type: str,
+    ) -> None:
+        """
+        Change price list type.
+        """
+
+        self.price_list_type = price_list_type
+        self.updated_at = datetime.utcnow()
+
+    def change_currency(
+        self,
+        currency: str,
+    ) -> None:
+        """
+        Change price list currency.
+        """
+
+        self.currency = currency
+        self.updated_at = datetime.utcnow()
+
+    def change_valid_period(
+        self,
+        valid_from: date | None,
+        valid_to: date | None,
+    ) -> None:
+        """
+        Change price list validity period.
+        """
+
+        self.valid_from = valid_from
+        self.valid_to = valid_to
         self.updated_at = datetime.utcnow()
 
     def change_description(
