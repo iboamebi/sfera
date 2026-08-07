@@ -1,5 +1,5 @@
 """
-Infrastructure repository for Verification.
+SQLAlchemy implementation of VerificationRepository.
 """
 
 from uuid import UUID
@@ -10,9 +10,7 @@ from app.domains.verification.entities.verification import Verification
 from app.domains.verification.repositories.verification_repository import (
     VerificationRepository,
 )
-from app.infrastructure.mappers.verification_mapper import (
-    VerificationMapper,
-)
+from app.infrastructure.mappers.verification_mapper import VerificationMapper
 from app.models.verification import Verification as VerificationModel
 
 
@@ -24,11 +22,14 @@ class VerificationRepositorySQLAlchemy(VerificationRepository):
         session: Session,
     ) -> None:
         self.session = session
+        self._mapper = VerificationMapper()
 
     def get(
         self,
         verification_id: UUID,
     ) -> Verification | None:
+        """Get verification by identifier."""
+
         model = (
             self.session.query(VerificationModel)
             .filter(VerificationModel.id == verification_id)
@@ -38,12 +39,14 @@ class VerificationRepositorySQLAlchemy(VerificationRepository):
         if model is None:
             return None
 
-        return VerificationMapper().to_domain(model)
+        return self._mapper.to_domain(model)
 
     def save(
         self,
         verification: Verification,
     ) -> None:
+        """Save verification."""
+
         model = (
             self.session.query(VerificationModel)
             .filter(VerificationModel.id == verification.id)
@@ -51,16 +54,14 @@ class VerificationRepositorySQLAlchemy(VerificationRepository):
         )
 
         if model is None:
-            model = VerificationModel(id=verification.id)
+            model = VerificationModel(
+                id=verification.id,
+            )
             self.session.add(model)
 
-        VerificationMapper().to_model(
+        self._mapper.to_model(
             verification,
             model,
         )
-        model.result = verification.result.value
-        model.valid_until = verification.valid_until
-        model.unsuitable_reason = verification.unsuitable_reason
-        model.methodology = verification.methodology
 
         self.session.flush()
