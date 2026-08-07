@@ -2,19 +2,23 @@
 Warehouse stock mapper.
 """
 
-from app.domains.warehouse.entities.warehouse_stock import (
-    WarehouseStock,
-)
+from app.domains.warehouse.entities.warehouse_stock import WarehouseStock
+from app.infrastructure.mappers.base_mapper import BaseMapper
 from app.models.warehouse_stock import (
     WarehouseStock as WarehouseStockModel,
 )
 
 
-class WarehouseStockMapper:
+class WarehouseStockMapper(
+    BaseMapper[
+        WarehouseStock,
+        WarehouseStockModel,
+    ],
+):
     """Map warehouse stock between domain and ORM."""
 
-    @staticmethod
     def to_domain(
+        self,
         model: WarehouseStockModel,
     ) -> WarehouseStock:
         return WarehouseStock(
@@ -26,15 +30,15 @@ class WarehouseStockMapper:
             archived=model.archived,
         )
 
-    @staticmethod
     def to_model(
+        self,
         entity: WarehouseStock,
+        model: WarehouseStockModel,
     ) -> WarehouseStockModel:
-        return WarehouseStockModel(
-            id=entity.id,
-            warehouse_id=entity.warehouse_id,
-            material_id=entity.material_id,
-            quantity=entity.quantity,
-            reserved_quantity=entity.reserved_quantity,
-            archived=entity.archived,
-        )
+        model.warehouse_id = entity.warehouse_id
+        model.material_id = entity.material_id
+        model.quantity = entity.quantity
+        model.reserved_quantity = entity.reserved_quantity
+        model.archived = entity.archived
+
+        return model
