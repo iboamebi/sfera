@@ -3,10 +3,16 @@ Customer domain/model mapper.
 """
 
 from app.domains.customer.entities.customer import Customer
+from app.infrastructure.mappers.base_mapper import BaseMapper
 from app.models.customer import Customer as CustomerModel
 
 
-class CustomerMapper:
+class CustomerMapper(
+    BaseMapper[
+        Customer,
+        CustomerModel,
+    ],
+):
     """Maps Customer between domain and SQLAlchemy model."""
 
     def to_domain(
