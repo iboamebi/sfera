@@ -2,16 +2,12 @@
 Workflow mapper.
 """
 
-from app.domains.workflow.entities.workflow import (
-    Workflow,
-)
+from app.domains.workflow.entities.workflow import Workflow
 from app.infrastructure.mappers.base_mapper import BaseMapper
 from app.infrastructure.mappers.workflow_stage_mapper import (
     WorkflowStageMapper,
 )
-from app.models.workflow import (
-    Workflow as WorkflowModel,
-)
+from app.models.workflow import Workflow as WorkflowModel
 
 
 class WorkflowMapper(BaseMapper[Workflow, WorkflowModel]):
@@ -44,3 +40,17 @@ class WorkflowMapper(BaseMapper[Workflow, WorkflowModel]):
         model.is_active = entity.is_active
 
         return model
+
+    def create_model(
+        self,
+        entity: Workflow,
+    ) -> WorkflowModel:
+        """Create ORM model from domain entity."""
+
+        return WorkflowModel(
+            id=entity.id,
+            name=entity.name,
+            code=entity.code,
+            description=entity.description,
+            is_active=entity.is_active,
+        )

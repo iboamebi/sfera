@@ -42,3 +42,17 @@ class WorkflowInstanceMapper(
         model.status = entity.status.value
 
         return model
+
+    def create_model(
+        self,
+        entity: WorkflowInstance,
+    ) -> WorkflowInstanceModel:
+        """Create ORM model from domain entity."""
+
+        return WorkflowInstanceModel(
+            id=entity.id,
+            workflow_id=entity.workflow_id,
+            order_item_id=entity.order_item_id,
+            current_stage=entity.current_stage,
+            status=entity.status.value,
+        )

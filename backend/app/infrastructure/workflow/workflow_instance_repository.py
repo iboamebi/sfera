@@ -57,17 +57,15 @@ class WorkflowInstanceRepositorySQLAlchemy(
 
         model = (
             self.session.query(ORMWorkflowInstance)
-            .filter(ORMWorkflowInstance.id == instance.id)
+            .filter(
+                ORMWorkflowInstance.id == instance.id,
+            )
             .first()
         )
 
         if model is None:
-            model = ORMWorkflowInstance(
-                id=instance.id,
-                workflow_id=instance.workflow_id,
-                order_item_id=instance.order_item_id,
-                current_stage=instance.current_stage,
-                status=instance.status.value,
+            model = self.mapper.create_model(
+                instance,
             )
 
             self.session.add(model)

@@ -6,9 +6,7 @@ from uuid import UUID
 
 from sqlalchemy.orm import Session, selectinload
 
-from app.domains.workflow.entities.workflow import (
-    Workflow as DomainWorkflow,
-)
+from app.domains.workflow.entities.workflow import Workflow as DomainWorkflow
 from app.domains.workflow.repositories.workflow_repository import (
     WorkflowRepository,
 )
@@ -67,12 +65,8 @@ class WorkflowRepositorySQLAlchemy(
         )
 
         if model is None:
-            model = ORMWorkflow(
-                id=workflow.id,
-                name=workflow.name,
-                code=workflow.code,
-                description=workflow.description,
-                is_active=workflow.is_active,
+            model = self.mapper.create_model(
+                workflow,
             )
 
             self.session.add(model)
