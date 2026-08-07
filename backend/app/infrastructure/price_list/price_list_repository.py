@@ -32,7 +32,9 @@ class PriceListRepositorySQLAlchemy(PriceListRepository):
     ) -> PriceList | None:
         model = (
             self.db.query(PriceListModel)
-            .filter(PriceListModel.id == price_list_id)
+            .filter(
+                PriceListModel.id == price_list_id,
+            )
             .first()
         )
 
@@ -46,7 +48,9 @@ class PriceListRepositorySQLAlchemy(PriceListRepository):
     ) -> PriceList | None:
         model = (
             self.db.query(PriceListModel)
-            .filter(PriceListModel.is_active.is_(True))
+            .filter(
+                PriceListModel.is_active.is_(True),
+            )
             .first()
         )
 
@@ -68,12 +72,17 @@ class PriceListRepositorySQLAlchemy(PriceListRepository):
     ) -> PriceList:
         model = (
             self.db.query(PriceListModel)
-            .filter(PriceListModel.id == price_list.id)
+            .filter(
+                PriceListModel.id == price_list.id,
+            )
             .first()
         )
 
         if model is None:
-            raise ValueError("PriceList not found")
+            model = PriceListModel(
+                id=price_list.id,
+            )
+            self.db.add(model)
 
         self._mapper.to_model(
             price_list,
@@ -90,7 +99,9 @@ class PriceListRepositorySQLAlchemy(PriceListRepository):
     ) -> None:
         model = (
             self.db.query(PriceListModel)
-            .filter(PriceListModel.id == price_list_id)
+            .filter(
+                PriceListModel.id == price_list_id,
+            )
             .first()
         )
 
