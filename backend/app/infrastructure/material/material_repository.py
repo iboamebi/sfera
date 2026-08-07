@@ -12,6 +12,7 @@ from app.domains.material.entities.material import (
 from app.domains.material.repositories.material_repository import (
     MaterialRepository,
 )
+from app.infrastructure.mappers.material_mapper import MaterialMapper
 from app.models.material import Material as MaterialModel
 
 
@@ -23,6 +24,7 @@ class MaterialRepositorySQLAlchemy(MaterialRepository):
         session: Session,
     ) -> None:
         self.session = session
+        self._mapper = MaterialMapper()
 
     def get(
         self,
@@ -39,14 +41,7 @@ class MaterialRepositorySQLAlchemy(MaterialRepository):
         if model is None:
             return None
 
-        return DomainMaterial(
-            id=model.id,
-            name=model.name,
-            article=model.article,
-            unit=model.unit,
-            description=model.description,
-            archived=model.archived,
-        )
+        return self._mapper.to_domain(model)
 
     def get_all(
         self,
@@ -55,17 +50,7 @@ class MaterialRepositorySQLAlchemy(MaterialRepository):
 
         models = self.session.query(MaterialModel).all()
 
-        return [
-            DomainMaterial(
-                id=model.id,
-                name=model.name,
-                article=model.article,
-                unit=model.unit,
-                description=model.description,
-                archived=model.archived,
-            )
-            for model in models
-        ]
+        return [self._mapper.to_domain(model) for model in models]
 
     def save(
         self,
@@ -82,21 +67,14 @@ class MaterialRepositorySQLAlchemy(MaterialRepository):
         if model is None:
             model = MaterialModel(
                 id=material.id,
-                name=material.name,
-                article=material.article,
-                unit=material.unit,
-                description=material.description,
-                archived=material.archived,
             )
 
             self.session.add(model)
 
-        else:
-            model.name = material.name
-            model.article = material.article
-            model.unit = material.unit
-            model.description = material.description
-            model.archived = material.archived
+        self._mapper.to_model(
+            material,
+            model,
+        )
 
         self.session.flush()
 
