@@ -29,7 +29,11 @@ class DeviceRepositorySQLAlchemy(DeviceRepository):
         """Get device by identifier."""
 
         instrument = (
-            self.db.query(Instrument).filter(Instrument.id == device_id).first()
+            self.db.query(Instrument)
+            .filter(
+                Instrument.id == device_id,
+            )
+            .first()
         )
 
         if instrument is None:
@@ -44,11 +48,18 @@ class DeviceRepositorySQLAlchemy(DeviceRepository):
         """Save device."""
 
         instrument = (
-            self.db.query(Instrument).filter(Instrument.id == device.id).first()
+            self.db.query(Instrument)
+            .filter(
+                Instrument.id == device.id,
+            )
+            .first()
         )
 
         if instrument is None:
-            return
+            instrument = Instrument(
+                id=device.id,
+            )
+            self.db.add(instrument)
 
         self._mapper.to_model(
             device,
