@@ -3,16 +3,24 @@ Warehouse mapper.
 """
 
 from app.domains.warehouse.entities.warehouse import Warehouse
+from app.infrastructure.mappers.base_mapper import BaseMapper
 from app.models.warehouse import Warehouse as WarehouseModel
 
 
-class WarehouseMapper:
+class WarehouseMapper(
+    BaseMapper[
+        Warehouse,
+        WarehouseModel,
+    ],
+):
     """Map warehouse between domain and ORM."""
 
-    @staticmethod
     def to_domain(
+        self,
         model: WarehouseModel,
     ) -> Warehouse:
+        """Convert ORM model to domain entity."""
+
         return Warehouse(
             id=model.id,
             name=model.name,
@@ -22,15 +30,17 @@ class WarehouseMapper:
             archived=model.archived,
         )
 
-    @staticmethod
     def to_model(
+        self,
         entity: Warehouse,
+        model: WarehouseModel,
     ) -> WarehouseModel:
-        return WarehouseModel(
-            id=entity.id,
-            name=entity.name,
-            address=entity.address,
-            responsible_person=entity.responsible_person,
-            comment=entity.comment,
-            archived=entity.archived,
-        )
+        """Convert domain entity to ORM model."""
+
+        model.name = entity.name
+        model.address = entity.address
+        model.responsible_person = entity.responsible_person
+        model.comment = entity.comment
+        model.archived = entity.archived
+
+        return model
