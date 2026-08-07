@@ -230,6 +230,47 @@ Checkpoint:
 
 ---
 
+## Infrastructure Mapper Alignment
+
+Статус:
+
+COMPLETED
+
+Выполнено:
+
+- All infrastructure mappers aligned with BaseMapper contract
+- Mapper methods standardized:
+  - to_domain(self, model)
+  - to_model(self, entity, model)
+- ORM model creation responsibility removed from mappers where applicable
+- Repository layer uses mapper instances consistently
+
+Affected mappers:
+
+- DeviceMapper
+- OrderMapper
+- PriceListMapper
+- MaterialMapper
+- WorkflowMapper
+- WorkflowStageMapper
+- WorkflowInstanceMapper
+- VerificationMapper
+- RepairMapper
+- WarehouseMapper
+- WarehouseStockMapper
+- WarehouseMovementMapper
+- OrganizationMapper
+- CustomerMapper
+- DiagnosticMapper
+
+Checkpoint:
+
+- Infrastructure mapping layer standardized
+- Repository implementations follow unified mapper pattern
+- No remaining legacy mapper implementations detected
+
+---
+
 ## Legacy Layers
 
 Статус:
