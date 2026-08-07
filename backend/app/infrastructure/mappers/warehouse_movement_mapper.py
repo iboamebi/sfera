@@ -8,6 +8,7 @@ from app.domains.warehouse.entities.warehouse_movement import (
 from app.domains.warehouse.value_objects.movement_type import (
     MovementType as DomainMovementType,
 )
+from app.infrastructure.mappers.base_mapper import BaseMapper
 from app.models.warehouse_movement import (
     MovementType as ModelMovementType,
 )
@@ -16,11 +17,16 @@ from app.models.warehouse_movement import (
 )
 
 
-class WarehouseMovementMapper:
+class WarehouseMovementMapper(
+    BaseMapper[
+        WarehouseMovement,
+        WarehouseMovementModel,
+    ],
+):
     """Map warehouse movement between domain and ORM."""
 
-    @staticmethod
     def to_domain(
+        self,
         model: WarehouseMovementModel,
     ) -> WarehouseMovement:
         return WarehouseMovement(
@@ -36,19 +42,19 @@ class WarehouseMovementMapper:
             archived=model.archived,
         )
 
-    @staticmethod
     def to_model(
+        self,
         entity: WarehouseMovement,
+        model: WarehouseMovementModel,
     ) -> WarehouseMovementModel:
-        return WarehouseMovementModel(
-            id=entity.id,
-            warehouse_id=entity.warehouse_id,
-            material_id=entity.material_id,
-            order_id=entity.order_id,
-            movement_type=ModelMovementType(
-                entity.movement_type.value,
-            ),
-            quantity=entity.quantity,
-            comment=entity.comment,
-            archived=entity.archived,
+        model.warehouse_id = entity.warehouse_id
+        model.material_id = entity.material_id
+        model.order_id = entity.order_id
+        model.movement_type = ModelMovementType(
+            entity.movement_type.value,
         )
+        model.quantity = entity.quantity
+        model.comment = entity.comment
+        model.archived = entity.archived
+
+        return model
