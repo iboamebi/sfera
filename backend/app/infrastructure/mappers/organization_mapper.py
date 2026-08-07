@@ -3,10 +3,16 @@ Organization domain/model mapper.
 """
 
 from app.domains.organization.entities.organization import Organization
+from app.infrastructure.mappers.base_mapper import BaseMapper
 from app.models.organization import Organization as OrganizationModel
 
 
-class OrganizationMapper:
+class OrganizationMapper(
+    BaseMapper[
+        Organization,
+        OrganizationModel,
+    ],
+):
     """Maps Organization between domain and SQLAlchemy model."""
 
     def to_domain(
