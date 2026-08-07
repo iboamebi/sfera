@@ -230,6 +230,28 @@ Checkpoint:
 
 ---
 
+## Infrastructure Audit
+
+Статус:
+
+COMPLETED
+
+Выполнено:
+
+- Repository implementations audit
+- Mapper alignment verification
+- UnitOfWork transaction boundary verification
+- Dependency direction verification
+- WarehouseMovementRepository migration fix
+
+Checkpoint:
+
+- All infrastructure repositories follow DDD repository flow
+- No CRUD dependencies remain
+- No domain/application dependency violations detected
+
+---
+
 ## Infrastructure Mapper Alignment
 
 Статус:

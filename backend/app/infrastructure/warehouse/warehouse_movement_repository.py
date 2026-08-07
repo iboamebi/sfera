@@ -13,6 +13,9 @@ from app.domains.warehouse.repositories.warehouse_movement_repository import (
 from app.infrastructure.mappers.warehouse_movement_mapper import (
     WarehouseMovementMapper,
 )
+from app.models.warehouse_movement import (
+    WarehouseMovement as WarehouseMovementModel,
+)
 
 
 class WarehouseMovementRepositorySQLAlchemy(
@@ -25,15 +28,28 @@ class WarehouseMovementRepositorySQLAlchemy(
         session: Session,
     ) -> None:
         self._session = session
+        self._mapper = WarehouseMovementMapper()
 
     def save(
         self,
         movement: WarehouseMovement,
     ) -> None:
-        model = WarehouseMovementMapper.to_model(
-            movement,
+        """Save warehouse movement."""
+
+        model = self._session.get(
+            WarehouseMovementModel,
+            movement.id,
         )
 
-        self._session.merge(
+        if model is None:
+            model = WarehouseMovementModel(
+                id=movement.id,
+            )
+            self._session.add(model)
+
+        self._mapper.to_model(
+            movement,
             model,
         )
+
+        self._session.flush()
