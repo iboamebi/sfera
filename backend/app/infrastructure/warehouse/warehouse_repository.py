@@ -10,9 +10,7 @@ from app.domains.warehouse.entities.warehouse import Warehouse
 from app.domains.warehouse.repositories.warehouse_repository import (
     WarehouseRepository,
 )
-from app.infrastructure.mappers.warehouse_mapper import (
-    WarehouseMapper,
-)
+from app.infrastructure.mappers.warehouse_mapper import WarehouseMapper
 from app.models.warehouse import Warehouse as WarehouseModel
 
 
@@ -26,11 +24,14 @@ class WarehouseRepositorySQLAlchemy(
         session: Session,
     ) -> None:
         self._session = session
+        self._mapper = WarehouseMapper()
 
     def get(
         self,
         warehouse_id: UUID,
     ) -> Warehouse | None:
+        """Get warehouse by identifier."""
+
         model = self._session.get(
             WarehouseModel,
             warehouse_id,
@@ -39,7 +40,7 @@ class WarehouseRepositorySQLAlchemy(
         if model is None:
             return None
 
-        return WarehouseMapper.to_domain(
+        return self._mapper.to_domain(
             model,
         )
 
@@ -47,10 +48,22 @@ class WarehouseRepositorySQLAlchemy(
         self,
         warehouse: Warehouse,
     ) -> None:
-        model = WarehouseMapper.to_model(
-            warehouse,
+        """Save warehouse."""
+
+        model = self._session.get(
+            WarehouseModel,
+            warehouse.id,
         )
 
-        self._session.merge(
+        if model is None:
+            model = WarehouseModel(
+                id=warehouse.id,
+            )
+            self._session.add(model)
+
+        self._mapper.to_model(
+            warehouse,
             model,
         )
+
+        self._session.flush()
