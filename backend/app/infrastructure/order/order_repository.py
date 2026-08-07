@@ -48,17 +48,13 @@ class OrderRepositorySQLAlchemy(OrderRepository):
         if model is None:
             model = ORMOrder(
                 id=order.id,
-                number=order.number.value,
-                customer_id=order.customer_id,
-                status=order.status.value,
             )
 
             self.session.add(model)
 
-        else:
-            self.mapper.to_model(
-                order,
-                model,
-            )
+        self.mapper.to_model(
+            order,
+            model,
+        )
 
         self.session.flush()
