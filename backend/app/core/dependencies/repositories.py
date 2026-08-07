@@ -6,6 +6,46 @@ from fastapi import Depends
 from sqlalchemy.orm import Session
 
 from app.core.dependencies.database import get_session
+from app.domains.customer.repositories.customer_repository import (
+    CustomerRepository,
+)
+from app.domains.device.repositories.device_repository import (
+    DeviceRepository,
+)
+from app.domains.diagnostic.repositories.diagnostic_repository import (
+    DiagnosticRepository,
+)
+from app.domains.material.repositories.material_repository import (
+    MaterialRepository,
+)
+from app.domains.order.repositories.order_repository import (
+    OrderRepository,
+)
+from app.domains.organization.repositories.organization_repository import (
+    OrganizationRepository,
+)
+from app.domains.price_list.repositories.price_list_repository import (
+    PriceListRepository,
+)
+from app.domains.repair.repositories.repair_repository import (
+    RepairRepository,
+)
+from app.domains.verification.repositories.verification_repository import (
+    VerificationRepository,
+)
+from app.domains.warehouse.repositories.warehouse_movement_repository import (
+    WarehouseMovementRepository,
+)
+from app.domains.warehouse.repositories.warehouse_repository import (
+    WarehouseRepository,
+)
+from app.domains.warehouse.repositories.warehouse_stock_repository import (
+    WarehouseStockRepository,
+)
+from app.domains.workflow.repositories.workflow_repository import (
+    WorkflowInstanceRepository,
+    WorkflowRepository,
+)
 from app.infrastructure.customer.customer_repository import (
     CustomerRepositorySQLAlchemy,
 )
@@ -52,7 +92,7 @@ from app.infrastructure.workflow.workflow_repository import (
 
 def get_material_repository(
     session: Session = Depends(get_session),
-) -> MaterialRepositorySQLAlchemy:
+) -> MaterialRepository:
     """Provide Material repository."""
 
     return MaterialRepositorySQLAlchemy(session)
@@ -60,7 +100,7 @@ def get_material_repository(
 
 def get_diagnostic_repository(
     session: Session = Depends(get_session),
-) -> DiagnosticRepositorySQLAlchemy:
+) -> DiagnosticRepository:
     """Provide Diagnostic repository."""
 
     return DiagnosticRepositorySQLAlchemy(session)
@@ -68,7 +108,7 @@ def get_diagnostic_repository(
 
 def get_warehouse_repository(
     session: Session = Depends(get_session),
-) -> WarehouseRepositorySQLAlchemy:
+) -> WarehouseRepository:
     """Provide Warehouse repository."""
 
     return WarehouseRepositorySQLAlchemy(session)
@@ -76,7 +116,7 @@ def get_warehouse_repository(
 
 def get_warehouse_stock_repository(
     session: Session = Depends(get_session),
-) -> WarehouseStockRepositorySQLAlchemy:
+) -> WarehouseStockRepository:
     """Provide WarehouseStock repository."""
 
     return WarehouseStockRepositorySQLAlchemy(session)
@@ -84,7 +124,7 @@ def get_warehouse_stock_repository(
 
 def get_warehouse_movement_repository(
     session: Session = Depends(get_session),
-) -> WarehouseMovementRepositorySQLAlchemy:
+) -> WarehouseMovementRepository:
     """Provide WarehouseMovement repository."""
 
     return WarehouseMovementRepositorySQLAlchemy(session)
@@ -92,7 +132,7 @@ def get_warehouse_movement_repository(
 
 def get_organization_repository(
     session: Session = Depends(get_session),
-) -> OrganizationRepositorySQLAlchemy:
+) -> OrganizationRepository:
     """Provide Organization repository."""
 
     return OrganizationRepositorySQLAlchemy(session)
@@ -100,7 +140,7 @@ def get_organization_repository(
 
 def get_customer_repository(
     session: Session = Depends(get_session),
-) -> CustomerRepositorySQLAlchemy:
+) -> CustomerRepository:
     """Provide Customer repository."""
 
     return CustomerRepositorySQLAlchemy(session)
@@ -108,7 +148,7 @@ def get_customer_repository(
 
 def get_device_repository(
     session: Session = Depends(get_session),
-) -> DeviceRepositorySQLAlchemy:
+) -> DeviceRepository:
     """Provide Device repository."""
 
     return DeviceRepositorySQLAlchemy(session)
@@ -116,7 +156,7 @@ def get_device_repository(
 
 def get_order_repository(
     session: Session = Depends(get_session),
-) -> OrderRepositorySQLAlchemy:
+) -> OrderRepository:
     """Provide Order repository."""
 
     return OrderRepositorySQLAlchemy(session)
@@ -124,7 +164,7 @@ def get_order_repository(
 
 def get_verification_repository(
     session: Session = Depends(get_session),
-) -> VerificationRepositorySQLAlchemy:
+) -> VerificationRepository:
     """Provide Verification repository."""
 
     return VerificationRepositorySQLAlchemy(session)
@@ -132,7 +172,7 @@ def get_verification_repository(
 
 def get_price_list_repository(
     session: Session = Depends(get_session),
-) -> PriceListRepositorySQLAlchemy:
+) -> PriceListRepository:
     """Provide PriceList repository."""
 
     return PriceListRepositorySQLAlchemy(session)
@@ -140,7 +180,7 @@ def get_price_list_repository(
 
 def get_repair_repository(
     session: Session = Depends(get_session),
-) -> RepairRepositorySQLAlchemy:
+) -> RepairRepository:
     """Provide Repair repository."""
 
     return RepairRepositorySQLAlchemy(session)
@@ -148,7 +188,7 @@ def get_repair_repository(
 
 def get_workflow_repository(
     session: Session = Depends(get_session),
-) -> WorkflowRepositorySQLAlchemy:
+) -> WorkflowRepository:
     """Provide Workflow repository."""
 
     return WorkflowRepositorySQLAlchemy(session)
@@ -156,7 +196,7 @@ def get_workflow_repository(
 
 def get_workflow_instance_repository(
     session: Session = Depends(get_session),
-) -> WorkflowInstanceRepositorySQLAlchemy:
+) -> WorkflowInstanceRepository:
     """Provide Workflow instance repository."""
 
     return WorkflowInstanceRepositorySQLAlchemy(session)
