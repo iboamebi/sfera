@@ -2,7 +2,9 @@
 Diagnostic mapper.
 """
 
-from app.domains.diagnostic.entities.diagnostic import Diagnostic
+from app.domains.diagnostic.entities.diagnostic import (
+    Diagnostic,
+)
 from app.domains.diagnostic.value_objects.recommendation import (
     Recommendation,
 )
@@ -23,7 +25,7 @@ class DiagnosticMapper(
         self,
         model: DiagnosticModel,
     ) -> Diagnostic:
-        """Convert model to domain entity."""
+        """Convert ORM model to domain entity."""
 
         return Diagnostic(
             id=model.id,
@@ -41,7 +43,7 @@ class DiagnosticMapper(
         entity: Diagnostic,
         model: DiagnosticModel,
     ) -> DiagnosticModel:
-        """Convert domain entity to persistence model."""
+        """Convert domain entity to ORM model."""
 
         model.order_item_id = entity.order_item_id
         model.conclusion = entity.conclusion
