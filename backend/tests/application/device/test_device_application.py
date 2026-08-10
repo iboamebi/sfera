@@ -1,13 +1,5 @@
 from uuid import uuid4
 
-from app.application.device.commands.connect_device import (
-    ConnectDeviceCommand,
-    ConnectDeviceHandler,
-)
-from app.application.device.commands.disconnect_device import (
-    DisconnectDeviceCommand,
-    DisconnectDeviceHandler,
-)
 from app.application.device.services.device_application_service import (
     DeviceApplicationService,
 )
@@ -49,14 +41,14 @@ def test_device_connect_disconnect_flow():
     repository = FakeDeviceRepository(device)
     service = DeviceApplicationService(repository)
 
-    connected_device = ConnectDeviceHandler(service).handle(
-        ConnectDeviceCommand(device.id),
+    connected_device = service.connect(
+        device.id,
     )
 
     assert connected_device.status == DeviceStatus.IN_WORK
 
-    disconnected_device = DisconnectDeviceHandler(service).handle(
-        DisconnectDeviceCommand(device.id),
+    disconnected_device = service.disconnect(
+        device.id,
     )
 
     assert disconnected_device.status == DeviceStatus.COMPLETED
