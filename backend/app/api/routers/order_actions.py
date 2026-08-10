@@ -1,3 +1,0 @@
-"""
-Order business actions.
-"""
