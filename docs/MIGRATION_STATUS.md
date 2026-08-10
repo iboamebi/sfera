@@ -398,3 +398,60 @@ DDD + Clean Architecture migration completed.
 
 Known architecture technical debt:
 None.
+
+---
+
+## Application Services Audit
+
+## Checkpoint — 2026-08-10
+
+Application Services Audit: COMPLETE
+
+Проверены все Application Services:
+
+- Customer
+- Device
+- Diagnostic
+- Material
+- Order
+- Organization
+- PriceList
+- Repair
+- Verification
+- Warehouse
+- Workflow
+
+Проверено:
+
+- отсутствие CRUD-style proxy methods;
+- отсутствие бизнес-логики в Application layer;
+- делегирование state changes в Domain;
+- корректность Repository Interface boundaries;
+- корректность UnitOfWork transaction boundaries;
+- отсутствие Infrastructure/ORM dependencies в Application layer.
+
+Cleanup completed:
+
+- Removed redundant `CustomerApplicationService.save()`.
+- Removed redundant `OrganizationApplicationService.save()`.
+- Verified no usages of removed `save()` methods.
+- Redundant command handlers for device and verification were removed.
+- PriceList item update command export was restored.
+
+Результат:
+
+- Application Services выполняют orchestration use cases.
+- Domain entities/domain services выполняют бизнес-правила и state transitions.
+- Repository operations выполняются через application/domain repository interfaces.
+- CRUD-style остатки, обнаруженные в Application Services, удалены.
+- No new Application-layer architectural violations detected.
+
+Validation:
+
+- pytest: 26 passed
+- ruff check: passed
+- ruff format --check: passed
+
+Checkpoint result:
+
+Application layer conforms to current DDD/Clean Architecture rules.

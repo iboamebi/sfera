@@ -134,11 +134,3 @@ class OrganizationApplicationService:
             )
 
         return self._repository.save(organization)
-
-    def save(
-        self,
-        organization: Organization,
-    ) -> Organization:
-        """Save organization."""
-
-        return self._repository.save(organization)

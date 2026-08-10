@@ -109,14 +109,6 @@ class CustomerApplicationService:
 
         return self._repository.save(customer)
 
-    def save(
-        self,
-        customer: Customer,
-    ) -> Customer:
-        """Save customer."""
-
-        return self._repository.save(customer)
-
     def delete(
         self,
         command: DeleteCustomerCommand,
