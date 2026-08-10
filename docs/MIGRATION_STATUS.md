@@ -455,3 +455,72 @@ Validation:
 Checkpoint result:
 
 Application layer conforms to current DDD/Clean Architecture rules.
+
+---
+
+## API Layer Audit
+
+## Checkpoint — 2026-08-10
+
+API Layer Audit: COMPLETE
+
+Проверены routers:
+
+- Customer
+- Device
+- Diagnostic
+- Material
+- Order
+- Organization
+- PriceList
+- PriceListItem
+- Repair
+- Verification
+- Warehouse
+- WarehouseMovement
+- WarehouseStock
+- Workflow
+
+Также проверен router package `app/api/routers/__init__.py`.
+
+Проверено:
+
+- отсутствие Repository/ORM/Session dependencies в API layer;
+- отсутствие Infrastructure dependencies в API layer;
+- отсутствие бизнес-логики в routers;
+- корректная передача HTTP input в Application Commands/Services;
+- корректное mapping Application exceptions → HTTP status codes;
+- наличие явных response models там, где контракт уже определён.
+
+Cleanup completed:
+
+- Removed unused `app/api/routers/order_actions.py`.
+
+Результат:
+
+- API layer сохраняет границу `API → Application`.
+- Repository и persistence concerns не проникают в routers.
+- Business state changes выполняются через Application/Domain layers.
+- API audit не выявил новых архитектурных нарушений.
+
+Known API technical debt / follow-up:
+
+- PriceListItem update contract требует отдельной функциональной миграции: текущая schema заявляет `name`, но router не передаёт его в Application command; `service_type` имеет разные semantics в create и update.
+- Device connect/disconnect endpoints возвращают структурированные payloads без явной response schema.
+- Некоторые create routers генерируют UUID непосредственно в API layer; требуется единая политика генерации identifiers.
+- Material update endpoint использует `PUT` с partial-update semantics (`exclude_unset=True`); требует отдельного решения API contract.
+
+Важно:
+
+- Эти пункты не изменялись в рамках API audit.
+- PriceListItem contract cleanup должен выполняться отдельным feature/migration этапом, а не смешиваться с архитектурным аудитом.
+
+Validation:
+
+- pytest: 26 passed
+- ruff check: passed
+- ruff format --check: passed
+
+Checkpoint result:
+
+API layer conforms to current DDD/Clean Architecture dependency rules; identified contract debt is isolated for subsequent incremental work.
