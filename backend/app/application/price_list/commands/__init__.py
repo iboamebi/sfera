@@ -16,6 +16,9 @@ from app.application.price_list.commands.remove_price_list_item import (
 from app.application.price_list.commands.update_price_list import (
     UpdatePriceListCommand,
 )
+from app.application.price_list.commands.update_price_list_item import (
+    UpdatePriceListItemCommand,
+)
 
 __all__ = [
     "ActivatePriceListCommand",
@@ -23,4 +26,5 @@ __all__ = [
     "CreatePriceListCommand",
     "RemovePriceListItemCommand",
     "UpdatePriceListCommand",
+    "UpdatePriceListItemCommand",
 ]
