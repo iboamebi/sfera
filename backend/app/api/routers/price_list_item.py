@@ -1,5 +1,9 @@
 """
 PriceListItem API router.
+
+Handles HTTP endpoints for price list item operations.
+Version: 2.0
+Revision: 2026-08-11
 """
 
 from uuid import UUID
@@ -45,9 +49,11 @@ async def create(
     return await service.add_item(
         AddPriceListItemCommand(
             price_list_id=data.price_list_id,
-            service_code=data.service_type or "",
+            service_code=data.service_code,
             name=data.name,
-            price=data.unit_price,
+            price=data.price,
+            unit=data.unit,
+            description=data.description,
         )
     )
 
@@ -57,6 +63,7 @@ async def create(
 )
 async def update(
     item_id: UUID,
+    price_list_id: UUID,
     data: PriceListItemUpdate,
     service: PriceListApplicationService = Depends(
         get_price_list_service,
@@ -65,10 +72,10 @@ async def update(
     try:
         return await service.update_item(
             UpdatePriceListItemCommand(
-                price_list_id=data.price_list_id,
+                price_list_id=price_list_id,
                 item_id=item_id,
-                price=data.unit_price,
-                description=data.service_type,
+                price=data.price,
+                description=data.description,
             )
         )
     except PriceListItemNotFoundApplicationError:
