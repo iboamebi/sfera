@@ -2,15 +2,21 @@
 
 ## Текущая задача
 
-Переход от CRUD-архитектуры к DDD/Clean Architecture.
+Переход от CRUD-архитектуры к DDD/Clean Architecture завершён.
+
+Текущий этап — архитектурная валидация и изолированное устранение технического долга без смешивания его с функциональными миграциями.
 
 ## Текущая схема
 
+```text
 API
 → Application Service
+→ Domain
 → Repository Interface
-→ Infrastructure Repository
+↑
+Infrastructure Repository
 → Database
+```
 
 ---
 
@@ -71,13 +77,16 @@ COMPLETED
 Выполнено:
 
 - Domain entity
+- Aggregate Root
 - Value Objects
 - Repository interface
 - SQLAlchemy repository
 - Mapper
-- Application services
+- Application Service
 - Commands
 - API migration
+- Identifier generation aligned with application-layer policy
+- Application test updated
 
 ---
 
@@ -183,18 +192,28 @@ COMPLETED
 - Domain entity
 - Repository interface
 - Infrastructure repository
-- Repository mapping implemented
+- PriceListMapper
 - Application Service
 - Commands
 - PriceListItem migration
 - API Router migration
 - Dependency Injection
+- Legacy PriceList service removal
+- Legacy CRUD dependency removal
 
 Checkpoint:
 
 - PriceList migrated to DDD flow
 - Legacy PriceList service removed
 - Legacy CRUD dependency removed
+
+Known technical debt:
+
+- PriceList creation contract does not currently provide the mandatory `Entity.id`.
+- PriceListItem creation contract does not currently provide the mandatory `Entity.id`.
+- Dedicated PriceList application tests are absent.
+
+This debt is isolated from the completed migration and must be resolved as a separate cleanup/migration task.
 
 ---
 
@@ -262,8 +281,8 @@ COMPLETED
 
 - All infrastructure mappers aligned with BaseMapper contract
 - Mapper methods standardized:
-  - to_domain(self, model)
-  - to_model(self, entity, model)
+  - `to_domain(self, model)`
+  - `to_model(self, entity, model)`
 - ORM model creation responsibility removed from mappers where applicable
 - Repository layer uses mapper instances consistently
 
@@ -330,7 +349,6 @@ COMPLETED
 
 - No imports from `app.models` in `app/domains`
 - No imports from `app.infrastructure` in `app/domains`
-- pytest: 26 passed
 
 ---
 
@@ -363,47 +381,18 @@ COMPLETED
 - API has no Session dependencies
 - Infrastructure has no API/Application dependencies
 
-Technical debt found:
-
-- PriceList repository contains local `_to_domain()` mapping
-- PriceList mapper extraction required for full mapper consistency
-
-Audit checkpoint:
+Checkpoint:
 
 - DDD/Clean Architecture dependency rules validated
 - Workflow migration architecture validated
+- PriceListMapper extraction completed
 - Remaining technical debt isolated
-
----
-
-## Architecture Audit
-
-## Checkpoint — 2026-08-05
-
-Architecture Migration: COMPLETE
-
-Completed:
-- Workflow migration completed.
-- Repository mapper extraction completed.
-- PriceListMapper extracted.
-- Local repository mapping removed.
-- Repository boundaries verified.
-- Domain isolation verified.
-- Application isolation verified.
-- API isolation verified.
-- Infrastructure dependency direction verified.
-
-Result:
-DDD + Clean Architecture migration completed.
-
-Known architecture technical debt:
-None.
 
 ---
 
 ## Application Services Audit
 
-## Checkpoint — 2026-08-10
+### Checkpoint — 2026-08-10
 
 Application Services Audit: COMPLETE
 
@@ -460,7 +449,7 @@ Application layer conforms to current DDD/Clean Architecture rules.
 
 ## API Layer Audit
 
-## Checkpoint — 2026-08-10
+### Checkpoint — 2026-08-10
 
 API Layer Audit: COMPLETE
 
@@ -495,13 +484,14 @@ API Layer Audit: COMPLETE
 Cleanup completed:
 
 - Removed unused `app/api/routers/order_actions.py`.
+- Removed UUID generation from create routers for Material, Warehouse, WarehouseStock, WarehouseMovement and Order.
 
 Результат:
 
 - API layer сохраняет границу `API → Application`.
 - Repository и persistence concerns не проникают в routers.
 - Business state changes выполняются через Application/Domain layers.
-- API audit не выявил новых архитектурных нарушений.
+- Identifier generation is not performed by API routers.
 
 Known API technical debt / follow-up:
 
@@ -528,7 +518,7 @@ API layer conforms to current DDD/Clean Architecture dependency rules; identifie
 
 ## Identifier Generation Audit
 
-## Checkpoint — 2026-08-11
+### Checkpoint — 2026-08-11
 
 Identifier Generation Audit: COMPLETE
 
@@ -553,9 +543,12 @@ Cleanup completed:
 - API UUID generation cleanup.
 - Order creation flow aligned with the identifier policy.
 - Order application test updated.
-- pytest: 26 passed.
-- ruff check: passed.
-- ruff format --check: passed.
+
+Validation:
+
+- pytest: 26 passed
+- ruff check: passed
+- ruff format --check: passed
 
 Known technical debt:
 
@@ -572,3 +565,25 @@ Follow-up:
 Checkpoint result:
 
 Identifier generation policy is aligned across API, Application and Domain creation flows, with PriceList creation contract isolated as separate technical debt.
+
+---
+
+## Current Checkpoint
+
+As of 2026-08-11:
+
+- DDD/Clean Architecture migration is complete.
+- Application Services audit is complete.
+- API Layer audit is complete.
+- Identifier generation audit is complete.
+- Legacy CRUD layers are removed.
+- Infrastructure mapper alignment is complete.
+- pytest: 26 passed.
+- ruff check: passed.
+- ruff format --check: passed.
+
+Open technical debt is isolated and must be addressed incrementally without mixing feature migration and architectural cleanup:
+
+1. PriceList / PriceListItem identifier creation contract.
+2. PriceList application test coverage.
+3. Existing API contract debt listed in the API Layer Audit.
