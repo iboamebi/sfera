@@ -2,7 +2,7 @@
 
 ## Версия
 
-1.0
+1.1
 
 ## Статус
 
@@ -61,25 +61,25 @@
 
 ## API
 
-Только HTTP.
+Только HTTP-транспорт и преобразование HTTP DTO в Application Commands/queries и обратно.
 
 ## Application
 
-Прикладные сценарии.
+Прикладные сценарии, orchestration, границы транзакций и взаимодействие с Domain и Repository Interfaces.
 
 ## Domain
 
-Предметная область.
+Предметная область, бизнес-правила, сущности, value objects, domain services и domain events.
 
 ## Infrastructure
 
-Техническая реализация.
+Техническая реализация repository interfaces, persistence, mappers и интеграций с внешними системами.
 
 ## Database
 
 Хранение данных.
 
-Других слоев не допускается.
+Других архитектурных слоев не допускается.
 
 ---
 
@@ -102,19 +102,29 @@ Domain
 
 Repository Interface
 
-↓
+↑
 
-Infrastructure
+Infrastructure Repository
 
 ↓
 
 Database
 ```
 
+Application зависит только от абстракций, определённых в Domain/Shared contracts.
+
 Запрещено:
 
 ```text
 Domain
+
+↓
+
+Infrastructure
+```
+
+```text
+Application
 
 ↓
 
@@ -142,6 +152,14 @@ Router
 
 ↓
 
+Database
+```
+
+```text
+Router
+
+↓
+
 CRUD
 ```
 
@@ -159,7 +177,7 @@ Domain:
 - ничего не знает о HTTP;
 - ничего не знает о JSON.
 
-Domain содержит только бизнес.
+Domain содержит только бизнес-модель и бизнес-правила.
 
 ---
 
@@ -169,39 +187,45 @@ Application реализует пользовательские сценарии
 
 Именно здесь находятся:
 
-- проверки;
+- orchestration use cases;
 - последовательность операций;
-- транзакции;
-- Unit of Work;
-- Domain Events.
+- транзакционные границы;
+- Unit of Work coordination;
+- вызов domain behavior;
+- публикация/координация Domain Events в соответствии с application flow.
+
+Application не содержит persistence implementation и не содержит бизнес-правила, принадлежащие Domain.
 
 ---
 
 # Статья 8. Repository
 
-Repository отвечает только за доступ к данным.
+Repository Interface является контрактом доступа Application/Domain к данным.
+
+Repository Implementation находится в Infrastructure.
 
 Repository запрещено:
 
 - изменять бизнес-правила;
-- принимать решения;
-- выполнять вычисления;
+- принимать бизнес-решения;
+- выполнять вычисления, относящиеся к Domain;
 - работать с HTTP.
+
+Infrastructure Repository отвечает за persistence concerns и mapping между ORM models и Domain entities.
 
 ---
 
-# Статья 9. CRUD
+# Статья 9. Legacy CRUD
 
-CRUD — исключительно технический слой.
+Legacy CRUD не является частью новой архитектуры.
 
-CRUD содержит только:
+Новые use cases не должны зависеть от CRUD.
 
-- SELECT;
-- INSERT;
-- UPDATE;
-- DELETE.
+Legacy CRUD может временно использоваться только как источник информации при миграции существующего функционала.
 
-Любая бизнес-логика в CRUD запрещена.
+Любая бизнес-логика в legacy CRUD запрещена.
+
+Удалённые legacy CRUD layers не должны возвращаться в новые модули.
 
 ---
 
@@ -210,31 +234,41 @@ CRUD содержит только:
 API отвечает только за:
 
 - прием HTTP-запросов;
-- проверку DTO;
-- вызов Service;
+- валидацию и преобразование DTO;
+- вызов Application Service/use case;
+- преобразование Application errors в HTTP responses;
 - возврат ответа.
 
-API запрещается работать с базой данных напрямую.
+API запрещается:
+
+- работать с базой данных напрямую;
+- обращаться к Repository напрямую;
+- содержать бизнес-правила;
+- использовать Infrastructure implementations напрямую.
 
 ---
 
 # Статья 11. Unit of Work
 
-Любое изменение данных выполняется в рамках одной транзакции.
+Изменения, требующие транзакционной целостности, выполняются в рамках одной транзакционной границы Unit of Work.
 
-Только Unit of Work имеет право:
+Unit of Work отвечает за управление транзакцией и предоставляет операции:
 
 - commit();
 - rollback();
 - begin().
 
+Application Service определяет границу use case и координирует Unit of Work.
+
 ---
 
 # Статья 12. Domain Events
 
-Все значимые изменения сопровождаются событиями.
+Значимые бизнес-изменения могут сопровождаться Domain Events.
 
-Минимальный набор событий:
+Минимальный набор событий определяется фактическими бизнес-сценариями проекта и не должен создаваться формально только ради архитектурного требования.
+
+Примеры:
 
 ```text
 CustomerCreated
@@ -256,15 +290,15 @@ WarehouseStockChanged
 
 # Статья 13. Архивирование
 
-Удаление данных запрещено.
+Удаление бизнес-данных запрещено там, где это противоречит требованиям сохранения истории.
 
-Используется только логическое архивирование.
+Для соответствующих сущностей используется логическое архивирование.
 
 ```text
 archived = True
 ```
 
-История должна сохраняться всегда.
+История операций и значимых изменений должна сохраняться в соответствии с бизнес-требованиями.
 
 ---
 
@@ -272,12 +306,15 @@ archived = True
 
 Каждый новый модуль обязан:
 
-- использовать BaseRepository;
-- использовать BaseRouter;
-- использовать Application Service;
+- использовать Repository Interface вместо прямой зависимости Application от Infrastructure Repository;
+- использовать Application Service/use case для прикладных сценариев;
 - использовать Dependency Injection;
 - соответствовать DDD;
-- соответствовать Clean Architecture.
+- соответствовать Clean Architecture;
+- соблюдать направление зависимостей;
+- не вводить новые legacy CRUD или BaseRouter abstractions.
+
+Базовые классы и общие абстракции допускаются только при наличии реального общего контракта и не должны использоваться формально.
 
 ---
 
@@ -285,7 +322,7 @@ archived = True
 
 Используются единые правила.
 
-Repository:
+Repository Interface:
 
 ```text
 CustomerRepository
@@ -293,12 +330,12 @@ CustomerRepository
 OrderRepository
 ```
 
-Service:
+Application Service:
 
 ```text
-CustomerService
+CustomerApplicationService
 
-OrderService
+OrderApplicationService
 ```
 
 Command:
@@ -322,23 +359,25 @@ OrderCreated
 Exception:
 
 ```text
-OrderNotFound
+OrderNotFoundApplicationError
 ```
 
 ---
 
 # Статья 16. Тестирование
 
-Каждый модуль сопровождается тестами.
+Каждый новый модуль сопровождается тестами, соответствующими его архитектурным границам.
 
-Минимально:
+Минимальный набор для значимого функционала включает необходимые:
 
 - Domain Tests;
-- Service Tests;
-- Repository Tests;
+- Application/Service Tests;
+- Repository/Infrastructure Tests;
 - API Tests.
 
-Код без тестов считается незавершенным.
+Конкретный набор определяется уровнем риска и существующим контрактом модуля.
+
+Код без достаточного тестового покрытия считается незавершенным.
 
 ---
 
@@ -348,13 +387,21 @@ OrderNotFound
 
 Документация является частью проекта.
 
+Архитектурная документация должна отражать фактическую реализацию, а не устаревший целевой дизайн.
+
 ---
 
 # Статья 18. Обратная совместимость
 
 Изменения архитектуры не должны нарушать существующие бизнес-процессы без явного решения.
 
-Миграция выполняется поэтапно.
+Миграция выполняется поэтапно:
+
+```text
+new → integrate → validate → remove legacy
+```
+
+Feature migration и architectural cleanup выполняются раздельно, если их объединение не является необходимым для корректности.
 
 ---
 
@@ -364,10 +411,14 @@ OrderNotFound
 
 - соответствие архитектуре;
 - отсутствие бизнес-логики вне Domain/Application;
-- отсутствие прямых обращений к CRUD;
-- отсутствие SQLAlchemy в Domain;
+- отсутствие зависимостей от legacy CRUD;
+- отсутствие SQLAlchemy в Domain и Application;
+- корректное направление зависимостей;
 - прохождение тестов;
-- прохождение Swagger.
+- прохождение статического анализа;
+- актуальность архитектурной документации.
+
+Swagger/API documentation проверяется для изменений публичного API, когда это применимо.
 
 ---
 
