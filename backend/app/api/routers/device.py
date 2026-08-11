@@ -1,5 +1,9 @@
 """
 Device actions.
+
+Handles HTTP endpoints for device business actions.
+Version: 2.0
+Revision: 2026-08-11
 """
 
 from uuid import UUID
@@ -15,6 +19,7 @@ from app.application.device.services.device_application_service import (
     DeviceApplicationService,
 )
 from app.core.dependencies.services import get_device_service
+from app.schemas.device_action import DeviceActionResponse
 
 router = APIRouter(
     prefix="/devices",
@@ -22,10 +27,15 @@ router = APIRouter(
 )
 
 
-@router.post("/{device_id}/connect")
+@router.post(
+    "/{device_id}/connect",
+    response_model=DeviceActionResponse,
+)
 def connect_device(
     device_id: UUID,
-    service: DeviceApplicationService = Depends(get_device_service),
+    service: DeviceApplicationService = Depends(
+        get_device_service,
+    ),
 ):
     try:
         device = service.connect(device_id)
@@ -48,10 +58,15 @@ def connect_device(
     }
 
 
-@router.post("/{device_id}/disconnect")
+@router.post(
+    "/{device_id}/disconnect",
+    response_model=DeviceActionResponse,
+)
 def disconnect_device(
     device_id: UUID,
-    service: DeviceApplicationService = Depends(get_device_service),
+    service: DeviceApplicationService = Depends(
+        get_device_service,
+    ),
 ):
     try:
         device = service.disconnect(device_id)
