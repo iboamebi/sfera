@@ -1,8 +1,12 @@
 """
 Material API router.
+
+Handles HTTP endpoints for material operations.
+Version: 2.0
+Revision: 2026-08-11
 """
 
-from uuid import UUID, uuid4
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
 
@@ -78,7 +82,6 @@ def create_material(
     ),
 ):
     command = CreateMaterialCommand(
-        material_id=uuid4(),
         name=data.name,
         article=data.article,
         unit=data.unit,

@@ -12,9 +12,8 @@ from app.domains.warehouse.value_objects.movement_type import (
 
 @dataclass(frozen=True)
 class CreateMovementCommand:
-    """Create movement command."""
+    """Create warehouse movement command."""
 
-    movement_id: UUID
     warehouse_id: UUID
     material_id: UUID
     movement_type: MovementType

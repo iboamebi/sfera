@@ -1,3 +1,7 @@
+"""
+Tests for Order application service.
+"""
+
 from uuid import uuid4
 
 from app.application.order.commands.add_order_item import (
@@ -43,12 +47,10 @@ def test_create_register_order_flow():
         FakeUnitOfWork(),
     )
 
-    order_id = uuid4()
     customer_id = uuid4()
 
     order = service.create(
         CreateOrderCommand(
-            order_id=order_id,
             customer_id=customer_id,
             number="10001",
         )
@@ -57,7 +59,6 @@ def test_create_register_order_flow():
     service.add_item(
         AddOrderItemCommand(
             order_id=order.id,
-            item_id=uuid4(),
         )
     )
 
@@ -65,6 +66,9 @@ def test_create_register_order_flow():
         RegisterOrderCommand(order.id),
     )
 
+    assert order.id is not None
     assert order.number.value == "10001"
+    assert order.customer_id == customer_id
     assert len(order.items) == 1
+    assert order.items[0].id is not None
     assert order.status.value == "REGISTERED"

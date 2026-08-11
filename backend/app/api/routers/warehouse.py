@@ -2,8 +2,6 @@
 Warehouse API router.
 """
 
-from uuid import uuid4
-
 from fastapi import APIRouter, Depends
 
 from app.application.warehouse.commands.create_warehouse import (
@@ -39,7 +37,6 @@ def create_warehouse(
 ):
     return service.create(
         CreateWarehouseCommand(
-            warehouse_id=uuid4(),
             name=data.name,
             address=data.address,
             responsible_person=data.responsible_person,

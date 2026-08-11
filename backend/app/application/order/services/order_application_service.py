@@ -2,7 +2,7 @@
 Application service for Order.
 """
 
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from app.application.order.commands.add_order_item import (
     AddOrderItemCommand,
@@ -40,7 +40,7 @@ class OrderApplicationService:
     ) -> Order:
         with self._uow:
             order = Order.create(
-                id=command.order_id,
+                id=uuid4(),
                 number=OrderNumber(command.number),
                 customer_id=command.customer_id,
             )
@@ -71,7 +71,7 @@ class OrderApplicationService:
 
             order.add_item(
                 OrderItem(
-                    id=command.item_id,
+                    id=uuid4(),
                     instrument_id=command.instrument_id,
                 )
             )

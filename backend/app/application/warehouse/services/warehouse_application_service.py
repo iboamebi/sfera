@@ -2,6 +2,8 @@
 Application service for Warehouse.
 """
 
+from uuid import uuid4
+
 from app.application.warehouse.commands.add_stock import (
     AddStockCommand,
 )
@@ -60,7 +62,7 @@ class WarehouseApplicationService:
     ) -> Warehouse:
         with self._uow:
             warehouse = Warehouse(
-                id=command.warehouse_id,
+                id=uuid4(),
                 name=command.name,
                 address=command.address,
                 responsible_person=command.responsible_person,
@@ -77,7 +79,7 @@ class WarehouseApplicationService:
     ) -> WarehouseStock:
         with self._uow:
             stock = WarehouseStock(
-                id=command.stock_id,
+                id=uuid4(),
                 warehouse_id=command.warehouse_id,
                 material_id=command.material_id,
                 quantity=command.quantity,
@@ -131,7 +133,7 @@ class WarehouseApplicationService:
     ) -> WarehouseMovement:
         with self._uow:
             movement = WarehouseMovement(
-                id=command.movement_id,
+                id=uuid4(),
                 warehouse_id=command.warehouse_id,
                 material_id=command.material_id,
                 movement_type=command.movement_type,

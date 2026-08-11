@@ -10,7 +10,6 @@ from uuid import UUID
 class AddStockCommand:
     """Add stock command."""
 
-    stock_id: UUID
     warehouse_id: UUID
     material_id: UUID
     quantity: float

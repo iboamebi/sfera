@@ -1,16 +1,18 @@
 """
-Create Material command.
+Create material command.
+
+Defines input data for creating a new Material.
+Version: 2.0
+Revision: 2026-08-11
 """
 
 from dataclasses import dataclass
-from uuid import UUID
 
 
 @dataclass(frozen=True)
 class CreateMaterialCommand:
-    """Create material command."""
+    """Command for creating a material."""
 
-    material_id: UUID
     name: str
     article: str | None
     unit: str

@@ -2,7 +2,7 @@
 Application service for Material.
 """
 
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from app.application.material.commands.archive_material import (
     ArchiveMaterialCommand,
@@ -61,7 +61,7 @@ class MaterialApplicationService:
         """Create material."""
 
         material = Material(
-            id=command.material_id,
+            id=uuid4(),
             name=command.name,
             article=command.article,
             unit=command.unit,

@@ -2,7 +2,7 @@
 Order API router.
 """
 
-from uuid import UUID, uuid4
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
@@ -35,6 +35,8 @@ router = APIRouter(
 
 
 class OrderItemCreate(BaseModel):
+    """Request schema for adding an order item."""
+
     instrument_id: UUID | None = None
 
 
@@ -51,7 +53,6 @@ def create_order(
 ):
     return service.create(
         CreateOrderCommand(
-            order_id=uuid4(),
             customer_id=data.customer_id,
             number=data.number,
         )
@@ -72,7 +73,6 @@ def add_order_item(
     return service.add_item(
         AddOrderItemCommand(
             order_id=order_id,
-            item_id=uuid4(),
             instrument_id=data.instrument_id,
         )
     )

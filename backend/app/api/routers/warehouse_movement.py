@@ -2,8 +2,6 @@
 Warehouse movement API router.
 """
 
-from uuid import uuid4
-
 from fastapi import APIRouter, Depends
 
 from app.application.warehouse.commands.create_movement import (
@@ -39,7 +37,6 @@ def create_movement(
 ):
     return service.create_movement(
         CreateMovementCommand(
-            movement_id=uuid4(),
             warehouse_id=data.warehouse_id,
             material_id=data.material_id,
             movement_type=data.movement_type,

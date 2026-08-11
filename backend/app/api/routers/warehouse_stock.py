@@ -2,8 +2,6 @@
 Warehouse stock API router.
 """
 
-from uuid import uuid4
-
 from fastapi import APIRouter, Depends
 
 from app.application.warehouse.commands.add_stock import (
@@ -39,7 +37,6 @@ def add_stock(
 ):
     return service.add_stock(
         AddStockCommand(
-            stock_id=uuid4(),
             warehouse_id=data.warehouse_id,
             material_id=data.material_id,
             quantity=data.quantity,
