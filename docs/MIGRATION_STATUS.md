@@ -279,12 +279,17 @@ COMPLETED
 
 Выполнено:
 
-- All infrastructure mappers aligned with BaseMapper contract
+- Infrastructure mappers aligned with the current mapper contract
 - Mapper methods standardized:
   - `to_domain(self, model)`
   - `to_model(self, entity, model)`
 - ORM model creation responsibility removed from mappers where applicable
 - Repository layer uses mapper instances consistently
+
+Important:
+
+- There is currently no shared `BaseMapper` class in the repository.
+- Mapper consistency is based on the agreed method contract and repository usage, not inheritance from a common base mapper.
 
 Affected mappers:
 
