@@ -424,16 +424,17 @@ Swagger/API documentation проверяется для изменений пу�
 
 # Статья 20. Приоритет документов
 
-Приоритет архитектурных документов:
+Приоритет архитектурных документов проекта:
 
-1. PROJECT_CONSTITUTION.md
-2. PROJECT_ARCHITECTURE_STANDARD.md
-3. APPLICATION_SERVICE_STANDARD.md
-4. DOMAIN_LAYER_STANDARD.md
-5. REPOSITORY_LAYER_STANDARD.md
-6. INFRASTRUCTURE_LAYER_STANDARD.md
-7. API_LAYER_STANDARD.md
-8. Остальная документация проекта.
+1. `PROJECT_CONSTITUTION.md` — нормативные архитектурные правила.
+2. `ARCHITECTURE.md` — актуальное архитектурное описание.
+3. `MIGRATION_STATUS.md` — текущий статус миграции и архитектурных аудитов.
+4. `MIGRATION_MATRIX.md` — состояние миграции по модулям.
+5. `AI_CONTEXT.md` — контекст для восстановления состояния проекта при работе с ИИ.
+6. `FRONTEND_ARCHITECTURE.md` — утверждённая целевая архитектура frontend; frontend implementation ещё не начата.
+7. Остальная документация проекта.
+
+Документы более низкого уровня не могут переопределять требования `PROJECT_CONSTITUTION.md`.
 
 ---
 
