@@ -507,7 +507,6 @@ Known API technical debt / follow-up:
 
 - PriceListItem update contract требует отдельной функциональной миграции: текущая schema заявляет `name`, но router не передаёт его в Application command; `service_type` имеет разные semantics в create и update.
 - Device connect/disconnect endpoints возвращают структурированные payloads без явной response schema.
-- Некоторые create routers генерируют UUID непосредственно в API layer; требуется единая политика генерации identifiers.
 - Material update endpoint использует `PUT` с partial-update semantics (`exclude_unset=True`); требует отдельного решения API contract.
 
 Важно:
@@ -524,3 +523,52 @@ Validation:
 Checkpoint result:
 
 API layer conforms to current DDD/Clean Architecture dependency rules; identified contract debt is isolated for subsequent incremental work.
+
+---
+
+## Identifier Generation Audit
+
+## Checkpoint — 2026-08-11
+
+Identifier Generation Audit: COMPLETE
+
+Проверено:
+
+- API routers;
+- Application Services;
+- Domain entities;
+- Domain factories;
+- Domain `create()` methods.
+
+Результат:
+
+- UUID generation removed from API create routers.
+- Application layer owns identifier generation for simple entity creation.
+- Domain factories may generate identifiers when they construct complete domain structures.
+- Domain `create()` methods receive identifiers explicitly where identifier generation is not a domain business rule.
+- No new architecture violations found in Customer, Organization, Material, Warehouse, Order, Workflow, Diagnostic, Repair and Device creation flows.
+
+Cleanup completed:
+
+- API UUID generation cleanup.
+- Order creation flow aligned with the identifier policy.
+- Order application test updated.
+- pytest: 26 passed.
+- ruff check: passed.
+- ruff format --check: passed.
+
+Known technical debt:
+
+- PriceList and PriceListItem creation contracts are inconsistent with mandatory `Entity.id`.
+- `PriceList.create()` does not accept or assign an identifier.
+- `PriceListItem` creation does not provide an identifier.
+- PriceList Application Service has no dedicated application tests.
+
+Follow-up:
+
+- Resolve PriceList / PriceListItem identifier creation contract as a separate cleanup/migration task.
+- Add application tests before changing the PriceList creation contract.
+
+Checkpoint result:
+
+Identifier generation policy is aligned across API, Application and Domain creation flows, with PriceList creation contract isolated as separate technical debt.
