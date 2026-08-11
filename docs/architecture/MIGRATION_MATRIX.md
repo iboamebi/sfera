@@ -10,16 +10,18 @@
 | Verification | removed | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | COMPLETED |
 | Repair | removed | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | COMPLETED |
 | Diagnostic | removed | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | COMPLETED |
-| PriceList | removed | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | COMPLETED |
-| PriceListItem | removed | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | COMPLETED |
+| PriceList | removed | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | COMPLETED* |
+| PriceListItem | removed | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | COMPLETED* |
 | Device | removed | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | COMPLETED |
 | Workflow | removed | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | COMPLETED |
+
+`*` Migration is complete. PriceList / PriceListItem have an isolated identifier-creation contract debt that must be resolved separately.
 
 ---
 
 # Current Architecture
 
-```
+```text
 API
 ↓
 Application Service
@@ -37,15 +39,19 @@ Database
 
 # Migration Standard
 
-Каждый новый функционал реализуется исключительно по цепочке:
+Каждый новый функционал реализуется исключительно через Application use case и repository abstraction:
 
-```
-Application Service
-        ↓
+```text
+API
+↓
+Application Service / Command
+↓
+Domain
+↓
 Repository Interface
-        ↓
+↑
 Infrastructure Repository
-        ↓
+↓
 Database
 ```
 
@@ -54,9 +60,12 @@ Database
 - Domain не зависит от внешних слоев.
 - Application не зависит от Infrastructure.
 - API не содержит бизнес-логику.
+- API не обращается к Repository или Database напрямую.
 - SQLAlchemy используется только в Infrastructure.
-- Legacy CRUD запрещён.
-- Новые use cases создаются только через Application Services.
+- Legacy CRUD запрещён для новых use cases.
+- Новые use cases создаются через Application Services.
+- Domain state changes принадлежат Domain entities/domain services.
+- Infrastructure отвечает за persistence и mapping.
 
 ---
 
@@ -76,12 +85,19 @@ Completed:
 - API migration
 - Repository abstraction
 - Legacy CRUD removal
-- Device
-- Workflow
+- Device migration
+- Workflow migration
+- PriceList migration
+
+Validation:
+
+- pytest: 26 passed
+- ruff check: passed
+- ruff format --check: passed
 
 ---
 
-## Application Exceptions Isolation
+## Application Services Audit
 
 Status:
 
@@ -89,30 +105,97 @@ COMPLETED
 
 Completed:
 
-- Specialized application exceptions
-- Generic ValueError removed
-- API exception boundaries isolated
+- Application Service dependency audit
+- CRUD-style operation audit
+- Domain state-change delegation audit
+- Repository interface boundary audit
+- UnitOfWork transaction boundary audit
+- Infrastructure dependency isolation
 
-Modules:
+Result:
 
-- Order
-- Material
-- Diagnostic
-- PriceList
-- PriceListItem
-- Repair
-- Verification
-- Warehouse
-- Device
-- Workflow
+- Application Services coordinate use cases.
+- Business state transitions remain in Domain.
+- Repository access uses repository interfaces.
+- No new Application-layer architecture violations detected.
 
 Validation:
 
-- API imports only Application layer
-- Application imports no Infrastructure
-- Domain imports no external layers
-- SQLAlchemy isolated in Infrastructure
-- pytest: 16 passed
+- pytest: 26 passed
+- ruff check: passed
+- ruff format --check: passed
+
+---
+
+## API Layer Audit
+
+Status:
+
+COMPLETED
+
+Completed:
+
+- API dependency isolation
+- Repository/ORM/Session isolation
+- Infrastructure dependency isolation
+- Business-logic isolation
+- Application Command/Service boundary verification
+- Application exception to HTTP boundary verification
+- API router cleanup
+
+Identifier generation cleanup:
+
+- UUID generation removed from create routers.
+- API routers no longer generate entity identifiers.
+- Identifier generation is handled by the Application layer for simple entity creation.
+
+Known isolated API contract debt:
+
+- PriceListItem update contract requires a separate functional migration.
+- Device connect/disconnect endpoints lack explicit response schemas.
+- Material update endpoint uses `PUT` with partial-update semantics.
+
+Validation:
+
+- pytest: 26 passed
+- ruff check: passed
+- ruff format --check: passed
+
+---
+
+## Identifier Generation Audit
+
+Status:
+
+COMPLETED
+
+Scope:
+
+- API routers
+- Application Services
+- Domain entities
+- Domain factories
+- Domain `create()` methods
+
+Result:
+
+- API UUID generation removed.
+- Application layer owns identifier generation for simple entity creation.
+- Domain factories may generate identifiers when they construct complete domain structures.
+- Domain `create()` methods receive identifiers explicitly where identifier generation is not itself a domain business rule.
+- No new architecture violations found in Customer, Organization, Material, Warehouse, Order, Workflow, Diagnostic, Repair and Device creation flows.
+
+Known technical debt:
+
+- `PriceList.create()` does not currently accept or assign an identifier.
+- `PriceListItem` creation does not currently provide an identifier.
+- PriceList application test coverage is absent.
+
+Validation:
+
+- pytest: 26 passed
+- ruff check: passed
+- ruff format --check: passed
 
 ---
 
@@ -139,7 +222,31 @@ Validation:
 
 - Domain has no ORM dependencies
 - Domain has no Infrastructure dependencies
-- pytest: 16 passed
+- pytest: 26 passed
+
+---
+
+## Infrastructure Mapper Alignment
+
+Status:
+
+COMPLETED
+
+Completed:
+
+- Mapper contract alignment
+- `to_domain()` standardization
+- `to_model()` standardization
+- Repository/mapper integration
+- PriceListMapper extraction
+- Legacy mapper implementations removed
+
+Validation:
+
+- Infrastructure repositories use mapper abstractions
+- Domain remains isolated from ORM
+- pytest: 26 passed
+- ruff check: passed
 
 ---
 
@@ -157,6 +264,7 @@ Completed:
 - Domain layer isolation verification
 - Repository interface boundary verification
 - Infrastructure dependency direction verification
+- Legacy CRUD dependency verification
 
 Validation:
 
@@ -164,17 +272,40 @@ Validation:
 - Application contains no Infrastructure dependencies
 - Domain contains no ORM dependencies
 - Infrastructure contains no API/Application dependencies
-- pytest: 16 passed
+- pytest: 26 passed
 
 ---
 
-# Next Architecture Audit
+# Current Checkpoint — 2026-08-11
 
-Следующий этап развития архитектуры:
+The DDD/Clean Architecture migration and the current architecture audits are complete.
 
-- аудит полноты DDD-миграции всех модулей;
-- поиск оставшихся нарушений зависимостей;
-- проверка единообразия Application Services;
-- проверка единообразия Repository Interfaces;
-- проверка единообразия Infrastructure Repositories;
-- актуализация архитектурной документации после аудита.
+Completed:
+
+- DDD/Clean Architecture migration
+- Application Services audit
+- API Layer audit
+- Identifier Generation audit
+- Infrastructure mapper alignment
+- Legacy CRUD removal
+- Architecture dependency validation
+
+Current validation:
+
+- pytest: 26 passed
+- ruff check: passed
+- ruff format --check: passed
+
+Open technical debt is intentionally isolated from completed migration work:
+
+1. PriceList / PriceListItem identifier creation contract.
+2. PriceList application test coverage.
+3. Existing API contract debt listed in the API Layer Audit.
+
+Next work must follow the project rule:
+
+```text
+new → integrate → validate → remove legacy
+```
+
+Feature migration and architectural cleanup must remain separate changes.
