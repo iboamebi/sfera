@@ -4,7 +4,7 @@
 
 Проект развивается по архитектуре:
 
-```
+```text
 DDD + Clean Architecture
 ```
 
@@ -25,13 +25,15 @@ DDD + Clean Architecture
 - Value Objects;
 - Domain Services;
 - Domain Exceptions;
-- Repository Interfaces.
+- Repository Interfaces;
+- Domain Factories where creation of a complete domain structure requires them.
 
 Разрешено:
 
 - бизнес-правила;
 - изменение состояния сущностей;
-- доменная валидация.
+- доменная валидация;
+- создание доменных структур через entities/factories.
 
 Запрещено:
 
@@ -57,7 +59,8 @@ DDD + Clean Architecture
 
 - координацию сценариев;
 - работу через Repository Interfaces;
-- управление Unit of Work (при необходимости).
+- управление Unit of Work;
+- генерацию технических identifiers для простого создания entities, когда это не является domain business rule.
 
 Запрещено:
 
@@ -78,7 +81,7 @@ DDD + Clean Architecture
 - работу с базой данных;
 - внешние интеграции.
 
-Infrastructure реализует интерфейсы Domain и не содержит бизнес-правил.
+Infrastructure реализует интерфейсы Domain/Application и не содержит бизнес-правил.
 
 ---
 
@@ -98,7 +101,8 @@ API отвечает только за транспортный слой.
 - бизнес-логика;
 - SQLAlchemy;
 - Repository-вызовы;
-- работа с БД.
+- работа с БД;
+- генерация domain identifiers.
 
 ---
 
@@ -106,7 +110,7 @@ API отвечает только за транспортный слой.
 
 Все новые сценарии строятся по одной схеме:
 
-```
+```text
 HTTP Request
       ↓
 API Router
@@ -130,7 +134,7 @@ Database
 
 Расположение:
 
-```
+```text
 app/domains/*/repositories/
 ```
 
@@ -144,7 +148,7 @@ app/domains/*/repositories/
 
 Расположение:
 
-```
+```text
 app/infrastructure/*/
 ```
 
@@ -159,24 +163,24 @@ app/infrastructure/*/
 
 # Производственный процесс
 
-Основной бизнес-процесс:
+Основной реализованный бизнес-поток в текущей backend architecture:
 
-```
+```text
 Order
     ↓
-Case
+OrderItem
     ↓
 Workflow
-    ↓
-Technological Card
     ↓
 Verification / Repair / Diagnostic
 ```
 
 Текущий статус:
 
-- Workflow полностью переведён на DDD/Clean Architecture.
-- Case и Technological Card остаются следующими ключевыми доменными объектами.
+- Order migrated to DDD/Clean Architecture.
+- Workflow migrated to DDD/Clean Architecture.
+- Verification, Repair and Diagnostic migrated to DDD/Clean Architecture.
+- Case and Technological Card are not current migration checkpoints and are not treated as implemented architectural layers unless their domain modules are introduced explicitly.
 
 ---
 
@@ -184,7 +188,7 @@ Verification / Repair / Diagnostic
 
 Историческая схема:
 
-```
+```text
 API
     ↓
 CRUD
@@ -194,7 +198,7 @@ Model
 
 Целевая схема:
 
-```
+```text
 API
     ↓
 Application Service
@@ -212,6 +216,12 @@ Legacy удаляется только после:
 - прохождения тестов;
 - проверки импортов;
 - подтверждения отсутствия зависимостей.
+
+Migration workflow:
+
+```text
+new → integrate → validate → remove legacy
+```
 
 ---
 
@@ -234,32 +244,43 @@ Legacy удаляется только после:
 После завершения логического этапа:
 
 1. Проверить `git status`.
-2. Выполнить commit.
-3. Выполнить push.
-4. Только после синхронизации переходить к следующему этапу.
+2. Выполнить tests и linting.
+3. Выполнить commit.
+4. Выполнить push.
+5. Только после синхронизации переходить к следующему этапу.
 
 ---
 
 # Технический долг
 
-Архитектурные упрощения выполняются только после завершения функциональных миграций.
+Архитектурные упрощения выполняются отдельно от функциональных миграций.
 
-Текущий запланированный рефакторинг:
+Текущий технический долг:
 
-- удалить `app/domains/workflow/services/workflow_service.py`, если он останется простой обёрткой над методами `WorkflowInstance`;
-- удалить связанные неиспользуемые экспорты и импорты;
-- сохранить чистую границу между Domain и Application.
+- `PriceList` and `PriceListItem` creation contracts do not consistently provide the mandatory `Entity.id`;
+- dedicated PriceList application tests are absent;
+- PriceListItem API update contract has schema/command semantic inconsistencies;
+- Device connect/disconnect endpoints lack explicit response schemas;
+- Material update uses `PUT` with partial-update semantics.
+
+These items are tracked separately and must be resolved incrementally. They do not reopen completed module migrations.
 
 ---
 
 # Тестирование
 
-Каждая миграция должна сопровождаться:
+Каждая миграция должна сопровождаться соответствующими:
 
 - unit tests;
 - architecture tests;
-- проверкой API;
-- проверкой миграций БД;
-- проверкой основных бизнес-сценариев.
+- API tests where applicable;
+- migration/database checks where applicable;
+- проверками основных бизнес-сценариев.
 
-Новая функциональность считается завершённой только после успешного прохождения всех проверок.
+Текущий backend checkpoint:
+
+- pytest: 26 passed;
+- ruff check: passed;
+- ruff format --check: passed.
+
+Новая функциональность считается завершённой только после успешного прохождения релевантных проверок.
