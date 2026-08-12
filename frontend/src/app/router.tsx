@@ -1,6 +1,7 @@
 import { createBrowserRouter } from "react-router-dom";
 
 import { CreateOrderPage } from "../pages/orders/CreateOrderPage";
+import { OrderPage } from "../pages/orders/OrderPage";
 import { OrdersPage } from "../pages/orders/OrdersPage";
 
 export const router = createBrowserRouter([
@@ -14,6 +15,6 @@ export const router = createBrowserRouter([
   },
   {
     path: "/orders/:orderId",
-    element: <div>Order</div>,
+    element: <OrderPage />,
   },
 ]);
