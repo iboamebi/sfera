@@ -7,9 +7,10 @@ import type { CreateOrderForm as CreateOrderFormValues } from "../model/types";
 
 interface CreateOrderFormProps {
   onSubmit: (data: CreateOrderFormValues) => void;
+  isPending?: boolean;
 }
 
-export function CreateOrderForm({ onSubmit }: CreateOrderFormProps) {
+export function CreateOrderForm({ onSubmit, isPending = false }: CreateOrderFormProps) {
   const {
     register,
     handleSubmit,
@@ -26,15 +27,17 @@ export function CreateOrderForm({ onSubmit }: CreateOrderFormProps) {
           {...register("number")}
           error={Boolean(errors.number)}
           helperText={errors.number?.message}
+          disabled={isPending}
         />
         <TextField
           label="ID клиента"
           {...register("customerId")}
           error={Boolean(errors.customerId)}
           helperText={errors.customerId?.message}
+          disabled={isPending}
         />
-        <Button type="submit" variant="contained">
-          Создать заказ
+        <Button type="submit" variant="contained" disabled={isPending}>
+          {isPending ? "Создание..." : "Создать заказ"}
         </Button>
       </Stack>
     </form>
