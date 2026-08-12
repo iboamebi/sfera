@@ -1,3 +1,8 @@
+import { CreateOrderForm } from "../../features/orders/create-order/ui/CreateOrderForm";
+import { useCreateOrder } from "../../features/orders/create-order/model/useCreateOrder";
+
 export function CreateOrderPage() {
-  return <div>Create Order</div>;
+  const { mutate } = useCreateOrder();
+
+  return <CreateOrderForm onSubmit={mutate} />;
 }
