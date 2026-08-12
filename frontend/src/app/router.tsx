@@ -1,9 +1,11 @@
 import { createBrowserRouter } from "react-router-dom";
 
+import { OrdersPage } from "../pages/orders/OrdersPage";
+
 export const router = createBrowserRouter([
   {
     path: "/orders",
-    element: <div>Orders</div>,
+    element: <OrdersPage />,
   },
   {
     path: "/orders/new",
