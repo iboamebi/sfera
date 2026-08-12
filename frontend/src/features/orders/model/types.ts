@@ -1,0 +1,11 @@
+export interface OrderRead {
+  id: string;
+  number: string;
+  customerId: string;
+  status: string;
+  receivedAt: string;
+  plannedIssueAt: string | null;
+  issuedAt: string | null;
+  comment: string | null;
+  archived: boolean;
+}
