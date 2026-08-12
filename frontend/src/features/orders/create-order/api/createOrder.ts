@@ -1,11 +1,6 @@
 import { http } from "../../../../shared/api/http";
+import type { OrderRead } from "../../model/types";
 import type { CreateOrderForm } from "../model/types";
-
-export interface OrderRead {
-  id: string;
-  number: string;
-  customer_id: string;
-}
 
 export async function createOrder(
   data: CreateOrderForm,
