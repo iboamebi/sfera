@@ -1,9 +1,7 @@
-import { StrictMode } from "react";
+import { RouterProvider } from "react-router-dom";
+
+import { router } from "./router";
 
 export function App() {
-  return (
-    <StrictMode>
-      <div>Сфера</div>
-    </StrictMode>
-  );
+  return <RouterProvider router={router} />;
 }
