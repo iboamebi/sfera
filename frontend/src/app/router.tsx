@@ -1,5 +1,6 @@
 import { createBrowserRouter } from "react-router-dom";
 
+import { CreateOrderPage } from "../pages/orders/CreateOrderPage";
 import { OrdersPage } from "../pages/orders/OrdersPage";
 
 export const router = createBrowserRouter([
@@ -9,7 +10,7 @@ export const router = createBrowserRouter([
   },
   {
     path: "/orders/new",
-    element: <div>Create Order</div>,
+    element: <CreateOrderPage />,
   },
   {
     path: "/orders/:orderId",
