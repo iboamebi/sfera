@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { useParams } from "react-router";
 
 import { useOrder } from "../../features/orders/model/useOrder";
 
