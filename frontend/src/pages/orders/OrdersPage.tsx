@@ -2,6 +2,7 @@ import { Alert, Button, Stack, Typography } from "@mui/material";
 import { Link } from "react-router";
 
 import { useOrders } from "../../features/orders/model/useOrders";
+import { OrderListEmpty } from "../../features/orders/ui/OrderListEmpty";
 import { OrderListItem } from "../../features/orders/ui/OrderListItem";
 
 export function OrdersPage() {
@@ -21,11 +22,7 @@ export function OrdersPage() {
         Создать заказ
       </Button>
 
-      {orders && orders.length === 0 && (
-        <Alert severity="info">
-          Заказов нет.
-        </Alert>
-      )}
+      {orders && orders.length === 0 && <OrderListEmpty />}
 
       {orders?.map((order) => (
         <OrderListItem
