@@ -1,6 +1,7 @@
 import { Alert, Button, Stack, Typography } from "@mui/material";
 import { Link } from "react-router";
 
+import { OrderListItem } from "../../features/orders/ui/OrderListItem";
 import { useOrders } from "../../features/orders/model/useOrders";
 
 export function OrdersPage() {
@@ -21,19 +22,10 @@ export function OrdersPage() {
       </Button>
 
       {orders?.map((order) => (
-        <Stack key={order.id} spacing={1}>
-          <Typography>
-            {order.number} — {order.status}
-          </Typography>
-
-          <Button
-            component={Link}
-            to={`/orders/${order.id}`}
-            variant="outlined"
-          >
-            Открыть
-          </Button>
-        </Stack>
+        <OrderListItem
+          key={order.id}
+          order={order}
+        />
       ))}
     </Stack>
   );
