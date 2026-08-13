@@ -36,6 +36,9 @@ class FakeOrderRepository(OrderRepository):
     def get(self, order_id):
         return self._orders.get(order_id)
 
+    def list(self) -> list[Order]:
+        return list(self._orders.values())
+
     def save(self, order: Order) -> None:
         self._orders[order.id] = order
 

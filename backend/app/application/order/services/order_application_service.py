@@ -62,6 +62,13 @@ class OrderApplicationService:
 
         return order
 
+    def list(
+        self,
+    ) -> list[Order]:
+        """List orders."""
+
+        return self._repository.list()
+
     def add_item(
         self,
         command: AddOrderItemCommand,

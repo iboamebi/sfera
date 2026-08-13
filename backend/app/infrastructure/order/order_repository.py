@@ -37,6 +37,18 @@ class OrderRepositorySQLAlchemy(OrderRepository):
 
         return self.mapper.to_domain(model)
 
+    def list(
+        self,
+    ) -> list[DomainOrder]:
+        """List orders."""
+
+        models = self.session.query(ORMOrder).all()
+
+        return [
+            self.mapper.to_domain(model)
+            for model in models
+        ]
+
     def save(
         self,
         order: DomainOrder,

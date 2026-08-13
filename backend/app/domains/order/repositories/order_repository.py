@@ -20,6 +20,13 @@ class OrderRepository(ABC):
         raise NotImplementedError
 
     @abstractmethod
+    def list(
+        self,
+    ) -> list[Order]:
+        """List orders."""
+        raise NotImplementedError
+
+    @abstractmethod
     def save(
         self,
         order: Order,

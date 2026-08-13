@@ -59,6 +59,18 @@ def create_order(
     )
 
 
+@router.get(
+    "/",
+    response_model=list[OrderRead],
+)
+def list_orders(
+    service: OrderApplicationService = Depends(
+        get_order_service,
+    ),
+):
+    return service.list()
+
+
 @router.post(
     "/{order_id}/items",
     response_model=OrderRead,
