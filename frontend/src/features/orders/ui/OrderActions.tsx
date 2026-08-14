@@ -1,4 +1,5 @@
 import { Stack } from "@mui/material";
+import { useQueryClient } from "@tanstack/react-query";
 
 import { useRegisterOrder } from "../register-order/model/useRegisterOrder";
 import { RegisterOrderButton } from "../register-order/ui/RegisterOrderButton";
@@ -11,7 +12,16 @@ interface OrderActionsProps {
 export function OrderActions({
   orderId,
 }: OrderActionsProps) {
-  const mutation = useRegisterOrder();
+  const queryClient = useQueryClient();
+
+  const mutation = useRegisterOrder({
+    onSuccess: (order) => {
+      queryClient.setQueryData(
+        ["orders", orderId],
+        order,
+      );
+    },
+  });
 
   return (
     <Stack spacing={1}>
