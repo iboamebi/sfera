@@ -1,7 +1,9 @@
-import { Alert, Stack, Typography } from "@mui/material";
+import { Typography } from "@mui/material";
 import { useParams } from "react-router";
 
 import { useOrder } from "../../features/orders/model/useOrder";
+import { OrderDetails } from "../../features/orders/ui/OrderDetails";
+import { OrderError } from "../../features/orders/ui/OrderError";
 
 export function OrderPage() {
   const { orderId } = useParams<{ orderId: string }>();
@@ -12,50 +14,12 @@ export function OrderPage() {
   }
 
   if (error) {
-    return <Alert severity="error">Failed to load order.</Alert>;
+    return <OrderError />;
   }
 
   if (!data) {
-    return <Alert severity="warning">Order not found.</Alert>;
+    return null;
   }
 
-  return (
-    <Stack spacing={1}>
-      <Typography variant="h5">
-        Order {data.number}
-      </Typography>
-
-      <Typography>
-        ID: {data.id}
-      </Typography>
-
-      <Typography>
-        Customer: {data.customerId}
-      </Typography>
-
-      <Typography>
-        Status: {data.status}
-      </Typography>
-
-      <Typography>
-        Received: {data.receivedAt}
-      </Typography>
-
-      <Typography>
-        Planned issue: {data.plannedIssueAt ?? "-"}
-      </Typography>
-
-      <Typography>
-        Issued: {data.issuedAt ?? "-"}
-      </Typography>
-
-      <Typography>
-        Comment: {data.comment ?? "-"}
-      </Typography>
-
-      <Typography>
-        Archived: {data.archived ? "Yes" : "No"}
-      </Typography>
-    </Stack>
-  );
+  return <OrderDetails order={data} />;
 }

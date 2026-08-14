@@ -1,7 +1,7 @@
-import { Alert } from "@mui/material";
 import { useNavigate } from "react-router";
 
 import { useCreateOrder } from "../../features/orders/create-order/model/useCreateOrder";
+import { CreateOrderError } from "../../features/orders/create-order/ui/CreateOrderError";
 import { CreateOrderForm } from "../../features/orders/create-order/ui/CreateOrderForm";
 
 export function CreateOrderPage() {
@@ -14,7 +14,7 @@ export function CreateOrderPage() {
 
   return (
     <>
-      {error && <Alert severity="error">Failed to create order.</Alert>}
+      {error && <CreateOrderError />}
       <CreateOrderForm onSubmit={mutate} isPending={isPending} />
     </>
   );
