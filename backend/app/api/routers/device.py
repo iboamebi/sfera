@@ -18,6 +18,7 @@ from app.application.device.exceptions import (
     DeviceNotAvailableApplicationError,
     DeviceNotFoundApplicationError,
     DeviceNotInWorkApplicationError,
+    InstrumentTypeNotFoundApplicationError,
 )
 from app.application.device.services.device_application_service import (
     DeviceApplicationService,
@@ -47,7 +48,14 @@ def create_device(
         **data.model_dump(),
     )
 
-    return service.create(command)
+    try:
+        return service.create(command)
+
+    except InstrumentTypeNotFoundApplicationError:
+        raise HTTPException(
+            status_code=404,
+            detail="Instrument type not found",
+        ) from None
 
 
 @router.post(
