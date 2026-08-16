@@ -2,6 +2,7 @@
 Application service for Order.
 """
 
+from datetime import UTC, datetime
 from uuid import UUID, uuid4
 
 from app.application.order.commands.add_order_item import (
@@ -43,6 +44,9 @@ class OrderApplicationService:
                 id=uuid4(),
                 number=OrderNumber(command.number),
                 customer_id=command.customer_id,
+                received_at=datetime.now(UTC),
+                planned_issue_at=command.planned_issue_at,
+                comment=command.comment,
             )
 
             self._repository.save(order)

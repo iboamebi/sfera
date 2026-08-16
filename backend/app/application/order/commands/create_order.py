@@ -3,6 +3,7 @@ Create order command.
 """
 
 from dataclasses import dataclass
+from datetime import datetime
 from uuid import UUID
 
 
@@ -12,3 +13,5 @@ class CreateOrderCommand:
 
     customer_id: UUID
     number: str
+    planned_issue_at: datetime | None = None
+    comment: str | None = None

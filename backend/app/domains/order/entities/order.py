@@ -3,6 +3,7 @@ Order aggregate root.
 """
 
 from dataclasses import dataclass, field
+from datetime import datetime
 from uuid import UUID
 
 from app.domains.order.entities.order_item import OrderItem
@@ -12,12 +13,18 @@ from app.domains.order.value_objects.order_status import OrderStatus
 from app.shared.base.aggregate import AggregateRoot
 
 
-@dataclass(eq=False, kw_only=True)
+@dataclass
 class Order(AggregateRoot):
     """Order aggregate."""
 
     number: OrderNumber
     customer_id: UUID
+    received_at: datetime
+
+    planned_issue_at: datetime | None = None
+    issued_at: datetime | None = None
+    comment: str | None = None
+
     status: OrderStatus = OrderStatus.NEW
 
     items: list[OrderItem] = field(default_factory=list)
@@ -29,6 +36,9 @@ class Order(AggregateRoot):
         id: UUID,
         number: OrderNumber,
         customer_id: UUID,
+        received_at: datetime,
+        planned_issue_at: datetime | None = None,
+        comment: str | None = None,
     ) -> "Order":
         """Create a new Order aggregate."""
 
@@ -36,6 +46,9 @@ class Order(AggregateRoot):
             id=id,
             number=number,
             customer_id=customer_id,
+            received_at=received_at,
+            planned_issue_at=planned_issue_at,
+            comment=comment,
         )
 
     def add_item(self, item: OrderItem) -> None:

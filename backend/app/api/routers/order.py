@@ -55,6 +55,8 @@ def create_order(
         CreateOrderCommand(
             customer_id=data.customer_id,
             number=data.number,
+            planned_issue_at=data.planned_issue_at,
+            comment=data.comment,
         )
     )
 

@@ -1,3 +1,4 @@
+from datetime import UTC, datetime
 from uuid import uuid4
 
 from app.domains.order.entities.order import Order
@@ -7,14 +8,25 @@ from app.domains.order.value_objects.order_number import OrderNumber
 from app.domains.order.value_objects.order_status import OrderStatus
 
 
-def test_order_register():
-    order = Order(
+def create_order(
+    number: str,
+) -> Order:
+    return Order(
         id=uuid4(),
-        number=OrderNumber("1001"),
+        number=OrderNumber(number),
         customer_id=uuid4(),
+        received_at=datetime.now(UTC),
     )
 
-    order.add_item(OrderItem(id=uuid4()))
+
+def test_order_register():
+    order = create_order("1001")
+
+    order.add_item(
+        OrderItem(
+            id=uuid4(),
+        )
+    )
 
     order.register()
 
@@ -22,11 +34,7 @@ def test_order_register():
 
 
 def test_empty_order_cannot_register():
-    order = Order(
-        id=uuid4(),
-        number=OrderNumber("1002"),
-        customer_id=uuid4(),
-    )
+    order = create_order("1002")
 
     try:
         order.register()
