@@ -44,10 +44,7 @@ class OrderRepositorySQLAlchemy(OrderRepository):
 
         models = self.session.query(ORMOrder).all()
 
-        return [
-            self.mapper.to_domain(model)
-            for model in models
-        ]
+        return [self.mapper.to_domain(model) for model in models]
 
     def save(
         self,
