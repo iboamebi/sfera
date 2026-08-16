@@ -1,4 +1,11 @@
-import { Stack, Typography } from "@mui/material";
+import {
+  Card,
+  CardContent,
+  Chip,
+  Divider,
+  Stack,
+  Typography,
+} from "@mui/material";
 
 import type { OrderRead } from "../model/types";
 
@@ -6,46 +13,128 @@ interface OrderDetailsProps {
   order: OrderRead;
 }
 
+const statusLabels: Record<string, string> = {
+  NEW: "Новый",
+  REGISTERED: "Зарегистрирован",
+  IN_WORK: "В работе",
+  WAITING: "Ожидание",
+  COMPLETED: "Завершён",
+  ISSUED: "Выдан",
+  CLOSED: "Закрыт",
+};
+
+const statusColors: Record<
+  string,
+  "default" | "primary" | "warning" | "success"
+> = {
+  NEW: "default",
+  REGISTERED: "primary",
+  IN_WORK: "warning",
+  WAITING: "warning",
+  COMPLETED: "success",
+  ISSUED: "success",
+  CLOSED: "default",
+};
+
+function formatDate(value: string | null): string {
+  if (!value) {
+    return "—";
+  }
+
+  return new Intl.DateTimeFormat("ru-RU", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(new Date(value));
+}
+
+function DetailRow({
+  label,
+  value,
+}: {
+  label: string;
+  value: string;
+}) {
+  return (
+    <Stack spacing={0.5}>
+      <Typography
+        color="text.secondary"
+        variant="body2"
+      >
+        {label}
+      </Typography>
+
+      <Typography variant="body1">
+        {value}
+      </Typography>
+    </Stack>
+  );
+}
+
 export function OrderDetails({
   order,
 }: OrderDetailsProps) {
   return (
-    <Stack spacing={1}>
-      <Typography variant="h5">
-        Order {order.number}
-      </Typography>
+    <Card>
+      <CardContent>
+        <Stack spacing={3}>
+          <Stack
+            direction="row"
+            spacing={2}
+            sx={{
+              alignItems: "flex-start",
+              justifyContent: "space-between",
+            }}
+          >
+            <Typography variant="h5">
+              Заказ № {order.number}
+            </Typography>
 
-      <Typography>
-        ID: {order.id}
-      </Typography>
+            <Chip
+              color={statusColors[order.status] ?? "default"}
+              label={statusLabels[order.status] ?? order.status}
+            />
+          </Stack>
 
-      <Typography>
-        Customer: {order.customerId}
-      </Typography>
+          <Divider />
 
-      <Typography>
-        Status: {order.status}
-      </Typography>
+          <Stack spacing={2}>
+            <DetailRow
+              label="Клиент"
+              value={order.customerId}
+            />
 
-      <Typography>
-        Received: {order.receivedAt}
-      </Typography>
+            <DetailRow
+              label="Получен"
+              value={formatDate(order.receivedAt)}
+            />
 
-      <Typography>
-        Planned issue: {order.plannedIssueAt ?? "-"}
-      </Typography>
+            <DetailRow
+              label="Планируемая выдача"
+              value={formatDate(order.plannedIssueAt)}
+            />
 
-      <Typography>
-        Issued: {order.issuedAt ?? "-"}
-      </Typography>
+            <DetailRow
+              label="Выдан"
+              value={formatDate(order.issuedAt)}
+            />
+          </Stack>
 
-      <Typography>
-        Comment: {order.comment ?? "-"}
-      </Typography>
+          <Divider />
 
-      <Typography>
-        Archived: {order.archived ? "Yes" : "No"}
-      </Typography>
-    </Stack>
+          <Stack spacing={0.5}>
+            <Typography
+              color="text.secondary"
+              variant="body2"
+            >
+              Комментарий
+            </Typography>
+
+            <Typography variant="body1">
+              {order.comment || "—"}
+            </Typography>
+          </Stack>
+        </Stack>
+      </CardContent>
+    </Card>
   );
 }
