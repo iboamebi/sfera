@@ -2,6 +2,7 @@
 Tests for Order application service.
 """
 
+from datetime import UTC, datetime
 from uuid import uuid4
 
 from app.application.order.commands.add_order_item import (
@@ -51,13 +52,24 @@ def test_create_register_order_flow():
     )
 
     customer_id = uuid4()
+    planned_issue_at = datetime(2026, 8, 20, 15, 30, tzinfo=UTC)
+    comment = "Urgent order"
 
     order = service.create(
         CreateOrderCommand(
             customer_id=customer_id,
             number="10001",
+            planned_issue_at=planned_issue_at,
+            comment=comment,
         )
     )
+
+    assert order.id is not None
+    assert order.number.value == "10001"
+    assert order.customer_id == customer_id
+    assert order.received_at is not None
+    assert order.planned_issue_at == planned_issue_at
+    assert order.comment == comment
 
     service.add_item(
         AddOrderItemCommand(
@@ -69,9 +81,6 @@ def test_create_register_order_flow():
         RegisterOrderCommand(order.id),
     )
 
-    assert order.id is not None
-    assert order.number.value == "10001"
-    assert order.customer_id == customer_id
     assert len(order.items) == 1
     assert order.items[0].id is not None
     assert order.status.value == "REGISTERED"

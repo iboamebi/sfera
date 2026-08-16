@@ -10,17 +10,35 @@ from app.domains.order.value_objects.order_status import OrderStatus
 
 def create_order(
     number: str,
+    planned_issue_at: datetime | None = None,
+    comment: str | None = None,
 ) -> Order:
     return Order(
         id=uuid4(),
         number=OrderNumber(number),
         customer_id=uuid4(),
         received_at=datetime.now(UTC),
+        planned_issue_at=planned_issue_at,
+        comment=comment,
     )
 
 
+def test_order_create_with_planned_issue_at_and_comment():
+    planned_issue_at = datetime(2026, 8, 20, 15, 30, tzinfo=UTC)
+    comment = "Urgent order"
+
+    order = create_order(
+        "1001",
+        planned_issue_at=planned_issue_at,
+        comment=comment,
+    )
+
+    assert order.planned_issue_at == planned_issue_at
+    assert order.comment == comment
+
+
 def test_order_register():
-    order = create_order("1001")
+    order = create_order("1002")
 
     order.add_item(
         OrderItem(
@@ -34,7 +52,7 @@ def test_order_register():
 
 
 def test_empty_order_cannot_register():
-    order = create_order("1002")
+    order = create_order("1003")
 
     try:
         order.register()
