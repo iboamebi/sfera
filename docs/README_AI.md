@@ -4,7 +4,7 @@
 
 ## Текущий статус
 
-По состоянию на 2026-08-11:
+По состоянию на 2026-08-16:
 
 - Backend DDD/Clean Architecture migration — **COMPLETE**.
 - Application Services Audit — **COMPLETE**.
@@ -12,10 +12,33 @@
 - Identifier Generation Audit — **COMPLETE**.
 - Legacy CRUD layers — **REMOVED**.
 - Infrastructure Mapper Alignment — **COMPLETE**.
+- Device creation validation — **COMPLETE**.
+- Device application transaction boundary — **COMPLETE**.
 - Frontend — **NEXT PHASE**.
-- pytest: **26 passed**.
-- `ruff check`: **passed**.
-- `ruff format --check`: **passed**.
+- pytest: **33 passed**.
+- `ruff check .`: **passed**.
+- `ruff format --check .`: **passed**.
+- `git diff --check`: **passed**.
+
+### Последний backend checkpoint
+
+`DeviceApplicationService` теперь получает `UnitOfWork` через Dependency Injection. Use cases `create`, `connect` и `disconnect` выполняются внутри transaction boundary.
+
+При создании Device Application layer проверяет существование `InstrumentType`. При отсутствии типа выбрасывается `InstrumentTypeNotFoundApplicationError`, а API преобразует его в HTTP 404.
+
+Последний синхронизированный commit:
+
+```text
+b69b551 refactor: add unit of work to device service
+```
+
+Ветка:
+
+```text
+develop
+```
+
+Working tree после последнего push был чистым, `develop` синхронизирован с `origin/develop`.
 
 Known technical debt is isolated and must be handled incrementally. Current primary debt: the `PriceList` / `PriceListItem` creation contract does not consistently provide the mandatory `Entity.id`, and dedicated PriceList application tests are absent.
 
@@ -25,125 +48,41 @@ Known technical debt is isolated and must be handled incrementally. Current prim
 
 ### AI_CONTEXT.md
 
-Основной контекст проекта:
-
-- назначение;
-- стек;
-- текущая архитектура;
-- текущая стадия разработки;
-- завершённые аудиты;
-- технический долг;
-- ближайшие этапы.
+Основной контекст проекта: назначение, стек, архитектура, текущая стадия, завершённые аудиты и технический долг.
 
 ### PROJECT_CONSTITUTION.md
 
-Архитектурные правила проекта:
-
-- DDD;
-- Clean Architecture;
-- dependency direction;
-- Domain/Application/Infrastructure/API boundaries;
-- repository interfaces;
-- Unit of Work;
-- правила миграции;
-- правила работы с legacy.
+Нормативные архитектурные правила: DDD, Clean Architecture, dependency direction, repository interfaces, Unit of Work и правила миграции.
 
 ### ARCHITECTURE.md
 
-Актуальное архитектурное описание:
-
-- слои приложения;
-- зависимости между слоями;
-- repository boundary;
-- identifier generation policy;
-- mapper responsibilities;
-- migration strategy;
-- текущий backend status;
-- known technical debt;
-- frontend direction.
+Актуальное архитектурное описание слоёв, зависимостей, repository boundary, identifier policy, mapper responsibilities и frontend direction.
 
 ### MIGRATION_STATUS.md
 
-Текущий технический статус:
-
-- завершённые миграции;
-- завершённые архитектурные аудиты;
-- текущий checkpoint;
-- технический долг;
-- результаты архитектурной очистки.
+Текущий статус миграции, архитектурных аудитов и технического долга.
 
 ### MIGRATION_MATRIX.md
 
 Матрица состояния модулей и архитектурных этапов.
 
-Используется для проверки того, какие миграции завершены и какие cleanup/follow-up задачи остаются.
-
 ### FRONTEND_ARCHITECTURE.md
 
-Целевая архитектура frontend:
-
-- React / TypeScript / Vite;
-- Feature-Sliced Design;
-- API integration;
-- server/client state;
-- forms and validation;
-- routing;
-- incremental user-scenario workflow.
-
-Frontend ещё не является реализованным production layer; документ описывает согласованную целевую архитектуру.
+Целевая архитектура frontend на React / TypeScript / Vite.
 
 ---
 
 ## Порядок работы нового чата
 
-Новый чат должен восстановить контекст в следующем порядке:
-
-1. Прочитать:
-
-```text
- docs/AI_CONTEXT.md
-```
-
-2. Прочитать:
-
-```text
- docs/architecture/PROJECT_CONSTITUTION.md
-```
-
-3. Прочитать:
-
-```text
- docs/ARCHITECTURE.md
-```
-
-4. Прочитать:
-
-```text
- docs/MIGRATION_STATUS.md
-```
-
-5. Прочитать:
-
-```text
- docs/architecture/MIGRATION_MATRIX.md
-```
-
-6. Если работа относится к frontend, прочитать:
-
-```text
- docs/FRONTEND_ARCHITECTURE.md
-```
-
-7. Проверить фактическое состояние репозитория:
-
-- текущая ветка;
-- `git status`;
-- последний commit;
-- синхронизация с `origin/develop`.
-
+1. Прочитать `docs/AI_CONTEXT.md`.
+2. Прочитать `docs/architecture/PROJECT_CONSTITUTION.md`.
+3. Прочитать `docs/ARCHITECTURE.md`.
+4. Прочитать `docs/MIGRATION_STATUS.md`.
+5. Прочитать `docs/architecture/MIGRATION_MATRIX.md`.
+6. При frontend-задаче прочитать `docs/FRONTEND_ARCHITECTURE.md`.
+7. Проверить фактическое состояние репозитория: ветку, `git status`, последний commit и синхронизацию с `origin/develop`.
 8. Сопоставить документацию с фактическим кодом перед изменениями.
-
-9. Продолжить работу только с текущего подтверждённого этапа.
+9. Продолжить только с текущего подтверждённого этапа.
 
 ---
 
@@ -194,7 +133,7 @@ Identifier policy:
 
 - API routers не генерируют domain identifiers;
 - Application Services генерируют identifiers для простых entity creation flows;
-- Domain factories могут генерировать identifiers, когда создание полного domain structure является их ответственностью;
+- Domain factories могут генерировать identifiers, когда создание полной domain structure является их ответственностью;
 - Domain `create()` methods получают identifiers явно, если генерация identifier не является domain business rule.
 
 После завершения логического этапа:
@@ -208,8 +147,6 @@ Identifier policy:
 ---
 
 ## Репозиторий
-
-GitHub:
 
 ```text
 iboamebi/sfera
@@ -231,22 +168,18 @@ backend
 
 ## Следующий этап
 
-Backend migration и архитектурные аудиты завершены.
+После текущего Device checkpoint следующий логичный backend шаг — интеграционная проверка Device API с FastAPI `TestClient` и dependency overrides.
 
-Следующий основной этап — frontend development:
+Проверить:
+
+1. `POST /devices/` с существующим `InstrumentType`.
+2. `POST /devices/` с отсутствующим `InstrumentType` → HTTP 404.
+3. DI цепочку `get_device_service`.
+4. API → Application → Repository/UoW boundary.
+5. Отсутствие бизнес-логики в router.
+
+Работа продолжается по правилу:
 
 ```text
-frontend architecture validation
-        ↓
-frontend application shell
-        ↓
-backend API integration
-        ↓
-one user scenario
-        ↓
-validate
-        ↓
-next scenario
+analyze → one file → y → next
 ```
-
-До начала frontend implementation отдельно можно выполнить изолированный cleanup `PriceList / PriceListItem` creation contract с добавлением application tests.
