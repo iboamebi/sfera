@@ -15,19 +15,7 @@
 - финансы;
 - интеграция с ФГИС Аршин.
 
-Основная бизнес-ценность системы:
-
-- управление жизненным циклом средств измерений;
-- проведение поверок;
-- фиксация результатов;
-- подготовка документов;
-- экспорт данных в ФГИС Аршин.
-
----
-
-# Ключевой бизнес-процесс
-
-Текущий реализованный процесс не использует `Case` или `Technological Card` как обязательные архитектурные сущности.
+## Ключевой бизнес-процесс
 
 ```text
 Order
@@ -39,9 +27,9 @@ Workflow
 Verification / Repair / Diagnostic
 ```
 
-Конкретный сценарий может использовать связанные складские и документальные операции.
+`Case` и `Technological Card` не являются текущими обязательными доменными объектами.
 
-### Реализованные доменные объекты
+Реализованные доменные объекты:
 
 - Organization
 - Customer
@@ -55,94 +43,6 @@ Verification / Repair / Diagnostic
 - Diagnostic
 - PriceList
 
-`Case` и `Technological Card` не являются текущими реализованными доменными объектами и не должны описываться как обязательная часть текущей архитектуры.
-
-Статус backend migration:
-
-```text
-DDD/CLEAN ARCHITECTURE MIGRATION COMPLETE
-```
-
----
-
-# Технологический стек
-
-## Backend
-
-- Python 3.12
-- FastAPI
-- PostgreSQL
-- SQLAlchemy
-- Alembic
-- Pydantic
-- Docker / Docker Compose
-
-## Инструменты качества
-
-- pytest
-- ruff
-- pre-commit
-
-## Frontend baseline
-
-- React
-- TypeScript
-- Vite
-- React Router
-- TanStack Query
-- Axios
-- Material UI
-- React Hook Form
-- Zod
-
----
-
-# Репозиторий
-
-GitHub:
-
-```text
-iboamebi/sfera
-```
-
-Основная рабочая ветка:
-
-```text
-develop
-```
-
----
-
-# Структура проекта
-
-Основной backend:
-
-```text
-backend/app/
-```
-
-```text
-api/
-application/
-domains/
-infrastructure/
-models/
-schemas/
-shared/
-```
-
-### Назначение слоёв
-
-| Слой | Назначение |
-|------|------------|
-| API | HTTP adapter |
-| Application | Use Cases и orchestration |
-| Domain | Бизнес-правила и domain model |
-| Infrastructure | Persistence и внешние интеграции |
-| Models | SQLAlchemy ORM models |
-| Schemas | Pydantic API contracts |
-| Shared | Общие архитектурные компоненты |
-
 ---
 
 # Архитектура
@@ -153,7 +53,7 @@ shared/
 DDD + Clean Architecture
 ```
 
-Текущая структура зависимостей:
+Слои:
 
 ```text
 API
@@ -169,326 +69,148 @@ Infrastructure Repository
 Database
 ```
 
-Repository Interface является границей между use cases/domain и persistence implementation.
+### Domain
+
+Содержит Entities, Aggregate Roots, Value Objects, Domain Services, Domain Exceptions, Domain Factories и Repository Interfaces.
+
+Не зависит от SQLAlchemy, ORM, Session, Infrastructure или API.
+
+### Application
+
+Содержит Use Cases, Application Services, Commands и Application Exceptions.
+
+Application координирует use cases, работает через Repository Interfaces, вызывает Domain behavior и определяет transaction boundary через Unit of Work.
+
+Не зависит от ORM или Infrastructure implementations.
+
+### Infrastructure
+
+Содержит SQLAlchemy repositories, ORM mapping, mappers, database access и внешние интеграции.
+
+### API
+
+Содержит FastAPI routers, request/response schemas, DI и mapping Application Exceptions → HTTP responses.
+
+API не содержит business logic, Repository/ORM access или прямой доступ к БД.
 
 ---
 
-# Архитектурные правила
+# Unit of Work
 
-## Domain
+Unit of Work определяет transaction boundary application use cases, изменяющих persistent state.
 
-Domain содержит:
+Application Services используют `UnitOfWork` abstraction. Infrastructure предоставляет concrete implementation.
 
-- Entities;
-- Aggregate Roots;
-- Value Objects;
-- Domain Services;
-- Domain Exceptions;
-- Domain Factories;
-- Repository Interfaces;
-- Domain Events, где они необходимы.
-
-Разрешено:
-
-- бизнес-правила;
-- изменение состояния сущностей;
-- доменная валидация;
-- создание domain structures через factories.
-
-Запрещено:
-
-- SQLAlchemy;
-- ORM;
-- Session;
-- Infrastructure;
-- API.
-
----
-
-## Application
-
-Application содержит:
-
-- Use Cases;
-- Application Services;
-- Commands;
-- Application Exceptions;
-- orchestration logic.
-
-Application:
-
-- управляет сценариями использования;
-- загружает и сохраняет агрегаты через Repository Interfaces;
-- вызывает domain behavior;
-- определяет transaction boundary через Unit of Work.
-
-Application не содержит бизнес-правила, которые должны находиться в Domain.
-
-Запрещено:
-
-- SQLAlchemy;
-- ORM;
-- Session;
-- Infrastructure Repository implementations;
-- API routers.
-
----
-
-## Infrastructure
-
-Infrastructure содержит:
-
-- реализации Repository Interfaces;
-- SQLAlchemy;
-- ORM mapping;
-- работу с базой данных;
-- mappers;
-- внешние интеграции.
-
-Infrastructure не зависит от API/Application layers.
-
----
-
-## API
-
-API содержит:
-
-- FastAPI routers;
-- Request/Response Schemas;
-- Dependency Injection;
-- mapping Application Exceptions → HTTP responses.
-
-API:
-
-- принимает HTTP-запрос;
-- формирует Application Command;
-- вызывает Application Service;
-- возвращает результат через response schema.
-
-Запрещено:
-
-- бизнес-логика;
-- Repository-вызовы;
-- SQLAlchemy;
-- прямой доступ к БД;
-- генерация domain identifiers.
+Domain entities не управляют database transactions.
 
 ---
 
 # Identifier Generation Policy
-
-Текущая политика:
 
 - API routers не генерируют domain identifiers.
 - Application Services генерируют identifiers для простых entity creation flows.
 - Domain factories могут генерировать identifiers, когда это является частью создания полной domain structure.
 - Domain `create()` methods получают identifier явно, если генерация identifier не является domain business rule.
 
-Эта политика проверена в рамках Identifier Generation Audit — 2026-08-11.
+Identifier Generation Audit завершён 2026-08-11.
 
 Known technical debt:
 
-- PriceList и PriceListItem имеют несогласованный creation contract относительно обязательного `Entity.id`.
-- Это отдельная cleanup/migration задача и не относится к завершённому API identifier refactoring.
+- PriceList / PriceListItem creation contract не согласован с обязательным `Entity.id`.
+- Dedicated PriceList application tests отсутствуют.
 
 ---
 
-# Repository Boundary
+# Device Current Checkpoint
 
-## Domain Repository
-
-Расположение:
+Device migration находится в состоянии:
 
 ```text
-app/domains/*/repositories/
+COMPLETED
 ```
 
-Назначение:
+Реализовано:
 
-- интерфейсы хранения;
-- абстракции доступа к данным.
-
-Запрещено:
-
-- SQLAlchemy;
-- Session;
-- ORM.
-
----
-
-## Infrastructure Repository
-
-Расположение зависит от bounded context и текущей инфраструктурной структуры:
-
-```text
-app/infrastructure/*/
-```
-
-Назначение:
-
-- реализация Repository Interface;
-- работа с SQLAlchemy;
-- преобразование ORM ↔ Domain через Mapper.
-
-Infrastructure implementations подключаются через Dependency Injection.
-
----
-
-# Unit of Work
-
-Unit of Work определяет transaction boundary для application use cases, изменяющих persistent state.
-
-Application Services используют Unit of Work abstraction.
-
-Infrastructure предоставляет concrete implementation.
-
-Domain entities не управляют database transactions.
-
----
-
-# Текущее состояние проекта
-
-Полностью завершена миграция на DDD/Clean Architecture для модулей:
-
-- Organization
-- Customer
-- Device
-- Order
-- Material
-- Warehouse
-- PriceList
-- Workflow
-- Verification
-- Repair
-- Diagnostic
-
-Для Workflow завершены:
-
-- Domain entities;
-- Repository interfaces;
-- SQLAlchemy repositories;
-- WorkflowMapper;
-- WorkflowStageMapper;
-- WorkflowInstanceMapper;
-- WorkflowApplicationService;
-- команды Start / Move / Complete;
+- Device domain entity;
+- DeviceFactory;
+- DeviceRepository interface;
+- SQLAlchemy repository;
+- DeviceMapper;
+- Create / Connect / Disconnect commands;
+- DeviceApplicationService;
 - Dependency Injection;
-- API migration;
-- unit и architecture tests.
+- Device API router;
+- validation referenced `InstrumentType` during creation;
+- `InstrumentTypeNotFoundApplicationError` → HTTP 404;
+- Unit of Work transaction boundary for `create`, `connect`, `disconnect`.
 
-## Architecture Baseline
+`DeviceApplicationService.create()` сначала загружает `InstrumentType`. Если тип отсутствует, application service выбрасывает `InstrumentTypeNotFoundApplicationError`, транзакция откатывается, Device не создаётся.
 
-Status:
+Успешные `create`, `connect` и `disconnect` выполняются внутри `with self._uow:` и завершаются commit. Исключения приводят к rollback через `UnitOfWork.__exit__`.
+
+Последний commit:
 
 ```text
-DDD + Clean Architecture migration completed
+b69b551 refactor: add unit of work to device service
 ```
-
-Current state:
-
-- Domain layer isolated.
-- Application layer independent from ORM and Infrastructure implementations.
-- API contains no business logic or persistence access.
-- Infrastructure uses dedicated mappers and repository implementations.
-- Legacy CRUD layers removed.
-- Architecture dependency rules validated.
-
-Validation:
-
-- pytest: 26 passed
-- ruff check: passed
-- ruff format --check: passed
 
 ---
 
-# Архитектурные checkpoints
+# Текущее состояние backend
 
-### Application Services Audit — 2026-08-10
-
-Статус:
+DDD/Clean Architecture migration:
 
 ```text
 COMPLETE
 ```
 
-Проверены Application Services:
-
-- Customer
-- Device
-- Diagnostic
-- Material
-- Order
-- Organization
-- PriceList
-- Repair
-- Verification
-- Warehouse
-- Workflow
-
-Проверено:
-
-- отсутствие CRUD-style proxy methods;
-- делегирование business state changes в Domain;
-- корректные Repository Interface boundaries;
-- корректные Unit of Work transaction boundaries;
-- отсутствие Infrastructure/ORM dependencies.
-
-### API Layer Audit — 2026-08-10
-
-Статус:
+Architecture audits:
 
 ```text
 COMPLETE
 ```
 
-Проверены API routers и dependency boundaries.
-
-Результат:
-
-- API → Application boundary соблюдается;
-- Repository/ORM/Session dependencies отсутствуют в API;
-- business logic отсутствует в routers;
-- UUID generation removed from create routers.
-
-### Identifier Generation Audit — 2026-08-11
-
-Статус:
+Legacy CRUD:
 
 ```text
-COMPLETE
+REMOVED
 ```
 
-Проверены API routers, Application Services, Domain entities, Domain factories и Domain `create()` methods.
+Последняя полная validation:
 
-Результат:
+```text
+pytest -q
+33 passed
 
-- API identifier generation removed;
-- Application identifier generation aligned with current policy;
-- Domain factories retain legitimate domain creation responsibilities;
-- Order creation flow aligned;
-- application tests: 26 passed.
+ruff check .
+All checks passed
 
----
+ruff format --check .
+352 files already formatted
 
-# Legacy Layers
+git diff --check
+passed
+```
 
-Legacy CRUD architecture has been removed.
+Текущая ветка:
 
-Удалены/выведены из active architecture:
+```text
+develop
+```
 
-- `app/crud`
-- `app/services/price_list_service.py`
-- `app/api/base_router.py`
+Последний синхронизированный backend commit:
 
-Новые features не должны добавляться в legacy CRUD style.
+```text
+b69b551
+```
 
 ---
 
 # Технический долг
 
-## PriceList creation contract
+## PriceList
 
-`PriceList` и `PriceListItem` имеют creation paths, которые не предоставляют обязательный `Entity.id` согласованно.
+`PriceList` и `PriceListItem` имеют несогласованный creation contract относительно обязательного `Entity.id`.
 
 Required follow-up:
 
@@ -500,21 +222,17 @@ Required follow-up:
 
 ## Existing API contract debt
 
-Отдельно отслеживаются:
-
 - PriceListItem update contract semantic inconsistencies;
 - Device connect/disconnect response schemas;
 - Material `PUT` endpoint with partial-update semantics.
 
-Эти задачи не являются blockers для завершённой architecture migration.
+Эти пункты не блокируют завершённую architecture migration.
 
 ---
 
 # Frontend Direction
 
 Backend Domain/Application layers являются source of truth для business rules.
-
-Frontend не дублирует backend business logic.
 
 Frontend development follows:
 
@@ -532,40 +250,36 @@ Validate
 Next Scenario
 ```
 
-Архитектурный baseline frontend описан в:
-
-```text
- docs/FRONTEND_ARCHITECTURE.md
-```
+Baseline: `docs/FRONTEND_ARCHITECTURE.md`.
 
 ---
 
 # Documentation Governance
 
-Документы должны отражать фактическое состояние repository.
-
 Основные документы:
 
-- `docs/AI_CONTEXT.md` — контекст для восстановления сессии;
+- `docs/AI_CONTEXT.md` — контекст восстановления;
 - `docs/MIGRATION_STATUS.md` — migration/checkpoint status;
 - `docs/ARCHITECTURE.md` — архитектурное описание;
 - `docs/architecture/MIGRATION_MATRIX.md` — migration matrix;
-- `docs/architecture/PROJECT_CONSTITUTION.md` — архитектурные правила;
+- `docs/architecture/PROJECT_CONSTITUTION.md` — нормативные правила;
 - `docs/FRONTEND_ARCHITECTURE.md` — frontend baseline.
 
-При архитектурных изменениях сначала проверяется фактический код, затем синхронизируется соответствующая документация.
+Документация должна отражать фактический repository state.
 
 ---
 
-# Current Development Phase
+# Следующий этап
 
-As of 2026-08-11:
+Следующий логичный backend шаг — интеграционные тесты Device API с FastAPI `TestClient` и dependency overrides.
 
-```text
-Backend DDD/Clean Architecture migration: COMPLETE
-Architecture audits: COMPLETE
-Current phase: incremental technical-debt cleanup and frontend preparation
-```
+Проверить:
+
+1. `POST /devices/` с существующим `InstrumentType`;
+2. `POST /devices/` с отсутствующим `InstrumentType` → HTTP 404;
+3. DI `get_device_service`;
+4. API → Application → Repository/UoW boundary;
+5. отсутствие business logic в router.
 
 Работа продолжается по правилу:
 
