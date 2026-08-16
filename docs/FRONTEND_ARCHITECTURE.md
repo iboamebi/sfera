@@ -2,11 +2,21 @@
 
 ## 1. Статус документа
 
-Этот документ описывает **approved target architecture** frontend Sfera.
+Этот документ описывает **актуальную архитектуру и правила frontend Sfera**.
 
-Frontend implementation ещё не начата.
+Frontend application уже реализован и развивается поэтапно поверх существующего backend API.
 
-Backend DDD/Clean Architecture migration завершена; frontend является следующим основным этапом разработки.
+Текущий реализованный пользовательский контур — **Orders**:
+
+* список заказов;
+* отображение пустого состояния;
+* отображение ошибки загрузки;
+* создание заказа;
+* просмотр заказа;
+* регистрация заказа;
+* обновление cache после регистрации.
+
+Backend DDD/Clean Architecture остается источником бизнес-правил. Frontend отвечает за пользовательский интерфейс, локальную валидацию и orchestration клиентских запросов.
 
 ---
 
@@ -26,270 +36,321 @@ Frontend не содержит бизнес-правил предметной о
 
 ## 3. Технологический стек
 
-Основной целевой стек:
+Фактически используется следующий стек:
 
-* React
-* TypeScript
-* Vite
-* React Router
-* TanStack Query
-* Axios
-* Material UI
-* React Hook Form
-* Zod
+* React 19;
+* TypeScript 7;
+* Vite 8;
+* React Router 8;
+* TanStack Query 5;
+* Axios;
+* Material UI 9;
+* React Hook Form;
+* Zod.
 
 Назначение технологий:
 
 * React — построение пользовательского интерфейса;
 * TypeScript — типизация;
-* Vite — сборка и разработка;
+* Vite — сборка и development server;
 * React Router — маршрутизация;
-* TanStack Query — работа с серверным состоянием;
+* TanStack Query — server state, cache и mutations;
 * Axios — HTTP-клиент;
 * Material UI — UI-компоненты;
 * React Hook Form — управление формами;
-* Zod — валидация данных.
+* Zod — клиентская валидация форм.
 
-Конкретные версии библиотек фиксируются при создании frontend application shell.
+Версии библиотек фиксируются в `frontend/package.json` и `frontend/package-lock.json`.
 
 ---
 
 ## 4. Архитектурный подход
 
-Frontend строится по принципам Feature-Sliced Design.
+Frontend использует **feature-oriented architecture**, согласованную с принципами Feature-Sliced Design.
 
-Это согласованная целевая архитектура, а не утверждение о существующей реализации.
+Текущая реализация развивается от application shell к пользовательским features.
 
 Основные цели:
 
 * разделение ответственности;
-* масштабируемость;
-* независимое развитие функциональных модулей;
-* соответствие архитектурным принципам backend.
+* изоляция API-слоя от UI;
+* отделение frontend models от backend DTO;
+* повторное использование feature components;
+* развитие одного пользовательского сценария за итерацию;
+* отсутствие бизнес-логики в pages и UI-компонентах.
+
+Архитектура не должна усложняться ради формального соответствия FSD. Новые уровни (`widgets`, `entities`, `shared`) добавляются только при наличии реальной потребности.
 
 ---
 
-## 5. Структура каталогов
+## 5. Фактическая структура frontend
 
-Предполагаемая структура:
+Текущая структура проекта:
 
 ```text
-src/
+frontend/src/
 
 app/
-    providers
-    router
-    styles
+    App.tsx
+    router.tsx
+    providers/
+        QueryProvider.tsx
 
 pages/
-    страницы приложения
-
-widgets/
-    крупные блоки интерфейса
+    orders/
+        OrdersPage.tsx
+        CreateOrderPage.tsx
+        OrderPage.tsx
 
 features/
-    пользовательские действия
-
-entities/
-    бизнес-сущности frontend
-
-shared/
-    общие компоненты,
-    API,
-    типы,
-    утилиты
+    orders/
+        api/
+            getOrders.ts
+            getOrder.ts
+            createOrder.ts
+            orderMapper.ts
+            types.ts
+        model/
+            types.ts
+            useOrders.ts
+            useOrder.ts
+        create-order/
+            api/
+            model/
+            ui/
+        register-order/
+            api/
+            model/
+            ui/
+        ui/
+            OrderListItem.tsx
+            OrderListEmpty.tsx
+            OrderListError.tsx
+            OrderActions.tsx
+            OrderDetails.tsx
 ```
 
-Эта структура является target structure и будет уточняться при создании frontend application.
+Структура является живой архитектурой: она уточняется по мере появления новых пользовательских сценариев.
 
 ---
 
-## 6. Слои frontend
+## 6. Application shell
 
-### Shared
+`app/App.tsx` является корневым компонентом приложения.
 
-Общие технические элементы:
+Текущая композиция:
 
-* API client;
-* UI-компоненты;
-* конфигурация;
-* типы;
-* утилиты.
+```text
+App
+ ├── QueryProvider
+ └── RouterProvider
+```
 
-Не содержит бизнес-логики.
+`QueryProvider` предоставляет TanStack Query для работы с server state.
 
----
-
-### Entities
-
-Отображение бизнес-сущностей:
-
-Примеры:
-
-* Customer;
-* Organization;
-* Order;
-* Instrument;
-* Verification.
-
-Entities отвечают за представление данных.
+Маршрутизация определяется в `app/router.tsx`.
 
 ---
 
-### Features
+## 7. Маршрутизация
 
-Пользовательские действия:
+Фактически реализованы следующие маршруты:
 
-Примеры:
+```text
+/orders
+/orders/new
+/orders/:orderId
+```
 
-* создание заказчика;
-* редактирование заказа;
-* проведение поверки;
-* экспорт данных.
+Назначение:
 
-Feature представляет законченное действие пользователя.
+* `/orders` — список заказов;
+* `/orders/new` — создание заказа;
+* `/orders/:orderId` — просмотр конкретного заказа.
 
----
-
-### Widgets
-
-Крупные самостоятельные блоки:
-
-Примеры:
-
-* Sidebar;
-* Dashboard;
-* таблицы;
-* панели управления.
+Новые маршруты добавляются только вместе с соответствующим пользовательским сценарием.
 
 ---
 
-### Pages
+## 8. Pages
 
-Полноценные страницы приложения:
+Pages являются точками композиции пользовательского сценария.
 
-Примеры:
+Например, `OrdersPage`:
 
-* CustomersPage;
-* OrdersPage;
-* VerificationPage.
+```text
+OrdersPage
+    ↓
+useOrders()
+    ↓
+loading / error / empty / data
+    ↓
+OrderListItem
+```
+
+Page не должна содержать HTTP-запросы, бизнес-правила или сложную domain-specific логику.
+
+Сложные действия и состояния выносятся в features и UI-компоненты.
 
 ---
 
-## 7. Работа с API
+## 9. Features
+
+Feature представляет конкретное пользовательское действие или функциональный контур.
+
+Уже реализованы:
+
+### Orders
+
+* получение списка заказов;
+* получение заказа по ID;
+* создание заказа;
+* регистрация заказа.
+
+### Create Order
+
+Feature отвечает за форму создания заказа, её model/API/UI части и клиентскую валидацию.
+
+### Register Order
+
+Feature содержит:
+
+* API mutation;
+* React Query hook;
+* кнопку регистрации;
+* отображение ошибки.
+
+После успешной регистрации cache конкретного заказа обновляется через TanStack Query.
+
+---
+
+## 10. Работа с API
 
 Backend является источником истины.
 
-Схема взаимодействия:
+Текущая схема взаимодействия:
 
 ```text
-FastAPI
-    ↓
-OpenAPI Schema
-    ↓
-TypeScript API Client
-    ↓
-React
+FastAPI backend
+      ↓
+Axios API layer
+      ↓
+backend DTO
+      ↓
+mapper
+      ↓
+frontend model
+      ↓
+React Query hook
+      ↓
+Page / Feature UI
 ```
 
-Правила:
+API-логика находится внутри соответствующей feature, а не непосредственно в pages и UI-компонентах.
 
-* не создавать вручную дубли backend DTO;
-* использовать типизированный API client;
-* API-логика находится в shared/api;
-* страницы и компоненты не работают напрямую с HTTP.
+Для Orders backend DTO отделены от frontend models.
 
-TypeScript API client является целевым frontend artifact и будет создан на этапе application shell/API integration.
+Например:
+
+```text
+OrderApiDto
+    ↓
+orderMapper
+    ↓
+OrderRead
+```
+
+Это позволяет не распространять backend naming и транспортные детали по всему UI.
+
+Generated TypeScript API client пока не используется. Поэтому документация не должна утверждать, что frontend уже построен вокруг автоматически сгенерированного OpenAPI client.
 
 ---
 
-## 8. Управление состоянием
+## 11. Управление состоянием
 
-Используется разделение:
+Используется разделение server state и client state.
 
 ### Server State
 
-TanStack Query:
+TanStack Query используется для:
 
-* загрузка данных;
-* кеширование;
-* обновление;
-* синхронизация с backend.
+* загрузки данных;
+* cache;
+* mutations;
+* обновления данных после действий пользователя;
+* состояний loading/error.
 
 ### Client State
 
-Используется только для:
+Локальное состояние используется только там, где оно действительно необходимо:
 
-* состояния интерфейса;
-* локальных настроек;
-* временных данных формы.
+* состояние UI;
+* состояние формы;
+* временные данные взаимодействия пользователя.
 
-Не хранить бизнес-данные глобально без необходимости.
-
----
-
-## 9. Маршрутизация
-
-Маршруты определяются в app/router.
-
-Пример:
-
-```text
-/dashboard
-
-/customers
-
-/orders
-
-/verification
-
-/warehouse
-```
-
-Каждая страница должна представлять пользовательский сценарий.
+Бизнес-данные не должны без необходимости дублироваться в глобальном client state.
 
 ---
 
-## 10. UI-компоненты
+## 12. UI-компоненты
 
-Используется единый UI-подход.
+UI-компоненты разделяются по ответственности.
 
-Правила:
+Примеры текущей реализации:
 
-* переиспользуемые компоненты размещаются в shared;
-* компоненты конкретного модуля размещаются внутри feature/entity;
-* страницы не содержат сложных UI-деталей.
+* `OrderListItem` — отображение элемента списка;
+* `OrderListEmpty` — пустое состояние списка;
+* `OrderListError` — состояние ошибки;
+* `OrderDetails` — отображение деталей заказа;
+* `OrderActions` — композиция действий над заказом;
+* `RegisterOrderButton` — кнопка регистрации;
+* `RegisterOrderError` — ошибка регистрации.
+
+Страницы не должны превращаться в большие монолитные компоненты.
+
+Повторно используемые или feature-specific UI элементы выносятся из pages по мере необходимости.
 
 ---
 
-## 11. Формы и валидация
+## 13. Формы и валидация
 
 Правила:
 
 * формы реализуются через React Hook Form;
 * схема проверки через Zod;
-* frontend выполняет только пользовательскую валидацию;
-* бизнес-валидация остается на backend.
+* frontend выполняет пользовательскую валидацию;
+* backend остается источником истины для бизнес-валидации.
+
+Frontend validation не заменяет backend validation.
 
 ---
 
-## 12. Обработка ошибок
+## 14. Обработка состояний и ошибок
 
-Frontend должен:
+Каждый пользовательский сценарий должен явно учитывать:
 
-* отображать ошибки API пользователю;
-* показывать состояние загрузки;
-* корректно обрабатывать отсутствие данных;
-* не скрывать ошибки backend.
+* loading;
+* success/data;
+* empty state, если он применим;
+* API error;
+* mutation pending;
+* mutation error.
+
+Ошибки backend не должны молча подавляться.
+
+HTTP-ошибки преобразуются в пользовательское состояние на соответствующем уровне feature/page.
 
 ---
 
-## 13. Правила разработки
+## 15. Правила разработки
 
 Соблюдаются принципы:
 
 * один пользовательский сценарий за итерацию;
 * небольшие изменения;
+* анализ существующего кода перед изменением;
+* разделение API, model и UI ответственности;
+* отсутствие бизнес-логики в pages;
 * проверка после каждого этапа;
 * документация синхронизируется с кодом.
 
@@ -298,46 +359,79 @@ Workflow:
 ```text
 анализ
 ↓
-изменение
+один файл / один небольшой шаг
 ↓
 проверка
 ↓
-commit
+y
+↓
+следующий шаг
 ```
 
 ---
 
-## 14. Definition of Done
+## 16. Frontend Definition of Done
 
-Функция считается завершенной, когда:
+Пользовательский сценарий считается завершенным, когда:
 
-* описан пользовательский сценарий;
-* backend API готов;
-* frontend реализован;
-* выполнена интеграционная проверка;
+* определен пользовательский flow;
+* необходимый backend API существует;
+* API layer реализован;
+* backend DTO отделены от frontend models, если это необходимо;
+* React Query hook реализован для server state;
+* UI реализован;
+* loading/error/empty состояния обработаны;
+* формы имеют клиентскую валидацию, если она нужна;
+* typecheck проходит;
+* build проходит;
 * документация обновлена;
-* изменения зафиксированы в Git.
+* изменения зафиксированы в Git и синхронизированы с GitHub.
 
 ---
 
-## 15. Frontend Implementation Roadmap
+## 17. Текущий implementation checkpoint
 
-Frontend implementation выполняется после завершения backend architecture phase.
+На текущем этапе реализован пользовательский контур Orders.
+
+```text
+Orders
+  ├── list                 ✓
+  ├── loading state        ✓
+  ├── error state          ✓
+  ├── empty state          ✓
+  ├── create order         ✓
+  ├── order details        ✓
+  └── register order       ✓
+```
+
+Регистрация заказа использует mutation и после успешного выполнения обновляет cache соответствующего заказа.
+
+Frontend application shell, routing, API integration и базовый Orders flow уже реализованы.
+
+---
+
+## 18. Frontend Roadmap
+
+Дальнейшая разработка выполняется по пользовательским сценариям, а не по механическому заполнению каталогов.
 
 Целевой workflow:
 
 ```text
-frontend architecture validation
+audit current UI
         ↓
-application shell
+select one user scenario
         ↓
-backend API integration
+analyze existing backend API
         ↓
-one user scenario
+implement feature
         ↓
-validate
+validate typecheck/build/tests
+        ↓
+update documentation
+        ↓
+sync GitHub
         ↓
 next scenario
 ```
 
-Первый implementation step должен создать минимальный application shell и проверить подключение к backend API. После этого разработка продолжается по одному пользовательскому сценарию за итерацию.
+Следующие frontend изменения должны начинаться с аудита уже существующего UI и backend API, чтобы не дублировать реализованную функциональность.
