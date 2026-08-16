@@ -19,6 +19,7 @@ from app.domains.instrument_type.entities.instrument_type import InstrumentType
 from app.domains.instrument_type.repositories.instrument_type_repository import (
     InstrumentTypeRepository,
 )
+from app.shared.unit_of_work.unit_of_work import UnitOfWork
 
 
 class FakeDeviceRepository(DeviceRepository):
@@ -70,6 +71,18 @@ class FakeInstrumentTypeRepository(InstrumentTypeRepository):
         self.instrument_type = instrument_type
 
 
+class FakeUnitOfWork(UnitOfWork):
+    def __init__(self):
+        self.committed = False
+        self.rolled_back = False
+
+    def commit(self):
+        self.committed = True
+
+    def rollback(self):
+        self.rolled_back = True
+
+
 def test_device_create():
     instrument_type = InstrumentType(
         id=uuid4(),
@@ -78,7 +91,6 @@ def test_device_create():
     instrument_type_repository = FakeInstrumentTypeRepository(
         instrument_type,
     )
-
     repository = FakeDeviceRepository(
         Device(
             id=uuid4(),
@@ -86,9 +98,11 @@ def test_device_create():
             serial_number=SerialNumber("SN-001"),
         ),
     )
+    uow = FakeUnitOfWork()
     service = DeviceApplicationService(
         repository,
         instrument_type_repository,
+        uow,
     )
 
     device = service.create(
@@ -102,6 +116,8 @@ def test_device_create():
     assert device.serial_number.value == "SN-002"
     assert device.status == DeviceStatus.AVAILABLE
     assert repository.device.id == device.id
+    assert uow.committed
+    assert not uow.rolled_back
 
 
 def test_device_create_fails_when_instrument_type_not_found():
@@ -118,9 +134,11 @@ def test_device_create_fails_when_instrument_type_not_found():
             serial_number=SerialNumber("SN-001"),
         ),
     )
+    uow = FakeUnitOfWork()
     service = DeviceApplicationService(
         repository,
         instrument_type_repository,
+        uow,
     )
 
     with pytest.raises(InstrumentTypeNotFoundApplicationError):
@@ -130,6 +148,9 @@ def test_device_create_fails_when_instrument_type_not_found():
                 serial_number="SN-002",
             ),
         )
+
+    assert not uow.committed
+    assert uow.rolled_back
 
 
 def test_device_connect_disconnect_flow():
@@ -146,9 +167,11 @@ def test_device_connect_disconnect_flow():
             name="Pressure gauge",
         ),
     )
+    uow = FakeUnitOfWork()
     service = DeviceApplicationService(
         repository,
         instrument_type_repository,
+        uow,
     )
 
     connected_device = service.connect(
@@ -162,3 +185,5 @@ def test_device_connect_disconnect_flow():
     )
 
     assert disconnected_device.status == DeviceStatus.COMPLETED
+    assert uow.committed
+    assert not uow.rolled_back

@@ -131,12 +131,14 @@ def get_device_service(
     instrument_type_repository: InstrumentTypeRepository = Depends(
         get_instrument_type_repository,
     ),
+    uow: UnitOfWork = Depends(get_unit_of_work),
 ) -> DeviceApplicationService:
     """Provide Device application service."""
 
     return DeviceApplicationService(
         repository,
         instrument_type_repository,
+        uow,
     )
 
 

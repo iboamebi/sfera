@@ -21,6 +21,7 @@ from app.domains.device.repositories.device_repository import DeviceRepository
 from app.domains.instrument_type.repositories.instrument_type_repository import (
     InstrumentTypeRepository,
 )
+from app.shared.unit_of_work.unit_of_work import UnitOfWork
 
 
 class DeviceApplicationService:
@@ -30,9 +31,11 @@ class DeviceApplicationService:
         self,
         repository: DeviceRepository,
         instrument_type_repository: InstrumentTypeRepository,
+        unit_of_work: UnitOfWork,
     ) -> None:
         self._repository = repository
         self._instrument_type_repository = instrument_type_repository
+        self._uow = unit_of_work
 
     def create(
         self,
@@ -40,20 +43,21 @@ class DeviceApplicationService:
     ) -> Device:
         """Create device."""
 
-        instrument_type = self._instrument_type_repository.get(
-            command.instrument_type_id,
-        )
+        with self._uow:
+            instrument_type = self._instrument_type_repository.get(
+                command.instrument_type_id,
+            )
 
-        if instrument_type is None:
-            raise InstrumentTypeNotFoundApplicationError
+            if instrument_type is None:
+                raise InstrumentTypeNotFoundApplicationError
 
-        device = DeviceFactory.create(
-            device_id=uuid4(),
-            instrument_type_id=command.instrument_type_id,
-            serial_number=command.serial_number,
-        )
+            device = DeviceFactory.create(
+                device_id=uuid4(),
+                instrument_type_id=command.instrument_type_id,
+                serial_number=command.serial_number,
+            )
 
-        self._repository.save(device)
+            self._repository.save(device)
 
         return device
 
@@ -76,15 +80,16 @@ class DeviceApplicationService:
     ) -> Device:
         """Connect device."""
 
-        device = self.get(command.device_id)
+        with self._uow:
+            device = self.get(command.device_id)
 
-        try:
-            device.connect()
+            try:
+                device.connect()
 
-        except DeviceNotAvailableDomainError:
-            raise DeviceNotAvailableApplicationError from None
+            except DeviceNotAvailableDomainError:
+                raise DeviceNotAvailableApplicationError from None
 
-        self._repository.save(device)
+            self._repository.save(device)
 
         return device
 
@@ -94,14 +99,15 @@ class DeviceApplicationService:
     ) -> Device:
         """Disconnect device."""
 
-        device = self.get(command.device_id)
+        with self._uow:
+            device = self.get(command.device_id)
 
-        try:
-            device.disconnect()
+            try:
+                device.disconnect()
 
-        except DeviceNotInWorkDomainError:
-            raise DeviceNotInWorkApplicationError from None
+            except DeviceNotInWorkDomainError:
+                raise DeviceNotInWorkApplicationError from None
 
-        self._repository.save(device)
+            self._repository.save(device)
 
         return device
