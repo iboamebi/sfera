@@ -4,7 +4,7 @@
 
 Переход от CRUD-архитектуры к DDD/Clean Architecture завершён.
 
-Текущий этап — архитектурная валидация и изолированное устранение технического долга без смешивания его с функциональными миграциями.
+Текущий этап — изолированная архитектурная и техническая валидация без смешивания feature migration и cleanup.
 
 ## Текущая схема
 
@@ -22,230 +22,66 @@ Infrastructure Repository
 
 ## Статус миграции модулей
 
-### Organization
+Следующие модули имеют завершённый DDD/Clean Architecture flow:
+
+- Organization
+- Customer
+- Device
+- Order
+- Material
+- Warehouse
+- Workflow
+- Verification
+- Repair
+- Diagnostic
+- PriceList
+
+Для модулей завершены соответствующие Domain/Application/Infrastructure/API этапы, включая Dependency Injection и релевантные тесты.
+
+### Device
 
 Статус:
 
+```text
 COMPLETED
+```
 
 Выполнено:
 
-- Domain entity
-- Repository interface
-- SQLAlchemy repository
-- Mapper
-- Application Service
-- Dependency Injection
-- API migration
-- Schemas migration
+- Domain entity `Device`;
+- Device value objects and domain state transitions;
+- `DeviceFactory`;
+- `DeviceRepository` interface;
+- SQLAlchemy repository;
+- `DeviceMapper`;
+- `CreateDeviceCommand`, `ConnectDeviceCommand`, `DisconnectDeviceCommand`;
+- `DeviceApplicationService`;
+- Dependency Injection;
+- API router;
+- validation of referenced `InstrumentType` during creation;
+- Application error → HTTP 404 mapping for missing `InstrumentType`;
+- Unit of Work transaction boundary for `create`, `connect` and `disconnect`.
 
----
+Последний Device checkpoint:
 
-### Customer
+```text
+b69b551 refactor: add unit of work to device service
+```
 
-Статус:
+Текущий Application flow:
 
-COMPLETED
+```text
+API
+→ DeviceApplicationService
+→ DeviceRepository / InstrumentTypeRepository
+→ Domain
+→ UnitOfWork
+→ Infrastructure
+```
 
-Выполнено:
+`DeviceApplicationService.create()` проверяет существование `InstrumentType` до создания Device. При отсутствии типа выбрасывается `InstrumentTypeNotFoundApplicationError`.
 
-- Domain entity
-- Domain exceptions
-- Repository interface
-- SQLAlchemy repository
-- Mapper
-- CreateCustomerCommand
-- UpdateCustomerCommand
-- Application Service migration
-- API Router migration
-- Domain state change methods
-- Tests validation
-
-Checkpoint:
-
-- Customer application flow migrated to DDD commands
-- API no longer contains update logic
-
----
-
-### Order
-
-Статус:
-
-COMPLETED
-
-Выполнено:
-
-- Domain entity
-- Aggregate Root
-- Value Objects
-- Repository interface
-- SQLAlchemy repository
-- Mapper
-- Application Service
-- Commands
-- API migration
-- Identifier generation aligned with application-layer policy
-- Application test updated
-
----
-
-### Material
-
-Статус:
-
-COMPLETED
-
-Выполнено:
-
-- Domain entity
-- Repository interface
-- SQLAlchemy repository
-- Mapper
-- Application Service
-- API migration
-
----
-
-### Warehouse
-
-Статус:
-
-COMPLETED
-
-Выполнено:
-
-- Domain entities
-- Value Objects
-- Repository interfaces
-- SQLAlchemy repositories
-- Application services
-- API migration
-
----
-
-### Verification
-
-Статус:
-
-COMPLETED
-
-Выполнено:
-
-- Domain entity
-- Value Objects
-- Repository interface
-- SQLAlchemy repository
-- Mapper
-- Application Service
-- Commands
-- API migration
-
----
-
-### Repair
-
-Статус:
-
-COMPLETED
-
-Выполнено:
-
-- Domain entity
-- Value Objects
-- Repository interface
-- SQLAlchemy repository
-- Mapper
-- Application Service
-- Commands
-- API migration
-
----
-
-### Diagnostic
-
-Статус:
-
-COMPLETED
-
-Выполнено:
-
-- Domain entity
-- Repository interface
-- SQLAlchemy repository
-- Mapper
-- Application Service
-- Commands
-- API Router
-- Schemas
-
----
-
-### PriceList
-
-Статус:
-
-COMPLETED
-
-Выполнено:
-
-- Domain entity
-- Repository interface
-- Infrastructure repository
-- PriceListMapper
-- Application Service
-- Commands
-- PriceListItem migration
-- API Router migration
-- Dependency Injection
-- Legacy PriceList service removal
-- Legacy CRUD dependency removal
-
-Checkpoint:
-
-- PriceList migrated to DDD flow
-- Legacy PriceList service removed
-- Legacy CRUD dependency removed
-
-Known technical debt:
-
-- PriceList creation contract does not currently provide the mandatory `Entity.id`.
-- PriceListItem creation contract does not currently provide the mandatory `Entity.id`.
-- Dedicated PriceList application tests are absent.
-
-This debt is isolated from the completed migration and must be resolved as a separate cleanup/migration task.
-
----
-
-### Workflow
-
-Статус:
-
-COMPLETED
-
-Выполнено:
-
-- Domain entities
-- Repository interfaces
-- SQLAlchemy repositories
-- WorkflowMapper
-- WorkflowStageMapper
-- WorkflowInstanceMapper
-- WorkflowApplicationService
-- StartWorkflowCommand
-- MoveWorkflowStageCommand
-- CompleteWorkflowCommand
-- API migration
-- Dependency Injection
-- Workflow tests
-- Architecture tests
-
-Checkpoint:
-
-- Workflow migrated to DDD application flow
-- Workflow stages loaded in repository using `selectinload`
-- Workflow persistence mapping moved to Infrastructure
-- Workflow commands fully replace legacy flow
+`DeviceApplicationService.create()`, `connect()` и `disconnect()` выполняются внутри Unit of Work. Успешный use case приводит к commit; исключение приводит к rollback через `UnitOfWork.__exit__`.
 
 ---
 
@@ -253,21 +89,19 @@ Checkpoint:
 
 Статус:
 
+```text
 COMPLETED
+```
 
-Выполнено:
+Проверено:
 
-- Repository implementations audit
-- Mapper alignment verification
-- UnitOfWork transaction boundary verification
-- Dependency direction verification
-- WarehouseMovementRepository migration fix
+- Repository implementations;
+- mapper alignment;
+- Unit of Work transaction boundaries;
+- dependency direction;
+- отсутствие CRUD dependencies.
 
-Checkpoint:
-
-- All infrastructure repositories follow DDD repository flow
-- No CRUD dependencies remain
-- No domain/application dependency violations detected
+Infrastructure repositories используют Repository Interfaces и SQLAlchemy только в Infrastructure layer.
 
 ---
 
@@ -275,45 +109,18 @@ Checkpoint:
 
 Статус:
 
+```text
 COMPLETED
+```
 
-Выполнено:
+Стандартизирован контракт mapper:
 
-- Infrastructure mappers aligned with the current mapper contract
-- Mapper methods standardized:
-  - `to_domain(self, model)`
-  - `to_model(self, entity, model)`
-- ORM model creation responsibility removed from mappers where applicable
-- Repository layer uses mapper instances consistently
+```text
+to_domain(self, model)
+to_model(self, entity, model)
+```
 
-Important:
-
-- There is currently no shared `BaseMapper` class in the repository.
-- Mapper consistency is based on the agreed method contract and repository usage, not inheritance from a common base mapper.
-
-Affected mappers:
-
-- DeviceMapper
-- OrderMapper
-- PriceListMapper
-- MaterialMapper
-- WorkflowMapper
-- WorkflowStageMapper
-- WorkflowInstanceMapper
-- VerificationMapper
-- RepairMapper
-- WarehouseMapper
-- WarehouseStockMapper
-- WarehouseMovementMapper
-- OrganizationMapper
-- CustomerMapper
-- DiagnosticMapper
-
-Checkpoint:
-
-- Infrastructure mapping layer standardized
-- Repository implementations follow unified mapper pattern
-- No remaining legacy mapper implementations detected
+`DeviceMapper` преобразует `Instrument` ↔ `Device`, включая `device_status`.
 
 ---
 
@@ -321,19 +128,17 @@ Checkpoint:
 
 Статус:
 
+```text
 REMOVED
+```
 
-Удалено:
+Удалены/выведены из active architecture:
 
 - `app/crud`
 - `app/services/price_list_service.py`
 - `app/api/base_router.py`
 
-Проверки:
-
-- No active imports from `app.crud`
-- No active imports from `app.services`
-- No BaseRouter usage
+Новые features не должны использовать legacy CRUD style.
 
 ---
 
@@ -341,19 +146,16 @@ REMOVED
 
 Статус:
 
+```text
 COMPLETED
+```
 
-Выполнено:
+Проверено:
 
-- Removed ORM imports from Domain layer
-- Removed Infrastructure imports from Domain layer
-- Domain factories create only domain entities
-- ORM mapping moved to Infrastructure layer
-
-Проверки:
-
-- No imports from `app.models` in `app/domains`
-- No imports from `app.infrastructure` in `app/domains`
+- Domain не импортирует ORM models;
+- Domain не импортирует Infrastructure;
+- Domain factories создают domain entities;
+- ORM mapping находится в Infrastructure.
 
 ---
 
@@ -361,37 +163,27 @@ COMPLETED
 
 Статус:
 
+```text
 COMPLETED
+```
 
-Проверено:
+Проверены:
 
-- Legacy dependency audit
-- Domain layer dependency isolation
-- Application layer dependency isolation
-- API layer isolation
-- Infrastructure dependency direction
-- Repository interface boundaries
-- Mapper consistency audit
+- dependency direction;
+- Domain isolation;
+- Application isolation;
+- API isolation;
+- Repository boundaries;
+- mapper consistency;
+- legacy dependencies.
 
-Результаты:
+Результат:
 
-- No active imports from `app.crud`
-- No active imports from `app.services`
-- No BaseRouter usage
-- Domain has no ORM dependencies
-- Domain has no Infrastructure dependencies
-- Application has no Infrastructure dependencies
-- Application has no ORM dependencies
-- API has no Repository dependencies
-- API has no Session dependencies
-- Infrastructure has no API/Application dependencies
-
-Checkpoint:
-
-- DDD/Clean Architecture dependency rules validated
-- Workflow migration architecture validated
-- PriceListMapper extraction completed
-- Remaining technical debt isolated
+- Domain не зависит от ORM/Infrastructure;
+- Application не зависит от ORM/Infrastructure implementations;
+- API не зависит напрямую от Repository/Session;
+- Infrastructure не зависит от API/Application;
+- legacy CRUD dependencies отсутствуют.
 
 ---
 
@@ -399,9 +191,13 @@ Checkpoint:
 
 ### Checkpoint — 2026-08-10
 
-Application Services Audit: COMPLETE
+Статус:
 
-Проверены все Application Services:
+```text
+COMPLETE
+```
+
+Проверены Application Services:
 
 - Customer
 - Device
@@ -418,37 +214,10 @@ Application Services Audit: COMPLETE
 Проверено:
 
 - отсутствие CRUD-style proxy methods;
-- отсутствие бизнес-логики в Application layer;
-- делегирование state changes в Domain;
-- корректность Repository Interface boundaries;
-- корректность UnitOfWork transaction boundaries;
-- отсутствие Infrastructure/ORM dependencies в Application layer.
-
-Cleanup completed:
-
-- Removed redundant `CustomerApplicationService.save()`.
-- Removed redundant `OrganizationApplicationService.save()`.
-- Verified no usages of removed `save()` methods.
-- Redundant command handlers for device and verification were removed.
-- PriceList item update command export was restored.
-
-Результат:
-
-- Application Services выполняют orchestration use cases.
-- Domain entities/domain services выполняют бизнес-правила и state transitions.
-- Repository operations выполняются через application/domain repository interfaces.
-- CRUD-style остатки, обнаруженные в Application Services, удалены.
-- No new Application-layer architectural violations detected.
-
-Validation:
-
-- pytest: 26 passed
-- ruff check: passed
-- ruff format --check: passed
-
-Checkpoint result:
-
-Application layer conforms to current DDD/Clean Architecture rules.
+- делегирование business state changes в Domain;
+- корректные Repository Interface boundaries;
+- корректные Unit of Work transaction boundaries;
+- отсутствие Infrastructure/ORM dependencies.
 
 ---
 
@@ -456,68 +225,27 @@ Application layer conforms to current DDD/Clean Architecture rules.
 
 ### Checkpoint — 2026-08-10
 
-API Layer Audit: COMPLETE
+Статус:
 
-Проверены routers:
+```text
+COMPLETE
+```
 
-- Customer
-- Device
-- Diagnostic
-- Material
-- Order
-- Organization
-- PriceList
-- PriceListItem
-- Repair
-- Verification
-- Warehouse
-- WarehouseMovement
-- WarehouseStock
-- Workflow
-
-Также проверен router package `app/api/routers/__init__.py`.
-
-Проверено:
-
-- отсутствие Repository/ORM/Session dependencies в API layer;
-- отсутствие Infrastructure dependencies в API layer;
-- отсутствие бизнес-логики в routers;
-- корректная передача HTTP input в Application Commands/Services;
-- корректное mapping Application exceptions → HTTP status codes;
-- наличие явных response models там, где контракт уже определён.
-
-Cleanup completed:
-
-- Removed unused `app/api/routers/order_actions.py`.
-- Removed UUID generation from create routers for Material, Warehouse, WarehouseStock, WarehouseMovement and Order.
+Проверены API routers и dependency boundaries.
 
 Результат:
 
-- API layer сохраняет границу `API → Application`.
-- Repository и persistence concerns не проникают в routers.
-- Business state changes выполняются через Application/Domain layers.
-- Identifier generation is not performed by API routers.
+- API → Application boundary соблюдается;
+- Repository/ORM/Session dependencies отсутствуют в API layer;
+- business logic отсутствует в routers;
+- UUID generation removed from create routers;
+- Application exceptions mapped to HTTP responses where contracts exist.
 
-Known API technical debt / follow-up:
+Known API technical debt:
 
-- PriceListItem update contract требует отдельной функциональной миграции: текущая schema заявляет `name`, но router не передаёт его в Application command; `service_type` имеет разные semantics в create и update.
-- Device connect/disconnect endpoints возвращают структурированные payloads без явной response schema.
-- Material update endpoint использует `PUT` с partial-update semantics (`exclude_unset=True`); требует отдельного решения API contract.
-
-Важно:
-
-- Эти пункты не изменялись в рамках API audit.
-- PriceListItem contract cleanup должен выполняться отдельным feature/migration этапом, а не смешиваться с архитектурным аудитом.
-
-Validation:
-
-- pytest: 26 passed
-- ruff check: passed
-- ruff format --check: passed
-
-Checkpoint result:
-
-API layer conforms to current DDD/Clean Architecture dependency rules; identified contract debt is isolated for subsequent incremental work.
+- Device connect/disconnect endpoints пока используют структурированный payload без отдельной явной response schema;
+- PriceListItem update contract имеет semantic inconsistencies;
+- Material `PUT` использует partial-update semantics.
 
 ---
 
@@ -525,70 +253,87 @@ API layer conforms to current DDD/Clean Architecture dependency rules; identifie
 
 ### Checkpoint — 2026-08-11
 
-Identifier Generation Audit: COMPLETE
+Статус:
 
-Проверено:
-
-- API routers;
-- Application Services;
-- Domain entities;
-- Domain factories;
-- Domain `create()` methods.
+```text
+COMPLETE
+```
 
 Результат:
 
-- UUID generation removed from API create routers.
-- Application layer owns identifier generation for simple entity creation.
-- Domain factories may generate identifiers when they construct complete domain structures.
-- Domain `create()` methods receive identifiers explicitly where identifier generation is not a domain business rule.
-- No new architecture violations found in Customer, Organization, Material, Warehouse, Order, Workflow, Diagnostic, Repair and Device creation flows.
-
-Cleanup completed:
-
-- API UUID generation cleanup.
-- Order creation flow aligned with the identifier policy.
-- Order application test updated.
-
-Validation:
-
-- pytest: 26 passed
-- ruff check: passed
-- ruff format --check: passed
+- API identifier generation removed;
+- Application layer owns identifier generation for simple entity creation;
+- Domain factories retain legitimate domain creation responsibilities;
+- Domain `create()` methods receive identifiers explicitly where appropriate.
 
 Known technical debt:
 
-- PriceList and PriceListItem creation contracts are inconsistent with mandatory `Entity.id`.
-- `PriceList.create()` does not accept or assign an identifier.
-- `PriceListItem` creation does not provide an identifier.
-- PriceList Application Service has no dedicated application tests.
-
-Follow-up:
-
-- Resolve PriceList / PriceListItem identifier creation contract as a separate cleanup/migration task.
-- Add application tests before changing the PriceList creation contract.
-
-Checkpoint result:
-
-Identifier generation policy is aligned across API, Application and Domain creation flows, with PriceList creation contract isolated as separate technical debt.
+- PriceList / PriceListItem creation contracts are inconsistent with mandatory `Entity.id`;
+- dedicated PriceList application tests are absent.
 
 ---
 
-## Current Checkpoint
+## Current Validation
 
-As of 2026-08-11:
+Последняя полная backend validation:
 
-- DDD/Clean Architecture migration is complete.
-- Application Services audit is complete.
-- API Layer audit is complete.
-- Identifier generation audit is complete.
-- Legacy CRUD layers are removed.
-- Infrastructure mapper alignment is complete.
-- pytest: 26 passed.
-- ruff check: passed.
-- ruff format --check: passed.
+```text
+pytest -q
+33 passed
 
-Open technical debt is isolated and must be addressed incrementally without mixing feature migration and architectural cleanup:
+ruff check .
+All checks passed
 
-1. PriceList / PriceListItem identifier creation contract.
-2. PriceList application test coverage.
-3. Existing API contract debt listed in the API Layer Audit.
+ruff format --check .
+352 files already formatted
+
+git diff --check
+passed
+```
+
+---
+
+## Current Checkpoint — 2026-08-16
+
+```text
+Backend DDD/Clean Architecture migration: COMPLETE
+Architecture audits: COMPLETE
+Device validation: COMPLETE
+Device UnitOfWork integration: COMPLETE
+```
+
+Последний синхронизированный backend commit:
+
+```text
+b69b551 refactor: add unit of work to device service
+```
+
+Ветка:
+
+```text
+develop
+```
+
+Working tree был чистым после последнего push.
+
+---
+
+## Следующий этап
+
+Следующий логичный шаг — интеграционные тесты Device API с FastAPI `TestClient` и dependency overrides.
+
+Проверить:
+
+1. `POST /devices/` с существующим `InstrumentType`;
+2. `POST /devices/` с отсутствующим `InstrumentType` → HTTP 404;
+3. DI `get_device_service`;
+4. API → Application → Repository/UoW boundary;
+5. отсутствие business logic в router.
+
+Работа продолжается по правилу:
+
+```text
+analyze → one file → y → next
+```
+
+Feature migration и architectural cleanup не смешиваются.
