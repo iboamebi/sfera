@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.routers import instrument_type, organization
 from app.api.routers.customer import router as customer_router
@@ -22,6 +23,16 @@ from app.api.routers.workflow import router as workflow_router
 from app.db import model_registry  # noqa: F401
 
 app = FastAPI(title="Sphere")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://top.vlsfera.ru:5173",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.include_router(organization.router)
 app.include_router(customer_router)
