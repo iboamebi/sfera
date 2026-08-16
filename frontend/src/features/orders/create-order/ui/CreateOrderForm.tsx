@@ -10,7 +10,10 @@ interface CreateOrderFormProps {
   isPending?: boolean;
 }
 
-export function CreateOrderForm({ onSubmit, isPending = false }: CreateOrderFormProps) {
+export function CreateOrderForm({
+  onSubmit,
+  isPending = false,
+}: CreateOrderFormProps) {
   const {
     register,
     handleSubmit,
@@ -34,6 +37,28 @@ export function CreateOrderForm({ onSubmit, isPending = false }: CreateOrderForm
           {...register("customerId")}
           error={Boolean(errors.customerId)}
           helperText={errors.customerId?.message}
+          disabled={isPending}
+        />
+        <TextField
+          label="Планируемая дата выдачи"
+          type="datetime-local"
+          {...register("plannedIssueAt")}
+          error={Boolean(errors.plannedIssueAt)}
+          helperText={errors.plannedIssueAt?.message}
+          disabled={isPending}
+          slotProps={{
+            inputLabel: {
+              shrink: true,
+            },
+          }}
+        />
+        <TextField
+          label="Комментарий"
+          multiline
+          minRows={3}
+          {...register("comment")}
+          error={Boolean(errors.comment)}
+          helperText={errors.comment?.message}
           disabled={isPending}
         />
         <Button type="submit" variant="contained" disabled={isPending}>
