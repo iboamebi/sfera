@@ -1,6 +1,4 @@
-"""
-Application service for Device.
-"""
+"""Application service for Device."""
 
 from uuid import UUID, uuid4
 
@@ -11,6 +9,7 @@ from app.application.device.exceptions import (
     DeviceNotAvailableApplicationError,
     DeviceNotFoundApplicationError,
     DeviceNotInWorkApplicationError,
+    InstrumentTypeNotFoundApplicationError,
 )
 from app.domains.device.entities.device import Device
 from app.domains.device.exceptions import (
@@ -19,6 +18,9 @@ from app.domains.device.exceptions import (
 )
 from app.domains.device.factories.device_factory import DeviceFactory
 from app.domains.device.repositories.device_repository import DeviceRepository
+from app.domains.instrument_type.repositories.instrument_type_repository import (
+    InstrumentTypeRepository,
+)
 
 
 class DeviceApplicationService:
@@ -27,14 +29,23 @@ class DeviceApplicationService:
     def __init__(
         self,
         repository: DeviceRepository,
+        instrument_type_repository: InstrumentTypeRepository,
     ) -> None:
         self._repository = repository
+        self._instrument_type_repository = instrument_type_repository
 
     def create(
         self,
         command: CreateDeviceCommand,
     ) -> Device:
         """Create device."""
+
+        instrument_type = self._instrument_type_repository.get(
+            command.instrument_type_id,
+        )
+
+        if instrument_type is None:
+            raise InstrumentTypeNotFoundApplicationError
 
         device = DeviceFactory.create(
             device_id=uuid4(),

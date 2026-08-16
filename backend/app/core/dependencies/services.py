@@ -128,10 +128,16 @@ def get_verification_service(
 
 def get_device_service(
     repository: DeviceRepository = Depends(get_device_repository),
+    instrument_type_repository: InstrumentTypeRepository = Depends(
+        get_instrument_type_repository,
+    ),
 ) -> DeviceApplicationService:
     """Provide Device application service."""
 
-    return DeviceApplicationService(repository)
+    return DeviceApplicationService(
+        repository,
+        instrument_type_repository,
+    )
 
 
 def get_instrument_type_service(

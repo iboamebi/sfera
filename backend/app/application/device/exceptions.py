@@ -13,3 +13,7 @@ class DeviceNotAvailableApplicationError(Exception):
 
 class DeviceNotInWorkApplicationError(Exception):
     """Device is not in work state."""
+
+
+class InstrumentTypeNotFoundApplicationError(Exception):
+    """Instrument type was not found."""
