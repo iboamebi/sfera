@@ -13,6 +13,9 @@ from app.application.device.services.device_application_service import (
 from app.application.diagnostic.services.diagnostic_application_service import (
     DiagnosticApplicationService,
 )
+from app.application.instrument_type.services import (
+    instrument_type_application_service,
+)
 from app.application.material.services.material_application_service import (
     MaterialApplicationService,
 )
@@ -41,6 +44,7 @@ from app.core.dependencies.repositories import (
     get_customer_repository,
     get_device_repository,
     get_diagnostic_repository,
+    get_instrument_type_repository,
     get_material_repository,
     get_order_repository,
     get_organization_repository,
@@ -62,6 +66,9 @@ from app.domains.device.repositories.device_repository import (
 )
 from app.domains.diagnostic.repositories.diagnostic_repository import (
     DiagnosticRepository,
+)
+from app.domains.instrument_type.repositories.instrument_type_repository import (
+    InstrumentTypeRepository,
 )
 from app.domains.material.repositories.material_repository import (
     MaterialRepository,
@@ -125,6 +132,18 @@ def get_device_service(
     """Provide Device application service."""
 
     return DeviceApplicationService(repository)
+
+
+def get_instrument_type_service(
+    repository: InstrumentTypeRepository = Depends(
+        get_instrument_type_repository,
+    ),
+) -> instrument_type_application_service.InstrumentTypeApplicationService:
+    """Provide InstrumentType application service."""
+
+    return instrument_type_application_service.InstrumentTypeApplicationService(
+        repository,
+    )
 
 
 def get_customer_service(

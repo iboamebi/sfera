@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from app.api.routers import organization
+from app.api.routers import instrument_type, organization
 from app.api.routers.customer import router as customer_router
 from app.api.routers.device import router as device_router
 from app.api.routers.diagnostic import router as diagnostic_router
@@ -36,6 +36,7 @@ app.include_router(warehouse_movement_router)
 app.include_router(price_list_router)
 app.include_router(price_list_item_router)
 app.include_router(device_router)
+app.include_router(instrument_type.router)
 app.include_router(workflow_router)
 
 

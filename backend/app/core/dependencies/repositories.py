@@ -15,6 +15,9 @@ from app.domains.device.repositories.device_repository import (
 from app.domains.diagnostic.repositories.diagnostic_repository import (
     DiagnosticRepository,
 )
+from app.domains.instrument_type.repositories.instrument_type_repository import (
+    InstrumentTypeRepository,
+)
 from app.domains.material.repositories.material_repository import (
     MaterialRepository,
 )
@@ -54,6 +57,9 @@ from app.infrastructure.device.device_repository import (
 )
 from app.infrastructure.diagnostic.diagnostic_repository import (
     DiagnosticRepositorySQLAlchemy,
+)
+from app.infrastructure.instrument_type.instrument_type_repository import (
+    InstrumentTypeRepositorySQLAlchemy,
 )
 from app.infrastructure.material.material_repository import (
     MaterialRepositorySQLAlchemy,
@@ -152,6 +158,14 @@ def get_device_repository(
     """Provide Device repository."""
 
     return DeviceRepositorySQLAlchemy(session)
+
+
+def get_instrument_type_repository(
+    session: Session = Depends(get_session),
+) -> InstrumentTypeRepository:
+    """Provide InstrumentType repository."""
+
+    return InstrumentTypeRepositorySQLAlchemy(session)
 
 
 def get_order_repository(
