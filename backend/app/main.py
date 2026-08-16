@@ -19,6 +19,7 @@ from app.api.routers.warehouse import router as warehouse_router
 from app.api.routers.warehouse_movement import router as warehouse_movement_router
 from app.api.routers.warehouse_stock import router as warehouse_stock_router
 from app.api.routers.workflow import router as workflow_router
+from app.db import model_registry  # noqa: F401
 
 app = FastAPI(title="Sphere")
 
