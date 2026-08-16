@@ -2,8 +2,11 @@
 Application service for Device.
 """
 
-from uuid import UUID
+from uuid import UUID, uuid4
 
+from app.application.device.commands.connect_device import ConnectDeviceCommand
+from app.application.device.commands.create_device import CreateDeviceCommand
+from app.application.device.commands.disconnect_device import DisconnectDeviceCommand
 from app.application.device.exceptions import (
     DeviceNotAvailableApplicationError,
     DeviceNotFoundApplicationError,
@@ -14,9 +17,8 @@ from app.domains.device.exceptions import (
     DeviceNotAvailableDomainError,
     DeviceNotInWorkDomainError,
 )
-from app.domains.device.repositories.device_repository import (
-    DeviceRepository,
-)
+from app.domains.device.factories.device_factory import DeviceFactory
+from app.domains.device.repositories.device_repository import DeviceRepository
 
 
 class DeviceApplicationService:
@@ -27,6 +29,22 @@ class DeviceApplicationService:
         repository: DeviceRepository,
     ) -> None:
         self._repository = repository
+
+    def create(
+        self,
+        command: CreateDeviceCommand,
+    ) -> Device:
+        """Create device."""
+
+        device = DeviceFactory.create(
+            device_id=uuid4(),
+            instrument_type_id=command.instrument_type_id,
+            serial_number=command.serial_number,
+        )
+
+        self._repository.save(device)
+
+        return device
 
     def get(
         self,
@@ -43,11 +61,11 @@ class DeviceApplicationService:
 
     def connect(
         self,
-        device_id: UUID,
+        command: ConnectDeviceCommand,
     ) -> Device:
         """Connect device."""
 
-        device = self.get(device_id)
+        device = self.get(command.device_id)
 
         try:
             device.connect()
@@ -61,11 +79,11 @@ class DeviceApplicationService:
 
     def disconnect(
         self,
-        device_id: UUID,
+        command: DisconnectDeviceCommand,
     ) -> Device:
         """Disconnect device."""
 
-        device = self.get(device_id)
+        device = self.get(command.device_id)
 
         try:
             device.disconnect()

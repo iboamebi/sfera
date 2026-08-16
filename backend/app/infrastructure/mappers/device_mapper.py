@@ -26,6 +26,7 @@ class DeviceMapper(BaseMapper[Device, Instrument]):
 
         return Device(
             id=model.id,
+            instrument_type_id=model.instrument_type_id,
             serial_number=SerialNumber(model.serial_number),
             status=status,
         )
@@ -35,6 +36,7 @@ class DeviceMapper(BaseMapper[Device, Instrument]):
         entity: Device,
         model: Instrument,
     ) -> Instrument:
+        model.instrument_type_id = entity.instrument_type_id
         model.serial_number = entity.serial_number.value
         model.device_status = entity.status.value
 

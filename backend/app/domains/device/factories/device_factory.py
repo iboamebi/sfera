@@ -8,9 +8,11 @@ class DeviceFactory:
     @staticmethod
     def create(
         device_id: UUID,
+        instrument_type_id: UUID,
         serial_number: str,
     ) -> Device:
         return Device(
             id=device_id,
+            instrument_type_id=instrument_type_id,
             serial_number=SerialNumber(serial_number),
         )

@@ -1,6 +1,7 @@
 import { Stack, Typography } from "@mui/material";
 import { useParams } from "react-router";
 
+import { UpdateOrder } from "../../features/orders/update-order/ui/UpdateOrder";
 import { useOrder } from "../../features/orders/model/useOrder";
 import { OrderActions } from "../../features/orders/ui/OrderActions";
 import { OrderDetails } from "../../features/orders/ui/OrderDetails";
@@ -26,6 +27,7 @@ export function OrderPage() {
     <Stack spacing={2}>
       <OrderDetails order={data} />
       <OrderActions orderId={data.id} />
+      <UpdateOrder order={data} />
     </Stack>
   );
 }

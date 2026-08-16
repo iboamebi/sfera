@@ -14,6 +14,9 @@ from app.application.order.commands.create_order import (
 from app.application.order.commands.register_order import (
     RegisterOrderCommand,
 )
+from app.application.order.commands.update_order import (
+    UpdateOrderCommand,
+)
 from app.application.order.exceptions import (
     OrderNotFoundApplicationError,
 )
@@ -85,6 +88,22 @@ class OrderApplicationService:
                     id=uuid4(),
                     instrument_id=command.instrument_id,
                 )
+            )
+
+            self._repository.save(order)
+
+        return order
+
+    def update(
+        self,
+        command: UpdateOrderCommand,
+    ) -> Order:
+        with self._uow:
+            order = self.get(command.order_id)
+
+            order.update_details(
+                planned_issue_at=command.planned_issue_at,
+                comment=command.comment,
             )
 
             self._repository.save(order)

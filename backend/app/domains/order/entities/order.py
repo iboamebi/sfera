@@ -59,6 +59,17 @@ class Order(AggregateRoot):
 
         self.items.append(item)
 
+    def update_details(
+        self,
+        *,
+        planned_issue_at: datetime | None = None,
+        comment: str | None = None,
+    ) -> None:
+        """Update editable order details."""
+
+        self.planned_issue_at = planned_issue_at
+        self.comment = comment
+
     def register(self) -> None:
         """Register the order."""
 

@@ -14,6 +14,9 @@ from app.application.order.commands.create_order import (
 from app.application.order.commands.register_order import (
     RegisterOrderCommand,
 )
+from app.application.order.commands.update_order import (
+    UpdateOrderCommand,
+)
 from app.application.order.services.order_application_service import (
     OrderApplicationService,
 )
@@ -84,3 +87,34 @@ def test_create_register_order_flow():
     assert len(order.items) == 1
     assert order.items[0].id is not None
     assert order.status.value == "REGISTERED"
+
+
+def test_update_order_details():
+    repository = FakeOrderRepository()
+    service = OrderApplicationService(
+        repository,
+        FakeUnitOfWork(),
+    )
+
+    order = service.create(
+        CreateOrderCommand(
+            customer_id=uuid4(),
+            number="10002",
+        )
+    )
+
+    planned_issue_at = datetime(2026, 8, 21, 10, 0, tzinfo=UTC)
+    comment = "Updated order"
+
+    updated_order = service.update(
+        UpdateOrderCommand(
+            order_id=order.id,
+            planned_issue_at=planned_issue_at,
+            comment=comment,
+        )
+    )
+
+    assert updated_order.id == order.id
+    assert updated_order.planned_issue_at == planned_issue_at
+    assert updated_order.comment == comment
+    assert repository.get(order.id) is updated_order

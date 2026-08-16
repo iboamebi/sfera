@@ -1,15 +1,19 @@
 """
-Device actions.
+Device API router.
 
-Handles HTTP endpoints for device business actions.
-Version: 2.0
-Revision: 2026-08-11
+Handles HTTP endpoints for device operations.
+Version: 3.0
 """
 
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
 
+from app.application.device.commands.connect_device import ConnectDeviceCommand
+from app.application.device.commands.create_device import CreateDeviceCommand
+from app.application.device.commands.disconnect_device import (
+    DisconnectDeviceCommand,
+)
 from app.application.device.exceptions import (
     DeviceNotAvailableApplicationError,
     DeviceNotFoundApplicationError,
@@ -19,12 +23,31 @@ from app.application.device.services.device_application_service import (
     DeviceApplicationService,
 )
 from app.core.dependencies.services import get_device_service
+from app.schemas.device import DeviceCreate, DeviceRead
 from app.schemas.device_action import DeviceActionResponse
 
 router = APIRouter(
     prefix="/devices",
     tags=["Devices"],
 )
+
+
+@router.post(
+    "/",
+    response_model=DeviceRead,
+    status_code=201,
+)
+def create_device(
+    data: DeviceCreate,
+    service: DeviceApplicationService = Depends(
+        get_device_service,
+    ),
+):
+    command = CreateDeviceCommand(
+        **data.model_dump(),
+    )
+
+    return service.create(command)
 
 
 @router.post(
@@ -38,7 +61,11 @@ def connect_device(
     ),
 ):
     try:
-        device = service.connect(device_id)
+        device = service.connect(
+            ConnectDeviceCommand(
+                device_id=device_id,
+            ),
+        )
 
     except DeviceNotFoundApplicationError:
         raise HTTPException(
@@ -69,7 +96,11 @@ def disconnect_device(
     ),
 ):
     try:
-        device = service.disconnect(device_id)
+        device = service.disconnect(
+            DisconnectDeviceCommand(
+                device_id=device_id,
+            ),
+        )
 
     except DeviceNotFoundApplicationError:
         raise HTTPException(

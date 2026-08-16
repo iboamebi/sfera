@@ -16,6 +16,9 @@ from app.application.order.commands.create_order import (
 from app.application.order.commands.register_order import (
     RegisterOrderCommand,
 )
+from app.application.order.commands.update_order import (
+    UpdateOrderCommand,
+)
 from app.application.order.exceptions import (
     OrderNotFoundApplicationError,
 )
@@ -26,6 +29,7 @@ from app.core.dependencies.services import get_order_service
 from app.schemas.order import (
     OrderCreate,
     OrderRead,
+    OrderUpdate,
 )
 
 router = APIRouter(
@@ -90,6 +94,33 @@ def add_order_item(
             instrument_id=data.instrument_id,
         )
     )
+
+
+@router.patch(
+    "/{order_id}",
+    response_model=OrderRead,
+)
+def update_order(
+    order_id: UUID,
+    data: OrderUpdate,
+    service: OrderApplicationService = Depends(
+        get_order_service,
+    ),
+):
+    try:
+        return service.update(
+            UpdateOrderCommand(
+                order_id=order_id,
+                planned_issue_at=data.planned_issue_at,
+                comment=data.comment,
+            )
+        )
+
+    except OrderNotFoundApplicationError:
+        raise HTTPException(
+            status_code=404,
+            detail="Order not found",
+        ) from None
 
 
 @router.post(

@@ -3,6 +3,7 @@ Device domain entity.
 """
 
 from dataclasses import dataclass
+from uuid import UUID
 
 from app.domains.device.exceptions import (
     DeviceNotAvailableDomainError,
@@ -17,6 +18,7 @@ from app.shared.base.aggregate import AggregateRoot
 class Device(AggregateRoot):
     """Device aggregate."""
 
+    instrument_type_id: UUID
     serial_number: SerialNumber
     status: DeviceStatus = DeviceStatus.AVAILABLE
 
