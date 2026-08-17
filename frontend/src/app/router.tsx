@@ -6,6 +6,10 @@ import { OrdersPage } from "../pages/orders/OrdersPage";
 
 export const router = createBrowserRouter([
   {
+    path: "/",
+    element: <OrdersPage />,
+  },
+  {
     path: "/orders",
     element: <OrdersPage />,
   },
