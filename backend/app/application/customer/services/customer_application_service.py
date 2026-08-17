@@ -117,14 +117,14 @@ class CustomerApplicationService:
     def delete(
         self,
         command: DeleteCustomerCommand,
-    ) -> None:
-        """Delete customer."""
+    ) -> Customer:
+        """Archive customer."""
 
         with self._uow:
             customer = self.get(
                 command.customer_id,
             )
 
-            self._repository.delete(
-                customer.id,
-            )
+            customer.archive()
+
+            return self._repository.save(customer)

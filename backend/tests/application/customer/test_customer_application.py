@@ -138,4 +138,8 @@ def test_delete_customer():
         )
     )
 
-    assert repository.get(customer.id) is None
+    archived = repository.get(customer.id)
+
+    assert archived is customer
+    assert archived is not None
+    assert archived.archived is True

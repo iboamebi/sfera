@@ -68,18 +68,3 @@ class CustomerRepositorySQLAlchemy(CustomerRepository):
         self.session.flush()
 
         return customer
-
-    def delete(
-        self,
-        customer_id: UUID,
-    ) -> None:
-        model = (
-            self.session.query(CustomerModel)
-            .filter(CustomerModel.id == customer_id)
-            .first()
-        )
-
-        if model is not None:
-            self.session.delete(model)
-
-        self.session.flush()

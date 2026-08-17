@@ -36,12 +36,3 @@ class CustomerRepository(ABC):
         """Save customer."""
 
         raise NotImplementedError
-
-    @abstractmethod
-    def delete(
-        self,
-        customer_id: UUID,
-    ) -> None:
-        """Delete customer."""
-
-        raise NotImplementedError
