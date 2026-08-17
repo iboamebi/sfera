@@ -21,6 +21,7 @@ class Customer(Entity):
     email: str | None = None
     comment: str | None = None
     discount_percent: float = 0.0
+    archived: bool = False
 
     def change_name(
         self,
@@ -69,3 +70,17 @@ class Customer(Entity):
         """Change customer discount."""
 
         self.discount_percent = discount_percent
+
+    def archive(
+        self,
+    ) -> None:
+        """Archive customer."""
+
+        self.archived = True
+
+    def restore(
+        self,
+    ) -> None:
+        """Restore archived customer."""
+
+        self.archived = False

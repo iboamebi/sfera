@@ -30,6 +30,7 @@ class CustomerMapper(
             email=model.email,
             comment=model.comment,
             discount_percent=float(model.discount_percent),
+            archived=model.archived,
         )
 
     def to_model(
@@ -46,5 +47,6 @@ class CustomerMapper(
         model.email = entity.email
         model.comment = entity.comment
         model.discount_percent = entity.discount_percent
+        model.archived = entity.archived
 
         return model

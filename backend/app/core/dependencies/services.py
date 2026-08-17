@@ -200,10 +200,14 @@ def get_organization_service(
     repository: OrganizationRepository = Depends(
         get_organization_repository,
     ),
+    uow: UnitOfWork = Depends(get_unit_of_work),
 ) -> OrganizationApplicationService:
     """Provide Organization application service."""
 
-    return OrganizationApplicationService(repository)
+    return OrganizationApplicationService(
+        repository,
+        uow,
+    )
 
 
 def get_workflow_service(

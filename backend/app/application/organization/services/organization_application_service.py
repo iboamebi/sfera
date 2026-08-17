@@ -18,6 +18,7 @@ from app.domains.organization.exceptions import OrganizationNotFoundError
 from app.domains.organization.repositories.organization_repository import (
     OrganizationRepository,
 )
+from app.shared.unit_of_work.unit_of_work import UnitOfWork
 
 
 class OrganizationApplicationService:
@@ -26,8 +27,10 @@ class OrganizationApplicationService:
     def __init__(
         self,
         repository: OrganizationRepository,
+        uow: UnitOfWork,
     ) -> None:
         self._repository = repository
+        self._uow = uow
 
     def create(
         self,
@@ -35,21 +38,22 @@ class OrganizationApplicationService:
     ) -> Organization:
         """Create organization."""
 
-        organization = Organization(
-            id=uuid4(),
-            name=command.name,
-            short_name=command.short_name,
-            inn=command.inn,
-            kpp=command.kpp,
-            ogrn=command.ogrn,
-            address=command.address,
-            phone=command.phone,
-            email=command.email,
-            website=command.website,
-            comment=command.comment,
-        )
+        with self._uow:
+            organization = Organization(
+                id=uuid4(),
+                name=command.name,
+                short_name=command.short_name,
+                inn=command.inn,
+                kpp=command.kpp,
+                ogrn=command.ogrn,
+                address=command.address,
+                phone=command.phone,
+                email=command.email,
+                website=command.website,
+                comment=command.comment,
+            )
 
-        return self._repository.save(organization)
+            return self._repository.save(organization)
 
     def get(
         self,
@@ -79,58 +83,59 @@ class OrganizationApplicationService:
     ) -> Organization:
         """Update organization."""
 
-        organization = self.get(
-            command.organization_id,
-        )
-
-        if command.name is not None:
-            organization.change_name(
-                command.name,
+        with self._uow:
+            organization = self.get(
+                command.organization_id,
             )
 
-        if command.short_name is not None:
-            organization.change_short_name(
-                command.short_name,
-            )
+            if command.name is not None:
+                organization.change_name(
+                    command.name,
+                )
 
-        if command.inn is not None:
-            organization.change_inn(
-                command.inn,
-            )
+            if command.short_name is not None:
+                organization.change_short_name(
+                    command.short_name,
+                )
 
-        if command.kpp is not None:
-            organization.change_kpp(
-                command.kpp,
-            )
+            if command.inn is not None:
+                organization.change_inn(
+                    command.inn,
+                )
 
-        if command.ogrn is not None:
-            organization.change_ogrn(
-                command.ogrn,
-            )
+            if command.kpp is not None:
+                organization.change_kpp(
+                    command.kpp,
+                )
 
-        if command.address is not None:
-            organization.change_address(
-                command.address,
-            )
+            if command.ogrn is not None:
+                organization.change_ogrn(
+                    command.ogrn,
+                )
 
-        if command.phone is not None:
-            organization.change_phone(
-                command.phone,
-            )
+            if command.address is not None:
+                organization.change_address(
+                    command.address,
+                )
 
-        if command.email is not None:
-            organization.change_email(
-                command.email,
-            )
+            if command.phone is not None:
+                organization.change_phone(
+                    command.phone,
+                )
 
-        if command.website is not None:
-            organization.change_website(
-                command.website,
-            )
+            if command.email is not None:
+                organization.change_email(
+                    command.email,
+                )
 
-        if command.comment is not None:
-            organization.change_comment(
-                command.comment,
-            )
+            if command.website is not None:
+                organization.change_website(
+                    command.website,
+                )
 
-        return self._repository.save(organization)
+            if command.comment is not None:
+                organization.change_comment(
+                    command.comment,
+                )
+
+            return self._repository.save(organization)
