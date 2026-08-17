@@ -1,12 +1,22 @@
 # Sfera Migration Status
 
-## Текущая задача
+## Текущий этап
 
-Переход от CRUD-архитектуры к DDD/Clean Architecture завершён.
+Backend DDD/Clean Architecture migration завершена.
 
-Текущий этап — изолированная архитектурная и техническая валидация без смешивания feature migration и cleanup.
+Текущий этап — frontend development и deployment validation.
 
-## Текущая схема
+---
+
+## Backend Architecture
+
+Статус:
+
+```text
+COMPLETE
+```
+
+Архитектура:
 
 ```text
 API
@@ -18,264 +28,20 @@ Infrastructure Repository
 → Database
 ```
 
----
-
-## Статус миграции модулей
-
-Следующие модули имеют завершённый DDD/Clean Architecture flow:
-
-- Organization
-- Customer
-- Device
-- Order
-- Material
-- Warehouse
-- Workflow
-- Verification
-- Repair
-- Diagnostic
-- PriceList
-
-Для модулей завершены соответствующие Domain/Application/Infrastructure/API этапы, включая Dependency Injection и релевантные тесты.
-
-### Device
-
-Статус:
-
-```text
-COMPLETED
-```
-
-Выполнено:
-
-- Domain entity `Device`;
-- Device value objects and domain state transitions;
-- `DeviceFactory`;
-- `DeviceRepository` interface;
-- SQLAlchemy repository;
-- `DeviceMapper`;
-- `CreateDeviceCommand`, `ConnectDeviceCommand`, `DisconnectDeviceCommand`;
-- `DeviceApplicationService`;
-- Dependency Injection;
-- API router;
-- validation of referenced `InstrumentType` during creation;
-- Application error → HTTP 404 mapping for missing `InstrumentType`;
-- Unit of Work transaction boundary for `create`, `connect` and `disconnect`.
-
-Последний Device checkpoint:
-
-```text
-b69b551 refactor: add unit of work to device service
-```
-
-Текущий Application flow:
-
-```text
-API
-→ DeviceApplicationService
-→ DeviceRepository / InstrumentTypeRepository
-→ Domain
-→ UnitOfWork
-→ Infrastructure
-```
-
-`DeviceApplicationService.create()` проверяет существование `InstrumentType` до создания Device. При отсутствии типа выбрасывается `InstrumentTypeNotFoundApplicationError`.
-
-`DeviceApplicationService.create()`, `connect()` и `disconnect()` выполняются внутри Unit of Work. Успешный use case приводит к commit; исключение приводит к rollback через `UnitOfWork.__exit__`.
-
----
-
-## Infrastructure Audit
-
-Статус:
-
-```text
-COMPLETED
-```
-
 Проверено:
 
-- Repository implementations;
-- mapper alignment;
-- Unit of Work transaction boundaries;
-- dependency direction;
-- отсутствие CRUD dependencies.
-
-Infrastructure repositories используют Repository Interfaces и SQLAlchemy только в Infrastructure layer.
-
----
-
-## Infrastructure Mapper Alignment
-
-Статус:
-
-```text
-COMPLETED
-```
-
-Стандартизирован контракт mapper:
-
-```text
-to_domain(self, model)
-to_model(self, entity, model)
-```
-
-`DeviceMapper` преобразует `Instrument` ↔ `Device`, включая `device_status`.
-
----
-
-## Legacy Layers
-
-Статус:
-
-```text
-REMOVED
-```
-
-Удалены/выведены из active architecture:
-
-- `app/crud`
-- `app/services/price_list_service.py`
-- `app/api/base_router.py`
-
-Новые features не должны использовать legacy CRUD style.
-
----
-
-## Domain Layer Isolation
-
-Статус:
-
-```text
-COMPLETED
-```
-
-Проверено:
-
-- Domain не импортирует ORM models;
-- Domain не импортирует Infrastructure;
-- Domain factories создают domain entities;
-- ORM mapping находится в Infrastructure.
-
----
-
-## Architecture Audit
-
-Статус:
-
-```text
-COMPLETED
-```
-
-Проверены:
-
-- dependency direction;
 - Domain isolation;
 - Application isolation;
 - API isolation;
 - Repository boundaries;
 - mapper consistency;
-- legacy dependencies.
-
-Результат:
-
-- Domain не зависит от ORM/Infrastructure;
-- Application не зависит от ORM/Infrastructure implementations;
-- API не зависит напрямую от Repository/Session;
-- Infrastructure не зависит от API/Application;
-- legacy CRUD dependencies отсутствуют.
+- removal of legacy CRUD dependencies.
 
 ---
 
-## Application Services Audit
+## Backend Validation
 
-### Checkpoint — 2026-08-10
-
-Статус:
-
-```text
-COMPLETE
-```
-
-Проверены Application Services:
-
-- Customer
-- Device
-- Diagnostic
-- Material
-- Order
-- Organization
-- PriceList
-- Repair
-- Verification
-- Warehouse
-- Workflow
-
-Проверено:
-
-- отсутствие CRUD-style proxy methods;
-- делегирование business state changes в Domain;
-- корректные Repository Interface boundaries;
-- корректные Unit of Work transaction boundaries;
-- отсутствие Infrastructure/ORM dependencies.
-
----
-
-## API Layer Audit
-
-### Checkpoint — 2026-08-10
-
-Статус:
-
-```text
-COMPLETE
-```
-
-Проверены API routers и dependency boundaries.
-
-Результат:
-
-- API → Application boundary соблюдается;
-- Repository/ORM/Session dependencies отсутствуют в API layer;
-- business logic отсутствует в routers;
-- UUID generation removed from create routers;
-- Application exceptions mapped to HTTP responses where contracts exist.
-
-Known API technical debt:
-
-- Device connect/disconnect endpoints пока используют структурированный payload без отдельной явной response schema;
-- PriceListItem update contract имеет semantic inconsistencies;
-- Material `PUT` использует partial-update semantics.
-
----
-
-## Identifier Generation Audit
-
-### Checkpoint — 2026-08-11
-
-Статус:
-
-```text
-COMPLETE
-```
-
-Результат:
-
-- API identifier generation removed;
-- Application layer owns identifier generation for simple entity creation;
-- Domain factories retain legitimate domain creation responsibilities;
-- Domain `create()` methods receive identifiers explicitly where appropriate.
-
-Known technical debt:
-
-- PriceList / PriceListItem creation contracts are inconsistent with mandatory `Entity.id`;
-- dedicated PriceList application tests are absent.
-
----
-
-## Current Validation
-
-Последняя полная backend validation:
+Последняя validation:
 
 ```text
 pytest -q
@@ -286,51 +52,155 @@ All checks passed
 
 ruff format --check .
 352 files already formatted
+```
 
-git diff --check
+---
+
+## Deployment Checkpoint — 2026-08-17
+
+Backend запущен через systemd:
+
+```text
+service:
+sfera-backend.service
+
+status:
+active (running)
+
+command:
+/home/alex/sfera/backend/.venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000
+```
+
+Проверено:
+
+```text
+GET /health
+→ {"status":"ok"}
+
+GET /orders/
+→ []
+```
+
+Добавлено:
+
+- ORM model registry import при старте приложения;
+- CORSMiddleware для frontend.
+
+---
+
+# Frontend Phase
+
+Статус:
+
+```text
+IN PROGRESS
+```
+
+Frontend stack:
+
+- React;
+- TypeScript;
+- Vite;
+- React Router;
+- TanStack Query;
+- Axios;
+- Material UI;
+- React Hook Form;
+- Zod.
+
+---
+
+## Реализовано
+
+Orders feature:
+
+- orders list;
+- order details;
+- create order;
+- update order;
+- register order action;
+- query cache update after mutation.
+
+API integration:
+
+```text
+VITE_API_URL
+    ↓
+axios http.ts
+    ↓
+FastAPI backend
+```
+
+---
+
+## Remote Development Runtime
+
+Frontend:
+
+```text
+Vite
+0.0.0.0:5173
+```
+
+Backend:
+
+```text
+0.0.0.0:8000
+```
+
+ZeroTier address:
+
+```text
+10.147.17.242
+```
+
+Remote access:
+
+```text
+http://top.vlsfera.ru:5173
+```
+
+Configured:
+
+- `src/shared/api/http.ts` uses `VITE_API_URL`;
+- `vite.config.ts` allows remote host;
+- backend CORS allows frontend origin.
+
+Validation:
+
+```text
+npm run typecheck
+passed
+
+npm run build
 passed
 ```
 
 ---
 
-## Current Checkpoint — 2026-08-16
+## Следующие frontend шаги
 
-```text
-Backend DDD/Clean Architecture migration: COMPLETE
-Architecture audits: COMPLETE
-Device validation: COMPLETE
-Device UnitOfWork integration: COMPLETE
-```
-
-Последний синхронизированный backend commit:
-
-```text
-b69b551 refactor: add unit of work to device service
-```
-
-Ветка:
-
-```text
-develop
-```
-
-Working tree был чистым после последнего push.
+1. Добавить customer selection flow для создания заказа.
+2. Проверить order creation через UI с реальным Customer UUID.
+3. Добавить authentication foundation.
+4. Определить production deployment model:
+   - Vite dev server;
+   - static build + nginx.
 
 ---
 
-## Следующий этап
+## Documentation Governance
 
-Следующий логичный шаг — интеграционные тесты Device API с FastAPI `TestClient` и dependency overrides.
+Основные документы:
 
-Проверить:
+- `docs/AI_CONTEXT.md`;
+- `docs/MIGRATION_STATUS.md`;
+- `docs/ARCHITECTURE.md`;
+- `docs/FRONTEND_ARCHITECTURE.md`.
 
-1. `POST /devices/` с существующим `InstrumentType`;
-2. `POST /devices/` с отсутствующим `InstrumentType` → HTTP 404;
-3. DI `get_device_service`;
-4. API → Application → Repository/UoW boundary;
-5. отсутствие business logic в router.
+Документация должна соответствовать фактическому состоянию repository.
 
-Работа продолжается по правилу:
+Работа продолжается:
 
 ```text
 analyze → one file → y → next
