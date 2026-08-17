@@ -1,7 +1,8 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Button, Stack, TextField } from "@mui/material";
+import { Button, MenuItem, Stack, TextField } from "@mui/material";
 import { useForm } from "react-hook-form";
 
+import { useCustomers } from "../../../customers/model/useCustomers";
 import { createOrderSchema } from "../model/schema";
 import type { CreateOrderForm as CreateOrderFormValues } from "../model/types";
 
@@ -22,6 +23,12 @@ export function CreateOrderForm({
     resolver: zodResolver(createOrderSchema),
   });
 
+  const {
+    data: customers = [],
+    isLoading: isCustomersLoading,
+    isError: isCustomersError,
+  } = useCustomers();
+
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <Stack spacing={2}>
@@ -32,13 +39,27 @@ export function CreateOrderForm({
           helperText={errors.number?.message}
           disabled={isPending}
         />
+
         <TextField
-          label="ID клиента"
+          select
+          label="Клиент"
           {...register("customerId")}
           error={Boolean(errors.customerId)}
-          helperText={errors.customerId?.message}
-          disabled={isPending}
-        />
+          helperText={
+            errors.customerId?.message ??
+            (isCustomersError ? "Не удалось загрузить клиентов" : undefined)
+          }
+          disabled={isPending || isCustomersLoading || isCustomersError}
+        >
+          {customers
+            .filter((customer) => !customer.archived)
+            .map((customer) => (
+              <MenuItem key={customer.id} value={customer.id}>
+                {customer.name}
+              </MenuItem>
+            ))}
+        </TextField>
+
         <TextField
           label="Планируемая дата выдачи"
           type="datetime-local"
@@ -52,6 +73,7 @@ export function CreateOrderForm({
             },
           }}
         />
+
         <TextField
           label="Комментарий"
           multiline
@@ -61,7 +83,12 @@ export function CreateOrderForm({
           helperText={errors.comment?.message}
           disabled={isPending}
         />
-        <Button type="submit" variant="contained" disabled={isPending}>
+
+        <Button
+          type="submit"
+          variant="contained"
+          disabled={isPending || isCustomersLoading || isCustomersError}
+        >
           {isPending ? "Создание..." : "Создать заказ"}
         </Button>
       </Stack>
