@@ -156,10 +156,14 @@ def get_instrument_type_service(
 
 def get_customer_service(
     repository: CustomerRepository = Depends(get_customer_repository),
+    uow: UnitOfWork = Depends(get_unit_of_work),
 ) -> CustomerApplicationService:
     """Provide Customer application service."""
 
-    return CustomerApplicationService(repository)
+    return CustomerApplicationService(
+        repository,
+        uow,
+    )
 
 
 def get_material_service(
