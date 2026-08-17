@@ -21,6 +21,7 @@ from app.domains.customer.exceptions import CustomerNotFoundError
 from app.domains.customer.repositories.customer_repository import (
     CustomerRepository,
 )
+from app.shared.unit_of_work.unit_of_work import UnitOfWork
 
 
 class CustomerApplicationService:
@@ -29,8 +30,10 @@ class CustomerApplicationService:
     def __init__(
         self,
         repository: CustomerRepository,
+        uow: UnitOfWork,
     ) -> None:
         self._repository = repository
+        self._uow = uow
 
     def get(
         self,
@@ -58,18 +61,19 @@ class CustomerApplicationService:
     ) -> Customer:
         """Create customer."""
 
-        customer = Customer(
-            id=uuid4(),
-            organization_id=command.organization_id,
-            name=command.name,
-            contact_person=command.contact_person,
-            phone=command.phone,
-            email=command.email,
-            comment=command.comment,
-            discount_percent=command.discount_percent,
-        )
+        with self._uow:
+            customer = Customer(
+                id=uuid4(),
+                organization_id=command.organization_id,
+                name=command.name,
+                contact_person=command.contact_person,
+                phone=command.phone,
+                email=command.email,
+                comment=command.comment,
+                discount_percent=command.discount_percent,
+            )
 
-        return self._repository.save(customer)
+            return self._repository.save(customer)
 
     def update(
         self,
@@ -77,37 +81,38 @@ class CustomerApplicationService:
     ) -> Customer:
         """Update customer."""
 
-        customer = self.get(command.customer_id)
+        with self._uow:
+            customer = self.get(command.customer_id)
 
-        if command.name is not None:
-            customer.change_name(command.name)
+            if command.name is not None:
+                customer.change_name(command.name)
 
-        if command.contact_person is not None:
-            customer.change_contact_person(
-                command.contact_person,
-            )
+            if command.contact_person is not None:
+                customer.change_contact_person(
+                    command.contact_person,
+                )
 
-        if command.phone is not None:
-            customer.change_phone(
-                command.phone,
-            )
+            if command.phone is not None:
+                customer.change_phone(
+                    command.phone,
+                )
 
-        if command.email is not None:
-            customer.change_email(
-                command.email,
-            )
+            if command.email is not None:
+                customer.change_email(
+                    command.email,
+                )
 
-        if command.comment is not None:
-            customer.change_comment(
-                command.comment,
-            )
+            if command.comment is not None:
+                customer.change_comment(
+                    command.comment,
+                )
 
-        if command.discount_percent is not None:
-            customer.change_discount(
-                command.discount_percent,
-            )
+            if command.discount_percent is not None:
+                customer.change_discount(
+                    command.discount_percent,
+                )
 
-        return self._repository.save(customer)
+            return self._repository.save(customer)
 
     def delete(
         self,
@@ -115,10 +120,11 @@ class CustomerApplicationService:
     ) -> None:
         """Delete customer."""
 
-        customer = self.get(
-            command.customer_id,
-        )
+        with self._uow:
+            customer = self.get(
+                command.customer_id,
+            )
 
-        self._repository.delete(
-            customer.id,
-        )
+            self._repository.delete(
+                customer.id,
+            )
