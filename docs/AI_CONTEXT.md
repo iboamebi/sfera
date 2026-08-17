@@ -23,18 +23,18 @@
 DDD + Clean Architecture
 ```
 
+Основной принцип зависимостей:
+
 ```text
-API
- ↓
-Application
- ↓
 Domain
- ↓
-Repository Interface
- ↑
-Infrastructure Repository
- ↓
-Database
+  ↓
+Application
+  ↓
+Infrastructure
+  ↓
+API
+  ↓
+Tests
 ```
 
 Domain не зависит от ORM, SQLAlchemy, Infrastructure и API.
@@ -44,6 +44,8 @@ Application использует Repository Interfaces и Unit of Work.
 Infrastructure содержит SQLAlchemy repositories, ORM mapping и database access.
 
 API содержит FastAPI routers, schemas и DI. Business logic в API отсутствует.
+
+Legacy CRUD migration завершена. Feature migration и архитектурный cleanup не смешиваются.
 
 ## Backend Status
 
@@ -59,7 +61,7 @@ Legacy CRUD:
 REMOVED
 ```
 
-Validation:
+Последние известные backend validation results:
 
 ```text
 pytest -q
@@ -78,35 +80,41 @@ Current branch:
 develop
 ```
 
-Latest synchronized commit:
+Последний синхронизированный commit:
 
 ```text
-6386c5b feat: configure frontend api and cors
+576a69d docs: update frontend and deployment checkpoints
 ```
 
-## Deployment Checkpoint — 2026-08-17
+## Backend Deployment Checkpoint — 2026-08-17
 
-Backend runs as:
+Backend запускается через systemd:
 
 ```text
 sfera-backend.service
-active (running)
 ```
 
-Startup:
+Service state:
 
 ```text
-uvicorn app.main:app --host 0.0.0.0 --port 8000
+enabled
+active
 ```
 
-Verified:
+Startup command:
 
 ```text
-GET /health -> {"status":"ok"}
-GET /orders/ -> []
+/home/alex/sfera/backend/.venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000
 ```
 
-Added:
+Verified locally through nginx:
+
+```text
+GET /api/health -> {"status":"ok"}
+GET /api/orders/ -> []
+```
+
+Backend additions already integrated:
 
 - ORM model registry import on startup;
 - CORSMiddleware for frontend.
@@ -138,56 +146,274 @@ Implemented orders flow:
 - register order action;
 - query cache update after mutation.
 
-API integration:
+Frontend API layer:
 
 ```text
-VITE_API_URL
- ↓
-axios http.ts
- ↓
-FastAPI backend
+src/shared/api/http.ts
 ```
 
-Runtime:
+It creates the Axios client and uses:
 
 ```text
-Frontend Vite: 0.0.0.0:5173
-Backend: 0.0.0.0:8000
+import.meta.env.VITE_API_URL
 ```
 
-Remote access:
+API feature modules use this shared HTTP client.
+
+## Frontend Production Deployment — COMPLETE
+
+The frontend no longer requires a Vite development server for normal runtime.
+
+Production model:
 
 ```text
-http://top.vlsfera.ru:5173
-ZeroTier: 10.147.17.242
+Browser
+  ↓
+http://top.vlsfera.ru
+  ↓
+nginx :80
+  ├── /      → /var/www/sfera
+  └── /api/  → 127.0.0.1:8000
 ```
 
-Frontend configuration:
-
-- `src/shared/api/http.ts` uses `import.meta.env.VITE_API_URL`;
-- `vite.config.ts` allows external host `top.vlsfera.ru`;
-- backend CORS allows frontend origin.
-
-Validation:
+Vite production build:
 
 ```text
 npm run typecheck
-passed
+PASS
 
 npm run build
-passed
+PASS
 ```
+
+Build output is deployed to:
+
+```text
+/var/www/sfera
+```
+
+Static files are owned by `root:root` with directories `755` and files `644`.
+
+nginx configuration:
+
+```text
+/etc/nginx/sites-available/sfera
+/etc/nginx/sites-enabled/sfera
+```
+
+The default nginx site was removed from `sites-enabled`.
+
+nginx service state:
+
+```text
+enabled
+active
+```
+
+Configuration validation:
+
+```text
+sudo nginx -t
+→ successful
+```
+
+Current nginx virtual host:
+
+```text
+server_name top.vlsfera.ru;
+root /var/www/sfera;
+```
+
+SPA routing:
+
+```text
+location / {
+    try_files $uri $uri/ /index.html;
+}
+```
+
+API reverse proxy:
+
+```text
+location /api/ {
+    proxy_pass http://127.0.0.1:8000/;
+}
+```
+
+Production verification from the server:
+
+```text
+GET http://127.0.0.1/ with Host: top.vlsfera.ru
+→ 200 OK
+
+GET http://127.0.0.1/api/health with Host: top.vlsfera.ru
+→ {"status":"ok"}
+
+GET http://127.0.0.1/api/orders/ with Host: top.vlsfera.ru
+→ []
+```
+
+Production verification from another ZeroTier node:
+
+```text
+http://top.vlsfera.ru/
+→ 200 OK
+
+http://top.vlsfera.ru/api/health
+→ {"status":"ok"}
+```
+
+No Vite dev server is required or expected on port `5173`.
+
+## DNS / ZeroTier Deployment
+
+The deployment is ZeroTier-only.
+
+ZeroTier network:
+
+```text
+Sfera
+01dce6d7bcdf5646
+```
+
+Server ZeroTier address:
+
+```text
+10.147.17.242/24
+```
+
+The server runs dnsmasq for the Sfera ZeroTier network.
+
+Relevant configuration:
+
+```text
+/etc/dnsmasq.d/sfera.conf
+```
+
+Current host records include:
+
+```text
+dev.vlsfera.ru       → 10.147.17.2
+top.vlsfera.ru       → 10.147.17.242
+api.vlsfera.ru       → 10.147.17.242
+db.vlsfera.ru        → 10.147.17.242
+storage.vlsfera.ru   → 10.147.17.242
+zt.vlsfera.ru        → 10.147.17.242
+git.vlsfera.ru       → 10.147.17.242
+grafana.vlsfera.ru   → 10.147.17.242
+prometheus.vlsfera.ru → 10.147.17.242
+u6c.vlsfera.ru       → 10.147.17.3
+```
+
+The public DNS zone does not currently resolve `top.vlsfera.ru`; this is intentional for the current ZeroTier-only deployment model.
+
+Do not rename the established hostnames. They may be required for future infrastructure expansion.
+
+Existing masquerading/NAT configuration predates this deployment and should not be recreated or changed without explicit need.
+
+## Deployment Architecture
+
+Current runtime topology:
+
+```text
+ZeroTier client
+    ↓
+DNS: top.vlsfera.ru
+    ↓
+10.147.17.242:80
+    ↓
+nginx
+    ├── static React SPA
+    │     /var/www/sfera
+    │
+    └── /api/*
+          ↓
+        127.0.0.1:8000
+          ↓
+        sfera-backend.service
+          ↓
+        FastAPI
+          ↓
+        PostgreSQL
+```
+
+Required persistent services:
+
+```text
+nginx.service
+sfera-backend.service
+```
+
+Both services are enabled and active.
+
+## Frontend Routing Note
+
+React Router uses:
+
+```text
+/orders
+/orders/new
+/orders/:orderId
+```
+
+nginx must keep SPA fallback to `/index.html` so direct navigation and browser refreshes on frontend routes do not produce server-side 404 responses.
+
+The previous `Unexpected Application Error! 404 Not Found` was caused by testing the production SPA before the nginx static root and SPA fallback were correctly deployed. The current nginx configuration serves `/orders` through the SPA fallback and has been verified with `curl`.
+
+## Important Development Rules
+
+Work incrementally:
+
+```text
+analyze → one file → y → next
+```
+
+Rules:
+
+- do not change backend DDD/Clean Architecture without explicit task;
+- do not reintroduce CRUD patterns;
+- API contains no business logic;
+- SQLAlchemy remains in Infrastructure;
+- preserve Repository Interfaces and Unit of Work boundaries;
+- do not mix feature migration with architectural cleanup;
+- read current code before changing it;
+- never assume a file, module or API exists;
+- keep documentation synchronized with implementation.
+
+For Python changes run:
+
+```text
+pytest -q
+ruff check .
+ruff format --check .
+```
+
+For frontend changes run:
+
+```text
+npm run typecheck
+npm run build
+```
+
+After a completed stage:
+
+```text
+git status
+git add ...
+git commit
+git push origin develop
+```
+
+Verify GitHub synchronization before continuing to the next stage.
 
 ## Next Development Direction
 
-Frontend development continues incrementally:
+Frontend production deployment is complete.
+
+Continue frontend development incrementally:
 
 ```text
-Frontend Architecture
- ↓
-Application Shell
- ↓
-Backend API Integration
+Production Runtime
  ↓
 One User Scenario
  ↓
@@ -196,12 +422,12 @@ Validate
 Next Scenario
 ```
 
-Next tasks:
+Recommended next feature sequence:
 
-1. Define frontend production deployment model.
-2. Add customer selection flow for order creation.
-3. Add authentication foundation.
-4. Continue user scenarios.
+1. Customer selection flow for order creation.
+2. Authentication foundation.
+3. Continue order-centric user scenarios.
+4. Add additional domain workflows incrementally.
 
 Documentation:
 
