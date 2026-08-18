@@ -6,6 +6,7 @@ from datetime import timedelta
 from uuid import uuid4
 
 from app.application.auth.commands.create_session import CreateSessionCommand
+from app.application.auth.commands.revoke_session import RevokeSessionCommand
 from app.domains.auth.entities.session import Session
 from app.domains.auth.repositories.session_repository import SessionRepository
 from app.domains.auth.services.session_token_generator import SessionTokenGenerator
@@ -34,3 +35,8 @@ class SessionApplicationService:
             expires_at=command.now + self._ttl,
         )
         return self._repository.save(session)
+
+    def revoke(self, command: RevokeSessionCommand) -> None:
+        """Revoke an authenticated session."""
+
+        self._repository.revoke(command.session_id)
