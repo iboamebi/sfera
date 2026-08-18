@@ -410,7 +410,36 @@ Frontend application shell, routing, API integration и базовый Orders fl
 
 ---
 
-## 18. Frontend Roadmap
+## 18. Production Runtime
+
+Frontend production runtime использует статический Vite build, размещенный через nginx.
+
+```text
+Browser
+    ↓
+nginx
+    ├── static React SPA
+    │
+    └── /api/*
+          ↓
+        FastAPI backend
+```
+
+SPA routing обслуживается через fallback на:
+
+```text
+/index.html
+```
+
+Production runtime **не требует постоянно работающего Vite development server**.
+
+Vite development server используется только для локальной разработки и не является частью production deployment.
+
+Frontend production deployment выполняется вручную. Автоматический deployment pipeline в текущей архитектуре не заявляется.
+
+---
+
+## 19. Frontend Roadmap
 
 Дальнейшая разработка выполняется по пользовательским сценариям, а не по механическому заполнению каталогов.
 
@@ -434,4 +463,12 @@ sync GitHub
 next scenario
 ```
 
-Следующие frontend изменения должны начинаться с аудита уже существующего UI и backend API, чтобы не дублировать реализованную функциональность.
+Следующий запланированный frontend сценарий:
+
+```text
+Customer selection flow
+        ↓
+Order creation
+```
+
+Перед реализацией необходимо проверить существующий Customer API и текущий Order creation contract, чтобы не дублировать backend functionality и не вводить frontend-specific business rules.
