@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
 from app.domains.auth.entities.session import Session
@@ -46,7 +46,7 @@ def test_save_creates_model() -> None:
         id=uuid4(),
         user_id=user_id,
         session_id="session-1",
-        expires_at=datetime.now(timezone.utc) + timedelta(hours=1),
+        expires_at=datetime.now(UTC) + timedelta(hours=1),
     )
     session = FakeSession()
 
@@ -63,7 +63,7 @@ def test_get_active_returns_none_without_model() -> None:
 
     result = repository.get_active(
         "missing",
-        datetime.now(timezone.utc),
+        datetime.now(UTC),
     )
 
     assert result is None
