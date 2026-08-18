@@ -6,6 +6,8 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
 
+from app.api.dependencies.auth import get_current_user
+from app.api.security.csrf import require_csrf
 from app.application.instrument_type.commands.archive_instrument_type import (
     ArchiveInstrumentTypeCommand,
 )
@@ -41,6 +43,7 @@ router = APIRouter(
     "/",
     response_model=InstrumentTypeRead,
     status_code=201,
+    dependencies=[Depends(get_current_user), Depends(require_csrf)],
 )
 def create_instrument_type(
     data: InstrumentTypeCreate,
@@ -90,6 +93,7 @@ def get_instrument_type(
 @router.put(
     "/{instrument_type_id}",
     response_model=InstrumentTypeRead,
+    dependencies=[Depends(get_current_user), Depends(require_csrf)],
 )
 def update_instrument_type(
     instrument_type_id: UUID,
@@ -111,6 +115,7 @@ def update_instrument_type(
 @router.post(
     "/{instrument_type_id}/archive",
     response_model=InstrumentTypeRead,
+    dependencies=[Depends(get_current_user), Depends(require_csrf)],
 )
 def archive_instrument_type(
     instrument_type_id: UUID,
@@ -135,6 +140,7 @@ def archive_instrument_type(
 @router.post(
     "/{instrument_type_id}/restore",
     response_model=InstrumentTypeRead,
+    dependencies=[Depends(get_current_user), Depends(require_csrf)],
 )
 def restore_instrument_type(
     instrument_type_id: UUID,
