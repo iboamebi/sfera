@@ -70,9 +70,13 @@ class UserRepositorySQLAlchemy(UserRepository):
         self,
         user: User,
     ) -> User:
-        model = self._session.query(UserModel).filter(
-            UserModel.id == user.id,
-        ).first()
+        model = (
+            self._session.query(UserModel)
+            .filter(
+                UserModel.id == user.id,
+            )
+            .first()
+        )
 
         if model is None:
             model = UserModel(
