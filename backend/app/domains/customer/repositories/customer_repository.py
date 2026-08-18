@@ -15,6 +15,7 @@ class CustomerRepository(ABC):
     def get(
         self,
         customer_id: UUID,
+        include_archived: bool = False,
     ) -> Customer | None:
         """Get customer by identifier."""
 
@@ -23,8 +24,9 @@ class CustomerRepository(ABC):
     @abstractmethod
     def get_all(
         self,
+        include_archived: bool = False,
     ) -> list[Customer]:
-        """Get all customers."""
+        """Get customers, excluding archived records by default."""
 
         raise NotImplementedError
 
