@@ -5,11 +5,9 @@ Argon2 password hashing adapter.
 from argon2 import PasswordHasher as Argon2PasswordHasherImpl
 from argon2.exceptions import VerificationError
 
-from app.application.auth.ports.password_hasher import PasswordHasher
 
-
-class Argon2PasswordHasher(PasswordHasher):
-    """Argon2 implementation of the password hasher port."""
+class Argon2PasswordHasher:
+    """Argon2 implementation of the password hasher port contract."""
 
     def __init__(self) -> None:
         self._hasher = Argon2PasswordHasherImpl()
