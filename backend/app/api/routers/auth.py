@@ -1,0 +1,79 @@
+"""Authentication API endpoints."""
+
+from datetime import UTC, datetime
+
+from fastapi import APIRouter, Depends, HTTPException, Response, status
+
+from app.application.auth.commands.authenticate_user import AuthenticateUserCommand
+from app.application.auth.commands.create_session import CreateSessionCommand
+from app.application.auth.exceptions import AuthenticationFailedApplicationError
+from app.application.auth.services.authentication_application_service import (
+    AuthenticationApplicationService,
+)
+from app.application.auth.services.session_application_service import (
+    SessionApplicationService,
+)
+from app.core.config import settings
+from app.core.dependencies.services import (
+    get_authentication_service,
+    get_session_service,
+)
+from app.core.dependencies.uow import get_unit_of_work
+from app.schemas.auth import AuthenticatedUserResponse, LoginRequest
+from app.shared.unit_of_work.unit_of_work import UnitOfWork
+
+router = APIRouter(
+    prefix="/auth",
+    tags=["Authentication"],
+)
+
+
+@router.post(
+    "/login",
+    response_model=AuthenticatedUserResponse,
+)
+def login(
+    data: LoginRequest,
+    response: Response,
+    authentication_service: AuthenticationApplicationService = Depends(
+        get_authentication_service,
+    ),
+    session_service: SessionApplicationService = Depends(get_session_service),
+    uow: UnitOfWork = Depends(get_unit_of_work),
+) -> AuthenticatedUserResponse:
+    """Authenticate user and establish a server-side session."""
+
+    try:
+        user = authentication_service.authenticate(
+            AuthenticateUserCommand(
+                username=data.username,
+                password=data.password,
+            ),
+        )
+    except AuthenticationFailedApplicationError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid username or password",
+        ) from None
+
+    session = session_service.create(
+        CreateSessionCommand(
+            user_id=user.id,
+            now=datetime.now(UTC),
+        ),
+    )
+    uow.commit()
+
+    response.set_cookie(
+        key=settings.AUTH_COOKIE_NAME,
+        value=session.session_id,
+        httponly=True,
+        secure=settings.AUTH_COOKIE_SECURE,
+        samesite=settings.AUTH_COOKIE_SAMESITE,
+        max_age=settings.AUTH_SESSION_TTL_SECONDS,
+    )
+
+    return AuthenticatedUserResponse(
+        id=user.id,
+        username=user.username,
+    )
