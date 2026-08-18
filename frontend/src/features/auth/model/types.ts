@@ -1,6 +1,6 @@
-import type { UUID } from "crypto";
-
-export interface CurrentUser {
-  id: UUID;
+export interface AuthenticatedUser {
+  id: string;
   username: string;
 }
+
+export type CurrentUser = AuthenticatedUser;
