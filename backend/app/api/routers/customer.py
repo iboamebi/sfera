@@ -2,6 +2,8 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
 
+from app.api.dependencies.auth import get_current_user
+from app.api.security.csrf import require_csrf
 from app.application.customer.commands.create_customer import (
     CreateCustomerCommand,
 )
@@ -18,6 +20,7 @@ from app.application.customer.services.customer_application_service import (
     CustomerApplicationService,
 )
 from app.core.dependencies.services import get_customer_service
+from app.domains.user.entities.user import User
 from app.schemas.customer import (
     CustomerCreate,
     CustomerRead,
@@ -69,6 +72,8 @@ def get_customer(
 )
 def create_customer(
     data: CustomerCreate,
+    _: User = Depends(get_current_user),
+    __: None = Depends(require_csrf),
     service: CustomerApplicationService = Depends(
         get_customer_service,
     ),
@@ -92,6 +97,8 @@ def create_customer(
 )
 def delete_customer(
     customer_id: UUID,
+    _: User = Depends(get_current_user),
+    __: None = Depends(require_csrf),
     service: CustomerApplicationService = Depends(
         get_customer_service,
     ),
@@ -110,6 +117,8 @@ def delete_customer(
 def update_customer(
     customer_id: UUID,
     data: CustomerUpdate,
+    _: User = Depends(get_current_user),
+    __: None = Depends(require_csrf),
     service: CustomerApplicationService = Depends(
         get_customer_service,
     ),
