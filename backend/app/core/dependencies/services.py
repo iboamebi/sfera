@@ -4,6 +4,9 @@ Application service dependency providers.
 
 from fastapi import Depends
 
+from app.application.auth.services.authentication_application_service import (
+    AuthenticationApplicationService,
+)
 from app.application.customer.services.customer_application_service import (
     CustomerApplicationService,
 )
@@ -50,6 +53,7 @@ from app.core.dependencies.repositories import (
     get_organization_repository,
     get_price_list_repository,
     get_repair_repository,
+    get_user_repository,
     get_verification_repository,
     get_warehouse_movement_repository,
     get_warehouse_repository,
@@ -83,6 +87,7 @@ from app.domains.price_list.repositories.price_list_repository import (
 from app.domains.repair.repositories.repair_repository import (
     RepairRepository,
 )
+from app.domains.user.repositories.user_repository import UserRepository
 from app.domains.verification.repositories.verification_repository import (
     VerificationRepository,
 )
@@ -99,7 +104,26 @@ from app.domains.workflow.repositories.workflow_repository import (
     WorkflowInstanceRepository,
     WorkflowRepository,
 )
+from app.infrastructure.auth.password_hasher import Argon2PasswordHasher
 from app.shared.unit_of_work.unit_of_work import UnitOfWork
+
+
+def get_password_hasher() -> Argon2PasswordHasher:
+    """Provide password hasher implementation."""
+
+    return Argon2PasswordHasher()
+
+
+def get_authentication_service(
+    repository: UserRepository = Depends(get_user_repository),
+    password_hasher: Argon2PasswordHasher = Depends(get_password_hasher),
+) -> AuthenticationApplicationService:
+    """Provide Authentication application service."""
+
+    return AuthenticationApplicationService(
+        repository,
+        password_hasher,
+    )
 
 
 def get_order_service(
