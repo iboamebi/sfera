@@ -1,7 +1,12 @@
 from fastapi.routing import APIRoute
 
 from app.api.dependencies.auth import get_current_user
-from app.api.routers.device import connect_device, create_device, disconnect_device, router
+from app.api.routers.device import (
+    connect_device,
+    create_device,
+    disconnect_device,
+    router,
+)
 from app.api.security.csrf import require_csrf
 
 
