@@ -3,7 +3,6 @@ from uuid import uuid4
 
 import pytest
 from fastapi import HTTPException
-from starlette.requests import Request
 
 from app.api.dependencies.auth import get_current_user
 from app.application.auth.exceptions import AuthenticationFailedApplicationError
