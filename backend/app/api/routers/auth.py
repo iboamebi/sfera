@@ -7,6 +7,7 @@ from fastapi import APIRouter, Cookie, Depends, HTTPException, Response, status
 from app.application.auth.commands.authenticate_user import AuthenticateUserCommand
 from app.application.auth.commands.create_session import CreateSessionCommand
 from app.application.auth.commands.get_current_user import GetCurrentUserCommand
+from app.application.auth.commands.revoke_session import RevokeSessionCommand
 from app.application.auth.exceptions import AuthenticationFailedApplicationError
 from app.application.auth.services.authentication_application_service import (
     AuthenticationApplicationService,
@@ -116,4 +117,32 @@ def get_current_user(
     return AuthenticatedUserResponse(
         id=user.id,
         username=user.username,
+    )
+
+
+@router.post(
+    "/logout",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+def logout(
+    response: Response,
+    session_id: str | None = Cookie(default=None, alias=settings.AUTH_COOKIE_NAME),
+    session_service: SessionApplicationService = Depends(get_session_service),
+    uow: UnitOfWork = Depends(get_unit_of_work),
+) -> None:
+    """Revoke the current authenticated session and clear its cookie."""
+
+    if session_id is not None:
+        session_service.revoke(
+            RevokeSessionCommand(
+                session_id=session_id,
+            ),
+        )
+        uow.commit()
+
+    response.delete_cookie(
+        key=settings.AUTH_COOKIE_NAME,
+        secure=settings.AUTH_COOKIE_SECURE,
+        httponly=True,
+        samesite=settings.AUTH_COOKIE_SAMESITE,
     )
