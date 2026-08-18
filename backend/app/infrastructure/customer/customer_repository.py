@@ -27,20 +27,32 @@ class CustomerRepositorySQLAlchemy(CustomerRepository):
     def get(
         self,
         customer_id: UUID,
+        include_archived: bool = False,
     ) -> Customer | None:
-        model = (
-            self.session.query(CustomerModel)
-            .filter(CustomerModel.id == customer_id)
-            .first()
+        query = self.session.query(CustomerModel).filter(
+            CustomerModel.id == customer_id,
         )
+
+        if not include_archived:
+            query = query.filter(CustomerModel.archived.is_(False))
+
+        model = query.first()
 
         if model is None:
             return None
 
         return self.mapper.to_domain(model)
 
-    def get_all(self) -> list[Customer]:
-        models = self.session.query(CustomerModel).all()
+    def get_all(
+        self,
+        include_archived: bool = False,
+    ) -> list[Customer]:
+        query = self.session.query(CustomerModel)
+
+        if not include_archived:
+            query = query.filter(CustomerModel.archived.is_(False))
+
+        models = query.all()
 
         return [self.mapper.to_domain(model) for model in models]
 
