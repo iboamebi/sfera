@@ -2,10 +2,15 @@
 Application service dependency providers.
 """
 
+from datetime import timedelta
+
 from fastapi import Depends
 
 from app.application.auth.services.authentication_application_service import (
     AuthenticationApplicationService,
+)
+from app.application.auth.services.session_application_service import (
+    SessionApplicationService,
 )
 from app.application.customer.services.customer_application_service import (
     CustomerApplicationService,
@@ -53,6 +58,7 @@ from app.core.dependencies.repositories import (
     get_organization_repository,
     get_price_list_repository,
     get_repair_repository,
+    get_session_repository,
     get_user_repository,
     get_verification_repository,
     get_warehouse_movement_repository,
@@ -62,6 +68,7 @@ from app.core.dependencies.repositories import (
     get_workflow_repository,
 )
 from app.core.dependencies.uow import get_unit_of_work
+from app.domains.auth.repositories.session_repository import SessionRepository
 from app.domains.customer.repositories.customer_repository import (
     CustomerRepository,
 )
@@ -105,6 +112,9 @@ from app.domains.workflow.repositories.workflow_repository import (
     WorkflowRepository,
 )
 from app.infrastructure.auth.password_hasher import Argon2PasswordHasher
+from app.infrastructure.auth.session_token_generator import (
+    SecureSessionTokenGenerator,
+)
 from app.shared.unit_of_work.unit_of_work import UnitOfWork
 
 
@@ -123,6 +133,27 @@ def get_authentication_service(
     return AuthenticationApplicationService(
         repository,
         password_hasher,
+    )
+
+
+def get_session_token_generator() -> SecureSessionTokenGenerator:
+    """Provide secure authenticated session token generator."""
+
+    return SecureSessionTokenGenerator()
+
+
+def get_session_service(
+    repository: SessionRepository = Depends(get_session_repository),
+    token_generator: SecureSessionTokenGenerator = Depends(
+        get_session_token_generator,
+    ),
+) -> SessionApplicationService:
+    """Provide authenticated session application service."""
+
+    return SessionApplicationService(
+        repository,
+        token_generator,
+        ttl=timedelta(hours=12),
     )
 
 
