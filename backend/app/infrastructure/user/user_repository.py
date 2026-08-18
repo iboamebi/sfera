@@ -72,7 +72,9 @@ class UserRepositorySQLAlchemy(UserRepository):
     ) -> User:
         model = (
             self._session.query(UserModel)
-            .filter(UserModel.id == user.id)
+            .filter(
+                UserModel.id == user.id,
+            )
             .first()
         )
 
