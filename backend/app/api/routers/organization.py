@@ -6,6 +6,8 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
 
+from app.api.dependencies.auth import get_current_user
+from app.api.security.csrf import require_csrf
 from app.application.organization.commands.create_organization import (
     CreateOrganizationCommand,
 )
@@ -35,6 +37,7 @@ router = APIRouter(
     "/",
     response_model=OrganizationRead,
     status_code=201,
+    dependencies=[Depends(get_current_user), Depends(require_csrf)],
 )
 def create_organization(
     data: OrganizationCreate,
@@ -84,6 +87,7 @@ def get_organization(
 @router.patch(
     "/{organization_id}",
     response_model=OrganizationRead,
+    dependencies=[Depends(get_current_user), Depends(require_csrf)],
 )
 def update_organization(
     organization_id: UUID,
