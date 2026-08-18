@@ -35,18 +35,33 @@ class FakeCustomerRepository(CustomerRepository):
     def __init__(self) -> None:
         self._customers: dict[UUID, Customer] = {}
 
-    def get(self, customer_id: UUID) -> Customer | None:
-        return self._customers.get(customer_id)
+    def get(
+        self,
+        customer_id: UUID,
+        include_archived: bool = False,
+    ) -> Customer | None:
+        customer = self._customers.get(customer_id)
 
-    def get_all(self) -> list[Customer]:
-        return list(self._customers.values())
+        if customer is None or (
+            customer.archived and not include_archived
+        ):
+            return None
+
+        return customer
+
+    def get_all(
+        self,
+        include_archived: bool = False,
+    ) -> list[Customer]:
+        return [
+            customer
+            for customer in self._customers.values()
+            if include_archived or not customer.archived
+        ]
 
     def save(self, customer: Customer) -> Customer:
         self._customers[customer.id] = customer
         return customer
-
-    def delete(self, customer_id: UUID) -> None:
-        self._customers.pop(customer_id, None)
 
 
 def test_create_customer():
@@ -138,8 +153,44 @@ def test_delete_customer():
         )
     )
 
-    archived = repository.get(customer.id)
+    assert repository.get(customer.id) is None
+
+    archived = repository.get(
+        customer.id,
+        include_archived=True,
+    )
 
     assert archived is customer
-    assert archived is not None
     assert archived.archived is True
+
+
+def test_get_all_excludes_archived_customers():
+    repository = FakeCustomerRepository()
+    service = CustomerApplicationService(
+        repository,
+        FakeUnitOfWork(),
+    )
+
+    active = service.create(
+        CreateCustomerCommand(
+            organization_id=uuid4(),
+            name="Active Customer",
+        )
+    )
+    archived = service.create(
+        CreateCustomerCommand(
+            organization_id=uuid4(),
+            name="Archived Customer",
+        )
+    )
+
+    service.delete(
+        DeleteCustomerCommand(
+            customer_id=archived.id,
+        )
+    )
+
+    customers = service.get_all()
+
+    assert customers == [active]
+    assert archived not in customers
