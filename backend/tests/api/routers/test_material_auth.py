@@ -1,7 +1,12 @@
 from fastapi.routing import APIRoute
 
 from app.api.dependencies.auth import get_current_user
-from app.api.routers.material import archive_material, create_material, router, update_material
+from app.api.routers.material import (
+    archive_material,
+    create_material,
+    router,
+    update_material,
+)
 from app.api.security.csrf import require_csrf
 
 
