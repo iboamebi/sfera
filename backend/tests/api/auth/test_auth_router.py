@@ -1,4 +1,4 @@
-from datetime import UTC, datetime, timedelta
+from datetime import timedelta
 from uuid import UUID, uuid4
 
 import pytest
@@ -9,8 +9,8 @@ from app.application.auth.exceptions import AuthenticationFailedApplicationError
 from app.core.config import settings
 from app.domains.auth.entities.session import Session
 from app.domains.user.entities.user import User
-from app.shared.unit_of_work.unit_of_work import UnitOfWork
 from app.schemas.auth import LoginRequest
+from app.shared.unit_of_work.unit_of_work import UnitOfWork
 
 
 class FakeAuthenticationService:
