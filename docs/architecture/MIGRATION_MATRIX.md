@@ -91,7 +91,7 @@ Completed:
 
 Validation:
 
-- pytest: 26 passed
+- pytest: 33 passed
 - ruff check: passed
 - ruff format --check: passed
 
@@ -121,7 +121,7 @@ Result:
 
 Validation:
 
-- pytest: 26 passed
+- pytest: 33 passed
 - ruff check: passed
 - ruff format --check: passed
 
@@ -157,7 +157,7 @@ Known isolated API contract debt:
 
 Validation:
 
-- pytest: 26 passed
+- pytest: 33 passed
 - ruff check: passed
 - ruff format --check: passed
 
@@ -193,7 +193,7 @@ Known technical debt:
 
 Validation:
 
-- pytest: 26 passed
+- pytest: 33 passed
 - ruff check: passed
 - ruff format --check: passed
 
@@ -222,7 +222,7 @@ Validation:
 
 - Domain has no ORM dependencies
 - Domain has no Infrastructure dependencies
-- pytest: 26 passed
+- pytest: 33 passed
 
 ---
 
@@ -245,7 +245,7 @@ Validation:
 
 - Infrastructure repositories use mapper abstractions
 - Domain remains isolated from ORM
-- pytest: 26 passed
+- pytest: 33 passed
 - ruff check: passed
 
 ---
@@ -272,11 +272,11 @@ Validation:
 - Application contains no Infrastructure dependencies
 - Domain contains no ORM dependencies
 - Infrastructure contains no API/Application dependencies
-- pytest: 26 passed
+- pytest: 33 passed
 
 ---
 
-# Current Checkpoint — 2026-08-11
+# Current Checkpoint — 2026-08-17
 
 The DDD/Clean Architecture migration and the current architecture audits are complete.
 
@@ -292,7 +292,7 @@ Completed:
 
 Current validation:
 
-- pytest: 26 passed
+- pytest: 33 passed
 - ruff check: passed
 - ruff format --check: passed
 
