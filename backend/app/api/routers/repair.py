@@ -6,6 +6,8 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
 
+from app.api.dependencies.auth import get_current_user
+from app.api.security.csrf import require_csrf
 from app.application.repair.commands.create_repair import (
     CreateRepairCommand,
 )
@@ -53,6 +55,7 @@ def get_repair(
 @router.post(
     "",
     response_model=RepairRead,
+    dependencies=[Depends(get_current_user), Depends(require_csrf)],
 )
 def create_repair(
     data: RepairCreate,
@@ -71,6 +74,7 @@ def create_repair(
 @router.post(
     "/{repair_id}/start",
     response_model=RepairRead,
+    dependencies=[Depends(get_current_user), Depends(require_csrf)],
 )
 def start_repair(
     repair_id: UUID,
@@ -86,6 +90,7 @@ def start_repair(
 @router.post(
     "/{repair_id}/complete",
     response_model=RepairRead,
+    dependencies=[Depends(get_current_user), Depends(require_csrf)],
 )
 def complete_repair(
     repair_id: UUID,
@@ -103,6 +108,7 @@ def complete_repair(
 @router.post(
     "/{repair_id}/cancel",
     response_model=RepairRead,
+    dependencies=[Depends(get_current_user), Depends(require_csrf)],
 )
 def cancel_repair(
     repair_id: UUID,
