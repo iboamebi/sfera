@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, String
+from sqlalchemy import Boolean, DateTime, ForeignKey, String, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base
@@ -42,5 +42,6 @@ class AuthSession(Base):
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
+        server_default=func.now(),
         nullable=False,
     )
