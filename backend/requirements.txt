@@ -15,3 +15,4 @@ email-validator
 jinja2
 
 httpx
+argon2-cffi
