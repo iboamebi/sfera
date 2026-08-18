@@ -14,7 +14,7 @@ export function useLogin() {
   return useMutation<AuthenticatedUser, Error, LoginVariables>({
     mutationFn: login,
     onSuccess: (user) => {
-      queryClient.setQueryData(["current-user"], user);
+      queryClient.setQueryData(["auth", "current-user"], user);
     },
   });
 }
