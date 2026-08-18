@@ -4,6 +4,8 @@ Warehouse API router.
 
 from fastapi import APIRouter, Depends
 
+from app.api.dependencies.auth import get_current_user
+from app.api.security.csrf import require_csrf
 from app.application.warehouse.commands.create_warehouse import (
     CreateWarehouseCommand,
 )
@@ -28,6 +30,7 @@ router = APIRouter(
     "/",
     response_model=WarehouseRead,
     status_code=201,
+    dependencies=[Depends(get_current_user), Depends(require_csrf)],
 )
 def create_warehouse(
     data: WarehouseCreate,
