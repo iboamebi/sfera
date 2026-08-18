@@ -2,11 +2,23 @@
 
 ## Status
 
-Foundation contract.
+Backend authentication foundation is implemented.
 
-Authentication is not yet implemented in the application runtime.
+Implemented:
 
-This document defines the minimum contract that future authentication changes must follow.
+- user domain entity and repository contract;
+- user persistence and mapping;
+- password hashing through the application port and Argon2 infrastructure adapter;
+- authenticated session domain contract and persistence;
+- session token generation;
+- authentication application services;
+- login, current-user, and logout API endpoints;
+- server-managed HttpOnly session cookie;
+- CSRF protection for state-changing cookie-authenticated requests;
+- reusable API dependency for resolving the current authenticated user;
+- authentication + CSRF protection on current business mutation endpoints.
+
+Authorization (roles/permissions) is intentionally not implemented yet. It remains a separate stage.
 
 ---
 
@@ -46,7 +58,7 @@ Domain must not depend on FastAPI, SQLAlchemy, HTTP cookies, JWT libraries, or p
 
 ## 3. Identity
 
-The initial authenticated identity is a Sfera user.
+The authenticated identity is a Sfera user.
 
 Minimum persistent user data:
 
@@ -59,8 +71,6 @@ User
  └── created_at
 ```
 
-The exact additional profile fields are outside the authentication foundation and should be introduced only when required by a user-facing scenario.
-
 Archived users must not authenticate.
 
 User passwords are never stored in plaintext.
@@ -69,45 +79,45 @@ User passwords are never stored in plaintext.
 
 ## 4. Authentication mechanism
 
-The initial application contract uses a server-managed authenticated session represented to the browser by an HttpOnly cookie.
+The application uses a server-managed authenticated session represented to the browser by an HttpOnly cookie.
 
-The browser must not be required to store an access token in `localStorage` or `sessionStorage`.
+The browser is not required to store an access token in `localStorage` or `sessionStorage`.
 
-The session cookie must be configured by the API layer/Infrastructure with secure production attributes appropriate to the deployment.
+The session cookie is configured by the API layer according to the deployment security contract.
 
-Authentication implementation must include protection against session fixation and must invalidate the session on logout.
+Authentication includes session invalidation on logout and session creation through the Application service.
 
-CSRF protection is required for state-changing cookie-authenticated requests.
+CSRF protection is required for state-changing cookie-authenticated requests and is implemented through the API security boundary.
 
 ---
 
 ## 5. Application use cases
 
-The initial authentication use cases are:
+The authentication use cases are:
 
 ```text
 AuthenticateUser
+CreateSession
 GetCurrentUser
+RevokeSession
 LogoutUser
 ```
 
-Application services/use cases must operate through repository abstractions and must not manipulate SQLAlchemy sessions directly.
+Application services/use cases operate through repository abstractions and do not manipulate SQLAlchemy sessions directly.
 
-A failed authentication attempt returns a generic authentication failure and must not reveal whether a username exists.
+A failed authentication attempt returns a generic authentication failure and does not reveal whether a username exists.
 
 ---
 
 ## 6. API contract
 
-The initial public API contract is:
+The public authentication API is:
 
 ```text
 POST /auth/login
 GET  /auth/me
 POST /auth/logout
 ```
-
-Expected semantics:
 
 ### `POST /auth/login`
 
@@ -127,13 +137,13 @@ Unauthenticated requests return `401 Unauthorized`.
 
 Invalidates the current authenticated session.
 
-The endpoint is idempotent from the client perspective.
+The endpoint is idempotent from the client perspective and is protected by CSRF validation.
 
 ---
 
-## 7. Current user contract
+## 7. Current-user contract
 
-The API representation of the authenticated user must contain only client-safe identity data.
+The API representation of the authenticated user contains only client-safe identity data.
 
 It must never expose:
 
@@ -142,11 +152,38 @@ It must never expose:
 - session identifiers;
 - internal authentication metadata.
 
-The frontend consumes this representation through an API feature/model and does not reproduce authentication business rules locally.
+A reusable API dependency resolves the current authenticated user for protected business routes.
 
 ---
 
-## 8. Authorization boundary
+## 8. Protected business mutations
+
+The current API security boundary protects state-changing business operations with both authentication and CSRF validation.
+
+Protected mutation features currently include:
+
+```text
+Customer
+Organization
+Order
+Device
+Repair
+Diagnostic
+Warehouse
+Material
+PriceList
+PriceListItem
+InstrumentType
+Verification actions
+```
+
+Read-only endpoints remain unchanged unless a separate business authorization requirement is introduced.
+
+The protection is applied at the API boundary; business rules remain in Application/Domain layers.
+
+---
+
+## 9. Authorization boundary
 
 Authentication answers:
 
@@ -160,15 +197,15 @@ Authorization answers:
 What may the user do?
 ```
 
-The first authentication iteration does not define roles or permissions unless an existing business scenario requires them.
+Roles and permissions are intentionally not defined by the authentication foundation yet.
 
-Future authorization must be enforced at the Application/API boundary without embedding permission checks throughout UI components.
+The next security stage is authorization at the Application/API boundary, without embedding permission checks throughout UI components or domain entities.
 
 ---
 
-## 9. Frontend integration
+## 10. Frontend integration
 
-Frontend authentication will follow:
+Frontend authentication remains a separate integration stage:
 
 ```text
 API
@@ -188,27 +225,35 @@ The frontend HTTP client must send authenticated requests according to the serve
 
 The frontend must treat `401 Unauthorized` as an authentication state transition, not as a generic business error.
 
-Login UI is not part of this foundation document and should be introduced only after the backend contract exists.
+The backend authentication contract exists; frontend auth API/model and login UI still require implementation and validation as a separate feature stage.
 
 ---
 
-## 10. Validation requirements
+## 11. Validation requirements
 
 Authentication changes require at minimum:
 
 - Domain/Application tests for authentication behavior;
 - Infrastructure tests for password/session persistence where applicable;
-- API tests for login, current-user, logout, and unauthorized access;
+- API tests for login, current-user, logout, CSRF, and unauthorized access;
 - frontend typecheck/build for frontend changes;
 - Ruff validation for Python changes.
 
 Security-sensitive behavior must be covered by regression tests before production deployment.
 
+Current backend validation checkpoint:
+
+```text
+pytest: 105 passed
+ruff check: clean
+ruff format --check: clean
+```
+
 ---
 
-## 11. Implementation order
+## 12. Implementation order
 
-Authentication implementation proceeds incrementally:
+The completed implementation path is:
 
 ```text
 User domain contract
@@ -225,11 +270,25 @@ API authentication endpoints
     ↓
 Authentication tests
     ↓
-Frontend auth API/model
+Current-user API dependency
     ↓
-Protected route boundary
+CSRF protection
     ↓
-Login UI
+Protected business mutation boundary
+```
+
+The next stage is intentionally separate:
+
+```text
+Authorization
+    ↓
+roles/permissions contract
+    ↓
+Application authorization policy
+    ↓
+API enforcement
+    ↓
+regression tests
 ```
 
 No step may bypass the architectural boundaries defined by the project Constitution.
