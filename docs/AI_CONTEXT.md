@@ -23,18 +23,20 @@
 DDD + Clean Architecture
 ```
 
-Основной принцип зависимостей:
+Основное направление зависимостей:
 
 ```text
-Domain
+API
   ↓
 Application
   ↓
-Infrastructure
+Domain
   ↓
-API
+Repository Interface
+  ↑
+Infrastructure Repository
   ↓
-Tests
+Database
 ```
 
 Domain не зависит от ORM, SQLAlchemy, Infrastructure и API.
@@ -61,7 +63,7 @@ Legacy CRUD:
 REMOVED
 ```
 
-Последние известные backend validation results:
+Последние backend validation results:
 
 ```text
 pytest -q
@@ -80,11 +82,7 @@ Current branch:
 develop
 ```
 
-Последний синхронизированный commit:
-
-```text
-576a69d docs: update frontend and deployment checkpoints
-```
+Документация синхронизирована с текущим состоянием проекта отдельными commits в `develop`.
 
 ## Backend Deployment Checkpoint — 2026-08-17
 
@@ -135,9 +133,9 @@ React Hook Form
 Zod
 ```
 
-Feature architecture is used.
+Feature-oriented architecture is used.
 
-Implemented orders flow:
+Implemented Orders flow:
 
 - orders list;
 - order details;
@@ -159,6 +157,8 @@ import.meta.env.VITE_API_URL
 ```
 
 API feature modules use this shared HTTP client.
+
+Backend DTOs are separated from frontend models where transport naming/details should not leak into UI code.
 
 ## Frontend Production Deployment — COMPLETE
 
@@ -193,6 +193,8 @@ Build output is deployed to:
 ```
 
 Static files are owned by `root:root` with directories `755` and files `644`.
+
+Frontend deployment is currently manual. No automatic deployment pipeline is part of the current runtime model.
 
 nginx configuration:
 
@@ -263,7 +265,7 @@ http://top.vlsfera.ru/api/health
 → {"status":"ok"}
 ```
 
-No Vite dev server is required or expected on port `5173`.
+No Vite dev server is required or expected on port `5173` in production.
 
 ## DNS / ZeroTier Deployment
 
@@ -293,10 +295,10 @@ Relevant configuration:
 Current host records include:
 
 ```text
-dev.vlsfera.ru       → 10.147.17.2
-top.vlsfera.ru       → 10.147.17.242
-api.vlsfera.ru       → 10.147.17.242
-db.vlsfera.ru        → 10.147.17.242
+dev.vlsfera.ru        → 10.147.17.2
+top.vlsfera.ru        → 10.147.17.242
+api.vlsfera.ru        → 10.147.17.242
+db.vlsfera.ru         → 10.147.17.242
 storage.vlsfera.ru   → 10.147.17.242
 zt.vlsfera.ru        → 10.147.17.242
 git.vlsfera.ru       → 10.147.17.242
@@ -395,7 +397,7 @@ npm run typecheck
 npm run build
 ```
 
-After a completed stage:
+After a completed code stage:
 
 ```text
 git status
@@ -429,9 +431,17 @@ Recommended next feature sequence:
 3. Continue order-centric user scenarios.
 4. Add additional domain workflows incrementally.
 
-Documentation:
+## Documentation Governance
 
-- `docs/AI_CONTEXT.md`
-- `docs/MIGRATION_STATUS.md`
-- `docs/ARCHITECTURE.md`
-- `docs/FRONTEND_ARCHITECTURE.md`
+Authoritative architecture order is defined by `PROJECT_CONSTITUTION.md`.
+
+Documentation set:
+
+- `docs/architecture/PROJECT_CONSTITUTION.md` — normative architecture rules;
+- `docs/ARCHITECTURE.md` — current architecture description;
+- `docs/MIGRATION_STATUS.md` — current migration and deployment status;
+- `docs/architecture/MIGRATION_MATRIX.md` — module migration matrix and architecture checkpoints;
+- `docs/AI_CONTEXT.md` — AI recovery context;
+- `docs/FRONTEND_ARCHITECTURE.md` — current frontend architecture.
+
+`PROJECT_CONSTITUTION.md` is not modified during routine state synchronization because changing it requires a new approved constitution version.
