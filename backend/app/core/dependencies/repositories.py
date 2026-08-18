@@ -6,6 +6,7 @@ from fastapi import Depends
 from sqlalchemy.orm import Session
 
 from app.core.dependencies.database import get_session
+from app.domains.auth.repositories.session_repository import SessionRepository
 from app.domains.customer.repositories.customer_repository import (
     CustomerRepository,
 )
@@ -49,6 +50,9 @@ from app.domains.warehouse.repositories.warehouse_stock_repository import (
 from app.domains.workflow.repositories.workflow_repository import (
     WorkflowInstanceRepository,
     WorkflowRepository,
+)
+from app.infrastructure.auth.session_repository import (
+    SessionRepositorySQLAlchemy,
 )
 from app.infrastructure.customer.customer_repository import (
     CustomerRepositorySQLAlchemy,
@@ -206,6 +210,14 @@ def get_user_repository(
     """Provide User repository."""
 
     return UserRepositorySQLAlchemy(session)
+
+
+def get_session_repository(
+    session: Session = Depends(get_session),
+) -> SessionRepository:
+    """Provide authenticated session repository."""
+
+    return SessionRepositorySQLAlchemy(session)
 
 
 def get_workflow_repository(
