@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta, timezone
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 from app.application.auth.commands.create_session import CreateSessionCommand
 from app.application.auth.services.session_application_service import (
@@ -24,7 +24,7 @@ class FakeSessionRepository(SessionRepository):
     def revoke(self, session_id: str) -> None:
         pass
 
-    def revoke_all_for_user(self, user_id) -> None:
+    def revoke_all_for_user(self, user_id: UUID) -> None:
         pass
 
 
