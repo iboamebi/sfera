@@ -42,9 +42,7 @@ class FakeCustomerRepository(CustomerRepository):
     ) -> Customer | None:
         customer = self._customers.get(customer_id)
 
-        if customer is None or (
-            customer.archived and not include_archived
-        ):
+        if customer is None or (customer.archived and not include_archived):
             return None
 
         return customer
