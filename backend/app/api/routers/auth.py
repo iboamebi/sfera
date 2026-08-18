@@ -2,13 +2,17 @@
 
 from datetime import UTC, datetime
 
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Cookie, Depends, HTTPException, Response, status
 
 from app.application.auth.commands.authenticate_user import AuthenticateUserCommand
 from app.application.auth.commands.create_session import CreateSessionCommand
+from app.application.auth.commands.get_current_user import GetCurrentUserCommand
 from app.application.auth.exceptions import AuthenticationFailedApplicationError
 from app.application.auth.services.authentication_application_service import (
     AuthenticationApplicationService,
+)
+from app.application.auth.services.current_user_application_service import (
+    CurrentUserApplicationService,
 )
 from app.application.auth.services.session_application_service import (
     SessionApplicationService,
@@ -16,6 +20,7 @@ from app.application.auth.services.session_application_service import (
 from app.core.config import settings
 from app.core.dependencies.services import (
     get_authentication_service,
+    get_current_user_service,
     get_session_service,
 )
 from app.core.dependencies.uow import get_unit_of_work
@@ -72,6 +77,41 @@ def login(
         samesite=settings.AUTH_COOKIE_SAMESITE,
         max_age=settings.AUTH_SESSION_TTL_SECONDS,
     )
+
+    return AuthenticatedUserResponse(
+        id=user.id,
+        username=user.username,
+    )
+
+
+@router.get(
+    "/me",
+    response_model=AuthenticatedUserResponse,
+)
+def get_current_user(
+    session_id: str | None = Cookie(default=None, alias=settings.AUTH_COOKIE_NAME),
+    service: CurrentUserApplicationService = Depends(get_current_user_service),
+) -> AuthenticatedUserResponse:
+    """Return the current authenticated user."""
+
+    if session_id is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication required",
+        )
+
+    try:
+        user = service.get(
+            GetCurrentUserCommand(
+                session_id=session_id,
+                now=datetime.now(UTC),
+            ),
+        )
+    except AuthenticationFailedApplicationError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication required",
+        ) from None
 
     return AuthenticatedUserResponse(
         id=user.id,
