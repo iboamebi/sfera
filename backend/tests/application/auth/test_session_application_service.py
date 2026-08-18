@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from uuid import UUID, uuid4
 
 from app.application.auth.commands.create_session import CreateSessionCommand
@@ -34,7 +34,7 @@ class FakeSessionTokenGenerator(SessionTokenGenerator):
 
 
 def test_create_persists_session_with_expiration() -> None:
-    now = datetime(2026, 8, 18, 20, 0, tzinfo=timezone.utc)
+    now = datetime(2026, 8, 18, 20, 0, tzinfo=UTC)
     user_id = uuid4()
     repository = FakeSessionRepository()
     service = SessionApplicationService(
