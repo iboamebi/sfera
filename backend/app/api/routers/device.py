@@ -9,6 +9,8 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
 
+from app.api.dependencies.auth import get_current_user
+from app.api.security.csrf import require_csrf
 from app.application.device.commands.connect_device import ConnectDeviceCommand
 from app.application.device.commands.create_device import CreateDeviceCommand
 from app.application.device.commands.disconnect_device import (
@@ -37,6 +39,7 @@ router = APIRouter(
     "/",
     response_model=DeviceRead,
     status_code=201,
+    dependencies=[Depends(get_current_user), Depends(require_csrf)],
 )
 def create_device(
     data: DeviceCreate,
@@ -61,6 +64,7 @@ def create_device(
 @router.post(
     "/{device_id}/connect",
     response_model=DeviceActionResponse,
+    dependencies=[Depends(get_current_user), Depends(require_csrf)],
 )
 def connect_device(
     device_id: UUID,
@@ -96,6 +100,7 @@ def connect_device(
 @router.post(
     "/{device_id}/disconnect",
     response_model=DeviceActionResponse,
+    dependencies=[Depends(get_current_user), Depends(require_csrf)],
 )
 def disconnect_device(
     device_id: UUID,
