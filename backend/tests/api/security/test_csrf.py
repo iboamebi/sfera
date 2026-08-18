@@ -11,7 +11,12 @@ def make_request(
 ) -> Request:
     headers = []
     if header_token is not None:
-        headers.append((settings.CSRF_HEADER_NAME.lower().encode(), header_token.encode()))
+        headers.append(
+            (
+                settings.CSRF_HEADER_NAME.lower().encode(),
+                header_token.encode(),
+            )
+        )
 
     cookie = ""
     if cookie_token is not None:
