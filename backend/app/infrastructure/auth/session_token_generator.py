@@ -4,8 +4,10 @@ Secure session token generator implementation.
 
 import secrets
 
+from app.domains.auth.services.session_token_generator import SessionTokenGenerator
 
-class SecureSessionTokenGenerator:
+
+class SecureSessionTokenGenerator(SessionTokenGenerator):
     """Generate cryptographically secure server-side session identifiers."""
 
     def generate(self) -> str:
