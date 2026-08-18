@@ -2,8 +2,9 @@
 
 from datetime import UTC, datetime
 
-from fastapi import APIRouter, Cookie, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Cookie, Depends, HTTPException, Request, Response, status
 
+from app.api.security.csrf import generate_csrf_token, require_csrf
 from app.application.auth.commands.authenticate_user import AuthenticateUserCommand
 from app.application.auth.commands.create_session import CreateSessionCommand
 from app.application.auth.commands.get_current_user import GetCurrentUserCommand
@@ -78,6 +79,14 @@ def login(
         samesite=settings.AUTH_COOKIE_SAMESITE,
         max_age=settings.AUTH_SESSION_TTL_SECONDS,
     )
+    response.set_cookie(
+        key=settings.CSRF_COOKIE_NAME,
+        value=generate_csrf_token(),
+        httponly=False,
+        secure=settings.AUTH_COOKIE_SECURE,
+        samesite=settings.AUTH_COOKIE_SAMESITE,
+        max_age=settings.AUTH_SESSION_TTL_SECONDS,
+    )
 
     return AuthenticatedUserResponse(
         id=user.id,
@@ -125,14 +134,16 @@ def get_current_user(
     status_code=status.HTTP_204_NO_CONTENT,
 )
 def logout(
+    request: Request,
     response: Response,
     session_id: str | None = Cookie(default=None, alias=settings.AUTH_COOKIE_NAME),
     session_service: SessionApplicationService = Depends(get_session_service),
     uow: UnitOfWork = Depends(get_unit_of_work),
 ) -> None:
-    """Revoke the current authenticated session and clear its cookie."""
+    """Revoke the current authenticated session and clear its cookies."""
 
     if session_id is not None:
+        require_csrf(request)
         session_service.revoke(
             RevokeSessionCommand(
                 session_id=session_id,
@@ -144,5 +155,11 @@ def logout(
         key=settings.AUTH_COOKIE_NAME,
         secure=settings.AUTH_COOKIE_SECURE,
         httponly=True,
+        samesite=settings.AUTH_COOKIE_SAMESITE,
+    )
+    response.delete_cookie(
+        key=settings.CSRF_COOKIE_NAME,
+        secure=settings.AUTH_COOKIE_SECURE,
+        httponly=False,
         samesite=settings.AUTH_COOKIE_SAMESITE,
     )
