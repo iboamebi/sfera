@@ -7,6 +7,8 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
+from app.api.dependencies.auth import get_current_user
+from app.api.security.csrf import require_csrf
 from app.application.order.commands.add_order_item import (
     AddOrderItemCommand,
 )
@@ -48,6 +50,7 @@ class OrderItemCreate(BaseModel):
     "/",
     response_model=OrderRead,
     status_code=201,
+    dependencies=[Depends(get_current_user), Depends(require_csrf)],
 )
 def create_order(
     data: OrderCreate,
@@ -80,6 +83,7 @@ def list_orders(
 @router.post(
     "/{order_id}/items",
     response_model=OrderRead,
+    dependencies=[Depends(get_current_user), Depends(require_csrf)],
 )
 def add_order_item(
     order_id: UUID,
@@ -99,6 +103,7 @@ def add_order_item(
 @router.patch(
     "/{order_id}",
     response_model=OrderRead,
+    dependencies=[Depends(get_current_user), Depends(require_csrf)],
 )
 def update_order(
     order_id: UUID,
@@ -126,6 +131,7 @@ def update_order(
 @router.post(
     "/{order_id}/register",
     response_model=OrderRead,
+    dependencies=[Depends(get_current_user), Depends(require_csrf)],
 )
 def register_order(
     order_id: UUID,
