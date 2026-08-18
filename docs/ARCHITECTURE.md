@@ -297,3 +297,82 @@ ruff format --check .
 ```
 
 Новая функциональность считается завершённой только после успешного прохождения релевантных проверок.
+
+---
+
+# Production Deployment
+
+Backend production runtime:
+
+```text
+systemd
+    ↓
+sfera-backend.service
+    ↓
+uvicorn
+    ↓
+FastAPI
+    ↓
+PostgreSQL
+```
+
+Frontend production runtime:
+
+```text
+Browser
+    ↓
+nginx
+    ├── static React SPA
+    │
+    └── /api/*
+          ↓
+        FastAPI
+```
+
+Frontend production deployment использует статический Vite build, размещенный в nginx.
+
+SPA routing выполняется через fallback на:
+
+```text
+/index.html
+```
+
+Frontend production deployment не требует постоянно работающего Vite development server.
+
+---
+
+# Архитектурный статус
+
+Backend DDD/Clean Architecture migration:
+
+```text
+COMPLETE
+```
+
+Legacy CRUD:
+
+```text
+REMOVED
+```
+
+Основные backend architecture audits:
+
+```text
+COMPLETE
+```
+
+Frontend:
+
+```text
+IMPLEMENTED AND IN PROGRESS
+```
+
+Frontend развивается по пользовательским сценариям, начиная с существующего Orders flow.
+
+Следующее запланированное frontend направление:
+
+```text
+Customer selection flow
+        ↓
+Order creation
+```
