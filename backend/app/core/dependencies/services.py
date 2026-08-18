@@ -9,6 +9,9 @@ from fastapi import Depends
 from app.application.auth.services.authentication_application_service import (
     AuthenticationApplicationService,
 )
+from app.application.auth.services.current_user_application_service import (
+    CurrentUserApplicationService,
+)
 from app.application.auth.services.session_application_service import (
     SessionApplicationService,
 )
@@ -154,6 +157,18 @@ def get_session_service(
         repository,
         token_generator,
         ttl=timedelta(hours=12),
+    )
+
+
+def get_current_user_service(
+    session_repository: SessionRepository = Depends(get_session_repository),
+    user_repository: UserRepository = Depends(get_user_repository),
+) -> CurrentUserApplicationService:
+    """Provide current user application service."""
+
+    return CurrentUserApplicationService(
+        session_repository,
+        user_repository,
     )
 
 
