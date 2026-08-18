@@ -10,6 +10,8 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
 
+from app.api.dependencies.auth import get_current_user
+from app.api.security.csrf import require_csrf
 from app.application.price_list.commands.add_price_list_item import (
     AddPriceListItemCommand,
 )
@@ -39,6 +41,7 @@ router = APIRouter(
 
 @router.post(
     "/",
+    dependencies=[Depends(get_current_user), Depends(require_csrf)],
 )
 async def create(
     data: PriceListItemCreate,
@@ -60,6 +63,7 @@ async def create(
 
 @router.patch(
     "/{item_id}",
+    dependencies=[Depends(get_current_user), Depends(require_csrf)],
 )
 async def update(
     item_id: UUID,
@@ -87,6 +91,7 @@ async def update(
 
 @router.delete(
     "/{item_id}",
+    dependencies=[Depends(get_current_user), Depends(require_csrf)],
 )
 async def delete(
     item_id: UUID,
