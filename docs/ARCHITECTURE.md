@@ -217,6 +217,12 @@ Legacy удаляется только после:
 - проверки импортов;
 - подтверждения отсутствия зависимостей.
 
+Legacy CRUD migration:
+
+```text
+COMPLETE
+```
+
 Migration workflow:
 
 ```text
@@ -277,10 +283,17 @@ These items are tracked separately and must be resolved incrementally. They do n
 - migration/database checks where applicable;
 - проверками основных бизнес-сценариев.
 
-Текущий backend checkpoint:
+Текущий backend validation checkpoint:
 
-- pytest: 26 passed;
-- ruff check: passed;
-- ruff format --check: passed.
+```text
+pytest -q
+33 passed
+
+ruff check .
+All checks passed
+
+ruff format --check .
+352 files already formatted
+```
 
 Новая функциональность считается завершённой только после успешного прохождения релевантных проверок.
