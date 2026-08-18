@@ -6,6 +6,8 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
 
+from app.api.dependencies.auth import get_current_user
+from app.api.security.csrf import require_csrf
 from app.application.diagnostic.commands.complete_diagnostic import (
     CompleteDiagnosticCommand,
 )
@@ -60,6 +62,7 @@ def get_diagnostic(
 @router.post(
     "",
     response_model=DiagnosticRead,
+    dependencies=[Depends(get_current_user), Depends(require_csrf)],
 )
 def create_diagnostic(
     data: DiagnosticCreate,
@@ -77,6 +80,7 @@ def create_diagnostic(
 @router.post(
     "/{diagnostic_id}/conclusion",
     response_model=DiagnosticRead,
+    dependencies=[Depends(get_current_user), Depends(require_csrf)],
 )
 def complete_diagnostic(
     diagnostic_id: UUID,
@@ -96,6 +100,7 @@ def complete_diagnostic(
 @router.post(
     "/{diagnostic_id}/recommendation",
     response_model=DiagnosticRead,
+    dependencies=[Depends(get_current_user), Depends(require_csrf)],
 )
 def set_recommendation(
     diagnostic_id: UUID,
