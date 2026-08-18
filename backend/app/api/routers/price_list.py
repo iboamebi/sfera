@@ -5,6 +5,8 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
 
+from app.api.dependencies.auth import get_current_user
+from app.api.security.csrf import require_csrf
 from app.application.price_list.commands.create_price_list import (
     CreatePriceListCommand,
 )
@@ -57,7 +59,12 @@ async def get_one(
     return obj
 
 
-@router.post("/", response_model=PriceListRead, status_code=201)
+@router.post(
+    "/",
+    response_model=PriceListRead,
+    status_code=201,
+    dependencies=[Depends(get_current_user), Depends(require_csrf)],
+)
 async def create(
     data: PriceListCreate,
     service: PriceListApplicationService = Depends(
@@ -76,7 +83,11 @@ async def create(
     return await service.create(command)
 
 
-@router.patch("/{obj_id}", response_model=PriceListRead)
+@router.patch(
+    "/{obj_id}",
+    response_model=PriceListRead,
+    dependencies=[Depends(get_current_user), Depends(require_csrf)],
+)
 async def update(
     obj_id: UUID,
     data: PriceListUpdate,
