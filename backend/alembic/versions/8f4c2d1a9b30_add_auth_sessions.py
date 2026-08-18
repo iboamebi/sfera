@@ -1,7 +1,7 @@
 """add auth sessions
 
 Revision ID: 8f4c2d1a9b30
-Revises: 9a1ddec34200
+Revises: 22ae78ebd152
 Create Date: 2026-08-18 20:25:00
 
 """
@@ -13,7 +13,7 @@ import sqlalchemy as sa
 from alembic import op
 
 revision: str = "8f4c2d1a9b30"
-down_revision: str | Sequence[str] | None = "9a1ddec34200"
+down_revision: str | Sequence[str] | None = "22ae78ebd152"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 
