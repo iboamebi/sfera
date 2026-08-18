@@ -1,16 +1,11 @@
-from datetime import UTC, datetime
-from uuid import uuid4
+from datetime import UTC, datetime, timedelta
+from uuid import UUID, uuid4
 
 import pytest
 from fastapi import HTTPException, Response
 
 from app.api.routers.auth import login
-from app.application.auth.services.authentication_application_service import (
-    AuthenticationApplicationService,
-)
-from app.application.auth.services.session_application_service import (
-    SessionApplicationService,
-)
+from app.application.auth.exceptions import AuthenticationFailedApplicationError
 from app.core.config import settings
 from app.domains.auth.entities.session import Session
 from app.domains.user.entities.user import User
@@ -19,7 +14,11 @@ from app.schemas.auth import LoginRequest
 
 
 class FakeAuthenticationService:
-    def __init__(self, user: User | None = None, error: Exception | None = None) -> None:
+    def __init__(
+        self,
+        user: User | None = None,
+        error: Exception | None = None,
+    ) -> None:
         self.user = user
         self.error = error
 
@@ -39,7 +38,7 @@ class FakeSessionService:
             id=uuid4(),
             user_id=command.user_id,
             session_id="session-token",
-            expires_at=command.now.replace(hour=(command.now.hour + 12) % 24),
+            expires_at=command.now + timedelta(hours=12),
         )
         return self.created
 
@@ -70,8 +69,8 @@ def test_login_sets_http_only_session_cookie() -> None:
     result = login(
         data=LoginRequest(username="alice", password="password"),
         response=response,
-        authentication_service=authentication,  # type: ignore[arg-type]
-        session_service=sessions,  # type: ignore[arg-type]
+        authentication_service=authentication,
+        session_service=sessions,
         uow=uow,
     )
 
@@ -80,6 +79,7 @@ def test_login_sets_http_only_session_cookie() -> None:
     assert "password_hash" not in result.model_dump()
     assert "session_id" not in result.model_dump()
     assert uow.committed is True
+    assert isinstance(result.id, UUID)
 
     set_cookie = response.headers["set-cookie"]
     assert f"{settings.AUTH_COOKIE_NAME}=session-token" in set_cookie
@@ -89,7 +89,7 @@ def test_login_sets_http_only_session_cookie() -> None:
 
 def test_login_returns_generic_401_for_authentication_failure() -> None:
     authentication = FakeAuthenticationService(
-        error=Exception("authentication failed"),
+        error=AuthenticationFailedApplicationError(),
     )
     response = Response()
 
@@ -97,8 +97,8 @@ def test_login_returns_generic_401_for_authentication_failure() -> None:
         login(
             data=LoginRequest(username="missing", password="wrong"),
             response=response,
-            authentication_service=authentication,  # type: ignore[arg-type]
-            session_service=FakeSessionService(),  # type: ignore[arg-type]
+            authentication_service=authentication,
+            session_service=FakeSessionService(),
             uow=FakeUnitOfWork(),
         )
 
