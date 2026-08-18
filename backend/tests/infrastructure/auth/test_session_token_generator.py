@@ -11,7 +11,4 @@ def test_generate_returns_unique_url_safe_tokens() -> None:
 
     assert first != second
     assert len(first) >= 40
-    assert all(
-        character.isalnum() or character in "-_"
-        for character in first
-    )
+    assert all(character.isalnum() or character in "-_" for character in first)
