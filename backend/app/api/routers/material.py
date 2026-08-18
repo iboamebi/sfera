@@ -10,6 +10,8 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
 
+from app.api.dependencies.auth import get_current_user
+from app.api.security.csrf import require_csrf
 from app.application.material.commands.archive_material import (
     ArchiveMaterialCommand,
 )
@@ -74,6 +76,7 @@ def get_material(
     "/",
     response_model=MaterialRead,
     status_code=201,
+    dependencies=[Depends(get_current_user), Depends(require_csrf)],
 )
 def create_material(
     data: MaterialCreate,
@@ -94,6 +97,7 @@ def create_material(
 @router.put(
     "/{material_id}",
     response_model=MaterialRead,
+    dependencies=[Depends(get_current_user), Depends(require_csrf)],
 )
 def update_material(
     material_id: UUID,
@@ -115,6 +119,7 @@ def update_material(
 @router.post(
     "/{material_id}/archive",
     response_model=MaterialRead,
+    dependencies=[Depends(get_current_user), Depends(require_csrf)],
 )
 def archive_material(
     material_id: UUID,
