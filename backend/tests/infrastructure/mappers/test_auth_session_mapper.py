@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import uuid4
 
 from app.domains.auth.entities.session import Session
@@ -9,7 +9,7 @@ from app.models.auth_session import AuthSession
 def test_auth_session_mapper_round_trip() -> None:
     session_id = "session-token"
     user_id = uuid4()
-    expires_at = datetime(2026, 8, 19, tzinfo=timezone.utc)
+    expires_at = datetime(2026, 8, 19, tzinfo=UTC)
 
     entity = Session(
         id=uuid4(),
@@ -17,7 +17,7 @@ def test_auth_session_mapper_round_trip() -> None:
         session_id=session_id,
         expires_at=expires_at,
     )
-    model = AuthSession(id=entity.id, created_at=datetime.now(timezone.utc))
+    model = AuthSession(id=entity.id, created_at=datetime.now(UTC))
     mapper = AuthSessionMapper()
 
     mapper.to_model(entity, model)
