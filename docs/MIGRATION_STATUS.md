@@ -4,7 +4,7 @@
 
 Backend DDD/Clean Architecture migration завершена.
 
-Текущий этап — frontend development и deployment validation.
+Текущий этап — frontend development and production validation.
 
 ---
 
@@ -133,40 +133,48 @@ FastAPI backend
 
 ---
 
-## Remote Development Runtime
+## Frontend Production Runtime
 
-Frontend:
-
-```text
-Vite
-0.0.0.0:5173
-```
-
-Backend:
+Frontend production deployment использует статический Vite build, размещенный в nginx.
 
 ```text
-0.0.0.0:8000
+Browser
+    ↓
+nginx
+    ├── React SPA static files
+    │
+    └── /api/*
+          ↓
+        FastAPI
 ```
 
-ZeroTier address:
+SPA routing выполняется через fallback на:
 
 ```text
-10.147.17.242
+/index.html
 ```
 
-Remote access:
+Vite development server на `5173` не является частью production runtime.
+
+Production frontend:
 
 ```text
-http://top.vlsfera.ru:5173
+https://top.vlsfera.ru
 ```
 
-Configured:
+Backend production service:
 
-- `src/shared/api/http.ts` uses `VITE_API_URL`;
-- `vite.config.ts` allows remote host;
-- backend CORS allows frontend origin.
+```text
+sfera-backend.service
+```
 
-Validation:
+Frontend deployment выполняется вручную. Автоматический frontend deployment пока не настроен.
+
+---
+
+## Frontend Validation
+
+Последняя известная validation:
 
 ```text
 npm run typecheck
@@ -183,9 +191,7 @@ passed
 1. Добавить customer selection flow для создания заказа.
 2. Проверить order creation через UI с реальным Customer UUID.
 3. Добавить authentication foundation.
-4. Определить production deployment model:
-   - Vite dev server;
-   - static build + nginx.
+4. Определить и реализовать автоматизацию frontend production deployment.
 
 ---
 
@@ -196,6 +202,8 @@ passed
 - `docs/AI_CONTEXT.md`;
 - `docs/MIGRATION_STATUS.md`;
 - `docs/ARCHITECTURE.md`;
+- `docs/architecture/PROJECT_CONSTITUTION.md`;
+- `docs/architecture/MIGRATION_MATRIX.md`;
 - `docs/FRONTEND_ARCHITECTURE.md`.
 
 Документация должна соответствовать фактическому состоянию repository.
