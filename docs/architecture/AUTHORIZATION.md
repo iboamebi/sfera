@@ -106,6 +106,31 @@ Unauthorized users are rejected by the Application layer with an authorization e
 
 The API route also requires authentication and CSRF protection for this state-changing operation.
 
+### Order update
+
+The `OrderApplicationService.update()` use case currently requires one of:
+
+- `operator`;
+- `admin`.
+
+The authorization check is performed in the Application layer through the shared authorization contract.
+
+```text
+PATCH /orders/{order_id}
+        ↓
+Authenticated User
+        ↓
+OrderApplicationService.update(..., user)
+        ↓
+require_role(user, OPERATOR, ADMIN)
+        ↓
+Order.update_details()
+```
+
+Unauthorized users are rejected by the Application layer with an authorization error. The API boundary maps that error to HTTP 403 Forbidden.
+
+The API route also requires authentication and CSRF protection for this state-changing operation.
+
 ### Order registration
 
 The `OrderApplicationService.register()` use case currently requires one of:
@@ -158,6 +183,7 @@ Implemented:
 - authorization Application contract;
 - authorization of order creation;
 - authorization of order item addition;
+- authorization of order update;
 - authorization of order registration;
 - API mapping of authorization failures to HTTP `403`;
 - regression coverage for Application and API authorization boundaries.
