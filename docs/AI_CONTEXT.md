@@ -1,6 +1,22 @@
 # Sfera Project AI Context
 
-## Назначение проекта
+## Назначение
+
+Этот документ содержит изменяющееся техническое состояние проекта «Сфера», checkpoints и ближайшее направление работы.
+
+Постоянные правила работы ИИ находятся в:
+
+```text
+docs/AI_WORKING_PROTOCOL.md
+```
+
+Нормативные архитектурные правила находятся в:
+
+```text
+docs/architecture/PROJECT_CONSTITUTION.md
+```
+
+## Проект
 
 Сфера — информационная система сервисного центра и метрологической лаборатории.
 
@@ -14,6 +30,24 @@
 - склад;
 - финансы;
 - интеграция с ФГИС Аршин.
+
+Репозиторий:
+
+```text
+git@github.com:iboamebi/sfera.git
+```
+
+Основная рабочая ветка:
+
+```text
+develop
+```
+
+Локальный root:
+
+```text
+~/sfera
+```
 
 ## Архитектура
 
@@ -39,19 +73,11 @@ Infrastructure Repository
 Database
 ```
 
-Domain не зависит от ORM, SQLAlchemy, Infrastructure и API.
+Legacy CRUD migration завершена.
 
-Application использует Repository Interfaces и Unit of Work.
+## Backend Current State
 
-Infrastructure содержит SQLAlchemy repositories, ORM mapping и database access.
-
-API содержит FastAPI routers, schemas и DI. Business logic в API отсутствует.
-
-Legacy CRUD migration завершена. Feature migration и архитектурный cleanup не смешиваются.
-
-## Backend Status
-
-DDD/Clean Architecture migration:
+Backend migration to DDD/Clean Architecture:
 
 ```text
 COMPLETE
@@ -63,17 +89,30 @@ Legacy CRUD:
 REMOVED
 ```
 
-Current branch:
+Последний известный GitHub checkpoint:
 
 ```text
-develop
+50fd7ff feat: authorize customer deletion
 ```
 
-Current validated backend checkpoint:
+Последовательность последних authorization commits:
+
+```text
+50fd7ff feat: authorize customer deletion
+001deb1 feat: authorize customer updates
+f8951c6 feat: pass authenticated user to customer creation
+961f632 test: cover customer creation authorization
+782aefd feat: authorize customer creation
+140afec docs: define order update authorization
+f0b3406 feat: authorize order updates
+ee007d0 feat: authorize order item addition
+```
+
+Последний подтверждённый локальный backend validation:
 
 ```text
 pytest -q
-111 passed
+120 passed
 
 ruff check .
 All checks passed
@@ -82,9 +121,50 @@ ruff format --check .
 410 files already formatted
 ```
 
-## Authentication
+## Customer Authorization Checkpoint
 
-Authentication is implemented with server-side sessions.
+Customer soft delete уже существует:
+
+- `Customer.archive()` используется вместо physical delete;
+- default repository reads исключают archived customers;
+- `include_archived=True` используется для специальных reads;
+- DELETE API сохранён для backward compatibility.
+
+Authorization последовательно добавлена для customer state-changing use cases:
+
+```text
+create
+  ↓
+operator/admin
+
+update
+  ↓
+operator/admin
+
+delete/archive
+  ↓
+operator/admin
+```
+
+Authenticated `User` передаётся из API boundary в Application service.
+
+Application выполняет `require_role(...)` до изменения Domain state.
+
+Application tests покрывают authorized/unauthorized behavior.
+
+API tests покрывают authentication/CSRF dependencies и forwarding authenticated user в Application.
+
+Authorization contract и актуальная матрица находятся в:
+
+```text
+docs/architecture/AUTHORIZATION.md
+```
+
+## Authentication State
+
+Authentication использует server-side sessions.
+
+Текущая модель:
 
 ```text
 Browser
@@ -93,112 +173,116 @@ HttpOnly session cookie
   ↓
 server-side auth_sessions
   ↓
-SessionApplicationService
-  ↓
 SessionRepository
+  ↓
+PostgreSQL
 ```
 
-Authentication and authorization are separate concerns:
+Authentication и authorization остаются отдельными concerns.
 
-```text
-Authentication
-  Who is the user?
+Authentication foundation включает:
 
-Authorization
-  What may the user do?
-```
-
-Implemented authentication foundation includes:
-
-- User domain and repository;
+- User domain и repository;
 - Argon2 password hashing adapter;
 - authentication application service;
 - session domain;
 - session repository interface;
-- session ORM model and mapper;
+- session ORM model и mapper;
 - session repository;
 - `auth_sessions` migration;
-- `POST /auth/login`;
-- `GET /auth/me`;
-- `POST /auth/logout`;
 - authentication API dependency;
 - CSRF protection for state-changing cookie-authenticated requests.
 
-Session identifiers are not returned as JSON credentials. Password hashes and internal authentication metadata are not exposed through safe user representations.
-
-## Authorization
-
-Initial authorization roles are defined in:
+Authentication contract находится в:
 
 ```text
-docs/architecture/AUTHORIZATION.md
+docs/architecture/AUTHENTICATION.md
 ```
 
-User role is a domain value object and is persisted with the User model.
+## Session Persistence Checkpoint
 
-Current order registration authorization:
+Session persistence foundation реализована в:
 
 ```text
-OPERATOR → allowed
-ADMIN    → allowed
-other    → forbidden
+backend/app/models/auth_session.py
+backend/app/infrastructure/mappers/auth_session_mapper.py
+backend/app/infrastructure/auth/session_repository.py
+backend/tests/infrastructure/mappers/test_auth_session_mapper.py
+backend/tests/infrastructure/auth/test_session_repository.py
 ```
 
-Application contract:
+ORM model зарегистрирован через:
 
 ```text
-AuthorizationService / require_role
+backend/app/db/model_registry.py
 ```
 
-The authenticated `User` is passed from the API boundary into the Application use case. The Application layer performs authorization. The API maps authorization failures to HTTP `403`.
-
-Current coverage includes:
-
-- authorization contract;
-- role mapping and persistence;
-- order registration authorization;
-- unauthorized Application behavior;
-- API authorization error mapping;
-- authenticated-user forwarding from API to Application.
-
-Authorization must be introduced per business use case. Do not infer permissions mechanically from CRUD operations and do not move authorization decisions into React pages.
-
-## Backend Deployment Checkpoint — 2026-08-17
-
-Backend запускается через systemd:
+Migration:
 
 ```text
-sfera-backend.service
+backend/alembic/versions/8f4c2d1a9b30_add_auth_sessions.py
 ```
 
-Service state:
+Revision:
 
 ```text
-enabled
-active
+8f4c2d1a9b30
 ```
 
-Startup command:
+Down revision:
 
 ```text
-/home/alex/sfera/backend/.venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000
+9a1ddec34200
 ```
 
-Verified locally through nginx:
+Table:
 
 ```text
-GET /api/health -> {"status":"ok"}
-GET /api/orders/ -> []
+auth_sessions
 ```
 
-Backend additions already integrated:
+Основные поля:
 
-- ORM model registry import on startup;
-- CORSMiddleware for frontend.
+- `id`;
+- `session_id` UNIQUE;
+- `user_id` FK → `users.id`;
+- `expires_at`;
+- `revoked`;
+- `created_at` с DB default.
 
-## Frontend Current Checkpoint
+Indexes:
 
-Frontend stack:
+- `session_id`;
+- `user_id`;
+- `expires_at`.
+
+## User Persistence
+
+Таблица `users` уже существовала в исходной Alembic schema.
+
+Не создавать duplicate users table или migration.
+
+ORM:
+
+```text
+backend/app/models/user.py
+```
+
+Repository:
+
+```text
+backend/app/infrastructure/user/user_repository.py
+```
+
+Mapper:
+
+```text
+backend/app/infrastructure/mappers/user_mapper.py
+```
+
+## Frontend Current State
+
+Frontend использует:
 
 ```text
 React
@@ -212,18 +296,19 @@ React Hook Form
 Zod
 ```
 
-Feature-oriented architecture is used.
+Feature-oriented architecture используется в `frontend/src/features/`.
 
-Implemented Orders flow:
+Готовы основные Orders flows:
 
 - orders list;
 - order details;
 - create order;
 - update order;
-- register order action;
-- query cache update after mutation.
+- register order;
+- cache update after registration;
+- customer selection.
 
-Authentication UI foundation is also implemented:
+Authentication UI foundation также существует:
 
 - login route;
 - login form and validation;
@@ -234,175 +319,14 @@ Authentication UI foundation is also implemented:
 Frontend API layer:
 
 ```text
-src/shared/api/http.ts
+frontend/src/shared/api/http.ts
 ```
 
-It creates the Axios client and uses:
+Production frontend уже собирается и разворачивается вручную через nginx.
 
-```text
-import.meta.env.VITE_API_URL
-```
+## Production Deployment State
 
-API feature modules use this shared HTTP client.
-
-Backend DTOs are separated from frontend models where transport naming/details should not leak into UI code.
-
-## Frontend Production Deployment — COMPLETE
-
-The frontend no longer requires a Vite development server for normal runtime.
-
-Production model:
-
-```text
-Browser
-  ↓
-http://top.vlsfera.ru
-  ↓
-nginx :80
-  ├── /      → /var/www/sfera
-  └── /api/  → 127.0.0.1:8000
-```
-
-Vite production build:
-
-```text
-npm run typecheck
-PASS
-
-npm run build
-PASS
-```
-
-Build output is deployed to:
-
-```text
-/var/www/sfera
-```
-
-Static files are owned by `root:root` with directories `755` and files `644`.
-
-Frontend deployment is currently manual. No automatic deployment pipeline is part of the current runtime model.
-
-nginx configuration:
-
-```text
-/etc/nginx/sites-available/sfera
-/etc/nginx/sites-enabled/sfera
-```
-
-The default nginx site was removed from `sites-enabled`.
-
-nginx service state:
-
-```text
-enabled
-active
-```
-
-Configuration validation:
-
-```text
-sudo nginx -t
-→ successful
-```
-
-Current nginx virtual host:
-
-```text
-server_name top.vlsfera.ru;
-root /var/www/sfera;
-```
-
-SPA routing:
-
-```text
-location / {
-    try_files $uri $uri/ /index.html;
-}
-```
-
-API reverse proxy:
-
-```text
-location /api/ {
-    proxy_pass http://127.0.0.1:8000/;
-}
-```
-
-Production verification from the server:
-
-```text
-GET http://127.0.0.1/ with Host: top.vlsfera.ru
-→ 200 OK
-
-GET http://127.0.0.1/api/health with Host: top.vlsfera.ru
-→ {"status":"ok"}
-
-GET http://127.0.0.1/api/orders/ with Host: top.vlsfera.ru
-→ []
-```
-
-Production verification from another ZeroTier node:
-
-```text
-http://top.vlsfera.ru/
-→ 200 OK
-
-http://top.vlsfera.ru/api/health
-→ {"status":"ok"}
-```
-
-No Vite dev server is required or expected on port `5173` in production.
-
-## DNS / ZeroTier Deployment
-
-The deployment is ZeroTier-only.
-
-ZeroTier network:
-
-```text
-Sfera
-01dce6d7bcdf5646
-```
-
-Server ZeroTier address:
-
-```text
-10.147.17.242/24
-```
-
-The server runs dnsmasq for the Sfera ZeroTier network.
-
-Relevant configuration:
-
-```text
-/etc/dnsmasq.d/sfera.conf
-```
-
-Current host records include:
-
-```text
-dev.vlsfera.ru         → 10.147.17.2
-top.vlsfera.ru         → 10.147.17.242
-api.vlsfera.ru         → 10.147.17.242
-db.vlsfera.ru          → 10.147.17.242
-storage.vlsfera.ru    → 10.147.17.242
-zt.vlsfera.ru          → 10.147.17.242
-git.vlsfera.ru         → 10.147.17.242
-grafana.vlsfera.ru     → 10.147.17.242
-prometheus.vlsfera.ru  → 10.147.17.242
-u6c.vlsfera.ru         → 10.147.17.3
-```
-
-The public DNS zone does not currently resolve `top.vlsfera.ru`; this is intentional for the current ZeroTier-only deployment model.
-
-Do not rename the established hostnames. They may be required for future infrastructure expansion.
-
-Existing masquerading/NAT configuration predates this deployment and should not be recreated or changed without explicit need.
-
-## Deployment Architecture
-
-Current runtime topology:
+Runtime topology:
 
 ```text
 ZeroTier client
@@ -412,7 +336,7 @@ DNS: top.vlsfera.ru
 10.147.17.242:80
     ↓
 nginx
-    ├── static React SPA
+    ├── React SPA
     │     /var/www/sfera
     │
     └── /api/*
@@ -420,8 +344,6 @@ nginx
         127.0.0.1:8000
           ↓
         sfera-backend.service
-          ↓
-        FastAPI
           ↓
         PostgreSQL
 ```
@@ -433,106 +355,86 @@ nginx.service
 sfera-backend.service
 ```
 
-Both services are enabled and active.
+Frontend production build and deployment are complete.
 
-## Frontend Routing Note
+## DNS / ZeroTier State
 
-React Router uses:
+Deployment remains ZeroTier-only.
 
-```text
-/orders
-/orders/new
-/orders/:orderId
-```
-
-Authentication also provides a login route and protected route boundary.
-
-nginx must keep SPA fallback to `/index.html` so direct navigation and browser refreshes on frontend routes do not produce server-side 404 responses.
-
-## Important Development Rules
-
-Work incrementally:
+Network:
 
 ```text
-analyze → implement → validate → synchronize → next
+Sfera
+01dce6d7bcdf5646
 ```
 
-Rules:
-
-- do not change backend DDD/Clean Architecture without explicit task;
-- do not reintroduce CRUD patterns;
-- API contains no business logic;
-- SQLAlchemy remains in Infrastructure;
-- preserve Repository Interfaces and Unit of Work boundaries;
-- do not mix feature migration with architectural cleanup;
-- read current code before changing it;
-- never assume a file, module or API exists;
-- keep documentation synchronized with implementation;
-- authorization decisions belong to Application use cases;
-- frontend route guards are UX boundaries, not authorization enforcement;
-- use existing authentication/session infrastructure instead of creating duplicates.
-
-For Python changes run:
+Server:
 
 ```text
-pytest -q
-ruff check .
-ruff format --check .
+10.147.17.242/24
 ```
 
-For frontend changes run:
+Established hostnames include:
 
 ```text
-npm run typecheck
-npm run build
+dev.vlsfera.ru
+top.vlsfera.ru
+api.vlsfera.ru
+db.vlsfera.ru
+storage.vlsfera.ru
+zt.vlsfera.ru
+git.vlsfera.ru
+grafana.vlsfera.ru
+prometheus.vlsfera.ru
+u6c.vlsfera.ru
 ```
 
-After a completed code stage:
+Do not rename established infrastructure hostnames without explicit need.
+
+## Documentation State
+
+Stable working rules:
 
 ```text
-git status
-git add ...
-git commit
-git push origin develop
+docs/AI_WORKING_PROTOCOL.md
 ```
 
-Verify GitHub synchronization before continuing to the next stage.
-
-## Next Development Direction
-
-Current direction is incremental authorization of concrete business use cases, followed by additional authenticated user scenarios.
+Volatile project state:
 
 ```text
-Existing business use case
- ↓
-Define authorization rule
- ↓
-Application authorization
- ↓
-API boundary
- ↓
-Regression tests
- ↓
-Documentation
- ↓
-Next use case
+docs/AI_CONTEXT.md
 ```
 
-Do not introduce broad CRUD permission rules without a defined business requirement.
+Architecture governance:
 
-## Documentation Governance
+```text
+docs/architecture/PROJECT_CONSTITUTION.md
+docs/ARCHITECTURE.md
+docs/MIGRATION_STATUS.md
+docs/architecture/MIGRATION_MATRIX.md
+docs/architecture/AUTHENTICATION.md
+docs/architecture/AUTHORIZATION.md
+docs/FRONTEND_ARCHITECTURE.md
+```
 
-Authoritative architecture order is defined by `PROJECT_CONSTITUTION.md`.
+`PROJECT_CONSTITUTION.md` не изменяется как обычная документация.
 
-Documentation set:
+## Current Next Direction
 
-- `docs/architecture/PROJECT_CONSTITUTION.md` — normative architecture rules;
-- `docs/ARCHITECTURE.md` — current architecture description;
-- `docs/MIGRATION_STATUS.md` — current migration and deployment status;
-- `docs/architecture/MIGRATION_MATRIX.md` — module migration matrix and architecture checkpoints;
-- `docs/architecture/AUTHENTICATION.md` — authentication contract;
-- `docs/architecture/AUTHORIZATION.md` — authorization contract and initial roles;
-- `docs/AI_CONTEXT.md` — AI recovery context;
-- `docs/FRONTEND_ARCHITECTURE.md` — current frontend architecture.
+Текущий development direction — incremental authorization concrete business use cases.
 
-`PROJECT_CONSTITUTION.md` is not modified during routine state synchronization because changing it requires a new approved constitution version.
+Последовательность уже начата с Order и Customer.
+
+Следующий use case выбирается только после чтения фактического Application service, API router и соответствующих tests из GitHub.
+
+Перед следующим feature stage необходимо учитывать текущие authorization contracts и не создавать broad CRUD permission model без явного business requirement.
+
+## Recovery Checkpoint
+
+При продолжении после паузы:
+
+1. прочитать `docs/AI_WORKING_PROTOCOL.md`;
+2. прочитать `docs/AI_CONTEXT.md`;
+3. прочитать нормативные и соответствующие security/architecture документы;
+4. проверить актуальный `develop` и последние commits;
+5. определить следующий independent use case по фактическому состоянию кода.
