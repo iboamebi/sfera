@@ -22,6 +22,8 @@ from app.application.order.services.order_application_service import (
 )
 from app.domains.order.entities.order import Order
 from app.domains.order.repositories.order_repository import OrderRepository
+from app.domains.user.entities.user import User
+from app.domains.user.value_objects.user_role import UserRole
 from app.shared.unit_of_work.unit_of_work import UnitOfWork
 
 
@@ -80,8 +82,16 @@ def test_create_register_order_flow():
         )
     )
 
+    user = User(
+        id=uuid4(),
+        username="test-operator",
+        password_hash="hash",
+        role=UserRole.OPERATOR,
+    )
+
     order = service.register(
         RegisterOrderCommand(order.id),
+        user,
     )
 
     assert len(order.items) == 1
