@@ -86,8 +86,11 @@ class OrganizationApplicationService:
     def update(
         self,
         command: UpdateOrganizationCommand,
+        user: User,
     ) -> Organization:
         """Update organization."""
+
+        require_role(user, UserRole.OPERATOR, UserRole.ADMIN)
 
         with self._uow:
             organization = self.get(
