@@ -11,6 +11,7 @@ from app.api.routers.organization import (
 from app.api.security.csrf import require_csrf
 from app.domains.user.entities.user import User
 from app.domains.user.value_objects.user_role import UserRole
+from app.schemas.organization import OrganizationCreate
 
 
 def get_route_dependencies(endpoint: object) -> list[object]:
@@ -48,11 +49,7 @@ def test_create_organization_passes_authenticated_user_to_application_service() 
     service = FakeOrganizationService()
 
     result = create_organization(
-        data=type(
-            "OrganizationCreateData",
-            (),
-            {"model_dump": lambda self: {"name": "Test Organization"}},
-        )(),
+        data=OrganizationCreate(name="Test Organization"),
         user=user,
         service=service,
     )
