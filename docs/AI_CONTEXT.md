@@ -63,26 +63,105 @@ Legacy CRUD:
 REMOVED
 ```
 
-Последние backend validation results:
-
-```text
-pytest -q
-33 passed
-
-ruff check .
-All checks passed
-
-ruff format --check .
-352 files already formatted
-```
-
 Current branch:
 
 ```text
 develop
 ```
 
-Документация синхронизирована с текущим состоянием проекта отдельными commits в `develop`.
+Current validated backend checkpoint:
+
+```text
+pytest -q
+111 passed
+
+ruff check .
+All checks passed
+
+ruff format --check .
+410 files already formatted
+```
+
+## Authentication
+
+Authentication is implemented with server-side sessions.
+
+```text
+Browser
+  ↓
+HttpOnly session cookie
+  ↓
+server-side auth_sessions
+  ↓
+SessionApplicationService
+  ↓
+SessionRepository
+```
+
+Authentication and authorization are separate concerns:
+
+```text
+Authentication
+  Who is the user?
+
+Authorization
+  What may the user do?
+```
+
+Implemented authentication foundation includes:
+
+- User domain and repository;
+- Argon2 password hashing adapter;
+- authentication application service;
+- session domain;
+- session repository interface;
+- session ORM model and mapper;
+- session repository;
+- `auth_sessions` migration;
+- `POST /auth/login`;
+- `GET /auth/me`;
+- `POST /auth/logout`;
+- authentication API dependency;
+- CSRF protection for state-changing cookie-authenticated requests.
+
+Session identifiers are not returned as JSON credentials. Password hashes and internal authentication metadata are not exposed through safe user representations.
+
+## Authorization
+
+Initial authorization roles are defined in:
+
+```text
+docs/architecture/AUTHORIZATION.md
+```
+
+User role is a domain value object and is persisted with the User model.
+
+Current order registration authorization:
+
+```text
+OPERATOR → allowed
+ADMIN    → allowed
+other    → forbidden
+```
+
+Application contract:
+
+```text
+AuthorizationService / require_role
+```
+
+The authenticated `User` is passed from the API boundary into the Application use case. The Application layer performs authorization. The API maps authorization failures to HTTP `403`.
+
+Current coverage includes:
+
+- authorization contract;
+- role mapping and persistence;
+- order registration authorization;
+- unauthorized Application behavior;
+- API authorization error mapping;
+- authenticated-user forwarding from API to Application.
+
+Authorization must be introduced per business use case. Do not infer permissions mechanically from CRUD operations and do not move authorization decisions into React pages.
 
 ## Backend Deployment Checkpoint — 2026-08-17
 
@@ -143,6 +222,14 @@ Implemented Orders flow:
 - update order;
 - register order action;
 - query cache update after mutation.
+
+Authentication UI foundation is also implemented:
+
+- login route;
+- login form and validation;
+- login mutation;
+- current-user query;
+- protected route guard.
 
 Frontend API layer:
 
@@ -295,16 +382,16 @@ Relevant configuration:
 Current host records include:
 
 ```text
-dev.vlsfera.ru        → 10.147.17.2
-top.vlsfera.ru        → 10.147.17.242
-api.vlsfera.ru        → 10.147.17.242
-db.vlsfera.ru         → 10.147.17.242
-storage.vlsfera.ru   → 10.147.17.242
-zt.vlsfera.ru        → 10.147.17.242
-git.vlsfera.ru       → 10.147.17.242
-grafana.vlsfera.ru   → 10.147.17.242
-prometheus.vlsfera.ru → 10.147.17.242
-u6c.vlsfera.ru       → 10.147.17.3
+dev.vlsfera.ru         → 10.147.17.2
+top.vlsfera.ru         → 10.147.17.242
+api.vlsfera.ru         → 10.147.17.242
+db.vlsfera.ru          → 10.147.17.242
+storage.vlsfera.ru    → 10.147.17.242
+zt.vlsfera.ru          → 10.147.17.242
+git.vlsfera.ru         → 10.147.17.242
+grafana.vlsfera.ru     → 10.147.17.242
+prometheus.vlsfera.ru  → 10.147.17.242
+u6c.vlsfera.ru         → 10.147.17.3
 ```
 
 The public DNS zone does not currently resolve `top.vlsfera.ru`; this is intentional for the current ZeroTier-only deployment model.
@@ -358,16 +445,16 @@ React Router uses:
 /orders/:orderId
 ```
 
-nginx must keep SPA fallback to `/index.html` so direct navigation and browser refreshes on frontend routes do not produce server-side 404 responses.
+Authentication also provides a login route and protected route boundary.
 
-The previous `Unexpected Application Error! 404 Not Found` was caused by testing the production SPA before the nginx static root and SPA fallback were correctly deployed. The current nginx configuration serves `/orders` through the SPA fallback and has been verified with `curl`.
+nginx must keep SPA fallback to `/index.html` so direct navigation and browser refreshes on frontend routes do not produce server-side 404 responses.
 
 ## Important Development Rules
 
 Work incrementally:
 
 ```text
-analyze → one file → y → next
+analyze → implement → validate → synchronize → next
 ```
 
 Rules:
@@ -380,7 +467,10 @@ Rules:
 - do not mix feature migration with architectural cleanup;
 - read current code before changing it;
 - never assume a file, module or API exists;
-- keep documentation synchronized with implementation.
+- keep documentation synchronized with implementation;
+- authorization decisions belong to Application use cases;
+- frontend route guards are UX boundaries, not authorization enforcement;
+- use existing authentication/session infrastructure instead of creating duplicates.
 
 For Python changes run:
 
@@ -410,26 +500,25 @@ Verify GitHub synchronization before continuing to the next stage.
 
 ## Next Development Direction
 
-Frontend production deployment is complete.
-
-Continue frontend development incrementally:
+Current direction is incremental authorization of concrete business use cases, followed by additional authenticated user scenarios.
 
 ```text
-Production Runtime
+Existing business use case
  ↓
-One User Scenario
+Define authorization rule
  ↓
-Validate
+Application authorization
  ↓
-Next Scenario
+API boundary
+ ↓
+Regression tests
+ ↓
+Documentation
+ ↓
+Next use case
 ```
 
-Recommended next feature sequence:
-
-1. Customer selection flow for order creation.
-2. Authentication foundation.
-3. Continue order-centric user scenarios.
-4. Add additional domain workflows incrementally.
+Do not introduce broad CRUD permission rules without a defined business requirement.
 
 ## Documentation Governance
 
@@ -441,6 +530,8 @@ Documentation set:
 - `docs/ARCHITECTURE.md` — current architecture description;
 - `docs/MIGRATION_STATUS.md` — current migration and deployment status;
 - `docs/architecture/MIGRATION_MATRIX.md` — module migration matrix and architecture checkpoints;
+- `docs/architecture/AUTHENTICATION.md` — authentication contract;
+- `docs/architecture/AUTHORIZATION.md` — authorization contract and initial roles;
 - `docs/AI_CONTEXT.md` — AI recovery context;
 - `docs/FRONTEND_ARCHITECTURE.md` — current frontend architecture.
 
