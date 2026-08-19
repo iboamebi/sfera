@@ -94,6 +94,7 @@ def get_organization(
 def update_organization(
     organization_id: UUID,
     data: OrganizationUpdate,
+    user: User = Depends(get_current_user),
     service: OrganizationApplicationService = Depends(
         get_organization_service,
     ),
@@ -105,4 +106,4 @@ def update_organization(
         ),
     )
 
-    return service.update(command)
+    return service.update(command, user)
