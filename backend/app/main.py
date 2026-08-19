@@ -1,5 +1,6 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from app.api.routers import instrument_type, organization
 from app.api.routers.auth import router as auth_router
@@ -21,9 +22,22 @@ from app.api.routers.warehouse import router as warehouse_router
 from app.api.routers.warehouse_movement import router as warehouse_movement_router
 from app.api.routers.warehouse_stock import router as warehouse_stock_router
 from app.api.routers.workflow import router as workflow_router
+from app.application.authorization.authorization import AuthorizationError
 from app.db import model_registry  # noqa: F401
 
 app = FastAPI(title="Sphere")
+
+
+@app.exception_handler(AuthorizationError)
+def authorization_error_handler(
+    request: Request,
+    exc: AuthorizationError,
+) -> JSONResponse:
+    return JSONResponse(
+        status_code=403,
+        content={"detail": str(exc)},
+    )
+
 
 app.add_middleware(
     CORSMiddleware,
