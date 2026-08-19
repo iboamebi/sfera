@@ -21,6 +21,7 @@ from app.application.organization.services.organization_application_service impo
     OrganizationApplicationService,
 )
 from app.core.dependencies.services import get_organization_service
+from app.domains.user.entities.user import User
 from app.schemas.organization import (
     OrganizationCreate,
     OrganizationRead,
@@ -37,10 +38,11 @@ router = APIRouter(
     "/",
     response_model=OrganizationRead,
     status_code=201,
-    dependencies=[Depends(get_current_user), Depends(require_csrf)],
 )
 def create_organization(
     data: OrganizationCreate,
+    user: User = Depends(get_current_user),
+    __: None = Depends(require_csrf),
     service: OrganizationApplicationService = Depends(
         get_organization_service,
     ),
@@ -49,7 +51,7 @@ def create_organization(
         **data.model_dump(),
     )
 
-    return service.create(command)
+    return service.create(command, user)
 
 
 @router.get(
