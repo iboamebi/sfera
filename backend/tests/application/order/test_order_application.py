@@ -92,7 +92,8 @@ def test_create_register_order_flow():
     service.add_item(
         AddOrderItemCommand(
             order_id=order.id,
-        )
+        ),
+        make_operator(),
     )
 
     user = make_operator()
@@ -160,6 +161,40 @@ def test_register_order_rejects_unauthorized_user():
         )
 
     assert order.status.value == "NEW"
+    assert repository.get(order.id) is order
+
+
+def test_add_order_item_rejects_unauthorized_user():
+    repository = FakeOrderRepository()
+    service = OrderApplicationService(
+        repository,
+        FakeUnitOfWork(),
+    )
+
+    order = service.create(
+        CreateOrderCommand(
+            customer_id=uuid4(),
+            number="10005",
+        ),
+        make_operator(),
+    )
+
+    user = User(
+        id=uuid4(),
+        username="test-user",
+        password_hash="hash",
+        role=UserRole.WAREHOUSE,
+    )
+
+    with pytest.raises(AuthorizationError, match="not authorized"):
+        service.add_item(
+            AddOrderItemCommand(
+                order_id=order.id,
+            ),
+            user,
+        )
+
+    assert order.items == []
     assert repository.get(order.id) is order
 
 

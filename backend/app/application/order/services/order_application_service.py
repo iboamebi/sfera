@@ -85,7 +85,10 @@ class OrderApplicationService:
     def add_item(
         self,
         command: AddOrderItemCommand,
+        user: User,
     ) -> Order:
+        require_role(user, UserRole.OPERATOR, UserRole.ADMIN)
+
         with self._uow:
             order = self.get(command.order_id)
 
