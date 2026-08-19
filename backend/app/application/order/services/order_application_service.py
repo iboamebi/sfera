@@ -5,6 +5,7 @@ Application service for Order.
 from datetime import UTC, datetime
 from uuid import UUID, uuid4
 
+from app.application.authorization.authorization import require_role
 from app.application.order.commands.add_order_item import (
     AddOrderItemCommand,
 )
@@ -24,6 +25,8 @@ from app.domains.order.entities.order import Order
 from app.domains.order.entities.order_item import OrderItem
 from app.domains.order.repositories.order_repository import OrderRepository
 from app.domains.order.value_objects.order_number import OrderNumber
+from app.domains.user.entities.user import User
+from app.domains.user.value_objects.user_role import UserRole
 from app.shared.unit_of_work.unit_of_work import UnitOfWork
 
 
@@ -113,7 +116,10 @@ class OrderApplicationService:
     def register(
         self,
         command: RegisterOrderCommand,
+        user: User,
     ) -> Order:
+        require_role(user, UserRole.OPERATOR, UserRole.ADMIN)
+
         with self._uow:
             order = self.get(command.order_id)
 
