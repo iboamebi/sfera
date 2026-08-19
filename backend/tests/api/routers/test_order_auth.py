@@ -13,6 +13,7 @@ from app.api.routers.order import (
 from app.api.security.csrf import require_csrf
 from app.domains.user.entities.user import User
 from app.domains.user.value_objects.user_role import UserRole
+from app.schemas.order import OrderUpdate
 
 
 def get_route_dependencies(endpoint: object) -> list[object]:
@@ -74,6 +75,40 @@ def test_register_order_passes_authenticated_user_to_application_service() -> No
 
     result = register_order(
         order_id=order_id,
+        user=user,
+        service=service,
+    )
+
+    assert result is not None
+    assert service.received_user is user
+
+
+def test_update_order_passes_authenticated_user_to_application_service() -> None:
+    order_id = uuid4()
+    user = User(
+        id=uuid4(),
+        username="operator",
+        password_hash="hash",
+        role=UserRole.OPERATOR,
+    )
+
+    class FakeOrderService:
+        def __init__(self) -> None:
+            self.received_user: User | None = None
+
+        def update(self, command: object, received_user: User) -> object:
+            assert command.order_id == order_id
+            self.received_user = received_user
+            return object()
+
+    service = FakeOrderService()
+
+    result = update_order(
+        order_id=order_id,
+        data=OrderUpdate(
+            planned_issue_at=None,
+            comment="Updated order",
+        ),
         user=user,
         service=service,
     )

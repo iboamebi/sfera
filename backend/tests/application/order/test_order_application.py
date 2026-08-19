@@ -198,6 +198,45 @@ def test_add_order_item_rejects_unauthorized_user():
     assert repository.get(order.id) is order
 
 
+def test_update_order_rejects_unauthorized_user():
+    repository = FakeOrderRepository()
+    service = OrderApplicationService(
+        repository,
+        FakeUnitOfWork(),
+    )
+
+    order = service.create(
+        CreateOrderCommand(
+            customer_id=uuid4(),
+            number="10006",
+        ),
+        make_operator(),
+    )
+
+    user = User(
+        id=uuid4(),
+        username="test-user",
+        password_hash="hash",
+        role=UserRole.WAREHOUSE,
+    )
+
+    planned_issue_at = datetime(2026, 8, 21, 10, 0, tzinfo=UTC)
+
+    with pytest.raises(AuthorizationError, match="not authorized"):
+        service.update(
+            UpdateOrderCommand(
+                order_id=order.id,
+                planned_issue_at=planned_issue_at,
+                comment="Unauthorized update",
+            ),
+            user,
+        )
+
+    assert order.planned_issue_at is None
+    assert order.comment is None
+    assert repository.get(order.id) is order
+
+
 def test_update_order_details():
     repository = FakeOrderRepository()
     service = OrderApplicationService(
@@ -221,7 +260,8 @@ def test_update_order_details():
             order_id=order.id,
             planned_issue_at=planned_issue_at,
             comment=comment,
-        )
+        ),
+        make_operator(),
     )
 
     assert updated_order.id == order.id

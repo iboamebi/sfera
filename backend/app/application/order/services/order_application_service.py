@@ -106,7 +106,10 @@ class OrderApplicationService:
     def update(
         self,
         command: UpdateOrderCommand,
+        user: User,
     ) -> Order:
+        require_role(user, UserRole.OPERATOR, UserRole.ADMIN)
+
         with self._uow:
             order = self.get(command.order_id)
 

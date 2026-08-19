@@ -55,6 +55,7 @@ class OrderItemCreate(BaseModel):
 )
 def create_order(
     data: OrderCreate,
+    user: User = Depends(get_current_user),
     service: OrderApplicationService = Depends(
         get_order_service,
     ),
@@ -65,7 +66,8 @@ def create_order(
             number=data.number,
             planned_issue_at=data.planned_issue_at,
             comment=data.comment,
-        )
+        ),
+        user,
     )
 
 
@@ -89,6 +91,7 @@ def list_orders(
 def add_order_item(
     order_id: UUID,
     data: OrderItemCreate,
+    user: User = Depends(get_current_user),
     service: OrderApplicationService = Depends(
         get_order_service,
     ),
@@ -97,7 +100,8 @@ def add_order_item(
         AddOrderItemCommand(
             order_id=order_id,
             instrument_id=data.instrument_id,
-        )
+        ),
+        user,
     )
 
 
@@ -109,6 +113,7 @@ def add_order_item(
 def update_order(
     order_id: UUID,
     data: OrderUpdate,
+    user: User = Depends(get_current_user),
     service: OrderApplicationService = Depends(
         get_order_service,
     ),
@@ -119,7 +124,8 @@ def update_order(
                 order_id=order_id,
                 planned_issue_at=data.planned_issue_at,
                 comment=data.comment,
-            )
+            ),
+            user,
         )
 
     except OrderNotFoundApplicationError:
