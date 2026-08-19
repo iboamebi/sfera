@@ -120,7 +120,7 @@ def test_register_order_rejects_unauthorized_user():
         id=uuid4(),
         username="test-user",
         password_hash="hash",
-        role=UserRole.SERVICE,
+        role=UserRole.WAREHOUSE,
     )
 
     with pytest.raises(AuthorizationError, match="not authorized"):
