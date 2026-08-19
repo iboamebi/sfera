@@ -4,6 +4,7 @@ Application service: Organization.
 
 from uuid import UUID, uuid4
 
+from app.application.authorization.authorization import require_role
 from app.application.organization.commands.create_organization import (
     CreateOrganizationCommand,
 )
@@ -18,6 +19,8 @@ from app.domains.organization.exceptions import OrganizationNotFoundError
 from app.domains.organization.repositories.organization_repository import (
     OrganizationRepository,
 )
+from app.domains.user.entities.user import User
+from app.domains.user.value_objects.user_role import UserRole
 from app.shared.unit_of_work.unit_of_work import UnitOfWork
 
 
@@ -35,8 +38,11 @@ class OrganizationApplicationService:
     def create(
         self,
         command: CreateOrganizationCommand,
+        user: User,
     ) -> Organization:
         """Create organization."""
+
+        require_role(user, UserRole.OPERATOR, UserRole.ADMIN)
 
         with self._uow:
             organization = Organization(
