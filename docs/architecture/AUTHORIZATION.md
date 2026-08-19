@@ -156,6 +156,81 @@ Unauthorized users are rejected by the Application layer with an authorization e
 
 The API route also requires authentication and CSRF protection for this state-changing operation.
 
+### Customer creation
+
+The `CustomerApplicationService.create()` use case currently requires one of:
+
+- `operator`;
+- `admin`.
+
+The authenticated `User` is passed from the API boundary into the Application service, where the shared authorization contract is evaluated before the Customer domain entity is created.
+
+```text
+POST /customers/
+        ↓
+Authenticated User
+        ↓
+CustomerApplicationService.create(..., user)
+        ↓
+require_role(user, OPERATOR, ADMIN)
+        ↓
+Customer
+```
+
+Unauthorized users are rejected by the Application layer with an authorization error. The API boundary maps that error to HTTP `403 Forbidden`.
+
+The API route also requires authentication and CSRF protection for this state-changing operation.
+
+### Customer update
+
+The `CustomerApplicationService.update()` use case currently requires one of:
+
+- `operator`;
+- `admin`.
+
+The authenticated `User` is passed from the API boundary into the Application service, where authorization is checked before Customer domain state is changed.
+
+```text
+PATCH /customers/{customer_id}
+        ↓
+Authenticated User
+        ↓
+CustomerApplicationService.update(..., user)
+        ↓
+require_role(user, OPERATOR, ADMIN)
+        ↓
+Customer domain mutation
+```
+
+Unauthorized users are rejected by the Application layer with an authorization error. The API boundary maps that error to HTTP `403 Forbidden`.
+
+The API route also requires authentication and CSRF protection for this state-changing operation.
+
+### Customer deletion / archive
+
+The `CustomerApplicationService.delete()` use case currently requires one of:
+
+- `operator`;
+- `admin`.
+
+The use case performs a soft delete through the Customer domain `archive()` behavior. Physical deletion is not performed.
+
+```text
+DELETE /customers/{customer_id}
+        ↓
+Authenticated User
+        ↓
+CustomerApplicationService.delete(..., user)
+        ↓
+require_role(user, OPERATOR, ADMIN)
+        ↓
+Customer.archive()
+```
+
+Unauthorized users are rejected by the Application layer with an authorization error. The API boundary maps that error to HTTP `403 Forbidden`.
+
+The API route also requires authentication and CSRF protection for this state-changing operation.
+
 ## Authorization Contract
 
 The shared Application authorization contract is responsible for expressing role requirements for concrete use cases.
@@ -185,6 +260,9 @@ Implemented:
 - authorization of order item addition;
 - authorization of order update;
 - authorization of order registration;
+- authorization of customer creation;
+- authorization of customer update;
+- authorization of customer deletion/archive;
 - API mapping of authorization failures to HTTP `403`;
 - regression coverage for Application and API authorization boundaries.
 
