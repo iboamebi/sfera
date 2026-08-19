@@ -28,6 +28,7 @@ from app.application.material.services.material_application_service import (
     MaterialApplicationService,
 )
 from app.core.dependencies.services import get_material_service
+from app.domains.user.entities.user import User
 from app.schemas.material import (
     MaterialCreate,
     MaterialRead,
@@ -102,6 +103,7 @@ def create_material(
 def update_material(
     material_id: UUID,
     data: MaterialUpdate,
+    user: User = Depends(get_current_user),
     service: MaterialApplicationService = Depends(
         get_material_service,
     ),
@@ -113,7 +115,7 @@ def update_material(
         ),
     )
 
-    return service.update(command)
+    return service.update(command, user)
 
 
 @router.post(
