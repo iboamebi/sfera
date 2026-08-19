@@ -4,6 +4,7 @@ Application service for Material.
 
 from uuid import UUID, uuid4
 
+from app.application.authorization.authorization import require_role
 from app.application.material.commands.archive_material import (
     ArchiveMaterialCommand,
 )
@@ -23,6 +24,8 @@ from app.domains.material.entities.material import Material
 from app.domains.material.repositories.material_repository import (
     MaterialRepository,
 )
+from app.domains.user.entities.user import User
+from app.domains.user.value_objects.user_role import UserRole
 
 
 class MaterialApplicationService:
@@ -73,8 +76,16 @@ class MaterialApplicationService:
     def update(
         self,
         command: UpdateMaterialCommand,
+        user: User,
     ) -> Material:
         """Update material."""
+
+        require_role(
+            user,
+            UserRole.OPERATOR,
+            UserRole.ADMIN,
+            UserRole.WAREHOUSE,
+        )
 
         material = self.get(
             command.material_id,
