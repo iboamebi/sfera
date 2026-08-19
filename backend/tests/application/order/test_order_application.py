@@ -5,6 +5,9 @@ Tests for Order application service.
 from datetime import UTC, datetime
 from uuid import uuid4
 
+import pytest
+
+from app.application.authorization.authorization import AuthorizationError
 from app.application.order.commands.add_order_item import (
     AddOrderItemCommand,
 )
@@ -97,6 +100,37 @@ def test_create_register_order_flow():
     assert len(order.items) == 1
     assert order.items[0].id is not None
     assert order.status.value == "REGISTERED"
+
+
+def test_register_order_rejects_unauthorized_user():
+    repository = FakeOrderRepository()
+    service = OrderApplicationService(
+        repository,
+        FakeUnitOfWork(),
+    )
+
+    order = service.create(
+        CreateOrderCommand(
+            customer_id=uuid4(),
+            number="10003",
+        )
+    )
+
+    user = User(
+        id=uuid4(),
+        username="test-user",
+        password_hash="hash",
+        role=UserRole.SERVICE,
+    )
+
+    with pytest.raises(AuthorizationError, match="not authorized"):
+        service.register(
+            RegisterOrderCommand(order.id),
+            user,
+        )
+
+    assert order.status.value == "NEW"
+    assert repository.get(order.id) is order
 
 
 def test_update_order_details():
