@@ -52,6 +52,15 @@ class FakeOrderRepository(OrderRepository):
         self._orders[order.id] = order
 
 
+def make_operator() -> User:
+    return User(
+        id=uuid4(),
+        username="test-operator",
+        password_hash="hash",
+        role=UserRole.OPERATOR,
+    )
+
+
 def test_create_register_order_flow():
     repository = FakeOrderRepository()
     service = OrderApplicationService(
@@ -69,7 +78,8 @@ def test_create_register_order_flow():
             number="10001",
             planned_issue_at=planned_issue_at,
             comment=comment,
-        )
+        ),
+        make_operator(),
     )
 
     assert order.id is not None
@@ -85,12 +95,7 @@ def test_create_register_order_flow():
         )
     )
 
-    user = User(
-        id=uuid4(),
-        username="test-operator",
-        password_hash="hash",
-        role=UserRole.OPERATOR,
-    )
+    user = make_operator()
 
     order = service.register(
         RegisterOrderCommand(order.id),
@@ -100,6 +105,30 @@ def test_create_register_order_flow():
     assert len(order.items) == 1
     assert order.items[0].id is not None
     assert order.status.value == "REGISTERED"
+
+
+def test_create_order_rejects_unauthorized_user():
+    repository = FakeOrderRepository()
+    service = OrderApplicationService(
+        repository,
+        FakeUnitOfWork(),
+    )
+
+    with pytest.raises(AuthorizationError, match="not authorized"):
+        service.create(
+            CreateOrderCommand(
+                customer_id=uuid4(),
+                number="10003",
+            ),
+            User(
+                id=uuid4(),
+                username="test-user",
+                password_hash="hash",
+                role=UserRole.WAREHOUSE,
+            ),
+        )
+
+    assert repository.list() == []
 
 
 def test_register_order_rejects_unauthorized_user():
@@ -112,8 +141,9 @@ def test_register_order_rejects_unauthorized_user():
     order = service.create(
         CreateOrderCommand(
             customer_id=uuid4(),
-            number="10003",
-        )
+            number="10004",
+        ),
+        make_operator(),
     )
 
     user = User(
@@ -144,7 +174,8 @@ def test_update_order_details():
         CreateOrderCommand(
             customer_id=uuid4(),
             number="10002",
-        )
+        ),
+        make_operator(),
     )
 
     planned_issue_at = datetime(2026, 8, 21, 10, 0, tzinfo=UTC)
