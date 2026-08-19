@@ -1,5 +1,6 @@
 import { createBrowserRouter } from "react-router";
 
+import { RequireAuth } from "../features/auth/ui/RequireAuth";
 import { LoginPage } from "../pages/auth/LoginPage";
 import { CreateOrderPage } from "../pages/orders/CreateOrderPage";
 import { OrderPage } from "../pages/orders/OrderPage";
@@ -12,18 +13,34 @@ export const router = createBrowserRouter([
   },
   {
     path: "/",
-    element: <OrdersPage />,
+    element: (
+      <RequireAuth>
+        <OrdersPage />
+      </RequireAuth>
+    ),
   },
   {
     path: "/orders",
-    element: <OrdersPage />,
+    element: (
+      <RequireAuth>
+        <OrdersPage />
+      </RequireAuth>
+    ),
   },
   {
     path: "/orders/new",
-    element: <CreateOrderPage />,
+    element: (
+      <RequireAuth>
+        <CreateOrderPage />
+      </RequireAuth>
+    ),
   },
   {
     path: "/orders/:orderId",
-    element: <OrderPage />,
+    element: (
+      <RequireAuth>
+        <OrderPage />
+      </RequireAuth>
+    ),
   },
 ]);
