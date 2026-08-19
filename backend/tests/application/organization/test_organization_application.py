@@ -146,7 +146,8 @@ def test_update_organization():
             email="updated@example.com",
             website="https://updated.example.com",
             comment="Updated organization",
-        )
+        ),
+        make_operator(),
     )
 
     assert updated.id == organization.id
@@ -161,3 +162,37 @@ def test_update_organization():
     assert updated.website == "https://updated.example.com"
     assert updated.comment == "Updated organization"
     assert repository.get(organization.id) is updated
+
+
+def test_update_organization_rejects_unauthorized_user():
+    repository = FakeOrganizationRepository()
+    service = OrganizationApplicationService(
+        repository,
+        FakeUnitOfWork(),
+    )
+
+    organization = service.create(
+        CreateOrganizationCommand(
+            name="Protected Organization",
+        ),
+        make_operator(),
+    )
+
+    user = User(
+        id=uuid4(),
+        username="test-user",
+        password_hash="hash",
+        role=UserRole.WAREHOUSE,
+    )
+
+    with pytest.raises(AuthorizationError, match="not authorized"):
+        service.update(
+            UpdateOrganizationCommand(
+                organization_id=organization.id,
+                name="Unauthorized Update",
+            ),
+            user,
+        )
+
+    assert organization.name == "Protected Organization"
+    assert repository.get(organization.id) is organization
