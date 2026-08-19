@@ -229,7 +229,8 @@ def test_delete_customer():
     service.delete(
         DeleteCustomerCommand(
             customer_id=customer.id,
-        )
+        ),
+        make_operator(),
     )
 
     assert repository.get(customer.id) is None
@@ -241,6 +242,40 @@ def test_delete_customer():
 
     assert archived is customer
     assert archived.archived is True
+
+
+def test_delete_customer_rejects_unauthorized_user():
+    repository = FakeCustomerRepository()
+    service = CustomerApplicationService(
+        repository,
+        FakeUnitOfWork(),
+    )
+
+    customer = service.create(
+        CreateCustomerCommand(
+            organization_id=uuid4(),
+            name="Customer to Protect",
+        ),
+        make_operator(),
+    )
+
+    user = User(
+        id=uuid4(),
+        username="test-user",
+        password_hash="hash",
+        role=UserRole.WAREHOUSE,
+    )
+
+    with pytest.raises(AuthorizationError, match="not authorized"):
+        service.delete(
+            DeleteCustomerCommand(
+                customer_id=customer.id,
+            ),
+            user,
+        )
+
+    assert customer.archived is False
+    assert repository.get(customer.id) is customer
 
 
 def test_get_all_excludes_archived_customers():
@@ -268,7 +303,8 @@ def test_get_all_excludes_archived_customers():
     service.delete(
         DeleteCustomerCommand(
             customer_id=archived.id,
-        )
+        ),
+        make_operator(),
     )
 
     customers = service.get_all()

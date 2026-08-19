@@ -4,6 +4,7 @@ from fastapi.routing import APIRoute
 
 from app.api.dependencies.auth import get_current_user
 from app.api.routers.customer import (
+    delete_customer,
     router,
     update_customer,
 )
@@ -78,4 +79,34 @@ def test_update_customer_passes_authenticated_user_to_application_service() -> N
     )
 
     assert result is not None
+    assert service.received_user is user
+
+
+def test_delete_customer_passes_authenticated_user_to_application_service() -> None:
+    customer_id = uuid4()
+    user = User(
+        id=uuid4(),
+        username="operator",
+        password_hash="hash",
+        role=UserRole.OPERATOR,
+    )
+
+    class FakeCustomerService:
+        def __init__(self) -> None:
+            self.received_user: User | None = None
+
+        def delete(self, command: object, received_user: User) -> object:
+            assert command.customer_id == customer_id
+            self.received_user = received_user
+            return object()
+
+    service = FakeCustomerService()
+
+    result = delete_customer(
+        customer_id=customer_id,
+        user=user,
+        service=service,
+    )
+
+    assert result is None
     assert service.received_user is user

@@ -126,8 +126,11 @@ class CustomerApplicationService:
     def delete(
         self,
         command: DeleteCustomerCommand,
+        user: User,
     ) -> Customer:
         """Archive customer."""
+
+        require_role(user, UserRole.OPERATOR, UserRole.ADMIN)
 
         with self._uow:
             customer = self.get(

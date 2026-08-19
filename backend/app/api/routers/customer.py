@@ -97,7 +97,7 @@ def create_customer(
 )
 def delete_customer(
     customer_id: UUID,
-    _: User = Depends(get_current_user),
+    user: User = Depends(get_current_user),
     __: None = Depends(require_csrf),
     service: CustomerApplicationService = Depends(
         get_customer_service,
@@ -107,6 +107,7 @@ def delete_customer(
         DeleteCustomerCommand(
             customer_id=customer_id,
         ),
+        user,
     )
 
 
