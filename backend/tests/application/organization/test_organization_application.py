@@ -2,8 +2,11 @@
 Tests for Organization application service.
 """
 
-from uuid import UUID
+from uuid import UUID, uuid4
 
+import pytest
+
+from app.application.authorization.authorization import AuthorizationError
 from app.application.organization.commands.create_organization import (
     CreateOrganizationCommand,
 )
@@ -17,6 +20,8 @@ from app.domains.organization.entities.organization import Organization
 from app.domains.organization.repositories.organization_repository import (
     OrganizationRepository,
 )
+from app.domains.user.entities.user import User
+from app.domains.user.value_objects.user_role import UserRole
 from app.shared.unit_of_work.unit_of_work import UnitOfWork
 
 
@@ -43,6 +48,15 @@ class FakeOrganizationRepository(OrganizationRepository):
         return organization
 
 
+def make_operator() -> User:
+    return User(
+        id=uuid4(),
+        username="test-operator",
+        password_hash="hash",
+        role=UserRole.OPERATOR,
+    )
+
+
 def test_create_organization():
     repository = FakeOrganizationRepository()
     service = OrganizationApplicationService(
@@ -62,7 +76,8 @@ def test_create_organization():
             email="test@example.com",
             website="https://example.com",
             comment="Test organization",
-        )
+        ),
+        make_operator(),
     )
 
     assert organization.id is not None
@@ -79,6 +94,31 @@ def test_create_organization():
     assert repository.get(organization.id) is organization
 
 
+def test_create_organization_rejects_unauthorized_user():
+    repository = FakeOrganizationRepository()
+    service = OrganizationApplicationService(
+        repository,
+        FakeUnitOfWork(),
+    )
+
+    user = User(
+        id=uuid4(),
+        username="test-user",
+        password_hash="hash",
+        role=UserRole.WAREHOUSE,
+    )
+
+    with pytest.raises(AuthorizationError, match="not authorized"):
+        service.create(
+            CreateOrganizationCommand(
+                name="Unauthorized Organization",
+            ),
+            user,
+        )
+
+    assert repository.get_all() == []
+
+
 def test_update_organization():
     repository = FakeOrganizationRepository()
     service = OrganizationApplicationService(
@@ -89,7 +129,8 @@ def test_update_organization():
     organization = service.create(
         CreateOrganizationCommand(
             name="Original Organization",
-        )
+        ),
+        make_operator(),
     )
 
     updated = service.update(
