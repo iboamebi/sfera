@@ -4,6 +4,7 @@ Application service: Customer.
 
 from uuid import UUID, uuid4
 
+from app.application.authorization.authorization import require_role
 from app.application.customer.commands.create_customer import (
     CreateCustomerCommand,
 )
@@ -21,6 +22,8 @@ from app.domains.customer.exceptions import CustomerNotFoundError
 from app.domains.customer.repositories.customer_repository import (
     CustomerRepository,
 )
+from app.domains.user.entities.user import User
+from app.domains.user.value_objects.user_role import UserRole
 from app.shared.unit_of_work.unit_of_work import UnitOfWork
 
 
@@ -58,8 +61,11 @@ class CustomerApplicationService:
     def create(
         self,
         command: CreateCustomerCommand,
+        user: User,
     ) -> Customer:
         """Create customer."""
+
+        require_role(user, UserRole.OPERATOR, UserRole.ADMIN)
 
         with self._uow:
             customer = Customer(
