@@ -44,7 +44,10 @@ class OrderApplicationService:
     def create(
         self,
         command: CreateOrderCommand,
+        user: User,
     ) -> Order:
+        require_role(user, UserRole.OPERATOR, UserRole.ADMIN)
+
         with self._uow:
             order = Order.create(
                 id=uuid4(),
