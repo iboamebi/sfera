@@ -28,6 +28,7 @@ from app.application.order.services.order_application_service import (
     OrderApplicationService,
 )
 from app.core.dependencies.services import get_order_service
+from app.domains.user.entities.user import User
 from app.schemas.order import (
     OrderCreate,
     OrderRead,
@@ -131,10 +132,11 @@ def update_order(
 @router.post(
     "/{order_id}/register",
     response_model=OrderRead,
-    dependencies=[Depends(get_current_user), Depends(require_csrf)],
+    dependencies=[Depends(require_csrf)],
 )
 def register_order(
     order_id: UUID,
+    user: User = Depends(get_current_user),
     service: OrderApplicationService = Depends(
         get_order_service,
     ),
@@ -142,7 +144,8 @@ def register_order(
     return service.register(
         RegisterOrderCommand(
             order_id=order_id,
-        )
+        ),
+        user,
     )
 
 
