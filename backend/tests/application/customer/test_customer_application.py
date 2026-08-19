@@ -160,7 +160,8 @@ def test_update_customer():
             email="updated@example.com",
             comment="Updated customer",
             discount_percent=10.0,
-        )
+        ),
+        make_operator(),
     )
 
     assert updated.id == customer.id
@@ -171,6 +172,43 @@ def test_update_customer():
     assert updated.comment == "Updated customer"
     assert updated.discount_percent == 10.0
     assert repository.get(customer.id) is updated
+
+
+def test_update_customer_rejects_unauthorized_user():
+    repository = FakeCustomerRepository()
+    service = CustomerApplicationService(
+        repository,
+        FakeUnitOfWork(),
+    )
+
+    customer = service.create(
+        CreateCustomerCommand(
+            organization_id=uuid4(),
+            name="Original Customer",
+        ),
+        make_operator(),
+    )
+
+    user = User(
+        id=uuid4(),
+        username="test-user",
+        password_hash="hash",
+        role=UserRole.WAREHOUSE,
+    )
+
+    with pytest.raises(AuthorizationError, match="not authorized"):
+        service.update(
+            UpdateCustomerCommand(
+                customer_id=customer.id,
+                name="Unauthorized Update",
+                comment="Must not be applied",
+            ),
+            user,
+        )
+
+    assert customer.name == "Original Customer"
+    assert customer.comment is None
+    assert repository.get(customer.id) is customer
 
 
 def test_delete_customer():

@@ -117,7 +117,7 @@ def delete_customer(
 def update_customer(
     customer_id: UUID,
     data: CustomerUpdate,
-    _: User = Depends(get_current_user),
+    user: User = Depends(get_current_user),
     __: None = Depends(require_csrf),
     service: CustomerApplicationService = Depends(
         get_customer_service,
@@ -130,4 +130,4 @@ def update_customer(
         ),
     )
 
-    return service.update(command)
+    return service.update(command, user)

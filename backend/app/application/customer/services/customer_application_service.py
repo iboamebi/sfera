@@ -84,8 +84,11 @@ class CustomerApplicationService:
     def update(
         self,
         command: UpdateCustomerCommand,
+        user: User,
     ) -> Customer:
         """Update customer."""
+
+        require_role(user, UserRole.OPERATOR, UserRole.ADMIN)
 
         with self._uow:
             customer = self.get(command.customer_id)
