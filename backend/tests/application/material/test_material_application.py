@@ -83,6 +83,9 @@ def test_update_material_rejects_unauthorized_user() -> None:
     material = service.create(
         CreateMaterialCommand(
             name="Protected Material",
+            article="A-001",
+            unit="pcs",
+            description="Protected description",
         )
     )
 
