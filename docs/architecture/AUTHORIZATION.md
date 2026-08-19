@@ -127,7 +127,7 @@ require_role(user, OPERATOR, ADMIN)
 Order.update_details()
 ```
 
-Unauthorized users are rejected by the Application layer with an authorization error. The API boundary maps that error to HTTP 403 Forbidden.
+Unauthorized users are rejected by the Application layer with an authorization error. The API boundary maps that error to HTTP `403 Forbidden`.
 
 The API route also requires authentication and CSRF protection for this state-changing operation.
 
@@ -256,6 +256,31 @@ Unauthorized users are rejected by the Application layer with an authorization e
 
 The API route also requires authentication and CSRF protection for this state-changing operation.
 
+### Organization update
+
+The `OrganizationApplicationService.update()` use case currently requires one of:
+
+- `operator`;
+- `admin`.
+
+The authenticated `User` is passed from the API boundary into the Application service, where authorization is checked before Organization domain state is changed.
+
+```text
+PATCH /organizations/{organization_id}
+        ↓
+Authenticated User
+        ↓
+OrganizationApplicationService.update(..., user)
+        ↓
+require_role(user, OPERATOR, ADMIN)
+        ↓
+Organization domain mutation
+```
+
+Unauthorized users are rejected by the Application layer with an authorization error. The API boundary maps that error to HTTP `403 Forbidden`.
+
+The API route also requires authentication and CSRF protection for this state-changing operation.
+
 ## Authorization Contract
 
 The shared Application authorization contract is responsible for expressing role requirements for concrete use cases.
@@ -289,6 +314,7 @@ Implemented:
 - authorization of customer update;
 - authorization of customer deletion/archive;
 - authorization of organization creation;
+- authorization of organization update;
 - API mapping of authorization failures to HTTP `403`;
 - regression coverage for Application and API authorization boundaries.
 
