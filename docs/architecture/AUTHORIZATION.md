@@ -231,6 +231,31 @@ Unauthorized users are rejected by the Application layer with an authorization e
 
 The API route also requires authentication and CSRF protection for this state-changing operation.
 
+### Organization creation
+
+The `OrganizationApplicationService.create()` use case currently requires one of:
+
+- `operator`;
+- `admin`.
+
+The authenticated `User` is passed from the API boundary into the Application service, where the shared authorization contract is evaluated before the Organization domain entity is created.
+
+```text
+POST /organizations/
+        ↓
+Authenticated User
+        ↓
+OrganizationApplicationService.create(..., user)
+        ↓
+require_role(user, OPERATOR, ADMIN)
+        ↓
+Organization
+```
+
+Unauthorized users are rejected by the Application layer with an authorization error. The API boundary maps that error to HTTP `403 Forbidden`.
+
+The API route also requires authentication and CSRF protection for this state-changing operation.
+
 ## Authorization Contract
 
 The shared Application authorization contract is responsible for expressing role requirements for concrete use cases.
@@ -263,6 +288,7 @@ Implemented:
 - authorization of customer creation;
 - authorization of customer update;
 - authorization of customer deletion/archive;
+- authorization of organization creation;
 - API mapping of authorization failures to HTTP `403`;
 - regression coverage for Application and API authorization boundaries.
 
