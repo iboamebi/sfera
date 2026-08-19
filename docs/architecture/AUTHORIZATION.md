@@ -56,6 +56,31 @@ The matrix above describes responsibilities rather than granting every individua
 
 ## Implemented Use-Case Authorization
 
+### Order creation
+
+The `OrderApplicationService.create()` use case currently requires one of:
+
+- `operator`;
+- `admin`.
+
+The authorization check is performed in the Application layer through the shared authorization contract.
+
+```text
+POST /orders/
+        ↓
+Authenticated User
+        ↓
+OrderApplicationService.create(..., user)
+        ↓
+require_role(user, OPERATOR, ADMIN)
+        ↓
+Order.create()
+```
+
+Unauthorized users are rejected by the Application layer with an authorization error. The API boundary maps that error to HTTP `403 Forbidden`.
+
+The API route also requires authentication and CSRF protection for this state-changing operation.
+
 ### Order registration
 
 The `OrderApplicationService.register()` use case currently requires one of:
@@ -106,6 +131,7 @@ Implemented:
 - User role in the domain entity;
 - User role persistence in the existing `users` table;
 - authorization Application contract;
+- authorization of order creation;
 - authorization of order registration;
 - API mapping of authorization failures to HTTP `403`;
 - regression coverage for Application and API authorization boundaries.
