@@ -4,7 +4,7 @@
 
 Backend DDD/Clean Architecture migration завершена.
 
-Текущий этап — frontend development and production validation.
+Текущий этап — authentication and authorization integration, followed by incremental frontend user scenarios.
 
 ---
 
@@ -39,20 +39,85 @@ Infrastructure Repository
 
 ---
 
+## Authentication / Authorization Checkpoint
+
+Authentication foundation is implemented with server-side sessions.
+
+```text
+Browser
+  ↓
+HttpOnly session cookie
+  ↓
+server-side auth_sessions
+  ↓
+SessionApplicationService
+  ↓
+SessionRepository
+```
+
+Implemented:
+
+- User domain and repository;
+- Argon2 password hashing adapter;
+- authentication application service;
+- session domain;
+- session repository interface;
+- session ORM model and mapper;
+- session repository;
+- auth_sessions migration;
+- login / current-user / logout contracts;
+- authentication API dependencies;
+- CSRF protection for cookie-authenticated state changes;
+- initial authorization roles;
+- UserRole value object;
+- role persistence and migration;
+- Application authorization contract;
+- order registration authorization;
+- API mapping of authorization failures to HTTP 403.
+
+Current authorization rule:
+
+```text
+Order registration
+  OPERATOR → allowed
+  ADMIN    → allowed
+  other    → forbidden
+```
+
+Authorization is kept in Application. The API only supplies the authenticated user and maps application authorization errors to HTTP responses.
+
+Roles and permissions are not implemented as frontend-only checks.
+
+---
+
 ## Backend Validation
 
-Последняя validation:
+Latest validated checkpoint:
 
 ```text
 pytest -q
-33 passed
+111 passed
 
 ruff check .
 All checks passed
 
 ruff format --check .
-352 files already formatted
+410 files already formatted
 ```
+
+Current branch:
+
+```text
+develop
+```
+
+Current HEAD:
+
+```text
+4238a5d docs: update authorization documentation
+```
+
+Working tree was clean before documentation synchronization.
 
 ---
 
@@ -119,7 +184,12 @@ Orders feature:
 - create order;
 - update order;
 - register order action;
-- query cache update after mutation.
+- query cache update after mutation;
+- authentication route guard;
+- login route;
+- login form and validation;
+- current-user query;
+- protected application routes.
 
 API integration:
 
@@ -159,7 +229,7 @@ Vite development server на `5173` не является частью productio
 Production frontend:
 
 ```text
-https://top.vlsfera.ru
+http://top.vlsfera.ru
 ```
 
 Backend production service:
@@ -186,12 +256,13 @@ passed
 
 ---
 
-## Следующие frontend шаги
+## Следующие шаги
 
-1. Добавить customer selection flow для создания заказа.
-2. Проверить order creation через UI с реальным Customer UUID.
-3. Добавить authentication foundation.
-4. Определить и реализовать автоматизацию frontend production deployment.
+1. Продолжить authorization для конкретных business use cases, не вводя CRUD-based permissions.
+2. Добавлять API regression coverage для authorization boundaries.
+3. Продолжить order-centric user scenarios incrementally.
+4. После backend authorization stabilization продолжить frontend authentication/authorization scenarios.
+5. Отдельно рассмотреть production deployment automation.
 
 ---
 
@@ -202,16 +273,20 @@ passed
 - `docs/AI_CONTEXT.md`;
 - `docs/MIGRATION_STATUS.md`;
 - `docs/ARCHITECTURE.md`;
+- `docs/architecture/AUTHORIZATION.md`;
+- `docs/architecture/AUTHENTICATION.md`;
 - `docs/architecture/PROJECT_CONSTITUTION.md`;
 - `docs/architecture/MIGRATION_MATRIX.md`;
 - `docs/FRONTEND_ARCHITECTURE.md`.
 
 Документация должна соответствовать фактическому состоянию repository.
 
+`PROJECT_CONSTITUTION.md` не изменяется при обычной синхронизации состояния.
+
 Работа продолжается:
 
 ```text
-analyze → one file → y → next
+analyze → implement → validate → synchronize → next
 ```
 
 Feature migration и architectural cleanup не смешиваются.
