@@ -72,7 +72,7 @@ def get_customer(
 )
 def create_customer(
     data: CustomerCreate,
-    _: User = Depends(get_current_user),
+    user: User = Depends(get_current_user),
     __: None = Depends(require_csrf),
     service: CustomerApplicationService = Depends(
         get_customer_service,
@@ -88,7 +88,7 @@ def create_customer(
         discount_percent=data.discount_percent,
     )
 
-    return service.create(command)
+    return service.create(command, user)
 
 
 @router.delete(
