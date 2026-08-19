@@ -4,6 +4,7 @@ Domain entity: User.
 
 from dataclasses import dataclass
 
+from app.domains.user.value_objects.user_role import UserRole
 from app.shared.base.entity import Entity
 
 
@@ -13,6 +14,7 @@ class User(Entity):
 
     username: str
     password_hash: str
+    role: UserRole = UserRole.OPERATOR
     archived: bool = False
 
     def archive(self) -> None:
