@@ -4,6 +4,9 @@ Tests for Customer application service.
 
 from uuid import UUID, uuid4
 
+import pytest
+
+from app.application.authorization.authorization import AuthorizationError
 from app.application.customer.commands.create_customer import (
     CreateCustomerCommand,
 )
@@ -20,6 +23,8 @@ from app.domains.customer.entities.customer import Customer
 from app.domains.customer.repositories.customer_repository import (
     CustomerRepository,
 )
+from app.domains.user.entities.user import User
+from app.domains.user.value_objects.user_role import UserRole
 from app.shared.unit_of_work.unit_of_work import UnitOfWork
 
 
@@ -62,6 +67,15 @@ class FakeCustomerRepository(CustomerRepository):
         return customer
 
 
+def make_operator() -> User:
+    return User(
+        id=uuid4(),
+        username="test-operator",
+        password_hash="hash",
+        role=UserRole.OPERATOR,
+    )
+
+
 def test_create_customer():
     repository = FakeCustomerRepository()
     service = CustomerApplicationService(
@@ -80,7 +94,8 @@ def test_create_customer():
             email="test@example.com",
             comment="Test customer",
             discount_percent=5.5,
-        )
+        ),
+        make_operator(),
     )
 
     assert customer.id is not None
@@ -95,6 +110,32 @@ def test_create_customer():
     assert repository.get(customer.id) is customer
 
 
+def test_create_customer_rejects_unauthorized_user():
+    repository = FakeCustomerRepository()
+    service = CustomerApplicationService(
+        repository,
+        FakeUnitOfWork(),
+    )
+
+    user = User(
+        id=uuid4(),
+        username="test-user",
+        password_hash="hash",
+        role=UserRole.WAREHOUSE,
+    )
+
+    with pytest.raises(AuthorizationError, match="not authorized"):
+        service.create(
+            CreateCustomerCommand(
+                organization_id=uuid4(),
+                name="Unauthorized Customer",
+            ),
+            user,
+        )
+
+    assert repository.get_all() == []
+
+
 def test_update_customer():
     repository = FakeCustomerRepository()
     service = CustomerApplicationService(
@@ -106,7 +147,8 @@ def test_update_customer():
         CreateCustomerCommand(
             organization_id=uuid4(),
             name="Original Customer",
-        )
+        ),
+        make_operator(),
     )
 
     updated = service.update(
@@ -142,7 +184,8 @@ def test_delete_customer():
         CreateCustomerCommand(
             organization_id=uuid4(),
             name="Customer to Delete",
-        )
+        ),
+        make_operator(),
     )
 
     service.delete(
@@ -173,13 +216,15 @@ def test_get_all_excludes_archived_customers():
         CreateCustomerCommand(
             organization_id=uuid4(),
             name="Active Customer",
-        )
+        ),
+        make_operator(),
     )
     archived = service.create(
         CreateCustomerCommand(
             organization_id=uuid4(),
             name="Archived Customer",
-        )
+        ),
+        make_operator(),
     )
 
     service.delete(
