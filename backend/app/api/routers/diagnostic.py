@@ -24,6 +24,7 @@ from app.application.diagnostic.services.diagnostic_application_service import (
     DiagnosticApplicationService,
 )
 from app.core.dependencies.services import get_diagnostic_service
+from app.domains.user.entities.user import User
 from app.schemas.diagnostic import (
     DiagnosticConclusion,
     DiagnosticCreate,
@@ -62,10 +63,11 @@ def get_diagnostic(
 @router.post(
     "",
     response_model=DiagnosticRead,
-    dependencies=[Depends(get_current_user), Depends(require_csrf)],
+    dependencies=[Depends(require_csrf)],
 )
 def create_diagnostic(
     data: DiagnosticCreate,
+    user: User = Depends(get_current_user),
     service: DiagnosticApplicationService = Depends(
         get_diagnostic_service,
     ),
@@ -74,17 +76,19 @@ def create_diagnostic(
         CreateDiagnosticCommand(
             order_item_id=data.order_item_id,
         ),
+        user,
     )
 
 
 @router.post(
     "/{diagnostic_id}/conclusion",
     response_model=DiagnosticRead,
-    dependencies=[Depends(get_current_user), Depends(require_csrf)],
+    dependencies=[Depends(require_csrf)],
 )
 def complete_diagnostic(
     diagnostic_id: UUID,
     data: DiagnosticConclusion,
+    user: User = Depends(get_current_user),
     service: DiagnosticApplicationService = Depends(
         get_diagnostic_service,
     ),
@@ -94,17 +98,19 @@ def complete_diagnostic(
             diagnostic_id=diagnostic_id,
             conclusion=data.conclusion,
         ),
+        user,
     )
 
 
 @router.post(
     "/{diagnostic_id}/recommendation",
     response_model=DiagnosticRead,
-    dependencies=[Depends(get_current_user), Depends(require_csrf)],
+    dependencies=[Depends(require_csrf)],
 )
 def set_recommendation(
     diagnostic_id: UUID,
     data: DiagnosticRecommendation,
+    user: User = Depends(get_current_user),
     service: DiagnosticApplicationService = Depends(
         get_diagnostic_service,
     ),
@@ -114,4 +120,5 @@ def set_recommendation(
             diagnostic_id=diagnostic_id,
             recommendation=data.recommendation,
         ),
+        user,
     )
