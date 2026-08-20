@@ -1,4 +1,5 @@
 import { Stack, Typography } from "@mui/material";
+import { Link } from "react-router";
 
 import { useCustomers } from "../../features/customers/model/useCustomers";
 
@@ -21,7 +22,9 @@ export function CustomersPage() {
     <Stack spacing={2}>
       {customers.map((customer) => (
         <Stack key={customer.id} spacing={0.5}>
-          <Typography variant="h6">{customer.name}</Typography>
+          <Typography variant="h6">
+            <Link to={`/customers/${customer.id}`}>{customer.name}</Link>
+          </Typography>
           {customer.contactPerson && (
             <Typography color="text.secondary">
               {customer.contactPerson}
