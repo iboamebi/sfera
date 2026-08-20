@@ -4,6 +4,7 @@ Application service for repair use cases.
 
 from uuid import UUID, uuid4
 
+from app.application.authorization.authorization import require_role
 from app.application.repair.commands.create_repair import (
     CreateRepairCommand,
 )
@@ -14,6 +15,8 @@ from app.domains.repair.entities.repair import Repair
 from app.domains.repair.repositories.repair_repository import (
     RepairRepository,
 )
+from app.domains.user.entities.user import User
+from app.domains.user.value_objects.user_role import UserRole
 from app.shared.unit_of_work.unit_of_work import UnitOfWork
 
 
@@ -44,7 +47,14 @@ class RepairApplicationService:
     def create(
         self,
         command: CreateRepairCommand,
+        user: User,
     ) -> Repair:
+        require_role(
+            user,
+            UserRole.TECHNICIAN,
+            UserRole.ADMIN,
+        )
+
         repair = Repair.create(
             id=uuid4(),
             order_item_id=command.order_item_id,
@@ -61,7 +71,14 @@ class RepairApplicationService:
     def start(
         self,
         repair_id: UUID,
+        user: User,
     ) -> Repair:
+        require_role(
+            user,
+            UserRole.TECHNICIAN,
+            UserRole.ADMIN,
+        )
+
         with self._uow:
             repair = self.get(
                 repair_id,
@@ -79,7 +96,14 @@ class RepairApplicationService:
         self,
         repair_id: UUID,
         result: str,
+        user: User,
     ) -> Repair:
+        require_role(
+            user,
+            UserRole.TECHNICIAN,
+            UserRole.ADMIN,
+        )
+
         with self._uow:
             repair = self.get(
                 repair_id,
@@ -98,7 +122,14 @@ class RepairApplicationService:
     def cancel(
         self,
         repair_id: UUID,
+        user: User,
     ) -> Repair:
+        require_role(
+            user,
+            UserRole.TECHNICIAN,
+            UserRole.ADMIN,
+        )
+
         with self._uow:
             repair = self.get(
                 repair_id,
