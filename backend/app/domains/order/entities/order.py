@@ -26,6 +26,7 @@ class Order(AggregateRoot):
     comment: str | None = None
 
     status: OrderStatus = OrderStatus.NEW
+    archived: bool = False
 
     items: list[OrderItem] = field(default_factory=list)
 
