@@ -182,6 +182,70 @@ Frontend DTO и model разделены; `instrument_id` преобразует
 
 `OrderItems` является отдельным UI-компонентом и не содержит business logic.
 
+## InstrumentType Frontend Checkpoint
+
+Завершён первый независимый frontend slice для `InstrumentType`.
+
+Существующий backend contract:
+
+```text
+GET /instrument-types/
+GET /instrument-types/{instrument_type_id}
+POST /instrument-types/
+PUT /instrument-types/{instrument_type_id}
+POST /instrument-types/{instrument_type_id}/archive
+POST /instrument-types/{instrument_type_id}/restore
+```
+
+Первый frontend slice реализует только чтение списка:
+
+```text
+GET /instrument-types/
+        ↓
+getInstrumentTypes()
+        ↓
+mapInstrumentType()
+        ↓
+useInstrumentTypes()
+        ↓
+InstrumentTypesPage
+        ↓
+/instrument-types
+```
+
+Добавлены:
+
+```text
+frontend/src/features/instrument-type/api/types.ts
+frontend/src/features/instrument-type/api/instrumentTypeMapper.ts
+frontend/src/features/instrument-type/api/getInstrumentTypes.ts
+frontend/src/features/instrument-type/model/types.ts
+frontend/src/features/instrument-type/model/useInstrumentTypes.ts
+frontend/src/pages/instrument-types/InstrumentTypesPage.tsx
+```
+
+Route:
+
+```text
+/instrument-types
+```
+
+защищён через `RequireAuth`.
+
+Frontend DTO отделён от frontend model:
+
+```text
+InstrumentTypeApiDto
+        ↓
+instrumentTypeMapper
+        ↓
+InstrumentTypeRead
+```
+
+Backend naming `snake_case` не распространяется в UI model; например `measurement_type` преобразуется в `measurementType`.
+
+CRUD mutations `create/update/archive/restore` пока не реализованы во frontend.
+
 ## Latest Validation
 
 Backend:
@@ -204,6 +268,13 @@ Frontend:
 ```text
 npm run typecheck — passed
 npm run build — passed
+```
+
+После добавления `InstrumentType` list:
+
+```text
+1190 modules transformed
+vite build — passed
 ```
 
 Vite сообщил только стандартное предупреждение о bundle chunk > 500 kB; текущий build завершился успешно.
@@ -357,6 +428,13 @@ Feature-oriented architecture используется в `frontend/src/features
 - cache update after registration;
 - customer selection.
 
+Также реализован первый `InstrumentType` read flow:
+
+- instrument types list;
+- protected `/instrument-types` route;
+- API DTO → frontend model mapping;
+- TanStack Query server-state hook.
+
 Authentication UI foundation также существует:
 
 - login route;
@@ -473,6 +551,8 @@ docs/FRONTEND_ARCHITECTURE.md
 Authorization migration завершена для всех текущих use cases с определённым business owner.
 
 Orders order-items stage завершён: persistence mapping, backend read contract и frontend display реализованы и валидированы.
+
+`InstrumentType` frontend list stage завершён и опубликован в `develop` commit `adbe580`.
 
 Следующий independent feature stage выбирается после аудита актуального `develop`; не продолжать authorization механически и не следовать устаревшему roadmap без проверки фактического кода.
 
