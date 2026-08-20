@@ -1,6 +1,6 @@
 """Tests for Order mapper."""
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import uuid4
 
 from app.infrastructure.mappers.order_mapper import OrderMapper
@@ -14,7 +14,7 @@ def test_order_mapper_to_domain_preserves_order_items() -> None:
     customer_id = uuid4()
     item_id = uuid4()
     instrument_id = uuid4()
-    received_at = datetime.now(timezone.utc)
+    received_at = datetime.now(UTC)
 
     item_model = OrderItemModel(
         id=item_id,
