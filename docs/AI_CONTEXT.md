@@ -89,75 +89,88 @@ Legacy CRUD:
 REMOVED
 ```
 
-Последний известный GitHub checkpoint:
+Последний GitHub checkpoint:
 
 ```text
-50fd7ff feat: authorize customer deletion
+c5be3494 docs: update authorization use-case scope
 ```
 
 Последовательность последних authorization commits:
 
 ```text
-50fd7ff feat: authorize customer deletion
-001deb1 feat: authorize customer updates
-f8951c6 feat: pass authenticated user to customer creation
-961f632 test: cover customer creation authorization
-782aefd feat: authorize customer creation
-140afec docs: define order update authorization
-f0b3406 feat: authorize order updates
-ee007d0 feat: authorize order item addition
+c5be3494 docs: update authorization use-case scope
+1522231f feat: pass authenticated user to repair use cases
+3ecb39ea feat: authorize repair use cases
+0702bdd7 feat: pass authenticated user to diagnostic use cases
+38c48e45 feat: authorize diagnostic use cases
 ```
 
-Последний подтверждённый локальный backend validation:
+## Authorization Checkpoint
+
+Authorization добавлена только для concrete business use cases, для которых определён владелец операции:
 
 ```text
-pytest -q
-120 passed
+Order
+  → OPERATOR / ADMIN
 
-ruff check .
-All checks passed
+Customer
+  → OPERATOR / ADMIN
 
-ruff format --check .
-410 files already formatted
+Organization
+  → OPERATOR / ADMIN
+
+Material
+  → WAREHOUSE / ADMIN
+
+Warehouse
+  → WAREHOUSE / ADMIN
+
+Verification
+  → METROLOGIST / ADMIN
+
+Diagnostic
+  → TECHNICIAN / ADMIN
+
+Repair
+  → TECHNICIAN / ADMIN
 ```
 
-## Customer Authorization Checkpoint
-
-Customer soft delete уже существует:
-
-- `Customer.archive()` используется вместо physical delete;
-- default repository reads исключают archived customers;
-- `include_archived=True` используется для специальных reads;
-- DELETE API сохранён для backward compatibility.
-
-Authorization последовательно добавлена для customer state-changing use cases:
-
-```text
-create
-  ↓
-operator/admin
-
-update
-  ↓
-operator/admin
-
-delete/archive
-  ↓
-operator/admin
-```
-
-Authenticated `User` передаётся из API boundary в Application service.
+Для state-changing API authenticated `User` передаётся из API boundary в Application service.
 
 Application выполняет `require_role(...)` до изменения Domain state.
 
-Application tests покрывают authorized/unauthorized behavior.
+Application и API tests покрывают authorization boundary и forwarding authenticated user.
 
-API tests покрывают authentication/CSRF dependencies и forwarding authenticated user в Application.
+Не определено business authorization для:
 
-Authorization contract и актуальная матрица находятся в:
+```text
+Device
+InstrumentType
+PriceList
+Workflow
+```
+
+Для этих модулей authorization **не добавлять**, пока не появится конкретный business requirement. Не создавать broad CRUD permission model и не угадывать владельца операции.
+
+Актуальный authorization contract:
 
 ```text
 docs/architecture/AUTHORIZATION.md
+```
+
+## Latest Backend Validation
+
+Подтверждённая локальная validation после authorization/doc updates:
+
+```text
+pytest -q
+133 passed
+
+ruff check .
+All checks passed!
+
+ruff format --check .
+411 files already formatted
 ```
 
 ## Authentication State
@@ -423,11 +436,13 @@ docs/FRONTEND_ARCHITECTURE.md
 
 Текущий development direction — incremental authorization concrete business use cases.
 
-Последовательность уже начата с Order и Customer.
+Authorization migration для всех use cases с определённым business owner завершена на текущем checkpoint.
 
-Следующий use case выбирается только после чтения фактического Application service, API router и соответствующих tests из GitHub.
+Следующий use case выбирается только после чтения фактического Application service, API router, tests и соответствующих security/architecture документов из GitHub.
 
-Перед следующим feature stage необходимо учитывать текущие authorization contracts и не создавать broad CRUD permission model без явного business requirement.
+Для `Device`, `InstrumentType`, `PriceList`, `Workflow` не вводить authorization без нового explicit business requirement.
+
+Следующий independent feature stage определяется после этого checkpoint; не продолжать authorization механически.
 
 ## Recovery Checkpoint
 
