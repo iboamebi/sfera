@@ -3,6 +3,7 @@ Order mapper.
 """
 
 from app.domains.order.entities.order import Order
+from app.domains.order.entities.order_item import OrderItem
 from app.domains.order.value_objects.order_number import OrderNumber
 from app.infrastructure.mappers.base_mapper import BaseMapper
 from app.models.order import Order as OrderModel
@@ -24,6 +25,14 @@ class OrderMapper(BaseMapper[Order, OrderModel]):
             issued_at=model.issued_at,
             comment=model.comment,
             status=model.status,
+            items=[
+                OrderItem(
+                    id=item.id,
+                    instrument_id=item.instrument_id,
+                    comment=item.customer_comment,
+                )
+                for item in model.order_items
+            ],
         )
 
     def to_model(
