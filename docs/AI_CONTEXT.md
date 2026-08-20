@@ -89,21 +89,9 @@ Legacy CRUD:
 REMOVED
 ```
 
-Последний GitHub checkpoint:
+Authorization migration для concrete business use cases с определённым владельцем операции завершена.
 
-```text
-c5be3494 docs: update authorization use-case scope
-```
-
-Последовательность последних authorization commits:
-
-```text
-c5be3494 docs: update authorization use-case scope
-1522231f feat: pass authenticated user to repair use cases
-3ecb39ea feat: authorize repair use cases
-0702bdd7 feat: pass authenticated user to diagnostic use cases
-38c48e45 feat: authorize diagnostic use cases
-```
+Последующий backend этап добавил корректное восстановление `Order.items` из persistence и публичный read contract `OrderRead.items`.
 
 ## Authorization Checkpoint
 
@@ -158,20 +146,67 @@ Workflow
 docs/architecture/AUTHORIZATION.md
 ```
 
-## Latest Backend Validation
+## Order Items Checkpoint
 
-Подтверждённая локальная validation после authorization/doc updates:
+Завершён incremental Orders stage по отображению позиций заказа.
+
+Backend:
+
+```text
+OrderModel.order_items
+        ↓
+OrderMapper.to_domain()
+        ↓
+Domain Order.items
+        ↓
+OrderRead.items
+```
+
+Изменения покрыты infrastructure mapper test и полным backend suite.
+
+Frontend:
+
+```text
+OrderApiDto.items
+        ↓
+orderMapper
+        ↓
+OrderRead.items
+        ↓
+OrderItems
+        ↓
+OrderDetails
+```
+
+Frontend DTO и model разделены; `instrument_id` преобразуется в `instrumentId`.
+
+`OrderItems` является отдельным UI-компонентом и не содержит business logic.
+
+## Latest Validation
+
+Backend:
 
 ```text
 pytest -q
-133 passed
-
-ruff check .
-All checks passed!
-
-ruff format --check .
-411 files already formatted
+134 passed
 ```
+
+Последняя точечная infrastructure validation:
+
+```text
+1 passed
+ruff check — All checks passed!
+ruff format --check — 1 file already formatted
+```
+
+Frontend:
+
+```text
+npm run typecheck — passed
+npm run build — passed
+```
+
+Vite сообщил только стандартное предупреждение о bundle chunk > 500 kB; текущий build завершился успешно.
 
 ## Authentication State
 
@@ -315,6 +350,7 @@ Feature-oriented architecture используется в `frontend/src/features
 
 - orders list;
 - order details;
+- order items display;
 - create order;
 - update order;
 - register order;
@@ -434,15 +470,13 @@ docs/FRONTEND_ARCHITECTURE.md
 
 ## Current Next Direction
 
-Текущий development direction — incremental authorization concrete business use cases.
+Authorization migration завершена для всех текущих use cases с определённым business owner.
 
-Authorization migration для всех use cases с определённым business owner завершена на текущем checkpoint.
+Orders order-items stage завершён: persistence mapping, backend read contract и frontend display реализованы и валидированы.
 
-Следующий use case выбирается только после чтения фактического Application service, API router, tests и соответствующих security/architecture документов из GitHub.
+Следующий independent feature stage выбирается после аудита актуального `develop`; не продолжать authorization механически и не следовать устаревшему roadmap без проверки фактического кода.
 
 Для `Device`, `InstrumentType`, `PriceList`, `Workflow` не вводить authorization без нового explicit business requirement.
-
-Следующий independent feature stage определяется после этого checkpoint; не продолжать authorization механически.
 
 ## Recovery Checkpoint
 
