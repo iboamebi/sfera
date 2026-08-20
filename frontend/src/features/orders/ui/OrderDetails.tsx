@@ -8,6 +8,7 @@ import {
 } from "@mui/material";
 
 import type { OrderRead } from "../model/types";
+import { AddOrderItemButton } from "../add-order-item/ui/AddOrderItemButton";
 import { OrderItems } from "./OrderItems";
 
 interface OrderDetailsProps {
@@ -57,23 +58,16 @@ function DetailRow({
 }) {
   return (
     <Stack spacing={0.5}>
-      <Typography
-        color="text.secondary"
-        variant="body2"
-      >
+      <Typography color="text.secondary" variant="body2">
         {label}
       </Typography>
 
-      <Typography variant="body1">
-        {value}
-      </Typography>
+      <Typography variant="body1">{value}</Typography>
     </Stack>
   );
 }
 
-export function OrderDetails({
-  order,
-}: OrderDetailsProps) {
+export function OrderDetails({ order }: OrderDetailsProps) {
   return (
     <Card>
       <CardContent>
@@ -86,9 +80,7 @@ export function OrderDetails({
               justifyContent: "space-between",
             }}
           >
-            <Typography variant="h5">
-              Заказ № {order.number}
-            </Typography>
+            <Typography variant="h5">Заказ № {order.number}</Typography>
 
             <Chip
               color={statusColors[order.status] ?? "default"}
@@ -99,45 +91,38 @@ export function OrderDetails({
           <Divider />
 
           <Stack spacing={2}>
-            <DetailRow
-              label="Клиент"
-              value={order.customerId}
-            />
+            <DetailRow label="Клиент" value={order.customerId} />
 
-            <DetailRow
-              label="Получен"
-              value={formatDate(order.receivedAt)}
-            />
+            <DetailRow label="Получен" value={formatDate(order.receivedAt)} />
 
             <DetailRow
               label="Планируемая выдача"
               value={formatDate(order.plannedIssueAt)}
             />
 
-            <DetailRow
-              label="Выдан"
-              value={formatDate(order.issuedAt)}
-            />
+            <DetailRow label="Выдан" value={formatDate(order.issuedAt)} />
           </Stack>
 
           <Divider />
 
           <Stack spacing={0.5}>
-            <Typography
-              color="text.secondary"
-              variant="body2"
-            >
+            <Typography color="text.secondary" variant="body2">
               Комментарий
             </Typography>
 
-            <Typography variant="body1">
-              {order.comment || "—"}
-            </Typography>
+            <Typography variant="body1">{order.comment || "—"}</Typography>
           </Stack>
 
           <Divider />
 
-          <OrderItems items={order.items} />
+          <Stack
+            direction="row"
+            spacing={2}
+            sx={{ alignItems: "center", justifyContent: "space-between" }}
+          >
+            <OrderItems items={order.items} />
+            <AddOrderItemButton orderId={order.id} />
+          </Stack>
         </Stack>
       </CardContent>
     </Card>
