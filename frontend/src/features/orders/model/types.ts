@@ -1,3 +1,9 @@
+export interface OrderItem {
+  id: string;
+  instrumentId: string | null;
+  comment: string | null;
+}
+
 export interface OrderRead {
   id: string;
   number: string;
@@ -8,4 +14,5 @@ export interface OrderRead {
   issuedAt: string | null;
   comment: string | null;
   archived: boolean;
+  items: OrderItem[];
 }
