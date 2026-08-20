@@ -8,6 +8,7 @@ import {
 } from "@mui/material";
 
 import type { OrderRead } from "../model/types";
+import { OrderItems } from "./OrderItems";
 
 interface OrderDetailsProps {
   order: OrderRead;
@@ -133,6 +134,10 @@ export function OrderDetails({
               {order.comment || "—"}
             </Typography>
           </Stack>
+
+          <Divider />
+
+          <OrderItems items={order.items} />
         </Stack>
       </CardContent>
     </Card>
