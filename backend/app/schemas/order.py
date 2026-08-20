@@ -26,6 +26,18 @@ class OrderUpdate(BaseModel):
     comment: str | None = None
 
 
+class OrderItemRead(BaseModel):
+    """Order item response."""
+
+    model_config = ConfigDict(
+        from_attributes=True,
+    )
+
+    id: UUID
+    instrument_id: UUID | None = None
+    comment: str | None = None
+
+
 class OrderRead(BaseModel):
     """Order response."""
 
@@ -42,3 +54,4 @@ class OrderRead(BaseModel):
     issued_at: datetime | None = None
     comment: str | None = None
     archived: bool
+    items: list[OrderItemRead] = []
