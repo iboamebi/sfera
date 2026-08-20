@@ -5,6 +5,7 @@ import { LoginPage } from "../pages/auth/LoginPage";
 import { CreateOrderPage } from "../pages/orders/CreateOrderPage";
 import { OrderPage } from "../pages/orders/OrderPage";
 import { OrdersPage } from "../pages/orders/OrdersPage";
+import { InstrumentTypesPage } from "../pages/instrument-types/InstrumentTypesPage";
 
 export const router = createBrowserRouter([
   {
@@ -40,6 +41,14 @@ export const router = createBrowserRouter([
     element: (
       <RequireAuth>
         <OrderPage />
+      </RequireAuth>
+    ),
+  },
+  {
+    path: "/instrument-types",
+    element: (
+      <RequireAuth>
+        <InstrumentTypesPage />
       </RequireAuth>
     ),
   },
