@@ -31,33 +31,33 @@ docs/architecture/PROJECT_CONSTITUTION.md
 - финансы;
 - интеграция с ФГИС Аршин.
 
-Репозиторий:
+Repository:
 
 ```text
 git@github.com:iboamebi/sfera.git
 ```
 
-Основная рабочая ветка:
+Working branch:
 
 ```text
 develop
 ```
 
-Локальный root:
+Local root:
 
 ```text
 ~/sfera
 ```
 
-## Архитектура
+## Architecture
 
-Проект использует:
+Project architecture:
 
 ```text
 DDD + Clean Architecture
 ```
 
-Основное направление зависимостей:
+Dependency direction:
 
 ```text
 API
@@ -73,7 +73,7 @@ Infrastructure Repository
 Database
 ```
 
-Legacy CRUD migration завершена.
+Legacy CRUD migration is complete and must not be reintroduced.
 
 ## Backend Current State
 
@@ -89,13 +89,9 @@ Legacy CRUD:
 REMOVED
 ```
 
-Authorization migration для concrete business use cases с определённым владельцем операции завершена.
+Authorization is implemented for concrete business use cases with a defined owner. Do not broaden authorization mechanically.
 
-Последующий backend этап добавил корректное восстановление `Order.items` из persistence и публичный read contract `OrderRead.items`.
-
-## Authorization Checkpoint
-
-Authorization добавлена только для concrete business use cases, для которых определён владелец операции:
+Current role ownership:
 
 ```text
 Order
@@ -123,24 +119,9 @@ Repair
   → TECHNICIAN / ADMIN
 ```
 
-Для state-changing API authenticated `User` передаётся из API boundary в Application service.
+Do not add authorization to `Device`, `InstrumentType`, `PriceList` or `Workflow` without an explicit business requirement.
 
-Application выполняет `require_role(...)` до изменения Domain state.
-
-Application и API tests покрывают authorization boundary и forwarding authenticated user.
-
-Не определено business authorization для:
-
-```text
-Device
-InstrumentType
-PriceList
-Workflow
-```
-
-Для этих модулей authorization **не добавлять**, пока не появится конкретный business requirement. Не создавать broad CRUD permission model и не угадывать владельца операции.
-
-Актуальный authorization contract:
+Authorization contract:
 
 ```text
 docs/architecture/AUTHORIZATION.md
@@ -148,9 +129,7 @@ docs/architecture/AUTHORIZATION.md
 
 ## Order Items Checkpoint
 
-Завершён incremental Orders stage по отображению позиций заказа.
-
-Backend:
+Order item persistence and read contract are complete:
 
 ```text
 OrderModel.order_items
@@ -162,8 +141,6 @@ Domain Order.items
 OrderRead.items
 ```
 
-Изменения покрыты infrastructure mapper test и полным backend suite.
-
 Frontend:
 
 ```text
@@ -174,19 +151,162 @@ orderMapper
 OrderRead.items
         ↓
 OrderItems
-        ↓
-OrderDetails
 ```
 
-Frontend DTO и model разделены; `instrument_id` преобразуется в `instrumentId`.
+`OrderItems` contains presentation only.
 
-`OrderItems` является отдельным UI-компонентом и не содержит business logic.
+## Frontend Current State
 
-## InstrumentType Frontend Checkpoint
+Frontend stack:
 
-Завершён первый независимый frontend slice для `InstrumentType`.
+```text
+React 19
+TypeScript 7
+Vite 8
+React Router 8
+TanStack Query 5
+Axios
+Material UI 9
+React Hook Form
+Zod
+```
 
-Существующий backend contract:
+Architecture:
+
+```text
+feature-oriented
++ Feature-Sliced Design principles
+```
+
+Current protected routes are defined in `frontend/src/app/router.tsx`:
+
+```text
+/
+/orders
+/orders/new
+/orders/:orderId
+/customers
+/customers/:customerId
+/organizations
+/organizations/:organizationId
+/materials
+/materials/:materialId
+/verifications/:verificationId
+/diagnostics/:diagnosticId
+/repairs/:repairId
+/price-lists/:priceListId
+/instrument-types
+/instrument-types/:instrumentTypeId
+```
+
+Public route:
+
+```text
+/login
+```
+
+## Completed Frontend Slices
+
+### Orders
+
+Complete current flows:
+
+- orders list;
+- loading/error/empty states;
+- order creation;
+- order detail;
+- order items display;
+- order registration;
+- cache update after registration;
+- customer selection.
+
+### Customer
+
+List/detail integration is implemented, including API/model boundary, query hooks and detail page.
+
+### Organization
+
+List/detail integration is implemented. The organization list is linked to detail.
+
+### Material
+
+List/detail integration is implemented. The material list is linked to detail.
+
+### Verification
+
+Detail read slice is complete:
+
+```text
+API DTO
+  ↓
+mapper
+  ↓
+frontend model
+  ↓
+getVerification()
+  ↓
+useVerification()
+  ↓
+VerificationPage
+  ↓
+/verifications/:verificationId
+```
+
+### Diagnostic
+
+Detail read slice is complete:
+
+```text
+API DTO → mapper → frontend model → getDiagnostic() → useDiagnostic() → DiagnosticPage
+```
+
+Route:
+
+```text
+/diagnostics/:diagnosticId
+```
+
+### Repair
+
+Detail read slice is complete:
+
+```text
+API DTO → mapper → frontend model → getRepair() → useRepair() → RepairPage
+```
+
+Route:
+
+```text
+/repairs/:repairId
+```
+
+### PriceList
+
+Detail read slice is complete:
+
+```text
+API DTO
+  ↓
+mapper
+  ↓
+frontend model
+  ↓
+getPriceList()
+  ↓
+usePriceList()
+  ↓
+PriceListPage
+  ↓
+/price-lists/:priceListId
+```
+
+No confirmed existing frontend source of `priceListId` was found for list→detail navigation, so no link was added.
+
+### InstrumentType
+
+List and detail read slices are complete.
+
+Backend contract includes:
 
 ```text
 GET /instrument-types/
@@ -197,93 +317,40 @@ POST /instrument-types/{instrument_type_id}/archive
 POST /instrument-types/{instrument_type_id}/restore
 ```
 
-Первый frontend slice реализует только чтение списка:
+Frontend currently implements only read/list/detail. CRUD mutations remain intentionally absent.
+
+## API Boundary Rule
+
+Common frontend flow:
 
 ```text
-GET /instrument-types/
-        ↓
-getInstrumentTypes()
-        ↓
-mapInstrumentType()
-        ↓
-useInstrumentTypes()
-        ↓
-InstrumentTypesPage
-        ↓
-/instrument-types
+FastAPI backend
+      ↓
+Axios API layer
+      ↓
+backend DTO
+      ↓
+mapper
+      ↓
+frontend model
+      ↓
+React Query hook
+      ↓
+Page / Feature UI
 ```
 
-Добавлены:
+Backend `snake_case` must not leak into UI models. Example:
 
 ```text
-frontend/src/features/instrument-type/api/types.ts
-frontend/src/features/instrument-type/api/instrumentTypeMapper.ts
-frontend/src/features/instrument-type/api/getInstrumentTypes.ts
-frontend/src/features/instrument-type/model/types.ts
-frontend/src/features/instrument-type/model/useInstrumentTypes.ts
-frontend/src/pages/instrument-types/InstrumentTypesPage.tsx
+instrument_id → instrumentId
+measurement_type → measurementType
 ```
 
-Route:
-
-```text
-/instrument-types
-```
-
-защищён через `RequireAuth`.
-
-Frontend DTO отделён от frontend model:
-
-```text
-InstrumentTypeApiDto
-        ↓
-instrumentTypeMapper
-        ↓
-InstrumentTypeRead
-```
-
-Backend naming `snake_case` не распространяется в UI model; например `measurement_type` преобразуется в `measurementType`.
-
-CRUD mutations `create/update/archive/restore` пока не реализованы во frontend.
-
-## Latest Validation
-
-Backend:
-
-```text
-pytest -q
-134 passed
-```
-
-Последняя точечная infrastructure validation:
-
-```text
-1 passed
-ruff check — All checks passed!
-ruff format --check — 1 file already formatted
-```
-
-Frontend:
-
-```text
-npm run typecheck — passed
-npm run build — passed
-```
-
-После добавления `InstrumentType` list:
-
-```text
-1190 modules transformed
-vite build — passed
-```
-
-Vite сообщил только стандартное предупреждение о bundle chunk > 500 kB; текущий build завершился успешно.
+Generated TypeScript API client is not used.
 
 ## Authentication State
 
-Authentication использует server-side sessions.
-
-Текущая модель:
+Authentication uses server-side sessions:
 
 ```text
 Browser
@@ -297,163 +364,19 @@ SessionRepository
 PostgreSQL
 ```
 
-Authentication и authorization остаются отдельными concerns.
+Authentication and authorization remain separate concerns.
 
-Authentication foundation включает:
+Authentication foundation includes User domain/repository, Argon2 password hashing, session domain/repository/persistence, login/current-user/logout API, HttpOnly cookie and CSRF protection.
 
-- User domain и repository;
-- Argon2 password hashing adapter;
-- authentication application service;
-- session domain;
-- session repository interface;
-- session ORM model и mapper;
-- session repository;
-- `auth_sessions` migration;
-- authentication API dependency;
-- CSRF protection for state-changing cookie-authenticated requests.
-
-Authentication contract находится в:
+Contract:
 
 ```text
 docs/architecture/AUTHENTICATION.md
 ```
 
-## Session Persistence Checkpoint
+## Production State
 
-Session persistence foundation реализована в:
-
-```text
-backend/app/models/auth_session.py
-backend/app/infrastructure/mappers/auth_session_mapper.py
-backend/app/infrastructure/auth/session_repository.py
-backend/tests/infrastructure/mappers/test_auth_session_mapper.py
-backend/tests/infrastructure/auth/test_session_repository.py
-```
-
-ORM model зарегистрирован через:
-
-```text
-backend/app/db/model_registry.py
-```
-
-Migration:
-
-```text
-backend/alembic/versions/8f4c2d1a9b30_add_auth_sessions.py
-```
-
-Revision:
-
-```text
-8f4c2d1a9b30
-```
-
-Down revision:
-
-```text
-9a1ddec34200
-```
-
-Table:
-
-```text
-auth_sessions
-```
-
-Основные поля:
-
-- `id`;
-- `session_id` UNIQUE;
-- `user_id` FK → `users.id`;
-- `expires_at`;
-- `revoked`;
-- `created_at` с DB default.
-
-Indexes:
-
-- `session_id`;
-- `user_id`;
-- `expires_at`.
-
-## User Persistence
-
-Таблица `users` уже существовала в исходной Alembic schema.
-
-Не создавать duplicate users table или migration.
-
-ORM:
-
-```text
-backend/app/models/user.py
-```
-
-Repository:
-
-```text
-backend/app/infrastructure/user/user_repository.py
-```
-
-Mapper:
-
-```text
-backend/app/infrastructure/mappers/user_mapper.py
-```
-
-## Frontend Current State
-
-Frontend использует:
-
-```text
-React
-TypeScript
-Vite
-React Router
-TanStack Query
-Axios
-Material UI
-React Hook Form
-Zod
-```
-
-Feature-oriented architecture используется в `frontend/src/features/`.
-
-Готовы основные Orders flows:
-
-- orders list;
-- order details;
-- order items display;
-- create order;
-- update order;
-- register order;
-- cache update after registration;
-- customer selection.
-
-Также реализован первый `InstrumentType` read flow:
-
-- instrument types list;
-- protected `/instrument-types` route;
-- API DTO → frontend model mapping;
-- TanStack Query server-state hook.
-
-Authentication UI foundation также существует:
-
-- login route;
-- login form and validation;
-- login mutation;
-- current-user query;
-- protected route guard.
-
-Frontend API layer:
-
-```text
-frontend/src/shared/api/http.ts
-```
-
-Production frontend уже собирается и разворачивается вручную через nginx.
-
-## Production Deployment State
-
-Runtime topology:
+Production topology remains:
 
 ```text
 ZeroTier client
@@ -475,52 +398,37 @@ nginx
         PostgreSQL
 ```
 
-Required persistent services:
+Production frontend is built with Vite and served through nginx. Vite development server is not a production dependency.
+
+## Validation Checkpoint
+
+Latest frontend validation:
 
 ```text
-nginx.service
-sfera-backend.service
+npm run typecheck — passed
+npm run build     — passed
 ```
 
-Frontend production build and deployment are complete.
-
-## DNS / ZeroTier State
-
-Deployment remains ZeroTier-only.
-
-Network:
+Latest build:
 
 ```text
-Sfera
-01dce6d7bcdf5646
+1227 modules transformed
+vite build — passed
 ```
 
-Server:
+Vite reports only a chunk-size warning (>500 kB). This is not a build failure.
+
+Latest frontend feature commit before documentation renewal:
 
 ```text
-10.147.17.242/24
+b953cb5 feat: add price list detail route
 ```
 
-Established hostnames include:
-
-```text
-dev.vlsfera.ru
-top.vlsfera.ru
-api.vlsfera.ru
-db.vlsfera.ru
-storage.vlsfera.ru
-zt.vlsfera.ru
-git.vlsfera.ru
-grafana.vlsfera.ru
-prometheus.vlsfera.ru
-u6c.vlsfera.ru
-```
-
-Do not rename established infrastructure hostnames without explicit need.
+Documentation renewal commit follows this checkpoint.
 
 ## Documentation State
 
-Stable working rules:
+Working protocol:
 
 ```text
 docs/AI_WORKING_PROTOCOL.md
@@ -532,6 +440,12 @@ Volatile project state:
 docs/AI_CONTEXT.md
 ```
 
+Frontend architecture:
+
+```text
+docs/FRONTEND_ARCHITECTURE.md
+```
+
 Architecture governance:
 
 ```text
@@ -541,29 +455,34 @@ docs/MIGRATION_STATUS.md
 docs/architecture/MIGRATION_MATRIX.md
 docs/architecture/AUTHENTICATION.md
 docs/architecture/AUTHORIZATION.md
-docs/FRONTEND_ARCHITECTURE.md
 ```
 
-`PROJECT_CONSTITUTION.md` не изменяется как обычная документация.
+`PROJECT_CONSTITUTION.md` is normative and must not be changed as routine documentation.
 
-## Current Next Direction
+## Next Direction
 
-Authorization migration завершена для всех текущих use cases с определённым business owner.
+The current frontend phase has completed a broad sequence of read/list/detail slices.
 
-Orders order-items stage завершён: persistence mapping, backend read contract и frontend display реализованы и валидированы.
+Next work must start with an audit of the actual `develop` state and backend contracts.
 
-`InstrumentType` frontend list stage завершён и опубликован в `develop` commit `adbe580`.
+Do not:
 
-Следующий independent feature stage выбирается после аудита актуального `develop`; не продолжать authorization механически и не следовать устаревшему roadmap без проверки фактического кода.
+- add CRUD mechanically;
+- invent list→detail links without a confirmed ID source;
+- add authorization without an explicit business owner/requirement;
+- reintroduce legacy CRUD architecture;
+- follow an obsolete roadmap without checking current code.
 
-Для `Device`, `InstrumentType`, `PriceList`, `Workflow` не вводить authorization без нового explicit business requirement.
+Select the next independent user scenario from the actual repository state.
 
 ## Recovery Checkpoint
 
-При продолжении после паузы:
+After a pause:
 
-1. прочитать `docs/AI_WORKING_PROTOCOL.md`;
-2. прочитать `docs/AI_CONTEXT.md`;
-3. прочитать нормативные и соответствующие security/architecture документы;
-4. проверить актуальный `develop` и последние commits;
-5. определить следующий independent use case по фактическому состоянию кода.
+1. read `docs/AI_WORKING_PROTOCOL.md`;
+2. read `docs/AI_CONTEXT.md`;
+3. read relevant architecture/security documents;
+4. verify current `develop` and latest commits;
+5. audit backend/frontend state;
+6. select the next independent user scenario;
+7. work one file/small step at a time and validate before continuing.
