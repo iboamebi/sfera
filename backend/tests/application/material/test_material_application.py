@@ -20,11 +20,8 @@ class FakeMaterialRepository(MaterialRepository):
     def __init__(self) -> None:
         self._materials: dict[object, Material] = {}
 
-    def get(self, material_id, include_archived: bool = False):
-        material = self._materials.get(material_id)
-        if material is None or (material.archived and not include_archived):
-            return None
-        return material
+    def get(self, material_id):
+        return self._materials.get(material_id)
 
     def get_all(self, include_archived: bool = False):
         return [
