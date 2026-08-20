@@ -2,6 +2,7 @@ import { createBrowserRouter } from "react-router";
 
 import { RequireAuth } from "../features/auth/ui/RequireAuth";
 import { LoginPage } from "../pages/auth/LoginPage";
+import { CustomersPage } from "../pages/customers/CustomersPage";
 import { CreateOrderPage } from "../pages/orders/CreateOrderPage";
 import { OrderPage } from "../pages/orders/OrderPage";
 import { OrdersPage } from "../pages/orders/OrdersPage";
@@ -42,6 +43,14 @@ export const router = createBrowserRouter([
     element: (
       <RequireAuth>
         <OrderPage />
+      </RequireAuth>
+    ),
+  },
+  {
+    path: "/customers",
+    element: (
+      <RequireAuth>
+        <CustomersPage />
       </RequireAuth>
     ),
   },
