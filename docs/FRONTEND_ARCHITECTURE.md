@@ -6,7 +6,9 @@
 
 Frontend application уже реализован и развивается поэтапно поверх существующего backend API.
 
-Текущий реализованный пользовательский контур — **Orders**:
+Текущие реализованные пользовательские контуры — **Orders** и первый read-only slice **InstrumentType**.
+
+Orders:
 
 * список заказов;
 * отображение пустого состояния;
@@ -16,6 +18,13 @@ Frontend application уже реализован и развивается по�
 * отображение позиций заказа;
 * регистрация заказа;
 * обновление cache после регистрации.
+
+InstrumentType:
+
+* получение списка типов СИ;
+* преобразование backend DTO в frontend model;
+* защищённый маршрут `/instrument-types`;
+* loading/error/empty состояния списка.
 
 Backend DDD/Clean Architecture остается источником бизнес-правил. Frontend отвечает за пользовательский интерфейс, локальную валидацию и orchestration клиентских запросов.
 
@@ -86,7 +95,7 @@ Frontend использует **feature-oriented architecture**, согласо�
 
 ## 5. Фактическая структура frontend
 
-Текущая структура проекта:
+Текущая структура проекта включает:
 
 ```text
 frontend/src/
@@ -98,12 +107,18 @@ app/
         QueryProvider.tsx
 
 pages/
+    auth/
+        LoginPage.tsx
     orders/
         OrdersPage.tsx
         CreateOrderPage.tsx
         OrderPage.tsx
+    instrument-types/
+        InstrumentTypesPage.tsx
 
 features/
+    auth/
+        ...
     orders/
         api/
             getOrders.ts
@@ -130,6 +145,14 @@ features/
             OrderActions.tsx
             OrderDetails.tsx
             OrderItems.tsx
+    instrument-type/
+        api/
+            getInstrumentTypes.ts
+            instrumentTypeMapper.ts
+            types.ts
+        model/
+            types.ts
+            useInstrumentTypes.ts
 ```
 
 Структура является живой архитектурой: она уточняется по мере появления новых пользовательских сценариев.
@@ -159,16 +182,24 @@ App
 Фактически реализованы следующие маршруты:
 
 ```text
+/login
+/
 /orders
 /orders/new
 /orders/:orderId
+/instrument-types
 ```
 
 Назначение:
 
+* `/login` — authentication UI;
+* `/` — авторизованный список заказов;
 * `/orders` — список заказов;
 * `/orders/new` — создание заказа;
-* `/orders/:orderId` — просмотр конкретного заказа.
+* `/orders/:orderId` — просмотр конкретного заказа;
+* `/instrument-types` — список типов средств измерений.
+
+Защищённые маршруты используют `RequireAuth`.
 
 Новые маршруты добавляются только вместе с соответствующим пользовательским сценарием.
 
@@ -188,6 +219,18 @@ useOrders()
 loading / error / empty / data
     ↓
 OrderListItem
+```
+
+`InstrumentTypesPage` использует тот же принцип:
+
+```text
+InstrumentTypesPage
+    ↓
+useInstrumentTypes()
+    ↓
+loading / error / empty / data
+    ↓
+InstrumentType presentation
 ```
 
 Page не должна содержать HTTP-запросы, бизнес-правила или сложную domain-specific логику.
@@ -224,6 +267,18 @@ Feature содержит:
 * отображение ошибки.
 
 После успешной регистрации cache конкретного заказа обновляется через TanStack Query.
+
+### InstrumentType
+
+Первый slice является read-only и содержит:
+
+* API DTO;
+* mapper;
+* frontend model;
+* React Query hook;
+* получение списка `/instrument-types/`.
+
+CRUD mutations `create/update/archive/restore` пока не реализованы во frontend.
 
 ---
 
@@ -265,7 +320,17 @@ OrderRead
 
 `OrderApiDto.items` преобразуется mapper в frontend `OrderRead.items`, включая перевод `instrument_id` в `instrumentId`.
 
-Это позволяет не распространять backend naming и транспортные детали по всему UI.
+Для InstrumentType используется аналогичный boundary:
+
+```text
+InstrumentTypeApiDto
+    ↓
+instrumentTypeMapper
+    ↓
+InstrumentTypeRead
+```
+
+Backend naming `snake_case` не распространяется по UI model; например `measurement_type` преобразуется в `measurementType`.
 
 Generated TypeScript API client пока не используется. Поэтому документация не должна утверждать, что frontend уже построен вокруг автоматически сгенерированного OpenAPI client.
 
@@ -312,6 +377,8 @@ UI-компоненты разделяются по ответственност
 * `RegisterOrderButton` — кнопка регистрации;
 * `RegisterOrderError` — ошибка регистрации.
 
+`InstrumentTypesPage` пока использует простое inline presentation списка; отдельный `InstrumentTypeListItem` не создаётся без реальной потребности в переиспользовании.
+
 Страницы не должны превращаться в большие монолитные компоненты.
 
 Повторно используемые или feature-specific UI элементы выносятся из pages по мере необходимости.
@@ -345,6 +412,8 @@ Frontend validation не заменяет backend validation.
 Ошибки backend не должны молча подавляться.
 
 HTTP-ошибки преобразуются в пользовательское состояние на соответствующем уровне feature/page.
+
+Текущий `InstrumentTypesPage` явно обрабатывает loading, error и empty states.
 
 ---
 
@@ -397,7 +466,7 @@ y
 
 ## 17. Текущий implementation checkpoint
 
-На текущем этапе реализован пользовательский контур Orders.
+На текущем этапе реализованы два frontend пользовательских контура.
 
 ```text
 Orders
@@ -409,13 +478,21 @@ Orders
   ├── order details        ✓
   ├── order items          ✓
   └── register order       ✓
+
+InstrumentType
+  ├── list                 ✓
+  ├── loading state        ✓
+  ├── error state          ✓
+  └── empty state          ✓
 ```
 
 Регистрация заказа использует mutation и после успешного выполнения обновляет cache соответствующего заказа.
 
 `OrderRead.items` получает данные из backend API через отдельный API DTO и mapper. `OrderItems` отвечает только за их отображение и не содержит бизнес-логики.
 
-Frontend application shell, routing, API integration и базовый Orders flow уже реализованы.
+`InstrumentType` list получает backend DTO через Axios, преобразует его mapper в frontend model и загружает server state через TanStack Query.
+
+Frontend application shell, routing, API integration и базовые пользовательские flows уже реализованы.
 
 ---
 
@@ -472,4 +549,4 @@ sync GitHub
 next scenario
 ```
 
-Следующий независимый frontend сценарий выбирается после аудита актуального backend и frontend состояния; не следует автоматически продолжать ранее записанный roadmap, если фактический код уже опередил документацию.
+После `InstrumentType` list следующий шаг должен выбираться после повторного аудита актуального backend/frontend состояния. Нельзя автоматически считать `InstrumentType` CRUD следующим обязательным этапом: сначала проверяется фактическая пользовательская потребность и существующий UI flow.
