@@ -1,4 +1,5 @@
 import { Stack, Typography } from "@mui/material";
+import { Link } from "react-router";
 
 import { useOrganizations } from "../../features/organizations/model/useOrganizations";
 
@@ -21,7 +22,11 @@ export function OrganizationsPage() {
     <Stack spacing={2}>
       {organizations.map((organization) => (
         <Stack key={organization.id} spacing={0.5}>
-          <Typography variant="h6">{organization.name}</Typography>
+          <Typography variant="h6">
+            <Link to={`/organizations/${organization.id}`}>
+              {organization.name}
+            </Link>
+          </Typography>
           {organization.shortName && (
             <Typography color="text.secondary">
               {organization.shortName}
