@@ -5,6 +5,7 @@ import { LoginPage } from "../pages/auth/LoginPage";
 import { CustomersPage } from "../pages/customers/CustomersPage";
 import { CustomerPage } from "../pages/customers/CustomerPage";
 import { MaterialsPage } from "../pages/materials/MaterialsPage";
+import { MaterialPage } from "../pages/materials/MaterialPage";
 import { OrganizationsPage } from "../pages/organizations/OrganizationsPage";
 import { OrganizationPage } from "../pages/organizations/OrganizationPage";
 import { CreateOrderPage } from "../pages/orders/CreateOrderPage";
@@ -87,6 +88,14 @@ export const router = createBrowserRouter([
     element: (
       <RequireAuth>
         <MaterialsPage />
+      </RequireAuth>
+    ),
+  },
+  {
+    path: "/materials/:materialId",
+    element: (
+      <RequireAuth>
+        <MaterialPage />
       </RequireAuth>
     ),
   },
