@@ -1,3 +1,9 @@
+export interface OrderItemApiDto {
+  id: string;
+  instrument_id: string | null;
+  comment: string | null;
+}
+
 export interface OrderApiDto {
   id: string;
   number: string;
@@ -8,4 +14,5 @@ export interface OrderApiDto {
   issued_at: string | null;
   comment: string | null;
   archived: boolean;
+  items: OrderItemApiDto[];
 }
