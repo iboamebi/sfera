@@ -60,8 +60,16 @@ class MaterialApplicationService:
     def create(
         self,
         command: CreateMaterialCommand,
+        user: User,
     ) -> Material:
         """Create material."""
+
+        require_role(
+            user,
+            UserRole.OPERATOR,
+            UserRole.ADMIN,
+            UserRole.WAREHOUSE,
+        )
 
         material = Material(
             id=uuid4(),
