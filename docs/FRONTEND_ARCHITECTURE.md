@@ -4,49 +4,15 @@
 
 Этот документ описывает **актуальную архитектуру и правила frontend Sfera**.
 
-Frontend application уже реализован и развивается поэтапно поверх существующего backend API.
+Frontend развивается поэтапно поверх существующего backend API. Backend DDD/Clean Architecture остаётся источником бизнес-правил; frontend отвечает за UI, клиентскую валидацию и orchestration server state.
 
-Текущие реализованные пользовательские контуры — **Orders** и первый read-only slice **InstrumentType**.
-
-Orders:
-
-* список заказов;
-* отображение пустого состояния;
-* отображение ошибки загрузки;
-* создание заказа;
-* просмотр заказа;
-* отображение позиций заказа;
-* регистрация заказа;
-* обновление cache после регистрации.
-
-InstrumentType:
-
-* получение списка типов СИ;
-* преобразование backend DTO в frontend model;
-* защищённый маршрут `/instrument-types`;
-* loading/error/empty состояния списка.
-
-Backend DDD/Clean Architecture остается источником бизнес-правил. Frontend отвечает за пользовательский интерфейс, локальную валидацию и orchestration клиентских запросов.
+Текущий frontend checkpoint включает Orders и read/detail slices для Customer, Organization, Material, Verification, Diagnostic, Repair и PriceList, а также InstrumentType list/detail.
 
 ---
 
-## 2. Назначение
+## 2. Технологический стек
 
-Frontend является пользовательским интерфейсом информационной системы Sfera.
-
-Основная задача frontend:
-
-* предоставить рабочий интерфейс сотрудникам сервисного центра и метрологической лаборатории;
-* заменить использование Swagger в ежедневной работе;
-* реализовать пользовательские сценарии поверх существующего backend API.
-
-Frontend не содержит бизнес-правил предметной области. Бизнес-логика остается в backend слоях Domain и Application.
-
----
-
-## 3. Технологический стек
-
-Фактически используется следующий стек:
+Фактически используется:
 
 * React 19;
 * TypeScript 7;
@@ -58,44 +24,27 @@ Frontend не содержит бизнес-правил предметной о
 * React Hook Form;
 * Zod.
 
-Назначение технологий:
-
-* React — построение пользовательского интерфейса;
-* TypeScript — типизация;
-* Vite — сборка и development server;
-* React Router — маршрутизация;
-* TanStack Query — server state, cache и mutations;
-* Axios — HTTP-клиент;
-* Material UI — UI-компоненты;
-* React Hook Form — управление формами;
-* Zod — клиентская валидация форм.
-
-Версии библиотек фиксируются в `frontend/package.json` и `frontend/package-lock.json`.
+Версии фиксируются в `frontend/package.json` и `frontend/package-lock.json`.
 
 ---
 
-## 4. Архитектурный подход
+## 3. Архитектурный подход
 
 Frontend использует **feature-oriented architecture**, согласованную с принципами Feature-Sliced Design.
 
-Текущая реализация развивается от application shell к пользовательским features.
+Основные правила:
 
-Основные цели:
-
-* разделение ответственности;
-* изоляция API-слоя от UI;
-* отделение frontend models от backend DTO;
-* повторное использование feature components;
-* развитие одного пользовательского сценария за итерацию;
-* отсутствие бизнес-логики в pages и UI-компонентах.
-
-Архитектура не должна усложняться ради формального соответствия FSD. Новые уровни (`widgets`, `entities`, `shared`) добавляются только при наличии реальной потребности.
+* API изолирован от UI;
+* backend DTO отделяются от frontend models;
+* server state управляется TanStack Query;
+* pages являются точками композиции сценариев;
+* бизнес-логика не помещается в pages/UI;
+* новые уровни (`widgets`, `entities`, `shared`) добавляются только при реальной необходимости;
+* один пользовательский сценарий реализуется небольшими последовательными шагами.
 
 ---
 
-## 5. Фактическая структура frontend
-
-Текущая структура проекта включает:
+## 4. Фактическая структура
 
 ```text
 frontend/src/
@@ -104,64 +53,37 @@ app/
     App.tsx
     router.tsx
     providers/
-        QueryProvider.tsx
 
 pages/
     auth/
-        LoginPage.tsx
     orders/
-        OrdersPage.tsx
-        CreateOrderPage.tsx
-        OrderPage.tsx
+    customers/
+    organizations/
+    materials/
+    verifications/
+    diagnostics/
+    repairs/
+    price-lists/
     instrument-types/
-        InstrumentTypesPage.tsx
 
 features/
     auth/
-        ...
     orders/
-        api/
-            getOrders.ts
-            getOrder.ts
-            createOrder.ts
-            orderMapper.ts
-            types.ts
-        model/
-            types.ts
-            useOrders.ts
-            useOrder.ts
-        create-order/
-            api/
-            model/
-            ui/
-        register-order/
-            api/
-            model/
-            ui/
-        ui/
-            OrderListItem.tsx
-            OrderListEmpty.tsx
-            OrderListError.tsx
-            OrderActions.tsx
-            OrderDetails.tsx
-            OrderItems.tsx
+    customers/
+    organizations/
+    materials/
+    verifications/
+    diagnostics/
+    repairs/
+    price-lists/
     instrument-type/
-        api/
-            getInstrumentTypes.ts
-            instrumentTypeMapper.ts
-            types.ts
-        model/
-            types.ts
-            useInstrumentTypes.ts
 ```
 
-Структура является живой архитектурой: она уточняется по мере появления новых пользовательских сценариев.
+Структура является живой архитектурой и уточняется по мере появления пользовательских сценариев.
 
 ---
 
-## 6. Application shell
-
-`app/App.tsx` является корневым компонентом приложения.
+## 5. Application shell
 
 Текущая композиция:
 
@@ -171,15 +93,13 @@ App
  └── RouterProvider
 ```
 
-`QueryProvider` предоставляет TanStack Query для работы с server state.
-
-Маршрутизация определяется в `app/router.tsx`.
+Маршрутизация определяется в `frontend/src/app/router.tsx`.
 
 ---
 
-## 7. Маршрутизация
+## 6. Маршрутизация
 
-Фактически реализованы следующие маршруты:
+Актуальные маршруты на `develop`:
 
 ```text
 /login
@@ -187,106 +107,162 @@ App
 /orders
 /orders/new
 /orders/:orderId
+/customers
+/customers/:customerId
+/organizations
+/organizations/:organizationId
+/materials
+/materials/:materialId
+/verifications/:verificationId
+/diagnostics/:diagnosticId
+/repairs/:repairId
+/price-lists/:priceListId
 /instrument-types
+/instrument-types/:instrumentTypeId
 ```
 
-Назначение:
-
-* `/login` — authentication UI;
-* `/` — авторизованный список заказов;
-* `/orders` — список заказов;
-* `/orders/new` — создание заказа;
-* `/orders/:orderId` — просмотр конкретного заказа;
-* `/instrument-types` — список типов средств измерений.
-
-Защищённые маршруты используют `RequireAuth`.
-
-Новые маршруты добавляются только вместе с соответствующим пользовательским сценарием.
+`/login` является публичным. Остальные пользовательские маршруты защищены `RequireAuth`. Это соответствует фактическому router contract на текущем `develop`. fileciteturn143file0
 
 ---
 
-## 8. Pages
-
-Pages являются точками композиции пользовательского сценария.
-
-Например, `OrdersPage`:
-
-```text
-OrdersPage
-    ↓
-useOrders()
-    ↓
-loading / error / empty / data
-    ↓
-OrderListItem
-```
-
-`InstrumentTypesPage` использует тот же принцип:
-
-```text
-InstrumentTypesPage
-    ↓
-useInstrumentTypes()
-    ↓
-loading / error / empty / data
-    ↓
-InstrumentType presentation
-```
-
-Page не должна содержать HTTP-запросы, бизнес-правила или сложную domain-specific логику.
-
-Сложные действия и состояния выносятся в features и UI-компоненты.
-
----
-
-## 9. Features
-
-Feature представляет конкретное пользовательское действие или функциональный контур.
-
-Уже реализованы:
+## 7. Реализованные frontend slices
 
 ### Orders
 
-* получение списка заказов;
-* получение заказа по ID;
+Реализованы:
+
+* список заказов;
+* loading/error/empty states;
 * создание заказа;
-* отображение позиций заказа;
-* регистрация заказа.
+* просмотр заказа;
+* позиции заказа;
+* регистрация заказа;
+* обновление cache после регистрации;
+* customer selection.
 
-### Create Order
+### Customer
 
-Feature отвечает за форму создания заказа, её model/API/UI части и клиентскую валидацию.
+Реализованы list/detail API integration, frontend model/mapper, query hook и detail page/route.
 
-### Register Order
+### Organization
 
-Feature содержит:
+Реализованы list/detail API integration, frontend model/mapper, query hooks, list/detail pages и защищённые routes. List связан с detail.
 
-* API mutation;
-* React Query hook;
-* кнопку регистрации;
-* отображение ошибки.
+### Material
 
-После успешной регистрации cache конкретного заказа обновляется через TanStack Query.
+Реализованы list/detail API integration, frontend DTO/model/mapper, query hooks, list/detail pages и защищённые routes. List связан с detail.
+
+### Verification
+
+Реализован detail read slice:
+
+```text
+API DTO
+  ↓
+mapper
+  ↓
+frontend model
+  ↓
+getVerification()
+  ↓
+useVerification()
+  ↓
+VerificationPage
+  ↓
+/verifications/:verificationId
+```
+
+### Diagnostic
+
+Реализован аналогичный detail read slice:
+
+```text
+API DTO → mapper → frontend model → getDiagnostic() → useDiagnostic() → DiagnosticPage
+```
+
+Route:
+
+```text
+/diagnostics/:diagnosticId
+```
+
+### Repair
+
+Реализован detail read slice:
+
+```text
+API DTO → mapper → frontend model → getRepair() → useRepair() → RepairPage
+```
+
+Route:
+
+```text
+/repairs/:repairId
+```
+
+### PriceList
+
+Реализован detail read slice:
+
+```text
+API DTO
+  ↓
+mapper
+  ↓
+frontend model
+  ↓
+getPriceList()
+  ↓
+usePriceList()
+  ↓
+PriceListPage
+  ↓
+/price-lists/:priceListId
+```
+
+В текущем frontend-коде нет подтверждённого существующего источника `priceListId` для list→detail navigation, поэтому ссылку из списка пока не добавляем.
 
 ### InstrumentType
 
-Первый slice является read-only и содержит:
+Реализованы list и detail read slices.
 
-* API DTO;
-* mapper;
-* frontend model;
-* React Query hook;
-* получение списка `/instrument-types/`.
+List:
 
-CRUD mutations `create/update/archive/restore` пока не реализованы во frontend.
+```text
+GET /instrument-types/
+  ↓
+getInstrumentTypes()
+  ↓
+mapper
+  ↓
+useInstrumentTypes()
+  ↓
+InstrumentTypesPage
+```
+
+Detail:
+
+```text
+GET /instrument-types/{instrument_type_id}
+  ↓
+getInstrumentType()
+  ↓
+mapper
+  ↓
+useInstrumentType()
+  ↓
+InstrumentTypePage
+```
+
+CRUD mutations для InstrumentType во frontend пока не реализованы.
 
 ---
 
-## 10. Работа с API
+## 8. Boundary API → model
 
 Backend является источником истины.
 
-Текущая схема взаимодействия:
+Общий поток:
 
 ```text
 FastAPI backend
@@ -304,132 +280,74 @@ React Query hook
 Page / Feature UI
 ```
 
-API-логика находится внутри соответствующей feature, а не непосредственно в pages и UI-компонентах.
+Backend `snake_case` не распространяется по UI model. Например `instrument_id` преобразуется в `instrumentId`, `measurement_type` — в `measurementType`.
 
-Для Orders backend DTO отделены от frontend models.
-
-Например:
-
-```text
-OrderApiDto
-    ↓
-orderMapper
-    ↓
-OrderRead
-```
-
-`OrderApiDto.items` преобразуется mapper в frontend `OrderRead.items`, включая перевод `instrument_id` в `instrumentId`.
-
-Для InstrumentType используется аналогичный boundary:
-
-```text
-InstrumentTypeApiDto
-    ↓
-instrumentTypeMapper
-    ↓
-InstrumentTypeRead
-```
-
-Backend naming `snake_case` не распространяется по UI model; например `measurement_type` преобразуется в `measurementType`.
-
-Generated TypeScript API client пока не используется. Поэтому документация не должна утверждать, что frontend уже построен вокруг автоматически сгенерированного OpenAPI client.
+Generated TypeScript API client пока не используется.
 
 ---
 
-## 11. Управление состоянием
-
-Используется разделение server state и client state.
-
-### Server State
+## 9. Server state
 
 TanStack Query используется для:
 
 * загрузки данных;
 * cache;
+* query hooks;
 * mutations;
-* обновления данных после действий пользователя;
-* состояний loading/error.
-
-### Client State
-
-Локальное состояние используется только там, где оно действительно необходимо:
-
-* состояние UI;
-* состояние формы;
-* временные данные взаимодействия пользователя.
+* pending/error states;
+* обновления данных после пользовательских действий.
 
 Бизнес-данные не должны без необходимости дублироваться в глобальном client state.
 
 ---
 
-## 12. UI-компоненты
+## 10. Pages и UI
 
-UI-компоненты разделяются по ответственности.
+Pages являются точками композиции сценария и не должны содержать HTTP-запросы или domain-specific business logic.
 
-Примеры текущей реализации:
+Типовой read flow:
 
-* `OrderListItem` — отображение элемента списка;
-* `OrderListEmpty` — пустое состояние списка;
-* `OrderListError` — состояние ошибки;
-* `OrderDetails` — отображение деталей заказа;
-* `OrderItems` — отображение позиций заказа;
-* `OrderActions` — композиция действий над заказом;
-* `RegisterOrderButton` — кнопка регистрации;
-* `RegisterOrderError` — ошибка регистрации.
+```text
+Page
+  ↓
+useQuery hook
+  ↓
+loading / error / empty / data
+  ↓
+presentation
+```
 
-`InstrumentTypesPage` пока использует простое inline presentation списка; отдельный `InstrumentTypeListItem` не создаётся без реальной потребности в переиспользовании.
-
-Страницы не должны превращаться в большие монолитные компоненты.
-
-Повторно используемые или feature-specific UI элементы выносятся из pages по мере необходимости.
+Сложные состояния и действия выносятся в feature model/API/UI.
 
 ---
 
-## 13. Формы и валидация
-
-Правила:
+## 11. Формы и валидация
 
 * формы реализуются через React Hook Form;
-* схема проверки через Zod;
-* frontend выполняет пользовательскую валидацию;
-* backend остается источником истины для бизнес-валидации.
+* схемы проверки — Zod;
+* frontend validation отвечает за UX;
+* backend остаётся источником истины для business validation.
 
 Frontend validation не заменяет backend validation.
 
 ---
 
-## 14. Обработка состояний и ошибок
+## 12. Обработка состояний
 
-Каждый пользовательский сценарий должен явно учитывать:
+Для каждого применимого пользовательского сценария учитываются:
 
 * loading;
 * success/data;
-* empty state, если он применим;
+* empty state;
 * API error;
 * mutation pending;
 * mutation error.
 
 Ошибки backend не должны молча подавляться.
 
-HTTP-ошибки преобразуются в пользовательское состояние на соответствующем уровне feature/page.
-
-Текущий `InstrumentTypesPage` явно обрабатывает loading, error и empty states.
-
 ---
 
-## 15. Правила разработки
-
-Соблюдаются принципы:
-
-* один пользовательский сценарий за итерацию;
-* небольшие изменения;
-* анализ существующего кода перед изменением;
-* разделение API, model и UI ответственности;
-* отсутствие бизнес-логики в pages;
-* проверка после каждого этапа;
-* документация синхронизируется с кодом.
-
-Workflow:
+## 13. Правила разработки
 
 ```text
 анализ
@@ -443,110 +361,119 @@ y
 следующий шаг
 ```
 
+Соблюдаются:
+
+* анализ существующего кода перед изменением;
+* один небольшой сценарий за итерацию;
+* разделение API/model/UI;
+* отсутствие бизнес-логики в pages;
+* typecheck после изменений;
+* build после изменений;
+* документация синхронизируется с кодом;
+* изменения фиксируются и синхронизируются с GitHub.
+
 ---
 
-## 16. Frontend Definition of Done
+## 14. Definition of Done
 
-Пользовательский сценарий считается завершенным, когда:
+Frontend slice считается завершённым, когда:
 
-* определен пользовательский flow;
-* необходимый backend API существует;
+* backend contract существует;
 * API layer реализован;
-* backend DTO отделены от frontend models, если это необходимо;
-* React Query hook реализован для server state;
+* DTO/model boundary определён;
+* mapper реализован при необходимости;
+* React Query hook реализован;
 * UI реализован;
-* loading/error/empty состояния обработаны;
-* формы имеют клиентскую валидацию, если она нужна;
+* применимые loading/error/empty states обработаны;
 * typecheck проходит;
 * build проходит;
 * документация обновлена;
-* изменения зафиксированы в Git и синхронизированы с GitHub.
+* commit опубликован в `develop`.
 
 ---
 
-## 17. Текущий implementation checkpoint
+## 15. Current implementation checkpoint
 
-На текущем этапе реализованы два frontend пользовательских контура.
+На текущем `develop`:
 
 ```text
 Orders
   ├── list                 ✓
-  ├── loading state        ✓
-  ├── error state          ✓
-  ├── empty state          ✓
-  ├── create order         ✓
-  ├── order details        ✓
-  ├── order items          ✓
-  └── register order       ✓
+  ├── create               ✓
+  ├── detail               ✓
+  ├── items                ✓
+  └── register             ✓
+
+Customer
+  └── detail               ✓
+
+Organization
+  ├── list                 ✓
+  └── detail               ✓
+
+Material
+  ├── list                 ✓
+  └── detail               ✓
+
+Verification
+  └── detail               ✓
+
+Diagnostic
+  └── detail               ✓
+
+Repair
+  └── detail               ✓
+
+PriceList
+  └── detail               ✓
 
 InstrumentType
   ├── list                 ✓
-  ├── loading state        ✓
-  ├── error state          ✓
-  └── empty state          ✓
+  └── detail               ✓
 ```
 
-Регистрация заказа использует mutation и после успешного выполнения обновляет cache соответствующего заказа.
+Последний опубликованный frontend checkpoint перед обновлением документации:
 
-`OrderRead.items` получает данные из backend API через отдельный API DTO и mapper. `OrderItems` отвечает только за их отображение и не содержит бизнес-логики.
+```text
+b953cb5 feat: add price list detail route
+```
 
-`InstrumentType` list получает backend DTO через Axios, преобразует его mapper в frontend model и загружает server state через TanStack Query.
+Последняя локальная валидация:
 
-Frontend application shell, routing, API integration и базовые пользовательские flows уже реализованы.
+```text
+npm run typecheck — passed
+npm run build     — passed
+```
+
+Vite сообщает warning о bundle chunk > 500 kB. Это не является ошибкой сборки.
 
 ---
 
-## 18. Production Runtime
-
-Frontend production runtime использует статический Vite build, размещенный через nginx.
+## 16. Production runtime
 
 ```text
 Browser
     ↓
 nginx
     ├── static React SPA
-    │
     └── /api/*
           ↓
         FastAPI backend
 ```
 
-SPA routing обслуживается через fallback на:
-
-```text
-/index.html
-```
-
-Production runtime **не требует постоянно работающего Vite development server**.
-
-Vite development server используется только для локальной разработки и не является частью production deployment.
-
-Frontend production deployment выполняется вручную. Автоматический deployment pipeline в текущей архитектуре не заявляется.
+Production frontend использует Vite build и nginx. Постоянно работающий Vite development server для production не требуется.
 
 ---
 
-## 19. Frontend Roadmap
+## 17. Next-step policy
 
-Дальнейшая разработка выполняется по пользовательским сценариям, а не по механическому заполнению каталогов.
+После завершения серии read/detail slices следующий сценарий выбирается **только после аудита актуального backend и frontend состояния**.
 
-Целевой workflow:
+Нельзя:
 
-```text
-audit current UI
-        ↓
-select one user scenario
-        ↓
-analyze existing backend API
-        ↓
-implement feature
-        ↓
-validate typecheck/build/tests
-        ↓
-update documentation
-        ↓
-sync GitHub
-        ↓
-next scenario
-```
+* автоматически начинать CRUD только потому, что detail готов;
+* создавать list→detail links без подтверждённого ID source;
+* добавлять backend authorization для `Device`, `InstrumentType`, `PriceList` или `Workflow` без explicit business requirement;
+* возвращаться к legacy CRUD architecture.
 
-После `InstrumentType` list следующий шаг должен выбираться после повторного аудита актуального backend/frontend состояния. Нельзя автоматически считать `InstrumentType` CRUD следующим обязательным этапом: сначала проверяется фактическая пользовательская потребность и существующий UI flow.
+Следующий шаг определяется фактическим пользовательским flow и существующим backend contract.
