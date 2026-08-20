@@ -12,5 +12,10 @@ export function mapOrder(dto: OrderApiDto): OrderRead {
     issuedAt: dto.issued_at,
     comment: dto.comment,
     archived: dto.archived,
+    items: dto.items.map((item) => ({
+      id: item.id,
+      instrumentId: item.instrument_id,
+      comment: item.comment,
+    })),
   };
 }
