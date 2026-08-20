@@ -11,6 +11,7 @@ import { OrganizationPage } from "../pages/organizations/OrganizationPage";
 import { VerificationPage } from "../pages/verifications/VerificationPage";
 import { DiagnosticPage } from "../pages/diagnostics/DiagnosticPage";
 import { RepairPage } from "../pages/repairs/RepairPage";
+import { PriceListPage } from "../pages/price-lists/PriceListPage";
 import { CreateOrderPage } from "../pages/orders/CreateOrderPage";
 import { OrderPage } from "../pages/orders/OrderPage";
 import { OrdersPage } from "../pages/orders/OrdersPage";
@@ -123,6 +124,14 @@ export const router = createBrowserRouter([
     element: (
       <RequireAuth>
         <RepairPage />
+      </RequireAuth>
+    ),
+  },
+  {
+    path: "/price-lists/:priceListId",
+    element: (
+      <RequireAuth>
+        <PriceListPage />
       </RequireAuth>
     ),
   },
