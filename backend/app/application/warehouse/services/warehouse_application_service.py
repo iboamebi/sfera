@@ -4,6 +4,7 @@ Application service for Warehouse.
 
 from uuid import uuid4
 
+from app.application.authorization.authorization import require_role
 from app.application.warehouse.commands.add_stock import (
     AddStockCommand,
 )
@@ -22,6 +23,8 @@ from app.application.warehouse.commands.reserve_stock import (
 from app.application.warehouse.exceptions import (
     StockNotFoundApplicationError,
 )
+from app.domains.user.entities.user import User
+from app.domains.user.value_objects.user_role import UserRole
 from app.domains.warehouse.entities.warehouse import Warehouse
 from app.domains.warehouse.entities.warehouse_movement import (
     WarehouseMovement,
@@ -59,7 +62,14 @@ class WarehouseApplicationService:
     def create(
         self,
         command: CreateWarehouseCommand,
+        user: User,
     ) -> Warehouse:
+        require_role(
+            user,
+            UserRole.ADMIN,
+            UserRole.WAREHOUSE,
+        )
+
         with self._uow:
             warehouse = Warehouse(
                 id=uuid4(),
