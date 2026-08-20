@@ -56,230 +56,122 @@ The matrix above describes responsibilities rather than granting every individua
 
 ## Implemented Use-Case Authorization
 
-### Order creation
+### Order
 
-The `OrderApplicationService.create()` use case currently requires one of:
-
-- `operator`;
-- `admin`.
-
-The authorization check is performed in the Application layer through the shared authorization contract.
-
-```text
-POST /orders/
-        ↓
-Authenticated User
-        ↓
-OrderApplicationService.create(..., user)
-        ↓
-require_role(user, OPERATOR, ADMIN)
-        ↓
-Order.create()
-```
-
-Unauthorized users are rejected by the Application layer with an authorization error. The API boundary maps that error to HTTP `403 Forbidden`.
-
-The API route also requires authentication and CSRF protection for this state-changing operation.
-
-### Order item addition
-
-The `OrderApplicationService.add_item()` use case currently requires one of:
+The following Order application use cases require one of:
 
 - `operator`;
 - `admin`.
 
-The authorization check is performed in the Application layer through the shared authorization contract.
+Implemented use cases:
 
-```text
-POST /orders/{order_id}/items
-        ↓
-Authenticated User
-        ↓
-OrderApplicationService.add_item(..., user)
-        ↓
-require_role(user, OPERATOR, ADMIN)
-        ↓
-Order.add_item()
-```
+- `create`;
+- `add_item`;
+- `update`;
+- `register`.
 
-Unauthorized users are rejected by the Application layer with an authorization error. The API boundary maps that error to HTTP `403 Forbidden`.
+Authorization is performed in the Application layer through the shared authorization contract. State-changing API routes authenticate the user and require CSRF protection, then pass the authenticated user to the Application use case.
 
-The API route also requires authentication and CSRF protection for this state-changing operation.
+### Customer
 
-### Order update
-
-The `OrderApplicationService.update()` use case currently requires one of:
+The following Customer application use cases require one of:
 
 - `operator`;
 - `admin`.
 
-The authorization check is performed in the Application layer through the shared authorization contract.
+Implemented use cases:
 
-```text
-PATCH /orders/{order_id}
-        ↓
-Authenticated User
-        ↓
-OrderApplicationService.update(..., user)
-        ↓
-require_role(user, OPERATOR, ADMIN)
-        ↓
-Order.update_details()
-```
+- `create`;
+- `update`;
+- `delete` / archive.
 
-Unauthorized users are rejected by the Application layer with an authorization error. The API boundary maps that error to HTTP `403 Forbidden`.
+`delete` performs a soft delete through the Customer domain `archive()` behavior. Physical deletion is not performed.
 
-The API route also requires authentication and CSRF protection for this state-changing operation.
+Authorization is performed in the Application layer. State-changing API routes authenticate the user and require CSRF protection, then pass the authenticated user to the Application use case.
 
-### Order registration
+### Organization
 
-The `OrderApplicationService.register()` use case currently requires one of:
+The following Organization application use cases require one of:
 
 - `operator`;
 - `admin`.
 
-The authorization check is performed in the Application layer through the shared authorization contract.
+Implemented use cases:
 
-```text
-POST /orders/{order_id}/register
-        ↓
-Authenticated User
-        ↓
-OrderApplicationService.register(..., user)
-        ↓
-require_role(user, OPERATOR, ADMIN)
-        ↓
-Order.register()
-```
+- `create`;
+- `update`.
 
-Unauthorized users are rejected by the Application layer with an authorization error. The API boundary maps that error to HTTP `403 Forbidden`.
+Authorization is performed in the Application layer. State-changing API routes authenticate the user and require CSRF protection, then pass the authenticated user to the Application use case.
 
-The API route also requires authentication and CSRF protection for this state-changing operation.
+### Material
 
-### Customer creation
+The following Material application use cases require one of:
 
-The `CustomerApplicationService.create()` use case currently requires one of:
-
-- `operator`;
+- `warehouse`;
 - `admin`.
 
-The authenticated `User` is passed from the API boundary into the Application service, where the shared authorization contract is evaluated before the Customer domain entity is created.
+Implemented use cases:
 
-```text
-POST /customers/
-        ↓
-Authenticated User
-        ↓
-CustomerApplicationService.create(..., user)
-        ↓
-require_role(user, OPERATOR, ADMIN)
-        ↓
-Customer
-```
+- `create`;
+- `update`;
+- `archive`;
+- `restore`.
 
-Unauthorized users are rejected by the Application layer with an authorization error. The API boundary maps that error to HTTP `403 Forbidden`.
+Authorization is performed in the Application layer. State-changing API routes pass the authenticated user to the Application use case and retain CSRF protection.
 
-The API route also requires authentication and CSRF protection for this state-changing operation.
+### Warehouse
 
-### Customer update
+Warehouse state-changing application use cases require one of:
 
-The `CustomerApplicationService.update()` use case currently requires one of:
-
-- `operator`;
+- `warehouse`;
 - `admin`.
 
-The authenticated `User` is passed from the API boundary into the Application service, where authorization is checked before Customer domain state is changed.
+The Warehouse authorization contract is implemented at the Application boundary for the currently migrated warehouse operations.
 
-```text
-PATCH /customers/{customer_id}
-        ↓
-Authenticated User
-        ↓
-CustomerApplicationService.update(..., user)
-        ↓
-require_role(user, OPERATOR, ADMIN)
-        ↓
-Customer domain mutation
-```
+### Verification
 
-Unauthorized users are rejected by the Application layer with an authorization error. The API boundary maps that error to HTTP `403 Forbidden`.
+The following Verification application use cases require one of:
 
-The API route also requires authentication and CSRF protection for this state-changing operation.
-
-### Customer deletion / archive
-
-The `CustomerApplicationService.delete()` use case currently requires one of:
-
-- `operator`;
+- `metrologist`;
 - `admin`.
 
-The use case performs a soft delete through the Customer domain `archive()` behavior. Physical deletion is not performed.
+Implemented use cases:
 
-```text
-DELETE /customers/{customer_id}
-        ↓
-Authenticated User
-        ↓
-CustomerApplicationService.delete(..., user)
-        ↓
-require_role(user, OPERATOR, ADMIN)
-        ↓
-Customer.archive()
-```
+- `approve`;
+- `reject`.
 
-Unauthorized users are rejected by the Application layer with an authorization error. The API boundary maps that error to HTTP `403 Forbidden`.
+Authorization is performed in the Application layer. The existing Verification API currently exposes only its read operation, so no new mutation endpoints are introduced by this authorization stage.
 
-The API route also requires authentication and CSRF protection for this state-changing operation.
+### Diagnostic
 
-### Organization creation
+The following Diagnostic application use cases require one of:
 
-The `OrganizationApplicationService.create()` use case currently requires one of:
-
-- `operator`;
+- `technician`;
 - `admin`.
 
-The authenticated `User` is passed from the API boundary into the Application service, where the shared authorization contract is evaluated before the Organization domain entity is created.
+Implemented use cases:
 
-```text
-POST /organizations/
-        ↓
-Authenticated User
-        ↓
-OrganizationApplicationService.create(..., user)
-        ↓
-require_role(user, OPERATOR, ADMIN)
-        ↓
-Organization
-```
+- `create`;
+- `complete`;
+- `set_recommendation`.
 
-Unauthorized users are rejected by the Application layer with an authorization error. The API boundary maps that error to HTTP `403 Forbidden`.
+Authorization is performed in the Application layer. State-changing API routes authenticate the user and pass that user to the Application use case while retaining CSRF protection.
 
-The API route also requires authentication and CSRF protection for this state-changing operation.
+### Repair
 
-### Organization update
+The following Repair application use cases require one of:
 
-The `OrganizationApplicationService.update()` use case currently requires one of:
-
-- `operator`;
+- `technician`;
 - `admin`.
 
-The authenticated `User` is passed from the API boundary into the Application service, where authorization is checked before Organization domain state is changed.
+Implemented use cases:
 
-```text
-PATCH /organizations/{organization_id}
-        ↓
-Authenticated User
-        ↓
-OrganizationApplicationService.update(..., user)
-        ↓
-require_role(user, OPERATOR, ADMIN)
-        ↓
-Organization domain mutation
-```
+- `create`;
+- `start`;
+- `complete`;
+- `cancel`.
 
-Unauthorized users are rejected by the Application layer with an authorization error. The API boundary maps that error to HTTP `403 Forbidden`.
-
-The API route also requires authentication and CSRF protection for this state-changing operation.
+Authorization is performed in the Application layer. State-changing API routes authenticate the user and pass that user to the Application use case while retaining CSRF protection.
 
 ## Authorization Contract
 
@@ -288,6 +180,8 @@ The shared Application authorization contract is responsible for expressing role
 Role checks belong in Application use cases, not in API routers or frontend components.
 
 New permissions must be introduced from an explicit business use case and covered by Application and API regression tests.
+
+No permissions are currently introduced for unrelated use cases merely because they are state-changing.
 
 ## Current Persistence
 
@@ -306,15 +200,15 @@ Implemented:
 - User role in the domain entity;
 - User role persistence in the existing `users` table;
 - authorization Application contract;
-- authorization of order creation;
-- authorization of order item addition;
-- authorization of order update;
-- authorization of order registration;
-- authorization of customer creation;
-- authorization of customer update;
-- authorization of customer deletion/archive;
-- authorization of organization creation;
-- authorization of organization update;
+- authorization of Order creation, item addition, update and registration;
+- authorization of Customer creation, update and deletion/archive;
+- authorization of Organization creation and update;
+- authorization of Material creation, update, archive and restore;
+- authorization of Warehouse state-changing operations covered by the current application contract;
+- authorization of Verification approval and rejection;
+- authorization of Diagnostic creation, completion and recommendation;
+- authorization of Repair creation, start, completion and cancellation;
+- API forwarding of authenticated users for implemented state-changing boundaries;
 - API mapping of authorization failures to HTTP `403`;
 - regression coverage for Application and API authorization boundaries.
 
@@ -324,6 +218,6 @@ Not yet introduced:
 - permission tables;
 - per-endpoint permission registry;
 - frontend authorization as a security mechanism;
-- authorization rules for unrelated use cases without an explicit business requirement.
+- authorization rules for `Device`, `InstrumentType`, `PriceList` or `Workflow` without an explicit business requirement.
 
 Authorization will continue to be introduced incrementally from concrete application use cases.
