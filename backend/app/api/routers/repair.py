@@ -18,6 +18,7 @@ from app.application.repair.services.repair_application_service import (
     RepairApplicationService,
 )
 from app.core.dependencies.services import get_repair_service
+from app.domains.user.entities.user import User
 from app.schemas.repair import (
     RepairComplete,
     RepairCreate,
@@ -55,10 +56,11 @@ def get_repair(
 @router.post(
     "",
     response_model=RepairRead,
-    dependencies=[Depends(get_current_user), Depends(require_csrf)],
+    dependencies=[Depends(require_csrf)],
 )
 def create_repair(
     data: RepairCreate,
+    user: User = Depends(get_current_user),
     service: RepairApplicationService = Depends(
         get_repair_service,
     ),
@@ -68,33 +70,37 @@ def create_repair(
             order_item_id=data.order_item_id,
             description=data.description,
         ),
+        user,
     )
 
 
 @router.post(
     "/{repair_id}/start",
     response_model=RepairRead,
-    dependencies=[Depends(get_current_user), Depends(require_csrf)],
+    dependencies=[Depends(require_csrf)],
 )
 def start_repair(
     repair_id: UUID,
+    user: User = Depends(get_current_user),
     service: RepairApplicationService = Depends(
         get_repair_service,
     ),
 ):
     return service.start(
         repair_id,
+        user,
     )
 
 
 @router.post(
     "/{repair_id}/complete",
     response_model=RepairRead,
-    dependencies=[Depends(get_current_user), Depends(require_csrf)],
+    dependencies=[Depends(require_csrf)],
 )
 def complete_repair(
     repair_id: UUID,
     data: RepairComplete,
+    user: User = Depends(get_current_user),
     service: RepairApplicationService = Depends(
         get_repair_service,
     ),
@@ -102,20 +108,23 @@ def complete_repair(
     return service.complete(
         repair_id,
         data.result,
+        user,
     )
 
 
 @router.post(
     "/{repair_id}/cancel",
     response_model=RepairRead,
-    dependencies=[Depends(get_current_user), Depends(require_csrf)],
+    dependencies=[Depends(require_csrf)],
 )
 def cancel_repair(
     repair_id: UUID,
+    user: User = Depends(get_current_user),
     service: RepairApplicationService = Depends(
         get_repair_service,
     ),
 ):
     return service.cancel(
         repair_id,
+        user,
     )
