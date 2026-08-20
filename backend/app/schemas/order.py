@@ -5,8 +5,9 @@ Order API schemas.
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, field_validator
 
+from app.domains.order.value_objects.order_number import OrderNumber
 from app.domains.order.value_objects.order_status import OrderStatus
 
 
@@ -55,3 +56,11 @@ class OrderRead(BaseModel):
     comment: str | None = None
     archived: bool
     items: list[OrderItemRead] = []
+
+    @field_validator("number", mode="before")
+    @classmethod
+    def serialize_order_number(cls, value: str | OrderNumber) -> str:
+        """Convert the domain value object to the API string contract."""
+        if isinstance(value, OrderNumber):
+            return value.value
+        return value
