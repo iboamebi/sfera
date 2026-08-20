@@ -1,4 +1,5 @@
 import { Stack, Typography } from "@mui/material";
+import { Link } from "react-router";
 
 import { useInstrumentTypes } from "../../features/instrument-type/model/useInstrumentTypes";
 
@@ -21,7 +22,11 @@ export function InstrumentTypesPage() {
 
       {instrumentTypes?.map((instrumentType) => (
         <Stack key={instrumentType.id} spacing={0.5}>
-          <Typography variant="h6">{instrumentType.name}</Typography>
+          <Typography variant="h6">
+            <Link to={`/instrument-types/${instrumentType.id}`}>
+              {instrumentType.name}
+            </Link>
+          </Typography>
 
           {instrumentType.manufacturer && (
             <Typography color="text.secondary">
