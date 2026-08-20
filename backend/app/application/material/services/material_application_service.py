@@ -124,8 +124,16 @@ class MaterialApplicationService:
     def archive(
         self,
         command: ArchiveMaterialCommand,
+        user: User,
     ) -> Material:
         """Archive material."""
+
+        require_role(
+            user,
+            UserRole.OPERATOR,
+            UserRole.ADMIN,
+            UserRole.WAREHOUSE,
+        )
 
         material = self.get(
             command.material_id,
@@ -138,8 +146,16 @@ class MaterialApplicationService:
     def restore(
         self,
         command: RestoreMaterialCommand,
+        user: User,
     ) -> Material:
         """Restore material."""
+
+        require_role(
+            user,
+            UserRole.OPERATOR,
+            UserRole.ADMIN,
+            UserRole.WAREHOUSE,
+        )
 
         material = self.get(
             command.material_id,
