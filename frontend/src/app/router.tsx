@@ -8,6 +8,7 @@ import { MaterialsPage } from "../pages/materials/MaterialsPage";
 import { MaterialPage } from "../pages/materials/MaterialPage";
 import { OrganizationsPage } from "../pages/organizations/OrganizationsPage";
 import { OrganizationPage } from "../pages/organizations/OrganizationPage";
+import { VerificationPage } from "../pages/verifications/VerificationPage";
 import { CreateOrderPage } from "../pages/orders/CreateOrderPage";
 import { OrderPage } from "../pages/orders/OrderPage";
 import { OrdersPage } from "../pages/orders/OrdersPage";
@@ -96,6 +97,14 @@ export const router = createBrowserRouter([
     element: (
       <RequireAuth>
         <MaterialPage />
+      </RequireAuth>
+    ),
+  },
+  {
+    path: "/verifications/:verificationId",
+    element: (
+      <RequireAuth>
+        <VerificationPage />
       </RequireAuth>
     ),
   },
