@@ -4,6 +4,7 @@ Application service for diagnostic use cases.
 
 from uuid import UUID, uuid4
 
+from app.application.authorization.authorization import require_role
 from app.application.diagnostic.commands.complete_diagnostic import (
     CompleteDiagnosticCommand,
 )
@@ -20,6 +21,8 @@ from app.domains.diagnostic.entities.diagnostic import Diagnostic
 from app.domains.diagnostic.repositories.diagnostic_repository import (
     DiagnosticRepository,
 )
+from app.domains.user.entities.user import User
+from app.domains.user.value_objects.user_role import UserRole
 from app.shared.unit_of_work.unit_of_work import UnitOfWork
 
 
@@ -52,8 +55,15 @@ class DiagnosticApplicationService:
     def create(
         self,
         command: CreateDiagnosticCommand,
+        user: User,
     ) -> Diagnostic:
         """Create diagnostic."""
+
+        require_role(
+            user,
+            UserRole.TECHNICIAN,
+            UserRole.ADMIN,
+        )
 
         diagnostic = Diagnostic(
             id=uuid4(),
@@ -70,8 +80,15 @@ class DiagnosticApplicationService:
     def complete(
         self,
         command: CompleteDiagnosticCommand,
+        user: User,
     ) -> Diagnostic:
         """Complete diagnostic."""
+
+        require_role(
+            user,
+            UserRole.TECHNICIAN,
+            UserRole.ADMIN,
+        )
 
         with self._uow:
             diagnostic = self.get(
@@ -91,8 +108,15 @@ class DiagnosticApplicationService:
     def set_recommendation(
         self,
         command: SetRecommendationCommand,
+        user: User,
     ) -> Diagnostic:
         """Set diagnostic recommendation."""
+
+        require_role(
+            user,
+            UserRole.TECHNICIAN,
+            UserRole.ADMIN,
+        )
 
         with self._uow:
             diagnostic = self.get(
