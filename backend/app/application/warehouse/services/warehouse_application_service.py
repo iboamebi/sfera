@@ -64,6 +64,8 @@ class WarehouseApplicationService:
         command: CreateWarehouseCommand,
         user: User,
     ) -> Warehouse:
+        """Create warehouse."""
+
         require_role(
             user,
             UserRole.ADMIN,
@@ -86,7 +88,16 @@ class WarehouseApplicationService:
     def add_stock(
         self,
         command: AddStockCommand,
+        user: User,
     ) -> WarehouseStock:
+        """Add warehouse stock."""
+
+        require_role(
+            user,
+            UserRole.ADMIN,
+            UserRole.WAREHOUSE,
+        )
+
         with self._uow:
             stock = WarehouseStock(
                 id=uuid4(),
