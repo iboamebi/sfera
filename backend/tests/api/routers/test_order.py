@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import uuid4
 
 from app.api.routers.order import create_order
@@ -13,7 +13,7 @@ def test_create_order_returns_api_contract() -> None:
         id=uuid4(),
         number=OrderNumber("1001"),
         customer_id=customer_id,
-        received_at=datetime.now(timezone.utc),
+        received_at=datetime.now(UTC),
         planned_issue_at=None,
         issued_at=None,
         comment="Test order",
