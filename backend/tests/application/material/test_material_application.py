@@ -45,6 +45,42 @@ def make_user(role: UserRole) -> User:
     )
 
 
+def test_create_material_allows_warehouse_user() -> None:
+    repository = FakeMaterialRepository()
+    service = MaterialApplicationService(repository)
+
+    material = service.create(
+        CreateMaterialCommand(
+            name="Original Material",
+            article="A-001",
+            unit="pcs",
+            description="Original description",
+        ),
+        make_user(UserRole.WAREHOUSE),
+    )
+
+    assert material.name == "Original Material"
+    assert material.article == "A-001"
+    assert material.unit == "pcs"
+    assert material.description == "Original description"
+
+
+def test_create_material_rejects_unauthorized_user() -> None:
+    repository = FakeMaterialRepository()
+    service = MaterialApplicationService(repository)
+
+    with pytest.raises(AuthorizationError, match="not authorized"):
+        service.create(
+            CreateMaterialCommand(
+                name="Protected Material",
+                article="A-001",
+                unit="pcs",
+                description="Protected description",
+            ),
+            make_user(UserRole.TECHNICIAN),
+        )
+
+
 def test_update_material_allows_warehouse_user() -> None:
     repository = FakeMaterialRepository()
     service = MaterialApplicationService(repository)
@@ -55,7 +91,8 @@ def test_update_material_allows_warehouse_user() -> None:
             article="A-001",
             unit="pcs",
             description="Original description",
-        )
+        ),
+        make_user(UserRole.WAREHOUSE),
     )
 
     updated = service.update(
@@ -86,7 +123,8 @@ def test_update_material_rejects_unauthorized_user() -> None:
             article="A-001",
             unit="pcs",
             description="Protected description",
-        )
+        ),
+        make_user(UserRole.WAREHOUSE),
     )
 
     with pytest.raises(AuthorizationError, match="not authorized"):
