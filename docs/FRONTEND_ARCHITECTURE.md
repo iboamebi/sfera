@@ -13,6 +13,7 @@ Frontend application уже реализован и развивается по�
 * отображение ошибки загрузки;
 * создание заказа;
 * просмотр заказа;
+* отображение позиций заказа;
 * регистрация заказа;
 * обновление cache после регистрации.
 
@@ -128,6 +129,7 @@ features/
             OrderListError.tsx
             OrderActions.tsx
             OrderDetails.tsx
+            OrderItems.tsx
 ```
 
 Структура является живой архитектурой: она уточняется по мере появления новых пользовательских сценариев.
@@ -205,6 +207,7 @@ Feature представляет конкретное пользовательс
 * получение списка заказов;
 * получение заказа по ID;
 * создание заказа;
+* отображение позиций заказа;
 * регистрация заказа.
 
 ### Create Order
@@ -260,6 +263,8 @@ orderMapper
 OrderRead
 ```
 
+`OrderApiDto.items` преобразуется mapper в frontend `OrderRead.items`, включая перевод `instrument_id` в `instrumentId`.
+
 Это позволяет не распространять backend naming и транспортные детали по всему UI.
 
 Generated TypeScript API client пока не используется. Поэтому документация не должна утверждать, что frontend уже построен вокруг автоматически сгенерированного OpenAPI client.
@@ -302,6 +307,7 @@ UI-компоненты разделяются по ответственност
 * `OrderListEmpty` — пустое состояние списка;
 * `OrderListError` — состояние ошибки;
 * `OrderDetails` — отображение деталей заказа;
+* `OrderItems` — отображение позиций заказа;
 * `OrderActions` — композиция действий над заказом;
 * `RegisterOrderButton` — кнопка регистрации;
 * `RegisterOrderError` — ошибка регистрации.
@@ -401,10 +407,13 @@ Orders
   ├── empty state          ✓
   ├── create order         ✓
   ├── order details        ✓
+  ├── order items          ✓
   └── register order       ✓
 ```
 
 Регистрация заказа использует mutation и после успешного выполнения обновляет cache соответствующего заказа.
+
+`OrderRead.items` получает данные из backend API через отдельный API DTO и mapper. `OrderItems` отвечает только за их отображение и не содержит бизнес-логики.
 
 Frontend application shell, routing, API integration и базовый Orders flow уже реализованы.
 
@@ -463,12 +472,4 @@ sync GitHub
 next scenario
 ```
 
-Следующий запланированный frontend сценарий:
-
-```text
-Customer selection flow
-        ↓
-Order creation
-```
-
-Перед реализацией необходимо проверить существующий Customer API и текущий Order creation contract, чтобы не дублировать backend functionality и не вводить frontend-specific business rules.
+Следующий независимый frontend сценарий выбирается после аудита актуального backend и frontend состояния; не следует автоматически продолжать ранее записанный roadmap, если фактический код уже опередил документацию.
