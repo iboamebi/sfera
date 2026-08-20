@@ -18,6 +18,9 @@ from app.application.material.commands.archive_material import (
 from app.application.material.commands.create_material import (
     CreateMaterialCommand,
 )
+from app.application.material.commands.restore_material import (
+    RestoreMaterialCommand,
+)
 from app.application.material.commands.update_material import (
     UpdateMaterialCommand,
 )
@@ -81,6 +84,7 @@ def get_material(
 )
 def create_material(
     data: MaterialCreate,
+    user: User = Depends(get_current_user),
     service: MaterialApplicationService = Depends(
         get_material_service,
     ),
@@ -92,7 +96,7 @@ def create_material(
         description=data.description,
     )
 
-    return service.create(command)
+    return service.create(command, user)
 
 
 @router.put(
@@ -125,6 +129,7 @@ def update_material(
 )
 def archive_material(
     material_id: UUID,
+    user: User = Depends(get_current_user),
     service: MaterialApplicationService = Depends(
         get_material_service,
     ),
@@ -133,4 +138,23 @@ def archive_material(
         material_id=material_id,
     )
 
-    return service.archive(command)
+    return service.archive(command, user)
+
+
+@router.post(
+    "/{material_id}/restore",
+    response_model=MaterialRead,
+    dependencies=[Depends(get_current_user), Depends(require_csrf)],
+)
+def restore_material(
+    material_id: UUID,
+    user: User = Depends(get_current_user),
+    service: MaterialApplicationService = Depends(
+        get_material_service,
+    ),
+):
+    command = RestoreMaterialCommand(
+        material_id=material_id,
+    )
+
+    return service.restore(command, user)
