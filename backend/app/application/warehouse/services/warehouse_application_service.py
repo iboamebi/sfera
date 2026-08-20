@@ -113,7 +113,16 @@ class WarehouseApplicationService:
     def reserve(
         self,
         command: ReserveStockCommand,
+        user: User,
     ) -> WarehouseStock:
+        """Reserve warehouse stock."""
+
+        require_role(
+            user,
+            UserRole.ADMIN,
+            UserRole.WAREHOUSE,
+        )
+
         with self._uow:
             stock = self._stock_repository.get_by_material(
                 command.warehouse_id,
@@ -132,7 +141,16 @@ class WarehouseApplicationService:
     def release(
         self,
         command: ReleaseStockCommand,
+        user: User,
     ) -> WarehouseStock:
+        """Release warehouse stock."""
+
+        require_role(
+            user,
+            UserRole.ADMIN,
+            UserRole.WAREHOUSE,
+        )
+
         with self._uow:
             stock = self._stock_repository.get_by_material(
                 command.warehouse_id,
@@ -151,7 +169,16 @@ class WarehouseApplicationService:
     def create_movement(
         self,
         command: CreateMovementCommand,
+        user: User,
     ) -> WarehouseMovement:
+        """Create warehouse movement."""
+
+        require_role(
+            user,
+            UserRole.ADMIN,
+            UserRole.WAREHOUSE,
+        )
+
         with self._uow:
             movement = WarehouseMovement(
                 id=uuid4(),
