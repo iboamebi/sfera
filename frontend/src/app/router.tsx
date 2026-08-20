@@ -4,6 +4,7 @@ import { RequireAuth } from "../features/auth/ui/RequireAuth";
 import { LoginPage } from "../pages/auth/LoginPage";
 import { CustomersPage } from "../pages/customers/CustomersPage";
 import { CustomerPage } from "../pages/customers/CustomerPage";
+import { OrganizationsPage } from "../pages/organizations/OrganizationsPage";
 import { CreateOrderPage } from "../pages/orders/CreateOrderPage";
 import { OrderPage } from "../pages/orders/OrderPage";
 import { OrdersPage } from "../pages/orders/OrdersPage";
@@ -60,6 +61,14 @@ export const router = createBrowserRouter([
     element: (
       <RequireAuth>
         <CustomerPage />
+      </RequireAuth>
+    ),
+  },
+  {
+    path: "/organizations",
+    element: (
+      <RequireAuth>
+        <OrganizationsPage />
       </RequireAuth>
     ),
   },
