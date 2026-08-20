@@ -3,7 +3,9 @@ from uuid import uuid4
 import pytest
 
 from app.application.authorization.authorization import AuthorizationError
+from app.application.material.commands.archive_material import ArchiveMaterialCommand
 from app.application.material.commands.create_material import CreateMaterialCommand
+from app.application.material.commands.restore_material import RestoreMaterialCommand
 from app.application.material.commands.update_material import UpdateMaterialCommand
 from app.application.material.services.material_application_service import (
     MaterialApplicationService,
@@ -45,11 +47,8 @@ def make_user(role: UserRole) -> User:
     )
 
 
-def test_create_material_allows_warehouse_user() -> None:
-    repository = FakeMaterialRepository()
-    service = MaterialApplicationService(repository)
-
-    material = service.create(
+def create_material(service: MaterialApplicationService) -> Material:
+    return service.create(
         CreateMaterialCommand(
             name="Original Material",
             article="A-001",
@@ -58,6 +57,13 @@ def test_create_material_allows_warehouse_user() -> None:
         ),
         make_user(UserRole.WAREHOUSE),
     )
+
+
+def test_create_material_allows_warehouse_user() -> None:
+    repository = FakeMaterialRepository()
+    service = MaterialApplicationService(repository)
+
+    material = create_material(service)
 
     assert material.name == "Original Material"
     assert material.article == "A-001"
@@ -85,15 +91,7 @@ def test_update_material_allows_warehouse_user() -> None:
     repository = FakeMaterialRepository()
     service = MaterialApplicationService(repository)
 
-    material = service.create(
-        CreateMaterialCommand(
-            name="Original Material",
-            article="A-001",
-            unit="pcs",
-            description="Original description",
-        ),
-        make_user(UserRole.WAREHOUSE),
-    )
+    material = create_material(service)
 
     updated = service.update(
         UpdateMaterialCommand(
@@ -117,15 +115,7 @@ def test_update_material_rejects_unauthorized_user() -> None:
     repository = FakeMaterialRepository()
     service = MaterialApplicationService(repository)
 
-    material = service.create(
-        CreateMaterialCommand(
-            name="Protected Material",
-            article="A-001",
-            unit="pcs",
-            description="Protected description",
-        ),
-        make_user(UserRole.WAREHOUSE),
-    )
+    material = create_material(service)
 
     with pytest.raises(AuthorizationError, match="not authorized"):
         service.update(
@@ -136,4 +126,72 @@ def test_update_material_rejects_unauthorized_user() -> None:
             make_user(UserRole.TECHNICIAN),
         )
 
-    assert material.name == "Protected Material"
+    assert material.name == "Original Material"
+
+
+def test_archive_material_allows_warehouse_user() -> None:
+    repository = FakeMaterialRepository()
+    service = MaterialApplicationService(repository)
+
+    material = create_material(service)
+
+    archived = service.archive(
+        ArchiveMaterialCommand(material_id=material.id),
+        make_user(UserRole.WAREHOUSE),
+    )
+
+    assert archived is material
+    assert archived.archived is True
+
+
+def test_archive_material_rejects_unauthorized_user() -> None:
+    repository = FakeMaterialRepository()
+    service = MaterialApplicationService(repository)
+
+    material = create_material(service)
+
+    with pytest.raises(AuthorizationError, match="not authorized"):
+        service.archive(
+            ArchiveMaterialCommand(material_id=material.id),
+            make_user(UserRole.TECHNICIAN),
+        )
+
+    assert material.archived is False
+
+
+def test_restore_material_allows_warehouse_user() -> None:
+    repository = FakeMaterialRepository()
+    service = MaterialApplicationService(repository)
+
+    material = create_material(service)
+    service.archive(
+        ArchiveMaterialCommand(material_id=material.id),
+        make_user(UserRole.WAREHOUSE),
+    )
+
+    restored = service.restore(
+        RestoreMaterialCommand(material_id=material.id),
+        make_user(UserRole.WAREHOUSE),
+    )
+
+    assert restored is material
+    assert restored.archived is False
+
+
+def test_restore_material_rejects_unauthorized_user() -> None:
+    repository = FakeMaterialRepository()
+    service = MaterialApplicationService(repository)
+
+    material = create_material(service)
+    service.archive(
+        ArchiveMaterialCommand(material_id=material.id),
+        make_user(UserRole.WAREHOUSE),
+    )
+
+    with pytest.raises(AuthorizationError, match="not authorized"):
+        service.restore(
+            RestoreMaterialCommand(material_id=material.id),
+            make_user(UserRole.TECHNICIAN),
+        )
+
+    assert material.archived is True
