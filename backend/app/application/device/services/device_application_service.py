@@ -61,6 +61,11 @@ class DeviceApplicationService:
 
         return device
 
+    def list(self) -> list[Device]:
+        """List devices."""
+
+        return self._repository.list()
+
     def get(
         self,
         device_id: UUID,
