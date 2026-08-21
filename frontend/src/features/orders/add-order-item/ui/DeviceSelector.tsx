@@ -1,13 +1,18 @@
-import { MenuItem, TextField, Typography } from "@mui/material";
+import { Button, MenuItem, Stack, TextField, Typography } from "@mui/material";
 
 import { useDevices } from "../../../devices/model/useDevices";
 
 interface DeviceSelectorProps {
   value: string;
   onChange: (deviceId: string) => void;
+  onCreateDevice?: () => void;
 }
 
-export function DeviceSelector({ value, onChange }: DeviceSelectorProps) {
+export function DeviceSelector({
+  value,
+  onChange,
+  onCreateDevice,
+}: DeviceSelectorProps) {
   const { data: devices, isLoading, error } = useDevices();
 
   if (error) {
@@ -20,10 +25,17 @@ export function DeviceSelector({ value, onChange }: DeviceSelectorProps) {
 
   if (!isLoading && devices?.length === 0) {
     return (
-      <Typography>
-        Средства измерений отсутствуют. Создайте средство измерений, чтобы
-        добавить его в заказ.
-      </Typography>
+      <Stack spacing={1}>
+        <Typography>
+          Средства измерений отсутствуют. Создайте средство измерений, чтобы
+          добавить его в заказ.
+        </Typography>
+        {onCreateDevice && (
+          <Button onClick={onCreateDevice} variant="outlined">
+            Создать СИ
+          </Button>
+        )}
+      </Stack>
     );
   }
 
