@@ -10,5 +10,9 @@ class DeviceRepository(ABC):
         pass
 
     @abstractmethod
+    def list(self) -> list[Device]:
+        pass
+
+    @abstractmethod
     def save(self, device: Device) -> None:
         pass
