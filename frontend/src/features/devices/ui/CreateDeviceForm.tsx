@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button, MenuItem, Stack, TextField } from "@mui/material";
 import { useForm } from "react-hook-form";
@@ -13,12 +15,14 @@ const createDeviceSchema = z.object({
 type CreateDeviceFormValues = z.infer<typeof createDeviceSchema>;
 
 interface CreateDeviceFormProps {
+  instrumentTypeId?: string;
   onSubmit: (data: CreateDeviceFormValues) => void;
   onCreateInstrumentType?: () => void;
   isPending?: boolean;
 }
 
 export function CreateDeviceForm({
+  instrumentTypeId,
   onSubmit,
   onCreateInstrumentType,
   isPending = false,
@@ -26,10 +30,22 @@ export function CreateDeviceForm({
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<CreateDeviceFormValues>({
     resolver: zodResolver(createDeviceSchema),
+    defaultValues: {
+      instrumentTypeId: instrumentTypeId ?? "",
+    },
   });
+
+  useEffect(() => {
+    if (instrumentTypeId) {
+      setValue("instrumentTypeId", instrumentTypeId, {
+        shouldValidate: true,
+      });
+    }
+  }, [instrumentTypeId, setValue]);
 
   const {
     data: instrumentTypes = [],
@@ -41,7 +57,11 @@ export function CreateDeviceForm({
     (instrumentType) => !instrumentType.archived,
   );
 
-  if (!isInstrumentTypesLoading && !isInstrumentTypesError && activeInstrumentTypes.length === 0) {
+  if (
+    !isInstrumentTypesLoading &&
+    !isInstrumentTypesError &&
+    activeInstrumentTypes.length === 0
+  ) {
     return (
       <Stack spacing={2}>
         <TextField
