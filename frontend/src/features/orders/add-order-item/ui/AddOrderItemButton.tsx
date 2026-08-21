@@ -4,6 +4,8 @@ import { Button, Stack } from "@mui/material";
 
 import { useCreateDevice } from "../../../devices/model/useCreateDevice";
 import { CreateDeviceForm } from "../../../devices/ui/CreateDeviceForm";
+import { useCreateInstrumentType } from "../../../instrument-type/model/useCreateInstrumentType";
+import { CreateInstrumentTypeForm } from "../../../instrument-type/ui/CreateInstrumentTypeForm";
 import { useAddOrderItem } from "../model/useAddOrderItem";
 import { DeviceSelector } from "./DeviceSelector";
 
@@ -14,8 +16,11 @@ interface AddOrderItemButtonProps {
 export function AddOrderItemButton({ orderId }: AddOrderItemButtonProps) {
   const [deviceId, setDeviceId] = useState("");
   const [isCreateDeviceOpen, setIsCreateDeviceOpen] = useState(false);
+  const [isCreateInstrumentTypeOpen, setIsCreateInstrumentTypeOpen] =
+    useState(false);
   const addOrderItemMutation = useAddOrderItem(orderId);
   const createDeviceMutation = useCreateDevice();
+  const createInstrumentTypeMutation = useCreateInstrumentType();
 
   const handleAdd = () => {
     if (!deviceId) {
@@ -39,11 +44,28 @@ export function AddOrderItemButton({ orderId }: AddOrderItemButtonProps) {
     });
   };
 
+  const handleCreateInstrumentType = (data: { name: string }) => {
+    createInstrumentTypeMutation.mutate(data, {
+      onSuccess: () => setIsCreateInstrumentTypeOpen(false),
+    });
+  };
+
+  if (isCreateInstrumentTypeOpen) {
+    return (
+      <CreateInstrumentTypeForm
+        isPending={createInstrumentTypeMutation.isPending}
+        onSubmit={handleCreateInstrumentType}
+        onCancel={() => setIsCreateInstrumentTypeOpen(false)}
+      />
+    );
+  }
+
   if (isCreateDeviceOpen) {
     return (
       <CreateDeviceForm
         isPending={createDeviceMutation.isPending}
         onSubmit={handleCreateDevice}
+        onCreateInstrumentType={() => setIsCreateInstrumentTypeOpen(true)}
       />
     );
   }
