@@ -30,9 +30,9 @@ export function useCreateInstrumentType(
     ...options,
     mutationFn: (data: CreateInstrumentTypeInput) =>
       createInstrumentType(data),
-    onSuccess: async (data, variables, context) => {
+    onSuccess: async (data, variables, onMutateResult, context) => {
       await queryClient.invalidateQueries({ queryKey: ["instrument-types"] });
-      await options?.onSuccess?.(data, variables, context);
+      await options?.onSuccess?.(data, variables, onMutateResult, context);
     },
   });
 }
