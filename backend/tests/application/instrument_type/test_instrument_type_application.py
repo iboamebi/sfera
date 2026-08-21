@@ -19,6 +19,7 @@ from app.domains.instrument_type.entities.instrument_type import InstrumentType
 from app.domains.instrument_type.repositories.instrument_type_repository import (
     InstrumentTypeRepository,
 )
+from app.shared.unit_of_work.unit_of_work import UnitOfWork
 
 
 class FakeInstrumentTypeRepository(InstrumentTypeRepository):
@@ -42,9 +43,22 @@ class FakeInstrumentTypeRepository(InstrumentTypeRepository):
         return instrument_type
 
 
+class FakeUnitOfWork(UnitOfWork):
+    def __init__(self) -> None:
+        self.commit_count = 0
+        self.rollback_count = 0
+
+    def commit(self) -> None:
+        self.commit_count += 1
+
+    def rollback(self) -> None:
+        self.rollback_count += 1
+
+
 def test_instrument_type_application_lifecycle():
     repository = FakeInstrumentTypeRepository()
-    service = InstrumentTypeApplicationService(repository)
+    uow = FakeUnitOfWork()
+    service = InstrumentTypeApplicationService(repository, uow)
 
     instrument_type = service.create(
         CreateInstrumentTypeCommand(
@@ -60,6 +74,7 @@ def test_instrument_type_application_lifecycle():
 
     assert instrument_type.id in repository.instrument_types
     assert instrument_type.name == "Pressure gauge"
+    assert uow.commit_count == 1
 
     loaded = service.get(instrument_type.id)
 
@@ -84,6 +99,7 @@ def test_instrument_type_application_lifecycle():
     assert updated.accuracy_class == "0.2"
     assert updated.verification_interval_months == 24
     assert updated.description == "Updated description"
+    assert uow.commit_count == 2
 
     archived = service.archive(
         ArchiveInstrumentTypeCommand(
@@ -92,6 +108,7 @@ def test_instrument_type_application_lifecycle():
     )
 
     assert archived.archived is True
+    assert uow.commit_count == 3
 
     restored = service.restore(
         RestoreInstrumentTypeCommand(
@@ -100,3 +117,4 @@ def test_instrument_type_application_lifecycle():
     )
 
     assert restored.archived is False
+    assert uow.commit_count == 4
