@@ -9,3 +9,13 @@ export interface CustomerRead {
   discountPercent: number;
   archived: boolean;
 }
+
+export interface CreateCustomerForm {
+  organizationId: string;
+  name: string;
+  contactPerson?: string;
+  phone?: string;
+  email?: string;
+  comment?: string;
+  discountPercent?: number;
+}
