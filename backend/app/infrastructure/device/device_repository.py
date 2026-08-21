@@ -41,6 +41,12 @@ class DeviceRepositorySQLAlchemy(DeviceRepository):
 
         return self._mapper.to_domain(instrument)
 
+    def list(self) -> list[Device]:
+        """List devices."""
+
+        instruments = self.db.query(Instrument).all()
+        return [self._mapper.to_domain(instrument) for instrument in instruments]
+
     def save(
         self,
         device: Device,
