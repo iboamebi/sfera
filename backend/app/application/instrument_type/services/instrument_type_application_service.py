@@ -23,6 +23,7 @@ from app.domains.instrument_type.entities.instrument_type import InstrumentType
 from app.domains.instrument_type.repositories.instrument_type_repository import (
     InstrumentTypeRepository,
 )
+from app.shared.unit_of_work.unit_of_work import UnitOfWork
 
 
 class InstrumentTypeApplicationService:
@@ -31,8 +32,10 @@ class InstrumentTypeApplicationService:
     def __init__(
         self,
         repository: InstrumentTypeRepository,
+        uow: UnitOfWork,
     ) -> None:
         self._repository = repository
+        self._uow = uow
 
     def create(
         self,
@@ -51,7 +54,9 @@ class InstrumentTypeApplicationService:
             description=command.description,
         )
 
-        return self._repository.save(instrument_type)
+        result = self._repository.save(instrument_type)
+        self._uow.commit()
+        return result
 
     def get(
         self,
@@ -102,7 +107,9 @@ class InstrumentTypeApplicationService:
         if command.description is not None:
             instrument_type.change_description(command.description)
 
-        return self._repository.save(instrument_type)
+        result = self._repository.save(instrument_type)
+        self._uow.commit()
+        return result
 
     def archive(
         self,
@@ -114,7 +121,9 @@ class InstrumentTypeApplicationService:
 
         instrument_type.archive()
 
-        return self._repository.save(instrument_type)
+        result = self._repository.save(instrument_type)
+        self._uow.commit()
+        return result
 
     def restore(
         self,
@@ -126,4 +135,6 @@ class InstrumentTypeApplicationService:
 
         instrument_type.restore()
 
-        return self._repository.save(instrument_type)
+        result = self._repository.save(instrument_type)
+        self._uow.commit()
+        return result
