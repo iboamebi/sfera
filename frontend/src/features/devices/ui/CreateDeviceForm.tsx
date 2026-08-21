@@ -3,7 +3,7 @@ import { Button, MenuItem, Stack, TextField } from "@mui/material";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-import { useInstrumentTypes } from "../../instrument-type/model/useInstrumentTypes";
+import { useInstrumentTypes } from "../../../instrument-type/model/useInstrumentTypes";
 
 const createDeviceSchema = z.object({
   instrumentTypeId: z.string().uuid("Выберите тип средства измерений"),
