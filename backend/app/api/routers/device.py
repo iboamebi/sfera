@@ -35,6 +35,18 @@ router = APIRouter(
 )
 
 
+@router.get(
+    "/",
+    response_model=list[DeviceRead],
+)
+def list_devices(
+    service: DeviceApplicationService = Depends(
+        get_device_service,
+    ),
+):
+    return service.list()
+
+
 @router.post(
     "/",
     response_model=DeviceRead,
