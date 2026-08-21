@@ -15,6 +15,7 @@ interface AddOrderItemButtonProps {
 
 export function AddOrderItemButton({ orderId }: AddOrderItemButtonProps) {
   const [deviceId, setDeviceId] = useState("");
+  const [instrumentTypeId, setInstrumentTypeId] = useState("");
   const [isCreateDeviceOpen, setIsCreateDeviceOpen] = useState(false);
   const [isCreateInstrumentTypeOpen, setIsCreateInstrumentTypeOpen] =
     useState(false);
@@ -39,6 +40,7 @@ export function AddOrderItemButton({ orderId }: AddOrderItemButtonProps) {
     createDeviceMutation.mutate(data, {
       onSuccess: (device) => {
         setDeviceId(device.id);
+        setInstrumentTypeId("");
         setIsCreateDeviceOpen(false);
       },
     });
@@ -46,7 +48,10 @@ export function AddOrderItemButton({ orderId }: AddOrderItemButtonProps) {
 
   const handleCreateInstrumentType = (data: { name: string }) => {
     createInstrumentTypeMutation.mutate(data, {
-      onSuccess: () => setIsCreateInstrumentTypeOpen(false),
+      onSuccess: (instrumentType) => {
+        setInstrumentTypeId(instrumentType.id);
+        setIsCreateInstrumentTypeOpen(false);
+      },
     });
   };
 
@@ -63,6 +68,7 @@ export function AddOrderItemButton({ orderId }: AddOrderItemButtonProps) {
   if (isCreateDeviceOpen) {
     return (
       <CreateDeviceForm
+        instrumentTypeId={instrumentTypeId}
         isPending={createDeviceMutation.isPending}
         onSubmit={handleCreateDevice}
         onCreateInstrumentType={() => setIsCreateInstrumentTypeOpen(true)}
