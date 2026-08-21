@@ -3,11 +3,13 @@ import { Button, MenuItem, Stack, TextField } from "@mui/material";
 import { useForm } from "react-hook-form";
 
 import { useOrganizations } from "../../organizations/model/useOrganizations";
-import { createCustomerSchema } from "../model/schema";
-import type { CreateCustomerForm } from "../model/types";
+import {
+  createCustomerSchema,
+  type CreateCustomerSchema,
+} from "../model/schema";
 
 interface CustomerFormProps {
-  onSubmit: (data: CreateCustomerForm) => void;
+  onSubmit: (data: CreateCustomerSchema) => void;
   isPending?: boolean;
 }
 
@@ -19,7 +21,7 @@ export function CustomerForm({
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<CreateCustomerForm>({
+  } = useForm<CreateCustomerSchema>({
     resolver: zodResolver(createCustomerSchema),
     defaultValues: {
       discountPercent: 0,
@@ -114,7 +116,10 @@ export function CustomerForm({
           type="submit"
           variant="contained"
           disabled={
-            isPending || isOrganizationsLoading || isOrganizationsError || organizations.length === 0
+            isPending ||
+            isOrganizationsLoading ||
+            isOrganizationsError ||
+            organizations.length === 0
           }
         >
           {isPending ? "Создание..." : "Создать клиента"}
