@@ -17,5 +17,5 @@ export interface CreateCustomerForm {
   phone?: string;
   email?: string;
   comment?: string;
-  discountPercent?: number;
+  discountPercent: number;
 }
