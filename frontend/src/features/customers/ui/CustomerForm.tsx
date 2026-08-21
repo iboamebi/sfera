@@ -1,122 +1,125 @@
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Button, MenuItem, Stack, TextField } from "@mui/material";
+import { useForm } from "react-hook-form";
+
 import { useOrganizations } from "../../organizations/model/useOrganizations";
+import { createCustomerSchema } from "../model/schema";
 import type { CreateCustomerForm } from "../model/types";
 
 interface CustomerFormProps {
-  value: CreateCustomerForm;
-  onChange: (value: CreateCustomerForm) => void;
-  onSubmit: () => void;
-  disabled?: boolean;
+  onSubmit: (data: CreateCustomerForm) => void;
+  isPending?: boolean;
 }
 
 export function CustomerForm({
-  value,
-  onChange,
   onSubmit,
-  disabled = false,
+  isPending = false,
 }: CustomerFormProps) {
-  const organizations = useOrganizations();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<CreateCustomerForm>({
+    resolver: zodResolver(createCustomerSchema),
+    defaultValues: {
+      discountPercent: 0,
+    },
+  });
+
+  const {
+    data: organizations = [],
+    isLoading: isOrganizationsLoading,
+    isError: isOrganizationsError,
+  } = useOrganizations();
 
   return (
-    <form
-      onSubmit={(event) => {
-        event.preventDefault();
-        onSubmit();
-      }}
-    >
-      <label>
-        Organization
-        <select
-          value={value.organizationId}
-          onChange={(event) =>
-            onChange({ ...value, organizationId: event.target.value })
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <Stack spacing={2}>
+        <TextField
+          select
+          label="Организация"
+          {...register("organizationId")}
+          error={Boolean(errors.organizationId)}
+          helperText={
+            errors.organizationId?.message ??
+            (isOrganizationsError
+              ? "Не удалось загрузить организации"
+              : organizations.length === 0 && !isOrganizationsLoading
+                ? "Создайте организацию, чтобы зарегистрировать клиента"
+                : undefined)
           }
-          disabled={disabled || organizations.isLoading}
-          required
+          disabled={isPending || isOrganizationsLoading || isOrganizationsError}
         >
-          <option value="">Select organization</option>
-          {organizations.data?.map((organization) => (
-            <option key={organization.id} value={organization.id}>
+          {organizations.map((organization) => (
+            <MenuItem key={organization.id} value={organization.id}>
               {organization.name}
-            </option>
+            </MenuItem>
           ))}
-        </select>
-      </label>
+        </TextField>
 
-      {organizations.isSuccess && organizations.data.length === 0 && (
-        <p>
-          No organizations available. Create an organization before saving a
-          customer.
-        </p>
-      )}
-
-      <label>
-        Name
-        <input
-          value={value.name}
-          onChange={(event) => onChange({ ...value, name: event.target.value })}
-          disabled={disabled}
-          required
+        <TextField
+          label="Название"
+          {...register("name")}
+          error={Boolean(errors.name)}
+          helperText={errors.name?.message}
+          disabled={isPending}
         />
-      </label>
 
-      <label>
-        Contact person
-        <input
-          value={value.contactPerson ?? ""}
-          onChange={(event) =>
-            onChange({ ...value, contactPerson: event.target.value })
-          }
-          disabled={disabled}
+        <TextField
+          label="Контактное лицо"
+          {...register("contactPerson")}
+          error={Boolean(errors.contactPerson)}
+          helperText={errors.contactPerson?.message}
+          disabled={isPending}
         />
-      </label>
 
-      <label>
-        Phone
-        <input
-          value={value.phone ?? ""}
-          onChange={(event) => onChange({ ...value, phone: event.target.value })}
-          disabled={disabled}
+        <TextField
+          label="Телефон"
+          {...register("phone")}
+          error={Boolean(errors.phone)}
+          helperText={errors.phone?.message}
+          disabled={isPending}
         />
-      </label>
 
-      <label>
-        Email
-        <input
+        <TextField
+          label="Email"
           type="email"
-          value={value.email ?? ""}
-          onChange={(event) => onChange({ ...value, email: event.target.value })}
-          disabled={disabled}
+          {...register("email")}
+          error={Boolean(errors.email)}
+          helperText={errors.email?.message}
+          disabled={isPending}
         />
-      </label>
 
-      <label>
-        Comment
-        <textarea
-          value={value.comment ?? ""}
-          onChange={(event) => onChange({ ...value, comment: event.target.value })}
-          disabled={disabled}
+        <TextField
+          label="Комментарий"
+          multiline
+          minRows={3}
+          {...register("comment")}
+          error={Boolean(errors.comment)}
+          helperText={errors.comment?.message}
+          disabled={isPending}
         />
-      </label>
 
-      <label>
-        Discount percent
-        <input
+        <TextField
+          label="Скидка, %"
           type="number"
-          min="0"
-          value={value.discountPercent ?? 0}
-          onChange={(event) =>
-            onChange({
-              ...value,
-              discountPercent: Number(event.target.value),
-            })
-          }
-          disabled={disabled}
+          slotProps={{ input: { inputProps: { min: 0, max: 100, step: 0.01 } } }}
+          {...register("discountPercent", { valueAsNumber: true })}
+          error={Boolean(errors.discountPercent)}
+          helperText={errors.discountPercent?.message}
+          disabled={isPending}
         />
-      </label>
 
-      <button type="submit" disabled={disabled || !value.organizationId}>
-        Create customer
-      </button>
+        <Button
+          type="submit"
+          variant="contained"
+          disabled={
+            isPending || isOrganizationsLoading || isOrganizationsError || organizations.length === 0
+          }
+        >
+          {isPending ? "Создание..." : "Создать клиента"}
+        </Button>
+      </Stack>
     </form>
   );
 }
