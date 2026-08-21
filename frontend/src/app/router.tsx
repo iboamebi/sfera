@@ -15,6 +15,7 @@ import { PriceListPage } from "../pages/price-lists/PriceListPage";
 import { CreateOrderPage } from "../pages/orders/CreateOrderPage";
 import { OrderPage } from "../pages/orders/OrderPage";
 import { OrdersPage } from "../pages/orders/OrdersPage";
+import { DevicesPage } from "../pages/devices/DevicesPage";
 import { InstrumentTypePage } from "../pages/instrument-types/InstrumentTypePage";
 import { InstrumentTypesPage } from "../pages/instrument-types/InstrumentTypesPage";
 
@@ -132,6 +133,14 @@ export const router = createBrowserRouter([
     element: (
       <RequireAuth>
         <PriceListPage />
+      </RequireAuth>
+    ),
+  },
+  {
+    path: "/devices",
+    element: (
+      <RequireAuth>
+        <DevicesPage />
       </RequireAuth>
     ),
   },
