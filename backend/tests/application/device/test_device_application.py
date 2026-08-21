@@ -38,6 +38,9 @@ class FakeDeviceRepository(DeviceRepository):
 
         return None
 
+    def list(self):
+        return [self.device]
+
     def save(
         self,
         device,
