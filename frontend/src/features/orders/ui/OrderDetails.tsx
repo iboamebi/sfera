@@ -121,7 +121,10 @@ export function OrderDetails({ order }: OrderDetailsProps) {
             sx={{ alignItems: "center", justifyContent: "space-between" }}
           >
             <OrderItems items={order.items} />
-            <AddOrderItemButton orderId={order.id} />
+
+            {order.status === "NEW" && (
+              <AddOrderItemButton orderId={order.id} />
+            )}
           </Stack>
         </Stack>
       </CardContent>
