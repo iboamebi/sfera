@@ -140,6 +140,16 @@ Warehouse stock read architecture:
 - Infrastructure provides SQLAlchemy read projection.
 - GET /warehouse-stocks/warehouse/{warehouse_id} exposes read contract.
 
+Warehouse stock read slice is complete:
+
+- WarehouseStockReadService;
+- WarehouseStockReadRepository;
+- WarehouseStockReadData;
+- SQLAlchemy read projection;
+- GET /warehouse-stocks/warehouse/{warehouse_id};
+- frontend warehouse stock page;
+- route integration.
+
 ## Order Items Checkpoint
 
 Order item persistence and read contract are complete:
@@ -217,6 +227,7 @@ Current protected routes are defined in `frontend/src/app/router.tsx`:
 /price-lists/:priceListId
 /instrument-types
 /instrument-types/:instrumentTypeId
+/warehouse-stocks/warehouse/:warehouseId
 ```
 
 Public route:
@@ -438,13 +449,15 @@ vite build — passed
 
 Vite reports only a chunk-size warning (>500 kB). This is not a build failure.
 
-Latest frontend feature commit before documentation renewal:
+Latest commits before documentation renewal:
 
 ```text
-b953cb5 feat: add price list detail route
+320937b fix: map order read data fields correctly
+3563a4a fix: map order read repository to read model
+a53d711 feat: add warehouse stock route integration
+12b6fcc feat: add warehouse stock page
+976c4de feat: add warehouse stock table component
 ```
-
-Documentation renewal commit follows this checkpoint.
 
 Backend validation:
 - 137 passed
