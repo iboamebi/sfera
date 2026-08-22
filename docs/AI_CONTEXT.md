@@ -127,6 +127,12 @@ Authorization contract:
 docs/architecture/AUTHORIZATION.md
 ```
 
+Order read architecture:
+- GET /orders/{id} uses dedicated OrderReadService.
+- OrderReadRepository separated from command repository.
+- Read model contract moved to domain layer.
+- Infrastructure provides SQLAlchemy read implementation.
+
 ## Order Items Checkpoint
 
 Order item persistence and read contract are complete:
@@ -154,6 +160,13 @@ OrderItems
 ```
 
 `OrderItems` contains presentation only.
+
+Order read side is complete:
+- OrderReadService
+- OrderReadRepository
+- OrderReadData
+- OrderReadMapper
+- frontend order item read contract synchronization
 
 ## Frontend Current State
 
@@ -425,6 +438,13 @@ b953cb5 feat: add price list detail route
 ```
 
 Documentation renewal commit follows this checkpoint.
+
+Backend validation:
+- 136 passed
+- 1 warning
+
+Latest architecture commit:
+86ffb29 refactor: introduce order read repository architecture
 
 ## Documentation State
 
