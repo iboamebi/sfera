@@ -9,7 +9,7 @@ from app.schemas.order import OrderItemRead, OrderRead
 
 
 class OrderReadMapper:
-    """Maps ORM order models to API read schemas."""
+    """Maps order read models to API read schemas."""
 
     def to_schema(
         self,
@@ -29,18 +29,9 @@ class OrderReadMapper:
                 OrderItemRead(
                     id=item.id,
                     instrument_id=item.instrument_id,
-                    instrument_type_name=(
-                        item.instrument.instrument_type.name
-                        if item.instrument
-                        and item.instrument.instrument_type
-                        else None
-                    ),
-                    serial_number=(
-                        item.instrument.serial_number
-                        if item.instrument
-                        else None
-                    ),
-                    comment=item.customer_comment,
+                    instrument_type_name=item.instrument_type_name,
+                    serial_number=item.serial_number,
+                    comment=item.comment,
                 )
                 for item in model.items
             ],
