@@ -18,6 +18,7 @@ import { OrdersPage } from "../pages/orders/OrdersPage";
 import { DevicesPage } from "../pages/devices/DevicesPage";
 import { InstrumentTypePage } from "../pages/instrument-types/InstrumentTypePage";
 import { InstrumentTypesPage } from "../pages/instrument-types/InstrumentTypesPage";
+import { WarehouseStockPage } from "../pages/warehouses/WarehouseStockPage";
 
 export const router = createBrowserRouter([
   {
@@ -157,6 +158,14 @@ export const router = createBrowserRouter([
     element: (
       <RequireAuth>
         <InstrumentTypePage />
+      </RequireAuth>
+    ),
+  },
+  {
+    path: "/warehouses/:warehouseId/stocks",
+    element: (
+      <RequireAuth>
+        <WarehouseStockPage />
       </RequireAuth>
     ),
   },

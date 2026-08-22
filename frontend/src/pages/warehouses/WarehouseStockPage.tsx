@@ -1,16 +1,20 @@
+import { useParams } from "react-router";
+
 import { useWarehouseStock } from "../../features/warehouse-stock/queries/useWarehouseStock";
 import { WarehouseStockTable } from "../../features/warehouse-stock/ui/WarehouseStockTable";
 
-interface WarehouseStockPageProps {
-  warehouseId: string;
-}
+export function WarehouseStockPage() {
+  const { warehouseId } = useParams<{ warehouseId: string }>();
 
-export function WarehouseStockPage({ warehouseId }: WarehouseStockPageProps) {
-  const { data = [], isLoading } = useWarehouseStock(warehouseId);
-
-  if (isLoading) {
-    return <div>Загрузка...</div>;
+  if (!warehouseId) {
+    return null;
   }
 
-  return <WarehouseStockTable items={data} />;
+  const { data, isLoading } = useWarehouseStock(warehouseId);
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  return <WarehouseStockTable items={data ?? []} />;
 }
