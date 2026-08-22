@@ -1,5 +1,5 @@
 from sqlalchemy import String, Text
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base_model import BaseModel
 
@@ -39,4 +39,8 @@ class InstrumentType(BaseModel):
     description: Mapped[str | None] = mapped_column(
         Text,
         nullable=True,
+    )
+
+    instruments = relationship(
+        "Instrument",
     )

@@ -23,36 +23,32 @@ export function DeviceSelector({
     );
   }
 
-  if (!isLoading && devices?.length === 0) {
-    return (
-      <Stack spacing={1}>
-        <Typography>
-          Средства измерений отсутствуют. Создайте средство измерений, чтобы
-          добавить его в заказ.
-        </Typography>
-        {onCreateDevice && (
-          <Button onClick={onCreateDevice} variant="outlined">
-            Создать СИ
-          </Button>
-        )}
-      </Stack>
-    );
-  }
-
   return (
-    <TextField
-      select
-      fullWidth
-      label="Средство измерений"
-      value={value}
-      onChange={(event) => onChange(event.target.value)}
-      disabled={isLoading}
-    >
-      {devices?.map((device) => (
-        <MenuItem key={device.id} value={device.id}>
-          {device.serialNumber}
-        </MenuItem>
-      ))}
-    </TextField>
+    <Stack spacing={1}>
+      <TextField
+        select
+        fullWidth
+        label="Средство измерений"
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        disabled={isLoading}
+      >
+        {devices?.map((device) => (
+          <MenuItem key={device.id} value={device.id}>
+            {device.serialNumber}
+          </MenuItem>
+        ))}
+      </TextField>
+
+      {onCreateDevice && (
+        <Button
+          onClick={onCreateDevice}
+          variant="outlined"
+          disabled={isLoading}
+        >
+          Создать СИ
+        </Button>
+      )}
+    </Stack>
   );
 }

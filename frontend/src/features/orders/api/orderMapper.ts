@@ -15,6 +15,8 @@ export function mapOrder(dto: OrderApiDto): OrderRead {
     items: dto.items.map((item) => ({
       id: item.id,
       instrumentId: item.instrument_id,
+      instrumentTypeName: item.instrument_type_name,
+      serialNumber: item.serial_number,
       comment: item.comment,
     })),
   };

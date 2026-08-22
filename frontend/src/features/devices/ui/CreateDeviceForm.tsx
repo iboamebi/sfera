@@ -57,35 +57,6 @@ export function CreateDeviceForm({
     (instrumentType) => !instrumentType.archived,
   );
 
-  if (
-    !isInstrumentTypesLoading &&
-    !isInstrumentTypesError &&
-    activeInstrumentTypes.length === 0
-  ) {
-    return (
-      <Stack spacing={2}>
-        <TextField
-          label="Серийный номер"
-          {...register("serialNumber")}
-          error={Boolean(errors.serialNumber)}
-          helperText={errors.serialNumber?.message}
-          disabled={isPending}
-        />
-
-        {onCreateInstrumentType && (
-          <Button
-            type="button"
-            variant="outlined"
-            onClick={onCreateInstrumentType}
-            disabled={isPending}
-          >
-            Создать тип СИ
-          </Button>
-        )}
-      </Stack>
-    );
-  }
-
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <Stack spacing={2}>
@@ -110,6 +81,17 @@ export function CreateDeviceForm({
             </MenuItem>
           ))}
         </TextField>
+
+        {onCreateInstrumentType && (
+          <Button
+            type="button"
+            variant="outlined"
+            onClick={onCreateInstrumentType}
+            disabled={isPending}
+          >
+            Создать тип СИ
+          </Button>
+        )}
 
         <TextField
           label="Серийный номер"

@@ -2,6 +2,7 @@ from datetime import UTC, datetime
 from uuid import uuid4
 
 from app.api.routers.order import create_order
+from app.api.routers.order import get_order
 from app.domains.order.entities.order import Order
 from app.domains.order.value_objects.order_number import OrderNumber
 from app.schemas.order import OrderRead
@@ -45,3 +46,31 @@ def test_create_order_returns_api_contract() -> None:
     assert response.customer_id == customer_id
     assert response.status.value == "NEW"
     assert response.archived is False
+
+def test_get_order_returns_api_contract() -> None:
+    order_id = uuid4()
+    class FakeOrderReadService:
+        def get(self, requested_id: object) -> OrderRead:
+            assert requested_id == order_id
+
+            return OrderRead(
+                id=order_id,
+                number="1001",
+                customer_id=uuid4(),
+                status="NEW",
+                received_at=datetime.now(UTC),
+                planned_issue_at=None,
+                issued_at=None,
+                comment="Test order",
+                archived=False,
+                items=[],
+            )
+
+    result = get_order(
+        order_id=order_id,
+        service=FakeOrderReadService(),
+    )
+
+    assert result.id == order_id
+    assert result.number == "1001"
+    assert result.archived is False

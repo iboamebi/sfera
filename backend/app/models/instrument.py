@@ -1,7 +1,7 @@
 import uuid
 
 from sqlalchemy import ForeignKey, String, Text
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base_model import BaseModel
 
@@ -53,4 +53,8 @@ class Instrument(BaseModel):
     comment: Mapped[str | None] = mapped_column(
         Text,
         nullable=True,
+    )
+
+    instrument_type = relationship(
+        "InstrumentType",
     )

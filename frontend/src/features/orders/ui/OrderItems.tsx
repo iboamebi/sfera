@@ -21,12 +21,16 @@ export function OrderItems({ items }: OrderItemsProps) {
             <Typography variant="body1">
               Позиция {index + 1}
             </Typography>
+
             <Typography color="text.secondary" variant="body2">
-              Прибор: {item.instrumentId ?? "—"}
+              {item.instrumentTypeName ?? "СИ"}:{" "}
+              {item.serialNumber ?? "—"}
             </Typography>
+
             <Typography variant="body2">
               {item.comment || "—"}
             </Typography>
+
             {index < items.length - 1 && <Divider sx={{ pt: 1 }} />}
           </Stack>
         ))

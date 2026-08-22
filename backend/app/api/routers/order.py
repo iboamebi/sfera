@@ -24,10 +24,16 @@ from app.application.order.commands.update_order import (
 from app.application.order.exceptions import (
     OrderNotFoundApplicationError,
 )
+from app.application.order.queries.order_read_service import (
+    OrderReadService,
+)
 from app.application.order.services.order_application_service import (
     OrderApplicationService,
 )
-from app.core.dependencies.services import get_order_service
+from app.core.dependencies.services import (
+    get_order_read_service,
+    get_order_service,
+)
 from app.domains.user.entities.user import User
 from app.schemas.order import (
     OrderCreate,
@@ -161,15 +167,16 @@ def register_order(
 )
 def get_order(
     order_id: UUID,
-    service: OrderApplicationService = Depends(
-        get_order_service,
+    service: OrderReadService = Depends(
+        get_order_read_service,
     ),
 ):
-    try:
-        return service.get(order_id)
+    order = service.get(order_id)
 
-    except OrderNotFoundApplicationError:
+    if order is None:
         raise HTTPException(
             status_code=404,
             detail="Order not found",
-        ) from None
+        )
+
+    return order

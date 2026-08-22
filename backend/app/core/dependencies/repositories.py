@@ -22,6 +22,9 @@ from app.domains.instrument_type.repositories.instrument_type_repository import 
 from app.domains.material.repositories.material_repository import (
     MaterialRepository,
 )
+from app.domains.order.repositories.order_read_repository import (
+    OrderReadRepository,
+)
 from app.domains.order.repositories.order_repository import (
     OrderRepository,
 )
@@ -68,6 +71,9 @@ from app.infrastructure.instrument_type.instrument_type_repository import (
 )
 from app.infrastructure.material.material_repository import (
     MaterialRepositorySQLAlchemy,
+)
+from app.infrastructure.order.order_read_repository import (
+    OrderReadRepositorySQLAlchemy,
 )
 from app.infrastructure.order.order_repository import (
     OrderRepositorySQLAlchemy,
@@ -178,6 +184,14 @@ def get_order_repository(
     """Provide Order repository."""
 
     return OrderRepositorySQLAlchemy(session)
+
+
+def get_order_read_repository(
+    session: Session = Depends(get_session),
+) -> OrderReadRepository:
+    """Provide Order read repository."""
+
+    return OrderReadRepositorySQLAlchemy(session)
 
 
 def get_verification_repository(

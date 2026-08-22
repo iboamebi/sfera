@@ -28,6 +28,9 @@ from app.application.instrument_type.services import (
     instrument_type_application_service,
 )
 from app.application.material.services.material_application_service import MaterialApplicationService
+from app.application.order.queries.order_read_service import (
+    OrderReadService,
+)
 from app.application.order.services.order_application_service import OrderApplicationService
 from app.application.organization.services.organization_application_service import (
     OrganizationApplicationService,
@@ -47,6 +50,7 @@ from app.core.dependencies.repositories import (
     get_diagnostic_repository,
     get_instrument_type_repository,
     get_material_repository,
+    get_order_read_repository,
     get_order_repository,
     get_organization_repository,
     get_price_list_repository,
@@ -69,6 +73,9 @@ from app.domains.instrument_type.repositories.instrument_type_repository import 
     InstrumentTypeRepository,
 )
 from app.domains.material.repositories.material_repository import MaterialRepository
+from app.domains.order.repositories.order_read_repository import (
+    OrderReadRepository,
+)
 from app.domains.order.repositories.order_repository import OrderRepository
 from app.domains.organization.repositories.organization_repository import OrganizationRepository
 from app.domains.price_list.repositories.price_list_repository import PriceListRepository
@@ -124,6 +131,15 @@ def get_order_service(
 ) -> OrderApplicationService:
     """Provide Order application service."""
     return OrderApplicationService(repository, uow)
+
+
+def get_order_read_service(
+    repository: OrderReadRepository = Depends(
+        get_order_read_repository,
+    ),
+) -> OrderReadService:
+    """Provide Order read service."""
+    return OrderReadService(repository)
 
 
 def get_verification_service(
