@@ -4,7 +4,7 @@
 
 Backend DDD/Clean Architecture migration завершена.
 
-Текущий этап — authentication and authorization integration, followed by incremental frontend user scenarios.
+Текущий этап — stabilization after authentication/authorization foundation and incremental business user scenarios.
 
 ---
 
@@ -87,6 +87,38 @@ Order registration
 Authorization is kept in Application. The API only supplies the authenticated user and maps application authorization errors to HTTP responses.
 
 Roles and permissions are not implemented as frontend-only checks.
+---
+
+## Current Read Architecture Checkpoint
+
+Completed read-side migrations:
+
+```text
+Order
+  - OrderReadService
+  - OrderReadRepository
+  - OrderReadData
+  - dedicated read contract
+
+Warehouse Stock
+  - WarehouseStockReadService
+  - WarehouseStockReadRepository
+  - WarehouseStockReadData
+  - SQLAlchemy read projection
+  - GET /warehouse-stocks/warehouse/{warehouse_id}
+```
+Frontend read integration:
+
+- Orders
+- Customer
+- Organization
+- Material
+- Verification
+- Diagnostic
+- Repair
+- PriceList
+- InstrumentType
+- Warehouse Stock
 
 ---
 
@@ -258,11 +290,11 @@ passed
 
 ## Следующие шаги
 
-1. Продолжить authorization для конкретных business use cases, не вводя CRUD-based permissions.
-2. Добавлять API regression coverage для authorization boundaries.
-3. Продолжить order-centric user scenarios incrementally.
-4. После backend authorization stabilization продолжить frontend authentication/authorization scenarios.
-5. Отдельно рассмотреть production deployment automation.
+1. Выполнить аудит фактического состояния develop.
+2. Выбрать следующий независимый бизнес-сценарий.
+3. Реализовывать сценарий через существующие DDD/Clean Architecture boundaries.
+4. Не добавлять CRUD механически.
+5. Не расширять authorization без явного business owner.
 
 ---
 
