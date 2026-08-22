@@ -7,6 +7,7 @@ from uuid import UUID
 from sqlalchemy.orm import Session, joinedload
 
 from app.domains.order.read_models.order_read_models import (
+    OrderItemReadData,
     OrderReadData,
 )
 from app.domains.order.repositories.order_read_repository import (
@@ -30,7 +31,7 @@ class OrderReadRepositorySQLAlchemy(OrderReadRepository):
         self,
         order_id: UUID,
     ) -> OrderReadData | None:
-        return (
+        order = (
             self.session.query(Order)
             .options(
                 joinedload(Order.order_items)
@@ -39,4 +40,38 @@ class OrderReadRepositorySQLAlchemy(OrderReadRepository):
             )
             .filter(Order.id == order_id)
             .first()
+        )
+
+        if order is None:
+            return None
+
+        return OrderReadData(
+            id=order.id,
+            number=order.number,
+            customer_id=order.customer_id,
+            status=order.status,
+            received_at=order.received_at,
+            planned_issue_at=order.planned_issue_at,
+            issued_at=order.issued_at,
+            comment=order.comment,
+            archived=order.archived,
+            items=[
+                OrderItemReadData(
+                    id=item.id,
+                    instrument_id=item.instrument_id,
+                    instrument_type_name=(
+                        item.instrument.instrument_type.name
+                        if item.instrument
+                        and item.instrument.instrument_type
+                        else None
+                    ),
+                    serial_number=(
+                        item.instrument.serial_number
+                        if item.instrument
+                        else None
+                    ),
+                    comment=item.customer_comment,
+                )
+                for item in order.order_items
+            ],
         )
