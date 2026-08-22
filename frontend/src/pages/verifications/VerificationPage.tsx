@@ -1,3 +1,5 @@
+import { ApproveVerificationButton } from "../../features/verifications/approve-verification/ui/ApproveVerificationButton";
+import { RejectVerificationButton } from "../../features/verifications/reject-verification/ui/RejectVerificationButton";
 import { Stack, Typography } from "@mui/material";
 import { useParams } from "react-router";
 
@@ -30,6 +32,8 @@ export function VerificationPage() {
         <Typography>Unsuitable reason: {data.unsuitableReason}</Typography>
       )}
       {data.methodology && <Typography>Methodology: {data.methodology}</Typography>}
+      <ApproveVerificationButton verificationId={data.id} />
+      <RejectVerificationButton verificationId={data.id} />
       <Typography>Status: {data.archived ? "Archived" : "Active"}</Typography>
     </Stack>
   );
