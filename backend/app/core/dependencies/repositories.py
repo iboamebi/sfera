@@ -47,6 +47,9 @@ from app.domains.warehouse.repositories.warehouse_movement_repository import (
 from app.domains.warehouse.repositories.warehouse_repository import (
     WarehouseRepository,
 )
+from app.domains.warehouse.repositories.warehouse_stock_read_repository import (
+    WarehouseStockReadRepository,
+)
 from app.domains.warehouse.repositories.warehouse_stock_repository import (
     WarehouseStockRepository,
 )
@@ -97,6 +100,9 @@ from app.infrastructure.warehouse.warehouse_movement_repository import (
 from app.infrastructure.warehouse.warehouse_repository import (
     WarehouseRepositorySQLAlchemy,
 )
+from app.infrastructure.warehouse.warehouse_stock_read_repository import (
+    WarehouseStockReadRepositorySQLAlchemy,
+)
 from app.infrastructure.warehouse.warehouse_stock_repository import (
     WarehouseStockRepositorySQLAlchemy,
 )
@@ -136,6 +142,12 @@ def get_warehouse_stock_repository(
     """Provide WarehouseStock repository."""
 
     return WarehouseStockRepositorySQLAlchemy(session)
+
+
+def get_warehouse_stock_read_repository(
+    session: Session = Depends(get_session),
+) -> WarehouseStockReadRepository:
+    return WarehouseStockReadRepositorySQLAlchemy(session)
 
 
 def get_warehouse_movement_repository(

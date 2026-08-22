@@ -42,6 +42,9 @@ from app.application.repair.services.repair_application_service import RepairApp
 from app.application.verification.services.verification_application_service import (
     VerificationApplicationService,
 )
+from app.application.warehouse.queries.warehouse_stock_read_service import (
+    WarehouseStockReadService,
+)
 from app.application.warehouse.services.warehouse_application_service import WarehouseApplicationService
 from app.application.workflow.services.workflow_application_service import WorkflowApplicationService
 from app.core.dependencies.repositories import (
@@ -60,6 +63,7 @@ from app.core.dependencies.repositories import (
     get_verification_repository,
     get_warehouse_movement_repository,
     get_warehouse_repository,
+    get_warehouse_stock_read_repository,
     get_warehouse_stock_repository,
     get_workflow_instance_repository,
     get_workflow_repository,
@@ -84,6 +88,9 @@ from app.domains.user.repositories.user_repository import UserRepository
 from app.domains.verification.repositories.verification_repository import VerificationRepository
 from app.domains.warehouse.repositories.warehouse_movement_repository import WarehouseMovementRepository
 from app.domains.warehouse.repositories.warehouse_repository import WarehouseRepository
+from app.domains.warehouse.repositories.warehouse_stock_read_repository import (
+    WarehouseStockReadRepository,
+)
 from app.domains.warehouse.repositories.warehouse_stock_repository import WarehouseStockRepository
 from app.domains.workflow.repositories.workflow_repository import WorkflowInstanceRepository, WorkflowRepository
 from app.infrastructure.auth.password_hasher import Argon2PasswordHasher
@@ -198,6 +205,14 @@ def get_warehouse_service(
         movement_repository,
         uow,
     )
+
+
+def get_warehouse_stock_read_service(
+    repository: WarehouseStockReadRepository = Depends(
+        get_warehouse_stock_read_repository,
+    ),
+) -> WarehouseStockReadService:
+    return WarehouseStockReadService(repository)
 
 
 def get_organization_service(

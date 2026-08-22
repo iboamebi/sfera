@@ -133,6 +133,13 @@ Order read architecture:
 - Read model contract moved to domain layer.
 - Infrastructure provides SQLAlchemy read implementation.
 
+Warehouse stock read architecture:
+- WarehouseStockReadService provides warehouse stock queries.
+- WarehouseStockReadRepository separated from command repository.
+- Warehouse stock read model moved to domain layer.
+- Infrastructure provides SQLAlchemy read projection.
+- GET /warehouse-stocks/warehouse/{warehouse_id} exposes read contract.
+
 ## Order Items Checkpoint
 
 Order item persistence and read contract are complete:
@@ -440,7 +447,7 @@ b953cb5 feat: add price list detail route
 Documentation renewal commit follows this checkpoint.
 
 Backend validation:
-- 136 passed
+- 137 passed
 - 1 warning
 
 Latest architecture commit:
