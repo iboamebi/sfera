@@ -6,7 +6,7 @@
 
 Frontend развивается поэтапно поверх существующего backend API. Backend DDD/Clean Architecture остаётся источником бизнес-правил; frontend отвечает за UI, клиентскую валидацию и orchestration server state.
 
-Текущий frontend checkpoint включает Orders и read/detail slices для Customer, Organization, Material, Verification, Diagnostic, Repair и PriceList, а также InstrumentType list/detail.
+Текущий frontend checkpoint включает Orders и read/detail slices для Customer, Organization, Material, Verification, Diagnostic, Repair и PriceList, InstrumentType list/detail, а также Warehouse Stock read slice.
 
 ---
 
@@ -119,11 +119,32 @@ App
 /price-lists/:priceListId
 /instrument-types
 /instrument-types/:instrumentTypeId
+/warehouse-stocks/warehouse/:warehouseId
 ```
 
 `/login` является публичным. Остальные пользовательские маршруты защищены `RequireAuth`. Это соответствует фактическому router contract на текущем `develop`. fileciteturn143file0
 
 ---
+
+### Warehouse Stock
+
+Реализован read slice:
+
+```text
+API DTO
+  ↓
+mapper
+  ↓
+frontend model
+  ↓
+query hook
+  ↓
+WarehouseStockPage
+  ↓
+/warehouse-stocks/warehouse/:warehouseId
+```
+
+Frontend отвечает только за отображение и orchestration server state.
 
 ## 7. Реализованные frontend slices
 
