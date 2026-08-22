@@ -7,6 +7,7 @@ from app.domains.order.entities.order_item import OrderItem
 from app.domains.order.value_objects.order_number import OrderNumber
 from app.infrastructure.mappers.base_mapper import BaseMapper
 from app.models.order import Order as OrderModel
+from app.models.order_item import OrderItem as OrderItemModel
 
 
 class OrderMapper(BaseMapper[Order, OrderModel]):
@@ -47,5 +48,16 @@ class OrderMapper(BaseMapper[Order, OrderModel]):
         model.issued_at = entity.issued_at
         model.comment = entity.comment
         model.status = entity.status.value
+
+        model.order_items.clear()
+
+        for line_number, item in enumerate(entity.items, start=1):
+            model.order_items.append(
+                OrderItemModel(
+                    instrument_id=item.instrument_id,
+                    line_number=line_number,
+                    customer_comment=item.comment,
+                )
+            )
 
         return model
