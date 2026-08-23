@@ -457,6 +457,7 @@ Latest commits before documentation renewal:
 a53d711 feat: add warehouse stock route integration
 12b6fcc feat: add warehouse stock page
 976c4de feat: add warehouse stock table component
+35e4660 docs: add order lifecycle audit checkpoint
 ```
 
 Backend validation:
@@ -513,7 +514,73 @@ Do not:
 - reintroduce legacy CRUD architecture;
 - follow an obsolete roadmap without checking current code.
 
-Select the next independent user scenario from the actual repository state.
+Order lifecycle audit:
+implement DDD events foundation only after final review of current contracts.
+Do not implement workflow orchestration before event infrastructure is introduced.
+
+## Order Lifecycle Audit Checkpoint
+
+Дата: 2026-08-23
+
+Проведён аудит Order lifecycle без изменения кода.
+
+Документ:
+
+docs/architecture/ORDER_LIFECYCLE_AUDIT.md
+
+Основные выводы:
+
+- Order lifecycle сейчас реализован до состояния REGISTERED.
+- Реализованы:
+  - create;
+  - add_item;
+  - update;
+  - register.
+
+- Не реализованы переходы:
+  - REGISTERED → IN_WORK;
+  - IN_WORK → WAITING;
+  - WAITING → COMPLETED;
+  - COMPLETED → ISSUED;
+  - ISSUED → CLOSED.
+
+Аудит связей:
+
+OrderItem является центром исполнения работ:
+
+OrderItem
+ ├── Repair
+ ├── Diagnostic
+ └── WorkflowInstance
+
+Verification является отдельным результатом поверки и не имеет подтверждённой orchestration-связи с OrderItem.
+
+Workflow domain существует:
+- Workflow;
+- WorkflowInstance;
+- WorkflowApplicationService.
+
+Но интеграция с бизнес-сценариями отсутствует.
+
+Domain Events infrastructure существует:
+- DomainEvent;
+- EventDispatcher;
+- OrderCreated.
+
+Не реализованы:
+- Aggregate event collection;
+- UnitOfWork event dispatch;
+- Event handlers;
+- OrderRegistered event.
+
+Следующий технический этап:
+
+DDD events foundation:
+
+1. AggregateRoot с накоплением domain events.
+2. Интеграция событий с UnitOfWork.
+3. Добавление OrderRegistered event.
+4. После этого — workflow orchestration.
 
 ## Recovery Checkpoint
 
