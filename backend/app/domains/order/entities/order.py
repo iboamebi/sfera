@@ -7,6 +7,7 @@ from datetime import datetime
 from uuid import UUID
 
 from app.domains.order.entities.order_item import OrderItem
+from app.domains.order.events.order_registered import OrderRegistered
 from app.domains.order.exceptions.order_exception import OrderException
 from app.domains.order.value_objects.order_number import OrderNumber
 from app.domains.order.value_objects.order_status import OrderStatus
@@ -78,3 +79,6 @@ class Order(AggregateRoot):
             raise OrderException("Order must contain items")
 
         self.status = OrderStatus.REGISTERED
+        self.add_event(
+            OrderRegistered(order_id=self.id)
+        )

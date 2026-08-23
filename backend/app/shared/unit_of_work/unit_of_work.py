@@ -31,3 +31,6 @@ class UnitOfWork(ABC):
     def rollback(self) -> None:
         """Rollback transaction."""
         pass
+
+    def register_aggregate(self, aggregate: object) -> None:
+        pass

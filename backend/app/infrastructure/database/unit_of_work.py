@@ -15,6 +15,7 @@ class SqlAlchemyUnitOfWork(UnitOfWork):
         session: Session,
     ) -> None:
         self.session = session
+        self._aggregates: list[object] = []
 
     def commit(self) -> None:
         """Commit transaction."""
@@ -24,5 +25,9 @@ class SqlAlchemyUnitOfWork(UnitOfWork):
         """Rollback transaction."""
         self.session.rollback()
 
-    def __enter__(self):
+    def register_aggregate(self, aggregate: object) -> None:
+        """Register aggregate for domain event collection."""
+        self._aggregates.append(aggregate)
+
+        def __enter__(self):
         return self

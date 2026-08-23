@@ -134,6 +134,8 @@ class OrderApplicationService:
 
             order.register()
 
+            self._uow.register_aggregate(order)
+
             self._repository.save(order)
 
         return order
