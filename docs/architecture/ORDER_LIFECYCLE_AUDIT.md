@@ -6,15 +6,14 @@
 
 ## Scope
 
-Аудит фактического состояния Order lifecycle после завершения Verification frontend action slice.
+Актуализация фактического состояния Order lifecycle после завершения Domain Events foundation.
 
 Цель:
 
 - определить текущие переходы Order;
 - проверить связь Order → Workflow → Verification/Repair/Diagnostic;
-- определить безопасную следующую архитектурную точку.
-
-Изменения кода в рамках аудита не выполнялись.
+- зафиксировать состояние domain events;
+- определить следующую безопасную архитектурную точку.
 
 ## Current Order Lifecycle
 
@@ -23,7 +22,7 @@
 ```text
 NEW
  |
- v
+v
 REGISTERED
 ```
 
@@ -39,7 +38,8 @@ REGISTERED
 `register()`:
 
 - требует наличие хотя бы одной позиции;
-- переводит заказ в `REGISTERED`.
+- переводит заказ в `REGISTERED`;
+- создаёт `OrderRegistered` domain event.
 
 Следующие переходы статусов пока не реализованы:
 
@@ -96,7 +96,7 @@ IN_PROGRESS
 COMPLETED
 ```
 
-Также поддерживается CANCELLED.
+Также поддерживается `CANCELLED`.
 
 ## Process Domains
 
@@ -134,18 +134,11 @@ Verification:
 - отдельный aggregate;
 - содержит результат поверки;
 - approve/reject реализованы;
-- прямой order_item_id в текущей модели не обнаружен.
+- прямой `order_item_id` в текущей модели не обнаружен.
 
 ## Domain Events State
 
-Инфраструктура существует:
-
-```text
-DomainEvent
-EventDispatcher
-```
-
-Но отсутствует полный DDD event lifecycle:
+Domain event foundation реализован:
 
 ```text
 Aggregate
@@ -154,23 +147,23 @@ collect events
    ↓
 UnitOfWork
    ↓
+commit
+   ↓
 EventDispatcher
    ↓
 Handlers
 ```
 
-Сейчас найдено:
+Текущее состояние:
 
-- базовый DomainEvent;
-- EventDispatcher;
-- OrderCreated event.
-
-Не найдено:
-
-- OrderRegistered event;
-- event handlers;
-- subscriptions;
-- workflow bootstrap через события.
+- `DomainEvent` — реализован;
+- `AggregateRoot` — реализован;
+- `OrderRegistered` — реализован;
+- `EventDispatcher` — реализован;
+- UnitOfWork event collection — реализован;
+- dispatch после успешного commit — реализован;
+- `OrderRegistered` handler — пока отсутствует;
+- workflow bootstrap через события — пока отсутствует.
 
 ## Architectural Conclusion
 
@@ -193,21 +186,17 @@ Order
  +-- Diagnostic
 ```
 
+Domain events теперь являются готовым механизмом для последующей orchestration.
+
 ## Next Candidate
 
 Следующий независимый backend этап:
 
 ```text
-DDD events foundation
+OrderRegistered → workflow bootstrap
 ```
 
-Порядок:
-
-1. общий AggregateRoot/event collection;
-2. накопление domain events в агрегатах;
-3. интеграция UnitOfWork;
-4. dispatch после commit;
-5. только затем OrderRegistered → workflow handler.
+Перед реализацией handler необходимо подтвердить существующий application/infrastructure API для создания `WorkflowInstance` и определить, какой workflow должен запускаться для зарегистрированной позиции заказа.
 
 ## Constraints
 
@@ -216,4 +205,5 @@ DDD events foundation
 - добавление статусов без бизнес use case;
 - прямое связывание Order с Repair/Diagnostic/Verification;
 - создание workflow в API слое;
-- возврат к CRUD orchestration.
+- возврат к CRUD orchestration;
+- придумывание отсутствующих workflow contracts.
