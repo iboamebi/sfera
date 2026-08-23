@@ -29,6 +29,9 @@ class WorkflowInstanceMapper(
             order_item_id=model.order_item_id,
             current_stage=model.current_stage,
             status=WorkflowStatus(model.status),
+            created_at=model.created_at,
+            started_at=model.started_at,
+            completed_at=model.completed_at,
         )
 
     def to_model(
@@ -40,6 +43,8 @@ class WorkflowInstanceMapper(
         model.order_item_id = entity.order_item_id
         model.current_stage = entity.current_stage
         model.status = entity.status.value
+        model.started_at = entity.started_at
+        model.completed_at = entity.completed_at
 
         return model
 
@@ -55,4 +60,7 @@ class WorkflowInstanceMapper(
             order_item_id=entity.order_item_id,
             current_stage=entity.current_stage,
             status=entity.status.value,
+            created_at=entity.created_at,
+            started_at=entity.started_at,
+            completed_at=entity.completed_at,
         )
