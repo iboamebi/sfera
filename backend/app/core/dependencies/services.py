@@ -68,6 +68,7 @@ from app.core.dependencies.repositories import (
     get_workflow_instance_repository,
     get_workflow_repository,
 )
+from app.core.dependencies.events import get_event_dispatcher
 from app.core.dependencies.uow import get_unit_of_work
 from app.domains.auth.repositories.session_repository import SessionRepository
 from app.domains.customer.repositories.customer_repository import CustomerRepository
@@ -95,6 +96,7 @@ from app.domains.warehouse.repositories.warehouse_stock_repository import Wareho
 from app.domains.workflow.repositories.workflow_repository import WorkflowInstanceRepository, WorkflowRepository
 from app.infrastructure.auth.password_hasher import Argon2PasswordHasher
 from app.infrastructure.auth.session_token_generator import SecureSessionTokenGenerator
+from app.shared.events.event_dispatcher import EventDispatcher
 from app.shared.unit_of_work.unit_of_work import UnitOfWork
 
 
@@ -135,9 +137,10 @@ def get_current_user_service(
 def get_order_service(
     repository: OrderRepository = Depends(get_order_repository),
     uow: UnitOfWork = Depends(get_unit_of_work),
+    event_dispatcher: EventDispatcher = Depends(get_event_dispatcher),
 ) -> OrderApplicationService:
     """Provide Order application service."""
-    return OrderApplicationService(repository, uow)
+    return OrderApplicationService(repository, uow, event_dispatcher,)
 
 
 def get_order_read_service(

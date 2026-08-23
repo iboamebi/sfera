@@ -37,9 +37,11 @@ class OrderApplicationService:
         self,
         repository: OrderRepository,
         unit_of_work: UnitOfWork,
+        event_dispatcher: object | None = None,
     ) -> None:
         self._repository = repository
         self._uow = unit_of_work
+        self._event_dispatcher = event_dispatcher
 
     def create(
         self,
