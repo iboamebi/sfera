@@ -1,564 +1,285 @@
-# Sfera API Layer
+# REST API
 
-## Назначение
+Версия: 1.0
 
-API Layer предоставляет внешний интерфейс системы Сфера.
+---
 
-Основные задачи:
+# Назначение
 
-- обработка HTTP запросов;
-- валидация входных данных;
-- преобразование DTO;
-- вызов Application Services;
-- возврат результатов.
+Документ описывает структуру REST API проекта «Сфера».
 
+API реализовано на FastAPI и предоставляет доступ ко всем функциям системы через HTTP.
 
-API слой не содержит бизнес-логику.
+---
 
-
-# Architecture
-
-
-Структура:
-
+# Базовый URL
 
 ```
-
-Client
-
-|
-
-v
-
-FastAPI Router
-
-|
-
-v
-
-Application Service
-
-|
-
-v
-
-Domain
-
-|
-
-v
-
-Infrastructure
-
-```id="6f4q0k"
-
-
-# API Responsibilities
-
-
-API отвечает за:
-
-
+/api
 ```
 
-✓ HTTP endpoints
-
-✓ request validation
-
-✓ response serialization
-
-✓ authentication
-
-✓ authorization
-
-✓ dependency injection
-
-```id="8w7v9j"
-
-
-API не отвечает за:
-
+Документация Swagger:
 
 ```
-
-✗ бизнес-правила
-
-✗ изменение состояния агрегатов
-
-✗ расчёт стоимости
-
-✗ работу с базой напрямую
-
-```id="m4e1fs"
-
-
-# Router Structure
-
-
-Расположение:
-
-
+/docs
 ```
 
-backend/app/api/routers/
-
-```id="9p2fkp"
-
-
-Текущие роутеры:
-
+OpenAPI:
 
 ```
-
-customer.py
-
-device.py
-
-order.py
-
-verification.py
-
-workflow.py
-
-price_list.py
-
-```id="5v7x8n"
-
-
-# Dependency Injection
-
-
-Зависимости подключаются через DI.
-
-
-Пример:
-
-
+/openapi.json
 ```
 
+---
+
+# Общие правила
+
+Все запросы используют формат:
+
+```
+application/json
+```
+
+Ответы также возвращаются в формате JSON.
+
+---
+
+# CRUD
+
+Для большинства сущностей поддерживаются стандартные операции.
+
+```
+POST
+
+GET
+
+PUT
+
+DELETE
+```
+
+---
+
+# Основные группы API
+
+## Организации
+
+```
+/organizations
+```
+
+---
+
+## Заказчики
+
+```
+/customers
+```
+
+---
+
+## Заказы
+
+```
+/orders
+```
+
+---
+
+## Позиции заказа
+
+```
+/order-items
+```
+
+---
+
+## Средства измерений
+
+```
+/instruments
+
+/instrument-types
+
+/instrument-labels
+```
+
+---
+
+## Поверка
+
+```
+/verifications
+
+/methodologies
+```
+
+---
+
+## Диагностика
+
+```
+/diagnostics
+```
+
+---
+
+## Ремонт
+
+```
+/repairs
+```
+
+---
+
+## Склад
+
+```
+/warehouses
+
+/materials
+
+/warehouse-stocks
+
+/warehouse-movements
+```
+
+---
+
+## Производство
+
+```
+/production-movements
+```
+
+---
+
+## Документы
+
+```
+/documents
+
+/document-templates
+```
+
+---
+
+## Прайсы
+
+```
+/price-lists
+
+/price-list-items
+```
+
+---
+
+## Пользователи
+
+```
+/users
+
+/roles
+
+/permissions
+```
+
+---
+
+# Стандартные ответы
+
+Успешное создание:
+
+```
+201 Created
+```
+
+Успешное получение:
+
+```
+200 OK
+```
+
+Удаление:
+
+```
+204 No Content
+```
+
+---
+
+# Ошибки
+
+```
+400 Bad Request
+
+401 Unauthorized
+
+403 Forbidden
+
+404 Not Found
+
+409 Conflict
+
+422 Validation Error
+
+500 Internal Server Error
+```
+
+---
+
+# Архитектура
+
+Каждый Router содержит только обработку HTTP-запросов.
+
+Бизнес-логика размещается в сервисах.
+
+Работа с базой данных выполняется через репозитории.
+
+Схема взаимодействия:
+
+```text
+HTTP Request
+      │
+      ▼
 Router
-
-```
-|
-```
-
-Depends()
-
-```
-|
-```
-
-Application Service
-
-```
-|
-```
-
+      │
+      ▼
+Service
+      │
+      ▼
 Repository
-
-```id="9m3p4x"
-
-
-API не создаёт:
-
+      │
+      ▼
+PostgreSQL
 ```
-
-SQLAlchemy Session
-
-Repository
-
-Domain Entity
-
-```id="r1h4f2"
-
-
-# DTO Layer
-
-
-Для обмена данными используются DTO.
-
-
-Структура:
-
-
-```
-
-Request DTO
-
-```
- |
-```
-
-Application Service
-
-```
- |
-```
-
-Response DTO
-
-```id="j2l0s9"
-
-
-DTO отвечает за:
-
-- формат данных;
-- валидацию;
-- сериализацию.
-
-
-DTO не содержит бизнес-правил.
-
-
-# Current API Modules
-
-
-## Customer API
-
-
-Назначение:
-
-- управление заказчиками;
-- организации;
-- контактные данные.
-
-
-Application Service:
-
-
-```
-
-CustomerApplicationService
-
-```id="4s3d8w"
-
 
 ---
 
-## Device API
+# Версионирование
 
-
-Назначение:
-
-- средства измерений;
-- типы устройств.
-
-
-Application Service:
-
+В дальнейшем планируется поддержка:
 
 ```
+/api/v1
 
-DeviceApplicationService
-
-```id="g9k4b2"
-
+/api/v2
+```
 
 ---
 
-## Order API
+# Аутентификация
 
-
-Назначение:
-
-- создание заказов;
-- управление состояниями;
-- работа с позициями заказа.
-
-
-Application Service:
-
+Планируется использование:
 
 ```
+JWT Bearer Token
+```
 
-OrderApplicationService
-
-```id="h8k5p1"
-
+с разграничением доступа на основе ролей и разрешений.
 
 ---
 
-## Verification API
+# Основной принцип
 
-
-Назначение:
-
-- управление поверками;
-- результаты;
-- статусы.
-
-
-Application Service:
-
-
-```
-
-VerificationApplicationService
-
-```id="x3q7v5"
-
-
----
-
-## Workflow API
-
-
-Назначение:
-
-- технологические процессы;
-- этапы выполнения.
-
-
-Application Service:
-
-
-```
-
-WorkflowApplicationService
-
-```id="f5w8d0"
-
-
----
-
-## PriceList API
-
-
-Статус:
-
-```
-
-IN DEVELOPMENT
-
-```id="z7r4s6"
-
-
-Назначение:
-
-- управление прайс-листами;
-- управление ценами;
-- расчёт стоимости.
-
-
-Application Service:
-
-
-```
-
-PriceListApplicationService
-
-```id="q8n2m4"
-
-
-# Endpoint Rules
-
-
-Каждый endpoint должен:
-
-
-```
-
-1. принять запрос
-
-2. проверить DTO
-
-3. вызвать Application Service
-
-4. вернуть DTO ответа
-
-```id="e2k5s8"
-
-
-Пример потока:
-
-
-```
-
-POST /orders
-
-Request DTO
-
-```
-|
-```
-
-OrderRouter
-
-```
-|
-```
-
-OrderApplicationService
-
-```
-|
-```
-
-Order Aggregate
-
-```
-|
-```
-
-Repository
-
-```
-|
-```
-
-Response DTO
-
-```id="p4m7q1"
-
-
-# Error Handling
-
-
-Ошибки разделяются:
-
-
-## Domain Errors
-
-
-Примеры:
-
-
-```
-
-InvalidOrderStatus
-
-PriceListNotActive
-
-InvalidPrice
-
-```id="u6s8z2"
-
-
-Преобразуются API уровнем в HTTP ответы.
-
-
-## Infrastructure Errors
-
-
-Примеры:
-
-
-```
-
-DatabaseConnectionError
-
-RepositoryError
-
-```id="v3c9x5"
-
-
-# Security
-
-
-API должен поддерживать:
-
-
-```
-
-Authentication
-
-Authorization
-
-Role Based Access Control
-
-Audit Logging
-
-```id="k1d6m8"
-
-
-# Testing
-
-
-API тесты проверяют:
-
-
-```
-
-✓ endpoint availability
-
-✓ validation
-
-✓ authorization
-
-✓ response format
-
-✓ service invocation
-
-```id="q7x4m2"
-
-
-# API Development Rules
-
-
-Новые endpoints создаются:
-
-
-```
-
-Domain
-
-↓
-
-Application Service
-
-↓
-
-API Router
-
-```id="b5n8c3"
-
-
-Запрещено:
-
-
-```
-
-Router
-
-↓
-
-Database
-
-↓
-
-Business Logic
-
-```id="p9r2v7"
-
-
-# Current Status
-
-
-```
-
-Customer API          ✓
-
-Device API            ✓
-
-Order API             ✓
-
-Verification API      ✓
-
-Workflow API           ✓
-
-PriceList API          IN PROGRESS
-
-```id="n4s7k9"
-
-
-# Version
-
-
-Architecture:
-
-```
-
-Sfera v2.0 Architecture
-
-```id="d8m3q6"
-```
+REST API предоставляет единую точку доступа ко всем возможностям системы и не содержит бизнес-логики — она реализуется исключительно на уровне сервисов.
