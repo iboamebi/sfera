@@ -2,12 +2,20 @@
 Application service for verification use cases.
 """
 
-from datetime import date
 from uuid import UUID
 
+from app.application.authorization.authorization import require_role
+from app.application.verification.commands.approve_verification import (
+    ApproveVerificationCommand,
+)
+from app.application.verification.commands.reject_verification import (
+    RejectVerificationCommand,
+)
 from app.application.verification.exceptions import (
     VerificationNotFoundApplicationError,
 )
+from app.domains.user.entities.user import User
+from app.domains.user.value_objects.user_role import UserRole
 from app.domains.verification.entities.verification import Verification
 from app.domains.verification.repositories.verification_repository import (
     VerificationRepository,
@@ -39,15 +47,15 @@ class VerificationApplicationService:
 
     def approve(
         self,
-        verification_id: UUID,
-        valid_until: date,
+        command: ApproveVerificationCommand,
+        user: User,
     ) -> Verification:
-        with self._uow:
-            verification = self.get(verification_id)
+        require_role(user, UserRole.METROLOGIST, UserRole.ADMIN)
 
-            verification.mark_suitable(
-                valid_until,
-            )
+        with self._uow:
+            verification = self.get(command.verification_id)
+
+            verification.mark_suitable(command.valid_until)
 
             self._repository.save(verification)
 
@@ -55,15 +63,15 @@ class VerificationApplicationService:
 
     def reject(
         self,
-        verification_id: UUID,
-        reason: str,
+        command: RejectVerificationCommand,
+        user: User,
     ) -> Verification:
-        with self._uow:
-            verification = self.get(verification_id)
+        require_role(user, UserRole.METROLOGIST, UserRole.ADMIN)
 
-            verification.mark_unsuitable(
-                reason,
-            )
+        with self._uow:
+            verification = self.get(command.verification_id)
+
+            verification.mark_unsuitable(command.reason)
 
             self._repository.save(verification)
 
