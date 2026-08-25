@@ -9,10 +9,17 @@ from fastapi import APIRouter, Depends
 
 from app.api.dependencies.auth import get_current_user
 from app.api.security.csrf import require_csrf
+from app.application.verification.commands.approve_verification import (
+    ApproveVerificationCommand,
+)
+from app.application.verification.commands.reject_verification import (
+    RejectVerificationCommand,
+)
 from app.application.verification.services.verification_application_service import (
     VerificationApplicationService,
 )
 from app.core.dependencies.services import get_verification_service
+from app.domains.user.entities.user import User
 
 router = APIRouter(
     prefix="/verifications",
@@ -27,13 +34,17 @@ router = APIRouter(
 def approve_verification(
     verification_id: UUID,
     valid_until: date,
+    user: User = Depends(get_current_user),
     service: VerificationApplicationService = Depends(
         get_verification_service,
     ),
 ):
     return service.approve(
-        verification_id,
-        valid_until,
+        ApproveVerificationCommand(
+            verification_id=verification_id,
+            valid_until=valid_until,
+        ),
+        user,
     )
 
 
@@ -44,11 +55,15 @@ def approve_verification(
 def reject_verification(
     verification_id: UUID,
     reason: str,
+    user: User = Depends(get_current_user),
     service: VerificationApplicationService = Depends(
         get_verification_service,
     ),
 ):
     return service.reject(
-        verification_id,
-        reason,
+        RejectVerificationCommand(
+            verification_id=verification_id,
+            reason=reason,
+        ),
+        user,
     )
