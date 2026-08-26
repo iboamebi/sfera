@@ -23,6 +23,9 @@ from app.api.routers.warehouse_movement import router as warehouse_movement_rout
 from app.api.routers.warehouse_stock import router as warehouse_stock_router
 from app.api.routers.workflow import router as workflow_router
 from app.application.authorization.authorization import AuthorizationError
+from app.application.verification.exceptions import (
+    VerificationNotFoundApplicationError,
+)
 from app.db import model_registry  # noqa: F401
 
 app = FastAPI(title="Sphere")
@@ -35,6 +38,17 @@ def authorization_error_handler(
 ) -> JSONResponse:
     return JSONResponse(
         status_code=403,
+        content={"detail": str(exc)},
+    )
+
+
+@app.exception_handler(VerificationNotFoundApplicationError)
+def verification_not_found_handler(
+    request: Request,
+    exc: VerificationNotFoundApplicationError,
+) -> JSONResponse:
+    return JSONResponse(
+        status_code=404,
         content={"detail": str(exc)},
     )
 
