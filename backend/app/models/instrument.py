@@ -57,4 +57,5 @@ class Instrument(BaseModel):
 
     instrument_type = relationship(
         "InstrumentType",
+        back_populates="instruments",
     )
