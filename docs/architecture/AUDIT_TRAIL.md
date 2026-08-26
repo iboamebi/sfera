@@ -20,7 +20,8 @@ The document describes the required audit mechanism based on the current code. I
 
 Sfera is used by multiple users. For every significant business change it must remain possible to determine:
 
-- who performed the action;
+- who initiated the operation;
+- who directly performed each action;
 - when it was performed;
 - what changed;
 - what the previous value was;
@@ -58,7 +59,7 @@ Handlers
 
 Domain event dispatch occurs after the database commit. Therefore a mandatory audit record must not depend exclusively on the current Domain Event dispatcher.
 
-The current `UnitOfWork` provides the transactional boundary. Audit persistence must participate in that same transaction as the business mutation.
+The current `UnitOfWork` provides the application transaction abstraction. However, the exact SQLAlchemy session wiring and concrete transaction implementation must still be verified from the current Infrastructure/dependency code before audit persistence is implemented.
 
 ---
 
@@ -73,7 +74,7 @@ Application Use Case
         ↓
  business mutation
         ↓
- audit record
+ audit operation + audit record(s)
         ↓
  same UnitOfWork / transaction
         ↓
@@ -83,32 +84,60 @@ Application Use Case
 On failure:
 
 ```text
-business mutation + audit record
+business mutation + audit record(s)
         ↓
       ROLLBACK
 ```
 
 The current post-commit Domain Event dispatcher must not be treated as the sole persistence mechanism for mandatory audit records.
 
+Audit-specific APIs must not be added to the generic `UnitOfWork` merely to support auditing. Audit persistence must use the same transaction/session boundary established by the application transaction mechanism.
+
 ---
 
-## 4. Actor Identity
+## 4. Actor Identity and Operation Initiation
 
-The audit actor is the authenticated Sfera `User`.
+The audit mechanism distinguishes the initiator of a logical operation from the direct actor of an individual audit action.
 
-The stable reference is:
+### Direct actor
 
 ```text
 AuditRecord.actor_id → User.id
 ```
 
+`actor_id` identifies the authenticated user or technical/system actor that directly performed the recorded action.
+
 `username` is not the historical identity key.
 
-The Application boundary already receives the authenticated `User` for protected business mutations. Verification approval and rejection are examples of this existing pattern.
+### Operation initiator
 
-Authentication/session details must not enter the Domain model merely to support audit.
+A logical application operation may produce multiple audit records and may involve a background/system actor. Therefore the operation itself has an initiator:
 
-The Domain remains independent from FastAPI, HTTP sessions and authentication infrastructure.
+```text
+AuditOperation.initiated_by → User.id / system actor
+```
+
+Examples:
+
+```text
+User action:
+    initiated_by = User A
+    actor_id     = User A
+
+Background processing initiated by a user:
+    initiated_by = User A
+    actor_id     = SYSTEM
+
+Pure system operation:
+    initiated_by = SYSTEM
+    actor_id     = SYSTEM
+```
+
+No anonymous audit operation is permitted.
+
+Authentication/session details must not enter the Domain model merely to support audit. The Domain remains independent from FastAPI, HTTP sessions and authentication infrastructure.
+
+The distinction between `initiated_by` and `actor_id` is required so that a background or automated action does not hide the original initiator.
 
 ---
 
@@ -118,7 +147,7 @@ Audit is mandatory for operations that create, modify, archive, restore or other
 
 The minimum system rule is:
 
-> Every significant business-state change or significant creation/archive operation must leave an immutable audit record.
+> Every significant business-state change or significant creation/archive/correction operation must leave an immutable audit record.
 
 Read-only operations are not included by default. Auditing data access is a separate future business/security requirement.
 
@@ -169,17 +198,24 @@ create correction separately
 
 The history must retain who, when and why.
 
+The same principle applies to the audit journal itself: an audit record that is later found to be incorrect is never rewritten or deleted. Its invalidation or correction is represented by a new audit record.
+
 ---
 
-## 7. Audit Record Format
+## 7. Audit Operation and Record Model
 
-The approved representation is **field-level changes**, not full-object snapshots for every mutation.
+One logical application operation is represented by an `AuditOperation`. Individual changes produced by that operation are represented by `AuditRecord` entries.
 
-Conceptual record:
+Conceptual model:
 
 ```text
+AuditOperation
+├── operation_id
+└── initiated_by
+
 AuditRecord
 ├── id
+├── operation_id
 ├── actor_id
 ├── occurred_at
 ├── action
@@ -187,33 +223,181 @@ AuditRecord
 ├── entity_id
 ├── changes
 ├── reason
-└── operation_id
+└── related_record_id
 ```
 
-The `changes` payload records only business fields that actually changed.
+`operation_id` is shared by all records belonging to one logical application operation.
 
-Example:
+`AuditRecord.id` identifies one historical record and is distinct from `operation_id`.
 
-```text
-changes:
-  status:
-    old: "PENDING"
-    new: "APPROVED"
-
-  result:
-    old: "..."
-    new: "..."
-```
-
-For creation/archive/correction operations, the audit payload may contain the relevant field set necessary to reconstruct the operation. This does not imply that the complete ORM object should be serialized indiscriminately.
+`operation_id` is not unique across audit records.
 
 ---
 
-## 8. Immutability
+## 8. Identifier Rules
+
+Both `AuditOperation.operation_id` and `AuditRecord.id` are UUIDs.
+
+The approved generation boundary is the Application layer:
+
+```text
+Application
+ ├── operation_id = UUID
+ └── audit record id = UUID
+```
+
+The database remains responsible for persistence constraints, but not for the semantic generation of these application identifiers.
+
+Required lookup indexes are:
+
+```text
+INDEX(operation_id)
+INDEX(entity_type, entity_id)
+INDEX(occurred_at)
+```
+
+The exact physical index names and migration details remain implementation concerns.
+
+---
+
+## 9. Audit Record Format
+
+The approved representation is **field-level changes**, not full-object snapshots for every mutation.
+
+The conceptual persistence contract is:
+
+```text
+AuditRecord
+├── id                 UUID PK
+├── operation_id       UUID NOT NULL
+├── actor_id           UUID NOT NULL
+├── occurred_at        timestamptz NOT NULL DEFAULT now()
+├── action             stable string
+├── entity_type        stable string
+├── entity_id          UUID
+├── changes            JSONB
+├── reason             nullable
+└── related_record_id  nullable FK → AuditRecord.id
+```
+
+### `changes`
+
+`changes` is stored as PostgreSQL `JSONB`.
+
+The primary shape is:
+
+```json
+{
+  "status": {
+    "old": "PENDING",
+    "new": "APPROVED"
+  }
+}
+```
+
+Only business fields that actually changed are recorded.
+
+Values must be represented in a JSON-compatible stable form:
+
+- UUID → string;
+- datetime → ISO-8601 string;
+- Enum → stable enum value;
+- `None` → JSON `null`;
+- primitive JSON-compatible values → unchanged.
+
+Sensitive technical data such as passwords, tokens, credentials and secrets must never be captured automatically.
+
+### Lifecycle operations
+
+`create` records relevant `null → new` values.
+
+`update` records only changed `old → new` values.
+
+`archive` records the relevant state transition, for example `archived: false → true`.
+
+Physical deletion is not the normal mechanism for audit-worthy business history. Where business policy requires removal from the active state, an archival/state transition is used instead.
+
+Full ORM snapshots are not stored automatically. A full snapshot requires separate explicit business justification.
+
+---
+
+## 10. Stable `entity_type`
+
+`entity_type` is a stable application-level string.
+
+Examples:
+
+```text
+verification
+order
+device
+workflow
+instrument
+customer
+```
+
+It must not be derived from Python class names, ORM class paths or implementation details.
+
+Historical audit records retain their original `entity_type` even if internal class names change.
+
+`entity_id` identifies the specific business object.
+
+---
+
+## 11. Stable `action`
+
+`action` is a stable application-level string identifying the business operation.
+
+The convention is:
+
+```text
+<entity_type>.<operation>
+```
+
+Examples:
+
+```text
+verification.created
+verification.approved
+verification.rejected
+verification.archived
+verification.corrected
+
+order.created
+workflow.started
+workflow.completed
+```
+
+`action` is not a global enum and does not depend on Python method names.
+
+A new business operation receives a new stable action identifier.
+
+---
+
+## 12. `reason` Policy
+
+`reason` is nullable in the common `AuditRecord` persistence contract because different business operations have different requirements.
+
+Whether `reason` is mandatory is a rule of the concrete Application use case.
+
+For Verification, the current decisions are:
+
+```text
+verification.approved   → reason optional
+verification.rejected   → reason required
+verification.archived   → reason required
+verification.corrected  → reason required
+```
+
+The requirement must be enforced by the corresponding Application command/use case, not by a global audit registry.
+
+`reason` is the explicit basis for the operation and must not be silently generated by Infrastructure.
+
+---
+
+## 13. Audit Record Immutability and Corrections
 
 Audit Trail is append-only.
-
-Audit records must not be physically deleted or rewritten as part of ordinary application behavior.
 
 The intended rule is:
 
@@ -224,31 +408,91 @@ never UPDATE
 never DELETE
 ```
 
-If an audit record itself is discovered to be incorrect, the correction must be represented by a new historical record rather than silently rewriting the original audit entry.
+No `archived` flag is used to hide or replace an audit record.
+
+If an audit record is discovered to contain incorrect or unreliable information, the original record remains unchanged. A new audit record documents the invalidation or correction.
+
+The approved relationship is:
+
+```text
+AuditRecord A
+    ↓
+AuditRecord B
+    action = verification.corrected
+    related_record_id = A.id
+```
+
+or, for invalidation:
+
+```text
+AuditRecord A
+    ↓
+AuditRecord B
+    action = audit.record.invalidated
+    related_record_id = A.id
+```
+
+`related_record_id` is deliberately neutral. It is interpreted together with the stable `action` rather than pretending that every relationship is a replacement/supersession.
+
+For the current Verification scope, one new corrective/invalidation record refers to one prior audit record. A multi-record correction relation is outside the current scope and must be designed separately if required.
+
+Database-level protection against `UPDATE`/`DELETE` is required in production in addition to an append-only Repository contract.
 
 ---
 
-## 9. Operation Correlation
+## 14. Timestamp Rule
 
-`operation_id` is required as the correlation identifier for one logical application operation that may produce multiple audit records.
+`occurred_at` is the authoritative audit timestamp and is generated by the database server.
 
-This allows the history to answer both questions:
-
-```text
-Who changed this entity?
-```
-
-and:
+Required conceptual type:
 
 ```text
-Which changes were part of the same operation?
+DateTime(timezone=True)
+NOT NULL
+server_default = now()
 ```
 
-The exact generation and propagation mechanism for `operation_id` remains an implementation decision.
+Application clients must not supply or override the authoritative audit timestamp.
+
+This provides one server-controlled timeline for actions performed by multiple users and system actors.
+
+Separate `created_at`/`updated_at` fields are not required for an immutable audit record.
 
 ---
 
-## 10. Separation of Concerns
+## 15. Transactional Integrity
+
+Business mutation, `AuditOperation` creation and all associated `AuditRecord` inserts must participate in the same transaction.
+
+Required invariant:
+
+```text
+COMMIT:
+    business change ✓
+    audit operation ✓
+    audit record(s) ✓
+
+ROLLBACK:
+    business change ✗
+    audit operation ✗
+    audit record(s) ✗
+```
+
+Audit must not use a separate database session or independent transaction.
+
+The generic `UnitOfWork` contract must remain audit-agnostic. Audit repositories must use the same transaction/session boundary established by the application infrastructure.
+
+### Current verification gap
+
+The current code confirms the existence of the `UnitOfWork` abstraction and its commit/rollback boundary, but the exact SQLAlchemy session wiring has not yet been conclusively identified from the current Infrastructure/dependency implementation.
+
+Therefore the following statement is a **required target invariant**, not a claim that the current implementation already satisfies it:
+
+> Audit persistence and the business mutation must use the same concrete SQLAlchemy transaction.
+
+---
+
+## 16. Separation of Concerns
 
 Audit Trail is not a replacement for business history.
 
@@ -261,7 +505,7 @@ current and domain-specific state
 
 Audit Trail
     ↓
-who / when / what / why / operation
+who / initiated by / when / what / why / operation
 ```
 
 Domain Events also remain a separate concern:
@@ -280,7 +524,7 @@ The existence of a Domain Event does not by itself satisfy the audit requirement
 
 ---
 
-## 11. Architectural Boundaries
+## 17. Architectural Boundaries
 
 The Audit implementation must follow the project Constitution:
 
@@ -302,82 +546,99 @@ The following are prohibited:
 - SQLAlchemy models inside Domain;
 - direct database access from API routers;
 - audit logic implemented as legacy CRUD;
-- mandatory audit persistence only in a post-commit event handler.
+- mandatory audit persistence only in a post-commit event handler;
+- audit-specific knowledge embedded in the generic `UnitOfWork` contract.
 
 The Application layer owns the use-case transaction boundary. Infrastructure owns persistence implementation.
 
 ---
 
-## 12. Security and Integrity Requirements
+## 18. Security and Integrity Requirements
 
 The audit mechanism must preserve historical accountability even when a user is later archived or deactivated.
 
-`actor_id` therefore references the stable User identity and must remain meaningful after the actor can no longer authenticate.
+`actor_id` and `initiated_by` therefore reference stable User identity and must remain meaningful after the actor can no longer authenticate.
 
 The audit journal itself must not become mutable merely because the referenced user is archived.
 
 Authorization remains a separate concern. Existing business authorization determines whether a user may perform the operation; Audit Trail records which authenticated user actually performed it.
 
+System/background actors must also be identifiable. Anonymous audit operations are prohibited.
+
 ---
 
-## 13. Current State vs Required State
+## 19. Current State vs Required State
 
 ### Already available in current code
 
 - authenticated `User` identity;
 - Application-level authenticated-user propagation for protected mutations;
 - Application authorization for Verification approve/reject;
-- Unit of Work transaction boundary;
+- `UnitOfWork` abstraction with commit/rollback behavior;
 - Domain Events infrastructure;
 - logical `archived` state on the shared model base.
 
 ### Not yet implemented
 
-- persistent Audit Record model;
+- persistent `AuditOperation` model;
+- persistent `AuditRecord` model;
 - Audit Repository contract;
 - Infrastructure audit persistence;
 - transactional audit write integration;
 - immutable database/application enforcement for audit records;
-- operation correlation generation;
+- operation correlation generation/propagation;
 - field-level change generation;
 - audit read/query contract;
-- complete system-wide audit-worthy operation matrix.
+- complete system-wide audit-worthy operation matrix;
+- concrete system/background actor representation;
+- retention/indexing/migration implementation.
 
 ---
 
-## 14. Open Design Questions
+## 20. Open Design Questions
 
 The following remain deliberately open until the relevant current code is audited:
 
 1. Exact Audit domain/shared contract and ownership.
 2. Exact SQLAlchemy persistence model and migration.
 3. How field-level changes are generated without duplicating business logic.
-4. How `operation_id` is generated and propagated through nested application operations.
-5. Whether audit persistence is exposed through a dedicated Repository Interface or another existing shared contract.
-6. How database-level protection against UPDATE/DELETE is enforced in production.
+4. How `operation_id` is propagated through nested application operations.
+5. Exact concrete transaction/session wiring needed to guarantee that Audit and business mutation share one SQLAlchemy transaction.
+6. Exact representation and lifecycle of the system/background actor.
 7. Which additional modules and use cases are mandatory in the first audit rollout.
 8. Whether audit read access requires a dedicated read model and authorization policy.
-9. Retention, indexing and operational storage requirements for long-term history.
+9. Retention and operational storage requirements for long-term history.
+10. Whether multi-record correction relationships are required beyond the current Verification scope.
 
 These questions must be answered from the current code and explicit business requirements before implementation.
 
 ---
 
-## 15. Decision Summary
+## 21. Decision Summary
 
 Approved decisions:
 
 ```text
 1. Audit Trail is required system-wide for significant business changes.
-2. Audit must identify the authenticated User by User.id.
-3. Audit and business mutation must be atomic in the same transaction.
-4. Current post-commit Domain Events are not the mandatory audit mechanism.
-5. Audit uses field-level changes as the primary change representation.
-6. Audit is append-only and historical records are never silently deleted or rewritten.
-7. Verification history is never physically deleted.
-8. Invalid/unreliable Verification data is archived/invalidated, with reason and actor/time history, and corrections are separate records.
-9. operation_id correlates changes belonging to one logical operation.
-10. Audit remains separate from Domain Event notification and business entity state.
+2. Audit must identify the direct actor by stable User.id or an identifiable system actor.
+3. A logical operation has an initiator separate from the direct actor when necessary.
+4. Audit and business mutation must be atomic in the same transaction.
+5. Current post-commit Domain Events are not the mandatory audit mechanism.
+6. Audit uses field-level changes as the primary change representation.
+7. changes is persisted as JSONB.
+8. entity_type is a stable application-level string.
+9. action is a stable application-level string using <entity_type>.<operation>.
+10. occurred_at is authoritative database-server time.
+11. AuditOperation.operation_id and AuditRecord.id are UUIDs generated at the Application boundary.
+12. Audit is append-only; historical records are never silently deleted, updated or archived.
+13. Invalid/unreliable audit information is documented by a new corrective/invalidation record linked to the original record.
+14. Verification history is never physically deleted.
+15. Invalid/unreliable Verification data is archived/invalidated with reason and history, and corrections are separate records.
+16. reason is nullable in the common audit contract and is required by concrete use cases where business rules demand it.
+17. Verification reject/archive/correct operations require reason; approve does not.
+18. operation_id correlates all audit records belonging to one logical operation.
+19. Audit remains separate from Domain Event notification and business entity state.
+20. The exact concrete SQLAlchemy transaction/session wiring remains an implementation verification task.
 ```
 
 Implementation must begin only after the remaining open design questions are resolved from the actual project contracts.
