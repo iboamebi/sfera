@@ -2,7 +2,7 @@
 
 ## Назначение
 
-Каталог содержит архитектурную документацию проекта Сфера.
+Каталог содержит архитектурную документацию проекта «Сфера».
 
 Документация используется для:
 
@@ -15,64 +15,36 @@
 
 # Architecture Baseline
 
-Текущая архитектурная версия:
+Текущая архитектурная модель:
 
-```
-
-Sfera v2.0 Architecture
-
-```
-
-Git tag:
-
-```
-
-v2.0-architecture
-
+```text
+DDD + Clean Architecture
 ```
 
 Основные принципы:
 
-```
-
-Domain Driven Design
-
-Clean Architecture
-
-Application Service Pattern
-
-Repository Pattern
-
-Domain Events
-
-Dependency Injection
-
-```
+- Domain Driven Design;
+- Clean Architecture;
+- Application Service Pattern;
+- Repository Pattern;
+- Domain Events;
+- Dependency Injection;
+- явные границы бизнес-контекстов.
 
 ---
 
 # Documentation Structure
 
-```
-
+```text
 docs/
-
 ├── adr/
-│   └── Architecture Decision Records
-
 ├── architecture/
-│   └── Общая архитектура проекта
-
 ├── domain/
-│   └── Доменные модели
-
 ├── api/
-│   └── API документация
-
 └── engines/
-└── Внутренние механизмы системы
-
 ```
+
+`architecture/` содержит нормативные архитектурные документы, стандарты и отдельные архитектурные аудиты.
 
 ---
 
@@ -85,15 +57,16 @@ docs/
 - HTTP интерфейс;
 - валидация запросов;
 - преобразование DTO;
+- Dependency Injection;
 - вызов Application Services.
 
 Расположение:
 
-```
-
+```text
 backend/app/api/
-
 ```
+
+API не содержит бизнес-логики и не работает с БД напрямую.
 
 ---
 
@@ -103,28 +76,14 @@ backend/app/api/
 
 - выполнение бизнес-сценариев;
 - координация действий;
-- управление транзакционными операциями.
+- Commands и Use Cases;
+- управление Unit of Work;
+- передача контекста выполнения операции.
 
 Расположение:
 
-```
-
+```text
 backend/app/application/
-
-```
-
-Примеры:
-
-```
-
-OrderApplicationService
-
-CustomerApplicationService
-
-VerificationApplicationService
-
-WorkflowApplicationService
-
 ```
 
 ---
@@ -136,33 +95,18 @@ WorkflowApplicationService
 - бизнес-правила;
 - агрегаты;
 - сущности;
-- доменные события.
+- Value Objects;
+- Domain Services;
+- Domain Events;
+- Repository Interfaces.
 
 Расположение:
 
-```
-
+```text
 backend/app/domains/
-
 ```
 
-Основные контексты:
-
-```
-
-Customer
-
-Device
-
-Order
-
-Verification
-
-Workflow
-
-PriceList
-
-```
+Domain не зависит от HTTP, FastAPI, SQLAlchemy, ORM, Session или Infrastructure.
 
 ---
 
@@ -170,329 +114,191 @@ PriceList
 
 Назначение:
 
+- SQLAlchemy Repository implementations;
+- ORM Models;
+- Mappers;
 - работа с БД;
-- внешние сервисы;
-- технические реализации.
+- внешние интеграции;
+- технические реализации Application/Domain портов.
 
 Расположение:
 
-```
-
+```text
 backend/app/infrastructure/
-
 ```
 
-Примеры:
+Infrastructure не содержит бизнес-правил.
 
-```
+---
 
-SQLAlchemy repositories
+# Production Business Flow
 
-Database adapters
+Основной реализованный поток:
 
-External integrations
-
+```text
+Order
+    ↓
+OrderItem
+    ↓
+Workflow
+    ↓
+Verification / Repair / Diagnostic
 ```
 
 ---
 
 # Domain Contexts
 
-## Customer
+Текущие backend application/domain контексты:
 
-Ответственность:
-
-- заказчики;
-- организации;
-- контактные данные.
-
----
-
-## Device
-
-Ответственность:
-
-- средства измерений;
-- типы приборов;
-- характеристики.
-
----
-
-## Order
-
-Центральный бизнес-контекст.
-
-Ответственность:
-
-- регистрация заказа;
-- жизненный цикл;
-- управление работами.
-
-Статусы:
-
+```text
+Auth
+Customer
+Device
+Diagnostic
+InstrumentType
+Material
+Order
+Organization
+PriceList
+Repair
+Verification
+Warehouse
+Workflow
 ```
 
-NEW
+Каждый контекст имеет собственную границу ответственности и соответствующие Commands, Application Services, Domain модели и Repository Interfaces там, где они требуются текущим сценарием.
 
-REGISTERED
+---
 
-IN_WORK
+# Operation Audit Context
 
-WAITING
+Для многопользовательской работы система должна уметь определить происхождение значимой операции.
 
-COMPLETED
+Архитектурное решение зафиксировано в:
 
-ISSUED
-
-CLOSED
-
+```text
+docs/architecture/AUDIT_ARCHITECTURE.md
 ```
 
----
+Модель:
 
-## Verification
+```text
+OperationContext
+├── operation_id: UUID
+└── actor_id: UUID | None
+```
 
-Ответственность:
+Правила:
 
-- поверка СИ;
-- результаты;
-- подготовка данных Аршин.
+- `operation_id` идентифицирует одну логическую Application Operation;
+- `actor_id` идентифицирует пользователя, инициировавшего операцию;
+- для фоновых/system operations `actor_id` может быть `None`;
+- `event_id` остаётся самостоятельным идентификатором Domain Event;
+- несколько событий одной операции связываются через `operation_id`;
+- mutation и audit persistence при необходимости используют одну границу Unit of Work;
+- Domain не получает зависимость от HTTP, authentication/session infrastructure или audit implementation.
 
----
-
-## Workflow
-
-Ответственность:
-
-- технологические процессы;
-- этапы выполнения;
-- переходы состояний.
-
----
-
-## PriceList
-
-Ответственность:
-
-- стоимость услуг;
-- стоимость материалов;
-- расчёт цены.
+Текущий статус: **архитектура определена, реализация OperationContext ещё не введена в код**.
 
 ---
 
 # Development Process
 
-Новый модуль создаётся в следующем порядке:
+Новые изменения выполняются по схеме:
 
+```text
+Analyze
+    ↓
+Read current code
+    ↓
+Minimal change
+    ↓
+Validate
+    ↓
+Commit / Push
+    ↓
+Local validation
+    ↓
+Next stage
 ```
 
-1. Domain Design
-
-2. Domain Entity
-
-3. Domain Exceptions
-
-4. Repository Interface
-
-5. Infrastructure Adapter
-
-6. Application Service
-
-7. API Router
-
-8. Tests
-
-9. Documentation
-
-```
+Архитектурные изменения должны опираться на фактический код репозитория, а не на предположения о структуре проекта.
 
 ---
 
 # Architecture Rules
 
-## Rule 1
+## Rule 1 — Dependency Direction
 
-Domain не зависит от внешних технологий.
-
-Запрещено:
-
-```
-
-Domain
-
-↓
-
-FastAPI
-
-↓
-
-SQLAlchemy
-
-```
-
----
-
-## Rule 2
-
-API не содержит бизнес-логику.
-
-Правильно:
-
-```
-
+```text
 API
-
-↓
-
-Application Service
-
-↓
-
+ ↓
+Application
+ ↓
 Domain
-
 ```
+
+Infrastructure реализует необходимые интерфейсы и подключается через Dependency Injection.
+
+## Rule 2 — Business Logic
+
+Бизнес-правила находятся в Domain. Application координирует use cases. API отвечает за транспорт.
+
+## Rule 3 — Repository Boundary
+
+Repository Interface находится в Domain/Application boundary согласно конкретному use case; SQLAlchemy implementation находится в Infrastructure.
+
+## Rule 4 — Audit Boundary
+
+Audit operation context является Application concern и не становится Domain Entity или бизнес-правилом.
+
+## Rule 5 — History
+
+Для значимой бизнес-истории не следует заменять исторические изменения одним destructive update. Исправления должны оставлять необходимую трассируемость.
 
 ---
 
-## Rule 3
+# Current Architectural Status
 
-Repository Interface находится в Domain.
-
-Реализация:
-
-```
-
-Infrastructure
-
-```
-
----
-
-## Rule 4
-
-Каждый новый бизнес-контекст имеет собственную границу ответственности.
-
----
-
-# Current Status
-
-```
-
-Architecture Foundation     ✓
-
-DDD Kernel                  ✓
-
-Device                      ✓
-
-Order                       ✓
-
-Verification                ✓
-
-Customer                    NEXT
-
-Workflow                    ✓
-
-PriceList                   ✓
-
+```text
+Backend DDD / Clean Architecture      COMPLETE
+Legacy CRUD migration                 COMPLETE
+Main backend architecture audits      COMPLETE
+Operation audit architecture          DEFINED
+OperationContext implementation       NEXT
+Frontend architecture                 IN PROGRESS
 ```
 
 ---
 
 # Related Documents
 
-## ADR
+Нормативные и архитектурные документы:
 
-```
-
-docs/adr/
-
-```
-
-## Domain Documentation
-
-```
-
-docs/domain/
-
-```
-
-## API Documentation
-
-```
-
-docs/api/
-
-```
-
-## Development Planning
-
-```
-
-backlog.md
-
-roadmap.md
-
-checklist.md
-
-```
-
----
-
-# Version History
-
-## v2.0 Architecture
-
-Включает:
-
-```
-
-✓ Domain Layer
-
-✓ Application Services
-
-✓ Repository Abstraction
-
-✓ API Migration
-
-✓ Workflow Module
-
-✓ Documentation Baseline
-
-✓ PriceList DDD Migration
-
-```
-
----
-
-# Future Architecture Work
-
-Планируется:
-
-```
-
-Storage Service
-
-Audit Logging
-
-Arshin Integration
-
-Document Engine
-
-Warehouse Domain
-
-Finance Domain
-
+```text
+docs/architecture/PROJECT_CONSTITUTION.md
+docs/architecture/PROJECT_ARCHITECTURE_STANDARD.md
+docs/architecture/PROJECT_STRUCTURE.md
+docs/architecture/AUDIT_ARCHITECTURE.md
+docs/architecture/AUDIT_TRAIL.md
+docs/architecture/AUTHENTICATION.md
+docs/architecture/AUTHORIZATION.md
+docs/architecture/MIGRATION_MATRIX.md
+docs/architecture/ORDER_LIFECYCLE_AUDIT.md
+docs/architecture/REPOSITORY_AUDIT.md
+docs/architecture/README.md
 ```
 
 ---
 
 # Rule
 
-Архитектурные изменения должны сопровождаться:
+Архитектурная документация является частью исходного кода и должна отражать фактическое состояние системы.
 
-- ADR;
-- обновлением документации;
-- изменением roadmap;
-- изменением backlog;
-- проверкой тестов.
-```
+Любое существенное архитектурное изменение должно сопровождаться:
+
+- изменением соответствующей документации;
+- проверкой влияния на связанные документы;
+- Git commit;
+- валидацией после синхронизации.
