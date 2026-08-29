@@ -10,9 +10,7 @@ from app.domains.order.read_models.order_read_models import (
     OrderItemReadData,
     OrderReadData,
 )
-from app.domains.order.repositories.order_read_repository import (
-    OrderReadRepository,
-)
+from app.domains.order.repositories.order_read_repository import OrderReadRepository
 from app.domains.order.value_objects.order_item_operation import OrderItemOperation
 from app.models.instrument import Instrument
 from app.models.order import Order
@@ -22,22 +20,17 @@ from app.models.order_item import OrderItem
 class OrderReadRepositorySQLAlchemy(OrderReadRepository):
     """SQLAlchemy read repository for orders."""
 
-    def __init__(
-        self,
-        session: Session,
-    ) -> None:
+    def __init__(self, session: Session) -> None:
         self.session = session
 
-    def get(
-        self,
-        order_id: UUID,
-    ) -> OrderReadData | None:
+    def get(self, order_id: UUID) -> OrderReadData | None:
         order = (
             self.session.query(Order)
             .options(
                 joinedload(Order.order_items)
                 .joinedload(OrderItem.instrument)
-                .joinedload(Instrument.instrument_type)
+                .joinedload(Instrument.instrument_type),
+                joinedload(Order.order_items).joinedload(OrderItem.instrument_type),
             )
             .filter(Order.id == order_id)
             .first()
@@ -60,17 +53,17 @@ class OrderReadRepositorySQLAlchemy(OrderReadRepository):
                 OrderItemReadData(
                     id=item.id,
                     instrument_id=item.instrument_id,
+                    instrument_type_id=item.instrument_type_id,
                     instrument_type_name=(
                         item.instrument.instrument_type.name
                         if item.instrument
                         and item.instrument.instrument_type
+                        else item.instrument_type.name
+                        if item.instrument_type
                         else None
                     ),
-                    serial_number=(
-                        item.instrument.serial_number
-                        if item.instrument
-                        else None
-                    ),
+                    serial_number=item.instrument.serial_number if item.instrument else None,
+                    modification=item.instrument.modification if item.instrument else None,
                     comment=item.customer_comment,
                     requested_operations={
                         OrderItemOperation(operation)
