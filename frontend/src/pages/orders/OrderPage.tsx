@@ -26,7 +26,7 @@ export function OrderPage() {
   return (
     <Stack spacing={2}>
       <OrderDetails order={data} />
-      <OrderActions orderId={data.id} />
+      <OrderActions order={data} />
       <UpdateOrder order={data} />
     </Stack>
   );
