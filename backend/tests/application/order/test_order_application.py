@@ -86,13 +86,8 @@ class FakeOrderRepository(OrderRepository):
         self,
         order_id: UUID,
         item_id: UUID,
-    ) -> bool:
-        order = self._orders.get(order_id)
-
-        if order is None:
-            return False
-
-        return any(item.id == item_id for item in order.items)
+    ) -> None:
+        return None
 
     def save(self, order: Order) -> None:
         self._orders[order.id] = order
