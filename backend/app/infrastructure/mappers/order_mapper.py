@@ -31,6 +31,7 @@ class OrderMapper(BaseMapper[Order, OrderModel]):
                 OrderItem(
                     id=item.id,
                     instrument_id=item.instrument_id,
+                    instrument_type_id=item.instrument_type_id,
                     comment=item.customer_comment,
                     requested_operations={
                         OrderItemOperation(operation)
@@ -60,6 +61,7 @@ class OrderMapper(BaseMapper[Order, OrderModel]):
             model.order_items.append(
                 OrderItemModel(
                     instrument_id=item.instrument_id,
+                    instrument_type_id=item.instrument_type_id,
                     line_number=line_number,
                     customer_comment=item.comment,
                     requested_operations=sorted(
