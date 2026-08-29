@@ -11,6 +11,19 @@ class DeviceCreate(BaseModel):
     serial_number: str
 
 
+class DeviceUpdate(BaseModel):
+    """Request schema for editing a device card."""
+
+    instrument_type_id: UUID
+    serial_number: str
+    registry_number: str | None = None
+    modification: str | None = None
+    factory_number: str | None = None
+    manufacture_year: int | None = None
+    inventory_number: str | None = None
+    comment: str | None = None
+
+
 class DeviceRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -18,6 +31,12 @@ class DeviceRead(BaseModel):
     instrument_type_id: UUID
     serial_number: str
     status: DeviceStatus
+    registry_number: str | None = None
+    modification: str | None = None
+    factory_number: str | None = None
+    manufacture_year: int | None = None
+    inventory_number: str | None = None
+    comment: str | None = None
 
     @field_validator("serial_number", mode="before")
     @classmethod
