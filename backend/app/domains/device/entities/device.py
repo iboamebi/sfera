@@ -21,6 +21,35 @@ class Device(AggregateRoot):
     instrument_type_id: UUID
     serial_number: SerialNumber
     status: DeviceStatus = DeviceStatus.AVAILABLE
+    registry_number: str | None = None
+    modification: str | None = None
+    factory_number: str | None = None
+    manufacture_year: int | None = None
+    inventory_number: str | None = None
+    comment: str | None = None
+
+    def update_details(
+        self,
+        *,
+        instrument_type_id: UUID,
+        serial_number: str,
+        registry_number: str | None,
+        modification: str | None,
+        factory_number: str | None,
+        manufacture_year: int | None,
+        inventory_number: str | None,
+        comment: str | None,
+    ) -> None:
+        """Update editable device card details."""
+
+        self.instrument_type_id = instrument_type_id
+        self.serial_number = SerialNumber(serial_number)
+        self.registry_number = registry_number
+        self.modification = modification
+        self.factory_number = factory_number
+        self.manufacture_year = manufacture_year
+        self.inventory_number = inventory_number
+        self.comment = comment
 
     def connect(self) -> None:
         """Connect device to work."""
