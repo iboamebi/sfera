@@ -1,12 +1,14 @@
 import uuid
 
-from sqlalchemy import ForeignKey, String, Text
+from sqlalchemy import ForeignKey, JSON, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base_model import BaseModel
 
 
 class OrderItem(BaseModel):
+    """Persist one order position and its requested operations."""
+
     __tablename__ = "order_items"
 
     order_id: Mapped[uuid.UUID] = mapped_column(
@@ -31,6 +33,12 @@ class OrderItem(BaseModel):
     customer_comment: Mapped[str | None] = mapped_column(
         Text,
         nullable=True,
+    )
+
+    requested_operations: Mapped[list[str]] = mapped_column(
+        JSON,
+        nullable=False,
+        default=list,
     )
 
     order = relationship(
