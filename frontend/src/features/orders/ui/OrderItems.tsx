@@ -25,16 +25,16 @@ export function OrderItems({ items }: OrderItemsProps) {
       ) : (
         items.map((item, index) => (
           <Stack key={item.id} spacing={0.5}>
-            <Typography variant="body1">
-              Позиция {index + 1}
-            </Typography>
+            <Typography variant="body1">Позиция {index + 1}</Typography>
 
             <Typography color="text.secondary" variant="body2">
-              {item.instrumentTypeName ?? "СИ"}:{" "}
-              {item.serialNumber ?? "—"}
+              {item.instrumentTypeName ?? "СИ"}: {item.serialNumber ?? "—"}
             </Typography>
 
-            <Stack direction="row" gap={0.5} sx={{ flexWrap: "wrap" }}>
+            <Stack
+              direction="row"
+              sx={{ flexWrap: "wrap", gap: 0.5 }}
+            >
               {item.requestedOperations.map((operation) => (
                 <Chip
                   key={operation}
@@ -44,9 +44,7 @@ export function OrderItems({ items }: OrderItemsProps) {
               ))}
             </Stack>
 
-            <Typography variant="body2">
-              {item.comment || "—"}
-            </Typography>
+            <Typography variant="body2">{item.comment || "—"}</Typography>
 
             {index < items.length - 1 && <Divider sx={{ pt: 1 }} />}
           </Stack>
