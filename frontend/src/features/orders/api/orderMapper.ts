@@ -18,6 +18,7 @@ export function mapOrder(dto: OrderApiDto): OrderRead {
       instrumentTypeName: item.instrument_type_name,
       serialNumber: item.serial_number,
       comment: item.comment,
+      requestedOperations: item.requested_operations,
     })),
   };
 }
