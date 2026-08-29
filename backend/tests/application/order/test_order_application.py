@@ -17,6 +17,9 @@ from app.application.order.commands.create_order import (
 from app.application.order.commands.register_order import (
     RegisterOrderCommand,
 )
+from app.application.order.commands.remove_order_item import (
+    RemoveOrderItemCommand,
+)
 from app.application.order.commands.update_order import (
     UpdateOrderCommand,
 )
@@ -24,6 +27,8 @@ from app.application.order.services.order_application_service import (
     OrderApplicationService,
 )
 from app.domains.order.entities.order import Order
+from app.domains.order.entities.order_item import OrderItem
+from app.domains.order.exceptions.order_exception import OrderException
 from app.domains.order.repositories.order_repository import OrderRepository
 from app.domains.user.entities.user import User
 from app.domains.user.value_objects.user_role import UserRole
@@ -119,6 +124,66 @@ def test_create_register_order_flow():
     assert order.status.value == "REGISTERED"
     assert len(uow.registered_operation_ids) == 1
     assert isinstance(uow.registered_operation_ids[0], UUID)
+
+
+def test_add_order_item_rejects_duplicate_instrument():
+    repository = FakeOrderRepository()
+    service = OrderApplicationService(repository, FakeUnitOfWork())
+    order = service.create(
+        CreateOrderCommand(customer_id=uuid4(), number="10007"),
+        make_operator(),
+    )
+    instrument_id = uuid4()
+
+    service.add_item(
+        AddOrderItemCommand(order_id=order.id, instrument_id=instrument_id),
+        make_operator(),
+    )
+
+    with pytest.raises(OrderException, match="already added"):
+        service.add_item(
+            AddOrderItemCommand(order_id=order.id, instrument_id=instrument_id),
+            make_operator(),
+        )
+
+    assert len(order.items) == 1
+
+
+def test_remove_order_item():
+    repository = FakeOrderRepository()
+    service = OrderApplicationService(repository, FakeUnitOfWork())
+    order = service.create(
+        CreateOrderCommand(customer_id=uuid4(), number="10008"),
+        make_operator(),
+    )
+    service.add_item(
+        AddOrderItemCommand(order_id=order.id, instrument_id=uuid4()),
+        make_operator(),
+    )
+    item_id = order.items[0].id
+
+    updated_order = service.remove_item(
+        RemoveOrderItemCommand(order_id=order.id, item_id=item_id),
+        make_operator(),
+    )
+
+    assert updated_order.items == []
+    assert repository.get(order.id) is updated_order
+
+
+def test_remove_order_item_rejects_missing_item():
+    repository = FakeOrderRepository()
+    service = OrderApplicationService(repository, FakeUnitOfWork())
+    order = service.create(
+        CreateOrderCommand(customer_id=uuid4(), number="10009"),
+        make_operator(),
+    )
+
+    with pytest.raises(OrderException, match="Order item not found"):
+        service.remove_item(
+            RemoveOrderItemCommand(order_id=order.id, item_id=uuid4()),
+            make_operator(),
+        )
 
 
 def test_create_order_rejects_unauthorized_user():
