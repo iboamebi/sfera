@@ -76,9 +76,9 @@ export function AddOrderItemsForm({ orderId }: AddOrderItemsFormProps) {
         fullWidth
         label="Количество"
         type="number"
-        inputProps={{ min: 1, step: 1 }}
         value={quantity}
         disabled={mutation.isPending}
+        slotProps={{ htmlInput: { min: 1, step: 1 } }}
         onChange={(event) => setQuantity(Number(event.target.value))}
       />
 
