@@ -1,9 +1,16 @@
+export type OrderItemOperation =
+  | "verification"
+  | "diagnostic"
+  | "repair"
+  | "sale";
+
 export interface OrderItem {
   id: string;
   instrumentId: string | null;
   instrumentTypeName: string | null;
   serialNumber: string | null;
   comment: string | null;
+  requestedOperations: OrderItemOperation[];
 }
 
 export interface OrderRead {
