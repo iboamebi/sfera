@@ -59,6 +59,14 @@ class Order(AggregateRoot):
         if self.status != OrderStatus.NEW:
             raise OrderException("Cannot add item to active order")
 
+        if item.instrument_id is not None and any(
+            existing.instrument_id == item.instrument_id
+            for existing in self.items
+        ):
+            raise OrderException(
+                "Instrument already exists in order"
+            )
+
         self.items.append(item)
 
     def update_details(
