@@ -10,6 +10,7 @@ from app.application.context.operation_context import OperationContext
 from app.application.order.commands.add_order_item import (
     AddOrderItemCommand,
 )
+from app.application.order.commands.add_order_items import AddOrderItemsCommand
 from app.application.order.commands.create_order import (
     CreateOrderCommand,
 )
@@ -114,6 +115,34 @@ class OrderApplicationService:
                     requested_operations=set(command.requested_operations),
                 )
             )
+
+            self._repository.save(order)
+
+        return order
+
+    def add_items(
+        self,
+        command: AddOrderItemsCommand,
+        user: User,
+    ) -> Order:
+        """Add multiple type-only items in one transaction."""
+
+        require_role(user, UserRole.OPERATOR, UserRole.ADMIN)
+
+        if command.quantity <= 0:
+            raise ValueError("Quantity must be greater than zero")
+
+        with self._uow:
+            order = self.get(command.order_id)
+
+            for _ in range(command.quantity):
+                order.add_item(
+                    OrderItem(
+                        id=uuid4(),
+                        instrument_type_id=command.instrument_type_id,
+                        requested_operations=set(command.requested_operations),
+                    )
+                )
 
             self._repository.save(order)
 
