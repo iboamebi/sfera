@@ -36,6 +36,15 @@ class OrderRepository(ABC):
         raise NotImplementedError
 
     @abstractmethod
+    def delete_item(
+        self,
+        order_id: UUID,
+        item_id: UUID,
+    ) -> bool:
+        """Delete an order item and renumber remaining items."""
+        raise NotImplementedError
+
+    @abstractmethod
     def save(
         self,
         order: Order,
