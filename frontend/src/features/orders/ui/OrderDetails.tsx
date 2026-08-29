@@ -7,8 +7,9 @@ import {
   Typography,
 } from "@mui/material";
 
-import type { OrderRead } from "../model/types";
+import { useCustomer } from "../../customers/model/useCustomer";
 import { AddOrderItemButton } from "../add-order-item/ui/AddOrderItemButton";
+import type { OrderRead } from "../model/types";
 import { OrderItems } from "./OrderItems";
 
 interface OrderDetailsProps {
@@ -68,6 +69,8 @@ function DetailRow({
 }
 
 export function OrderDetails({ order }: OrderDetailsProps) {
+  const { data: customer } = useCustomer(order.customerId);
+
   return (
     <Card>
       <CardContent>
@@ -91,7 +94,7 @@ export function OrderDetails({ order }: OrderDetailsProps) {
           <Divider />
 
           <Stack spacing={2}>
-            <DetailRow label="Клиент" value={order.customerId} />
+            <DetailRow label="Клиент" value={customer?.name ?? "—"} />
 
             <DetailRow label="Получен" value={formatDate(order.receivedAt)} />
 
