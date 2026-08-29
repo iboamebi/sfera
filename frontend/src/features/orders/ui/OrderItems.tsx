@@ -1,10 +1,17 @@
-import { Divider, Stack, Typography } from "@mui/material";
+import { Chip, Divider, Stack, Typography } from "@mui/material";
 
-import type { OrderItem } from "../model/types";
+import type { OrderItem, OrderItemOperation } from "../model/types";
 
 interface OrderItemsProps {
   items: OrderItem[];
 }
+
+const OPERATION_LABELS: Record<OrderItemOperation, string> = {
+  verification: "Поверка",
+  diagnostic: "Диагностика",
+  repair: "Ремонт",
+  sale: "Продажа",
+};
 
 export function OrderItems({ items }: OrderItemsProps) {
   return (
@@ -26,6 +33,16 @@ export function OrderItems({ items }: OrderItemsProps) {
               {item.instrumentTypeName ?? "СИ"}:{" "}
               {item.serialNumber ?? "—"}
             </Typography>
+
+            <Stack direction="row" flexWrap="wrap" gap={0.5}>
+              {item.requestedOperations.map((operation) => (
+                <Chip
+                  key={operation}
+                  label={OPERATION_LABELS[operation]}
+                  size="small"
+                />
+              ))}
+            </Stack>
 
             <Typography variant="body2">
               {item.comment || "—"}
