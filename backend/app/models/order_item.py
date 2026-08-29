@@ -21,6 +21,11 @@ class OrderItem(BaseModel):
         nullable=True,
     )
 
+    instrument_type_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("instrument_types.id"),
+        nullable=True,
+    )
+
     line_number: Mapped[int] = mapped_column(
         nullable=False,
     )
@@ -48,6 +53,10 @@ class OrderItem(BaseModel):
 
     instrument = relationship(
         "Instrument",
+    )
+
+    instrument_type = relationship(
+        "InstrumentType",
     )
 
     verifications = relationship(
