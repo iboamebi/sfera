@@ -110,6 +110,7 @@ class OrderApplicationService:
                 OrderItem(
                     id=uuid4(),
                     instrument_id=command.instrument_id,
+                    instrument_type_id=command.instrument_type_id,
                     requested_operations=set(command.requested_operations),
                 )
             )
