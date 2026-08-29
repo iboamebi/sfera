@@ -18,6 +18,9 @@ from app.application.order.commands.create_order import (
 from app.application.order.commands.register_order import (
     RegisterOrderCommand,
 )
+from app.application.order.commands.remove_order_item import (
+    RemoveOrderItemCommand,
+)
 from app.application.order.commands.update_order import (
     UpdateOrderCommand,
 )
@@ -106,6 +109,28 @@ def add_order_item(
         AddOrderItemCommand(
             order_id=order_id,
             instrument_id=data.instrument_id,
+        ),
+        user,
+    )
+
+
+@router.delete(
+    "/{order_id}/items/{item_id}",
+    response_model=OrderRead,
+    dependencies=[Depends(get_current_user), Depends(require_csrf)],
+)
+def remove_order_item(
+    order_id: UUID,
+    item_id: UUID,
+    user: User = Depends(get_current_user),
+    service: OrderApplicationService = Depends(
+        get_order_service,
+    ),
+):
+    return service.remove_item(
+        RemoveOrderItemCommand(
+            order_id=order_id,
+            item_id=item_id,
         ),
         user,
     )
