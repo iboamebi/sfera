@@ -11,6 +11,7 @@ import {
 import { useCustomer } from "../../customers/model/useCustomer";
 import { AddOrderItemButton } from "../add-order-item/ui/AddOrderItemButton";
 import { useDeleteOrderItem } from "../delete-order-item/model/useDeleteOrderItem";
+import { AddOrderItemsForm } from "../add-order-items/ui/AddOrderItemsForm";
 import type { OrderRead } from "../model/types";
 import { OrderItems } from "./OrderItems";
 
@@ -149,7 +150,11 @@ export function OrderDetails({ order }: OrderDetailsProps) {
             />
 
             {order.status === "NEW" && (
-              <AddOrderItemButton orderId={order.id} />
+              <Stack spacing={2}>
+                <AddOrderItemButton orderId={order.id} />
+                <Divider />
+                <AddOrderItemsForm orderId={order.id} />
+              </Stack>
             )}
           </Stack>
         </Stack>
