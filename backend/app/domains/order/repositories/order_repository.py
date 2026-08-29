@@ -40,8 +40,8 @@ class OrderRepository(ABC):
         self,
         order_id: UUID,
         item_id: UUID,
-    ) -> bool:
-        """Delete an order item and renumber remaining items."""
+    ) -> None:
+        """Persist removal of an order item and renumber remaining items."""
         raise NotImplementedError
 
     @abstractmethod
