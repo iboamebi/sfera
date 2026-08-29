@@ -59,7 +59,25 @@ class Order(AggregateRoot):
         if self.status != OrderStatus.NEW:
             raise OrderException("Cannot add item to active order")
 
+        if item.instrument_id is not None and any(
+            existing.instrument_id == item.instrument_id for existing in self.items
+        ):
+            raise OrderException("Instrument is already added to order")
+
         self.items.append(item)
+
+    def remove_item(self, item_id: UUID) -> None:
+        """Remove an item from a new order."""
+
+        if self.status != OrderStatus.NEW:
+            raise OrderException("Cannot remove item from active order")
+
+        for index, item in enumerate(self.items):
+            if item.id == item_id:
+                self.items.pop(index)
+                return
+
+        raise OrderException("Order item not found")
 
     def update_details(
         self,
@@ -79,6 +97,4 @@ class Order(AggregateRoot):
             raise OrderException("Order must contain items")
 
         self.status = OrderStatus.REGISTERED
-        self.add_event(
-            OrderRegistered(order_id=self.id)
-        )
+        self.add_event(OrderRegistered(order_id=self.id))

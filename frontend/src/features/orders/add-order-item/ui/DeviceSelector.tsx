@@ -1,4 +1,10 @@
-import { Autocomplete, Button, Stack, TextField, Typography } from "@mui/material";
+import {
+  Autocomplete,
+  Button,
+  Stack,
+  TextField,
+  Typography,
+} from "@mui/material";
 
 import type { DeviceRead } from "../../../devices/model/types";
 import { useDevices } from "../../../devices/model/useDevices";
@@ -7,16 +13,21 @@ interface DeviceSelectorProps {
   value: string;
   onChange: (deviceId: string) => void;
   onCreateDevice?: () => void;
+  excludedDeviceIds?: string[];
 }
 
 export function DeviceSelector({
   value,
   onChange,
   onCreateDevice,
+  excludedDeviceIds = [],
 }: DeviceSelectorProps) {
   const { data: devices = [], isLoading, error } = useDevices();
   const selectedDevice =
     devices.find((device) => device.id === value) ?? null;
+  const availableDevices = devices.filter(
+    (device) => !excludedDeviceIds.includes(device.id),
+  );
 
   if (error) {
     return (
@@ -29,7 +40,7 @@ export function DeviceSelector({
   return (
     <Stack spacing={1}>
       <Autocomplete
-        options={devices}
+        options={availableDevices}
         value={selectedDevice}
         loading={isLoading}
         getOptionLabel={(device) => device.serialNumber}

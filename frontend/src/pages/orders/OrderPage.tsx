@@ -1,5 +1,5 @@
-import { Stack, Typography } from "@mui/material";
-import { useParams } from "react-router";
+import { Button, Stack, Typography } from "@mui/material";
+import { useNavigate, useParams } from "react-router";
 
 import { UpdateOrder } from "../../features/orders/update-order/ui/UpdateOrder";
 import { useOrder } from "../../features/orders/model/useOrder";
@@ -8,6 +8,7 @@ import { OrderDetails } from "../../features/orders/ui/OrderDetails";
 import { OrderError } from "../../features/orders/ui/OrderError";
 
 export function OrderPage() {
+  const navigate = useNavigate();
   const { orderId } = useParams<{ orderId: string }>();
   const { data, error, isLoading } = useOrder(orderId ?? "");
 
@@ -25,6 +26,14 @@ export function OrderPage() {
 
   return (
     <Stack spacing={2}>
+      <Button
+        onClick={() => navigate("/orders")}
+        sx={{ alignSelf: "flex-start" }}
+        variant="text"
+      >
+        К списку заказов
+      </Button>
+
       <OrderDetails order={data} />
       <OrderActions order={data} />
       <UpdateOrder order={data} />

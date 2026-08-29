@@ -9,6 +9,7 @@ import {
 
 import { useCustomer } from "../../customers/model/useCustomer";
 import { AddOrderItemButton } from "../add-order-item/ui/AddOrderItemButton";
+import { useRemoveOrderItem } from "../remove-order-item/model/useRemoveOrderItem";
 import type { OrderRead } from "../model/types";
 import { OrderItems } from "./OrderItems";
 
@@ -70,6 +71,7 @@ function DetailRow({
 
 export function OrderDetails({ order }: OrderDetailsProps) {
   const { data: customer } = useCustomer(order.customerId);
+  const removeOrderItemMutation = useRemoveOrderItem(order.id);
 
   return (
     <Card>
@@ -121,12 +123,22 @@ export function OrderDetails({ order }: OrderDetailsProps) {
           <Stack
             direction="row"
             spacing={2}
-            sx={{ alignItems: "center", justifyContent: "space-between" }}
+            sx={{ alignItems: "flex-start", justifyContent: "space-between" }}
           >
-            <OrderItems items={order.items} />
+            <OrderItems
+              items={order.items}
+              canRemove={order.status === "NEW"}
+              isRemoving={removeOrderItemMutation.isPending}
+              onRemove={(itemId) => removeOrderItemMutation.mutate(itemId)}
+            />
 
             {order.status === "NEW" && (
-              <AddOrderItemButton orderId={order.id} />
+              <AddOrderItemButton
+                orderId={order.id}
+                existingInstrumentIds={order.items
+                  .map((item) => item.instrumentId)
+                  .filter((instrumentId): instrumentId is string => Boolean(instrumentId))}
+              />
             )}
           </Stack>
         </Stack>

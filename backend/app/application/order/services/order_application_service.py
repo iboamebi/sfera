@@ -16,6 +16,9 @@ from app.application.order.commands.create_order import (
 from app.application.order.commands.register_order import (
     RegisterOrderCommand,
 )
+from app.application.order.commands.remove_order_item import (
+    RemoveOrderItemCommand,
+)
 from app.application.order.commands.update_order import (
     UpdateOrderCommand,
 )
@@ -102,6 +105,20 @@ class OrderApplicationService:
                 )
             )
 
+            self._repository.save(order)
+
+        return order
+
+    def remove_item(
+        self,
+        command: RemoveOrderItemCommand,
+        user: User,
+    ) -> Order:
+        require_role(user, UserRole.OPERATOR, UserRole.ADMIN)
+
+        with self._uow:
+            order = self.get(command.order_id)
+            order.remove_item(command.item_id)
             self._repository.save(order)
 
         return order
