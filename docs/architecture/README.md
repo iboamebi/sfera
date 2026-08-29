@@ -199,7 +199,7 @@ OperationContext
 - mutation и audit persistence при необходимости используют одну границу Unit of Work;
 - Domain не получает зависимость от HTTP, authentication/session infrastructure или audit implementation.
 
-Текущий статус: **архитектура определена, реализация OperationContext ещё не введена в код**.
+Текущий статус: **OperationContext реализован в Application layer и используется Order registration flow. Operation-to-event correlation реализован через UnitOfWork. Persistent Audit Trail ещё не реализован.**
 
 ---
 
@@ -266,7 +266,9 @@ Backend DDD / Clean Architecture      COMPLETE
 Legacy CRUD migration                 COMPLETE
 Main backend architecture audits      COMPLETE
 Operation audit architecture          DEFINED
-OperationContext implementation       NEXT
+OperationContext implementation       COMPLETE
+Order operation-to-event correlation  COMPLETE
+Persistent Audit Trail                NEXT
 Frontend architecture                 IN PROGRESS
 ```
 
@@ -289,6 +291,8 @@ docs/architecture/ORDER_LIFECYCLE_AUDIT.md
 docs/architecture/REPOSITORY_AUDIT.md
 docs/architecture/README.md
 ```
+
+Нормативным документом остаётся `PROJECT_CONSTITUTION.md`. `AUDIT_ARCHITECTURE.md` фиксирует архитектуру operation context и корреляции событий; `AUDIT_TRAIL.md` фиксирует требования к будущему persistent audit mechanism.
 
 ---
 
