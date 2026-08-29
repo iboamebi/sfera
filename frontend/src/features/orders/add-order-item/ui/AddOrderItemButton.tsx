@@ -11,9 +11,13 @@ import { DeviceSelector } from "./DeviceSelector";
 
 interface AddOrderItemButtonProps {
   orderId: string;
+  existingInstrumentIds?: string[];
 }
 
-export function AddOrderItemButton({ orderId }: AddOrderItemButtonProps) {
+export function AddOrderItemButton({
+  orderId,
+  existingInstrumentIds = [],
+}: AddOrderItemButtonProps) {
   const [deviceId, setDeviceId] = useState("");
   const [instrumentTypeId, setInstrumentTypeId] = useState("");
   const [isCreateDeviceOpen, setIsCreateDeviceOpen] = useState(false);
@@ -24,7 +28,7 @@ export function AddOrderItemButton({ orderId }: AddOrderItemButtonProps) {
   const createInstrumentTypeMutation = useCreateInstrumentType();
 
   const handleAdd = () => {
-    if (!deviceId) {
+    if (!deviceId || existingInstrumentIds.includes(deviceId)) {
       return;
     }
 
@@ -82,10 +86,15 @@ export function AddOrderItemButton({ orderId }: AddOrderItemButtonProps) {
         value={deviceId}
         onChange={setDeviceId}
         onCreateDevice={() => setIsCreateDeviceOpen(true)}
+        excludedDeviceIds={existingInstrumentIds}
       />
 
       <Button
-        disabled={!deviceId || addOrderItemMutation.isPending}
+        disabled={
+          !deviceId ||
+          existingInstrumentIds.includes(deviceId) ||
+          addOrderItemMutation.isPending
+        }
         onClick={handleAdd}
         variant="outlined"
       >
