@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button, MenuItem, Stack, TextField } from "@mui/material";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -23,6 +23,7 @@ export function CustomerForm({
   isPending = false,
 }: CustomerFormProps) {
   const [isCreateOrganizationOpen, setIsCreateOrganizationOpen] = useState(false);
+  const [createdOrganizationId, setCreatedOrganizationId] = useState<string>();
   const queryClient = useQueryClient();
   const {
     register,
@@ -42,10 +43,19 @@ export function CustomerForm({
     isError: isOrganizationsError,
   } = useOrganizations();
 
+  useEffect(() => {
+    if (!isCreateOrganizationOpen && createdOrganizationId) {
+      setValue("organizationId", createdOrganizationId, {
+        shouldValidate: true,
+      });
+      setCreatedOrganizationId(undefined);
+    }
+  }, [createdOrganizationId, isCreateOrganizationOpen, setValue]);
+
   const createOrganizationMutation = useCreateOrganization({
     onSuccess: async (organization) => {
       await queryClient.invalidateQueries({ queryKey: ["organizations"] });
-      setValue("organizationId", organization.id, { shouldValidate: true });
+      setCreatedOrganizationId(organization.id);
       setIsCreateOrganizationOpen(false);
     },
   });
