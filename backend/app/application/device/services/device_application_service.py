@@ -5,6 +5,7 @@ from uuid import UUID, uuid4
 from app.application.device.commands.connect_device import ConnectDeviceCommand
 from app.application.device.commands.create_device import CreateDeviceCommand
 from app.application.device.commands.disconnect_device import DisconnectDeviceCommand
+from app.application.device.commands.update_device import UpdateDeviceCommand
 from app.application.device.exceptions import (
     DeviceNotAvailableApplicationError,
     DeviceNotFoundApplicationError,
@@ -76,6 +77,36 @@ class DeviceApplicationService:
 
         if device is None:
             raise DeviceNotFoundApplicationError
+
+        return device
+
+    def update(
+        self,
+        command: UpdateDeviceCommand,
+    ) -> Device:
+        """Update device card details."""
+
+        with self._uow:
+            device = self.get(command.device_id)
+
+            instrument_type = self._instrument_type_repository.get(
+                command.instrument_type_id,
+            )
+
+            if instrument_type is None:
+                raise InstrumentTypeNotFoundApplicationError
+
+            device.update_details(
+                instrument_type_id=command.instrument_type_id,
+                serial_number=command.serial_number,
+                registry_number=command.registry_number,
+                modification=command.modification,
+                factory_number=command.factory_number,
+                manufacture_year=command.manufacture_year,
+                inventory_number=command.inventory_number,
+                comment=command.comment,
+            )
+            self._repository.save(device)
 
         return device
 
