@@ -4,6 +4,7 @@ Order mapper.
 
 from app.domains.order.entities.order import Order
 from app.domains.order.entities.order_item import OrderItem
+from app.domains.order.value_objects.order_item_operation import OrderItemOperation
 from app.domains.order.value_objects.order_number import OrderNumber
 from app.infrastructure.mappers.base_mapper import BaseMapper
 from app.models.order import Order as OrderModel
@@ -31,6 +32,10 @@ class OrderMapper(BaseMapper[Order, OrderModel]):
                     id=item.id,
                     instrument_id=item.instrument_id,
                     comment=item.customer_comment,
+                    requested_operations={
+                        OrderItemOperation(operation)
+                        for operation in item.requested_operations
+                    },
                 )
                 for item in model.order_items
             ],
@@ -57,6 +62,9 @@ class OrderMapper(BaseMapper[Order, OrderModel]):
                     instrument_id=item.instrument_id,
                     line_number=line_number,
                     customer_comment=item.comment,
+                    requested_operations=sorted(
+                        operation.value for operation in item.requested_operations
+                    ),
                 )
             )
 
