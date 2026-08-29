@@ -16,8 +16,10 @@ class OrderItemReadData:
 
     id: UUID
     instrument_id: UUID | None
+    instrument_type_id: UUID | None
     instrument_type_name: str | None
     serial_number: str | None
+    modification: str | None
     comment: str | None
     requested_operations: set[OrderItemOperation]
 
