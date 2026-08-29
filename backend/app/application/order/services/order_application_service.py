@@ -20,6 +20,7 @@ from app.application.order.commands.update_order import (
     UpdateOrderCommand,
 )
 from app.application.order.exceptions import (
+    InstrumentAlreadyInActiveOrderApplicationError,
     OrderNotFoundApplicationError,
 )
 from app.domains.order.entities.order import Order
@@ -94,6 +95,15 @@ class OrderApplicationService:
 
         with self._uow:
             order = self.get(command.order_id)
+
+            if (
+                command.instrument_id is not None
+                and self._repository.has_conflicting_order_for_instrument(
+                    command.instrument_id,
+                    exclude_order_id=order.id,
+                )
+            ):
+                raise InstrumentAlreadyInActiveOrderApplicationError
 
             order.add_item(
                 OrderItem(
