@@ -5,8 +5,9 @@ Order API schemas.
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+from app.domains.order.value_objects.order_item_operation import OrderItemOperation
 from app.domains.order.value_objects.order_number import OrderNumber
 from app.domains.order.value_objects.order_status import OrderStatus
 
@@ -39,6 +40,7 @@ class OrderItemRead(BaseModel):
     instrument_type_name: str | None = None
     serial_number: str | None = None
     comment: str | None = None
+    requested_operations: list[OrderItemOperation] = Field(default_factory=list)
 
 
 class OrderRead(BaseModel):
@@ -57,7 +59,7 @@ class OrderRead(BaseModel):
     issued_at: datetime | None = None
     comment: str | None = None
     archived: bool
-    items: list[OrderItemRead] = []
+    items: list[OrderItemRead] = Field(default_factory=list)
 
     @field_validator("number", mode="before")
     @classmethod
