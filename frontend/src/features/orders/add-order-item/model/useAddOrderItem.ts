@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import type { OrderItemOperation, OrderRead } from "../../model/types";
+import type { OrderItemOperation } from "../../model/types";
 import { addOrderItem } from "../api/addOrderItem";
 
 export function useAddOrderItem(orderId: string) {
@@ -14,8 +14,11 @@ export function useAddOrderItem(orderId: string) {
       instrumentId: string | null;
       requestedOperations: OrderItemOperation[];
     }) => addOrderItem(orderId, instrumentId, requestedOperations),
-    onSuccess: (order: OrderRead) => {
-      queryClient.setQueryData(["orders", orderId], order);
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["orders", orderId] }),
+        queryClient.invalidateQueries({ queryKey: ["orders"] }),
+      ]);
     },
   });
 }
