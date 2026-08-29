@@ -1,3 +1,4 @@
+import { Button, Stack } from "@mui/material";
 import { useNavigate } from "react-router";
 
 import { useCreateOrder } from "../../features/orders/create-order/model/useCreateOrder";
@@ -13,9 +14,17 @@ export function CreateOrderPage() {
   });
 
   return (
-    <>
+    <Stack spacing={2}>
+      <Button
+        onClick={() => navigate("/orders")}
+        sx={{ alignSelf: "flex-start" }}
+        variant="text"
+      >
+        К списку заказов
+      </Button>
+
       {error && <CreateOrderError />}
       <CreateOrderForm onSubmit={mutate} isPending={isPending} />
-    </>
+    </Stack>
   );
 }
