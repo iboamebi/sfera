@@ -1,7 +1,11 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button, MenuItem, Stack, TextField } from "@mui/material";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 
+import { useCreateCustomer } from "../../../customers/model/useCreateCustomer";
+import type { CreateCustomerSchema } from "../../../customers/model/schema";
+import { CustomerForm } from "../../../customers/ui/CustomerForm";
 import { useCustomers } from "../../../customers/model/useCustomers";
 import { createOrderSchema } from "../model/schema";
 import type { CreateOrderForm as CreateOrderFormValues } from "../model/types";
@@ -15,9 +19,11 @@ export function CreateOrderForm({
   onSubmit,
   isPending = false,
 }: CreateOrderFormProps) {
+  const [isCreateCustomerOpen, setIsCreateCustomerOpen] = useState(false);
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<CreateOrderFormValues>({
     resolver: zodResolver(createOrderSchema),
@@ -28,6 +34,34 @@ export function CreateOrderForm({
     isLoading: isCustomersLoading,
     isError: isCustomersError,
   } = useCustomers();
+
+  const createCustomerMutation = useCreateCustomer({
+    onSuccess: (customer) => {
+      setValue("customerId", customer.id, { shouldValidate: true });
+      setIsCreateCustomerOpen(false);
+    },
+  });
+
+  const handleCreateCustomer = (data: CreateCustomerSchema) => {
+    createCustomerMutation.mutate(data);
+  };
+
+  if (isCreateCustomerOpen) {
+    return (
+      <Stack spacing={2}>
+        <CustomerForm
+          onSubmit={handleCreateCustomer}
+          isPending={createCustomerMutation.isPending}
+        />
+        <Button
+          onClick={() => setIsCreateCustomerOpen(false)}
+          disabled={createCustomerMutation.isPending}
+        >
+          Вернуться к заказу
+        </Button>
+      </Stack>
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
@@ -59,6 +93,14 @@ export function CreateOrderForm({
               </MenuItem>
             ))}
         </TextField>
+
+        <Button
+          onClick={() => setIsCreateCustomerOpen(true)}
+          variant="outlined"
+          disabled={isPending}
+        >
+          Создать клиента
+        </Button>
 
         <TextField
           label="Планируемая дата выдачи"
