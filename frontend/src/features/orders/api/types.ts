@@ -1,9 +1,12 @@
+import type { OrderItemOperation } from "../model/types";
+
 export interface OrderItemApiDto {
   id: string;
   instrument_id: string | null;
   instrument_type_name: string | null;
   serial_number: string | null;
   comment: string | null;
+  requested_operations: OrderItemOperation[];
 }
 
 export interface OrderApiDto {
