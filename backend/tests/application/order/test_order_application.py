@@ -22,6 +22,7 @@ from app.application.order.commands.update_order import (
 )
 from app.application.order.exceptions import (
     InstrumentAlreadyInActiveOrderApplicationError,
+    OrderItemNotFoundApplicationError,
 )
 from app.application.order.services.order_application_service import (
     OrderApplicationService,
@@ -80,6 +81,13 @@ class FakeOrderRepository(OrderRepository):
             )
             for order in self._orders.values()
         )
+
+    def delete_item(
+        self,
+        order_id: UUID,
+        item_id: UUID,
+    ) -> None:
+        return None
 
     def save(self, order: Order) -> None:
         self._orders[order.id] = order
@@ -392,3 +400,44 @@ def test_add_order_item_allows_instrument_after_order_completed():
 
     assert len(order.items) == 1
     assert order.items[0].instrument_id == instrument_id
+
+
+def test_remove_order_item():
+    repository = FakeOrderRepository()
+    service = OrderApplicationService(
+        repository,
+        FakeUnitOfWork(),
+    )
+
+    order = service.create(
+        CreateOrderCommand(
+            customer_id=uuid4(),
+            number="10011",
+        ),
+        make_operator(),
+    )
+    item = OrderItem(id=uuid4(), instrument_id=uuid4())
+    order.add_item(item)
+
+    service.remove_item(order.id, item.id, make_operator())
+
+    assert order.items == []
+
+
+def test_remove_order_item_rejects_missing_item():
+    repository = FakeOrderRepository()
+    service = OrderApplicationService(
+        repository,
+        FakeUnitOfWork(),
+    )
+
+    order = service.create(
+        CreateOrderCommand(
+            customer_id=uuid4(),
+            number="10012",
+        ),
+        make_operator(),
+    )
+
+    with pytest.raises(OrderItemNotFoundApplicationError):
+        service.remove_item(order.id, uuid4(), make_operator())

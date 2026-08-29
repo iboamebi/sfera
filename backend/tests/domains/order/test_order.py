@@ -84,3 +84,25 @@ def test_order_rejects_duplicate_instrument():
                 instrument_id=instrument_id,
             )
         )
+
+
+def test_order_removes_item():
+    order = create_order("1005")
+    item = OrderItem(id=uuid4(), instrument_id=uuid4())
+    order.add_item(item)
+
+    assert order.remove_item(item.id) is True
+    assert order.items == []
+
+
+def test_order_cannot_remove_item_from_registered_order():
+    order = create_order("1006")
+    item = OrderItem(id=uuid4())
+    order.add_item(item)
+    order.register()
+
+    with pytest.raises(
+        OrderException,
+        match="Cannot remove item from active order",
+    ):
+        order.remove_item(item.id)

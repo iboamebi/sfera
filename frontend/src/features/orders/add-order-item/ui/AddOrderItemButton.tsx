@@ -1,11 +1,13 @@
 import { useState } from "react";
 
 import {
+  Alert,
   Button,
   Checkbox,
   FormControlLabel,
   Stack,
 } from "@mui/material";
+import { isAxiosError } from "axios";
 
 import { useCreateDevice } from "../../../devices/model/useCreateDevice";
 import { CreateDeviceForm } from "../../../devices/ui/CreateDeviceForm";
@@ -117,7 +119,10 @@ export function AddOrderItemButton({ orderId }: AddOrderItemButtonProps) {
       <Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
         <DeviceSelector
           value={deviceId}
-          onChange={setDeviceId}
+          onChange={(value) => {
+            setDeviceId(value);
+            addOrderItemMutation.reset();
+          }}
           onCreateDevice={() => setIsCreateDeviceOpen(true)}
         />
 
@@ -129,6 +134,15 @@ export function AddOrderItemButton({ orderId }: AddOrderItemButtonProps) {
           {addOrderItemMutation.isPending ? "Добавление…" : "Добавить позицию"}
         </Button>
       </Stack>
+
+      {addOrderItemMutation.isError && (
+        <Alert severity="warning">
+          {isAxiosError(addOrderItemMutation.error) &&
+          addOrderItemMutation.error.response?.status === 409
+            ? "СИ уже находится в другом активном заказе. Добавление невозможно."
+            : "Не удалось добавить позицию в заказ."}
+        </Alert>
+      )}
 
       <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap" }}>
         {OPERATION_OPTIONS.map((operation) => (

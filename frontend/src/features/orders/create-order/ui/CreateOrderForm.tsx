@@ -1,18 +1,36 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button, MenuItem, Stack, TextField } from "@mui/material";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 
 import { useCreateCustomer } from "../../../customers/model/useCreateCustomer";
 import type { CreateCustomerSchema } from "../../../customers/model/schema";
 import { CustomerForm } from "../../../customers/ui/CustomerForm";
 import { useCustomers } from "../../../customers/model/useCustomers";
+import { useOrders } from "../../model/useOrders";
 import { createOrderSchema } from "../model/schema";
 import type { CreateOrderForm as CreateOrderFormValues } from "../model/types";
 
 interface CreateOrderFormProps {
   onSubmit: (data: CreateOrderFormValues) => void;
   isPending?: boolean;
+}
+
+function getDefaultPlannedIssueAt(): string {
+  const date = new Date();
+  date.setDate(date.getDate() + 14);
+
+  const pad = (value: number) => String(value).padStart(2, "0");
+
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+function getNextOrderNumber(numbers: string[]): string {
+  const numericNumbers = numbers
+    .map((number) => Number.parseInt(number, 10))
+    .filter((number) => Number.isInteger(number) && number >= 0);
+
+  return String((numericNumbers.length > 0 ? Math.max(...numericNumbers) : 0) + 1);
 }
 
 export function CreateOrderForm({
@@ -24,9 +42,14 @@ export function CreateOrderForm({
     register,
     handleSubmit,
     setValue,
-    formState: { errors },
+    reset,
+    formState: { errors, isDirty },
   } = useForm<CreateOrderFormValues>({
     resolver: zodResolver(createOrderSchema),
+    defaultValues: {
+      number: "",
+      plannedIssueAt: getDefaultPlannedIssueAt(),
+    },
   });
 
   const {
@@ -34,6 +57,17 @@ export function CreateOrderForm({
     isLoading: isCustomersLoading,
     isError: isCustomersError,
   } = useCustomers();
+  const { data: orders = [], isLoading: isOrdersLoading } = useOrders();
+
+  useEffect(() => {
+    if (!isDirty && !isOrdersLoading) {
+      reset({
+        number: getNextOrderNumber(orders.map((order) => order.number)),
+        plannedIssueAt: getDefaultPlannedIssueAt(),
+        comment: "",
+      });
+    }
+  }, [isDirty, isOrdersLoading, orders, reset]);
 
   const createCustomerMutation = useCreateCustomer({
     onSuccess: (customer) => {
@@ -71,7 +105,7 @@ export function CreateOrderForm({
           {...register("number")}
           error={Boolean(errors.number)}
           helperText={errors.number?.message}
-          disabled={isPending}
+          disabled={isPending || isOrdersLoading}
         />
 
         <TextField
@@ -129,7 +163,7 @@ export function CreateOrderForm({
         <Button
           type="submit"
           variant="contained"
-          disabled={isPending || isCustomersLoading || isCustomersError}
+          disabled={isPending || isCustomersLoading || isCustomersError || isOrdersLoading}
         >
           {isPending ? "Создание..." : "Создать заказ"}
         </Button>

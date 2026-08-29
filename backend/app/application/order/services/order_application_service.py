@@ -21,6 +21,7 @@ from app.application.order.commands.update_order import (
 )
 from app.application.order.exceptions import (
     InstrumentAlreadyInActiveOrderApplicationError,
+    OrderItemNotFoundApplicationError,
     OrderNotFoundApplicationError,
 )
 from app.domains.order.entities.order import Order
@@ -116,6 +117,24 @@ class OrderApplicationService:
             self._repository.save(order)
 
         return order
+
+    def remove_item(
+        self,
+        order_id: UUID,
+        item_id: UUID,
+        user: User,
+    ) -> None:
+        """Remove an item from a new order."""
+
+        require_role(user, UserRole.OPERATOR, UserRole.ADMIN)
+
+        with self._uow:
+            order = self.get(order_id)
+
+            if not order.remove_item(item_id):
+                raise OrderItemNotFoundApplicationError
+
+            self._repository.delete_item(order_id, item_id)
 
     def update(
         self,

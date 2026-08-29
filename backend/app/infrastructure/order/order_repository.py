@@ -74,6 +74,40 @@ class OrderRepositorySQLAlchemy(OrderRepository):
             is not None
         )
 
+    def delete_item(
+        self,
+        order_id: UUID,
+        item_id: UUID,
+    ) -> None:
+        """Persist removal of an order item and renumber remaining items."""
+
+        item = (
+            self.session.query(ORMOrderItem)
+            .filter(
+                ORMOrderItem.id == item_id,
+                ORMOrderItem.order_id == order_id,
+            )
+            .first()
+        )
+
+        if item is None:
+            return
+
+        self.session.delete(item)
+        self.session.flush()
+
+        remaining_items = (
+            self.session.query(ORMOrderItem)
+            .filter(ORMOrderItem.order_id == order_id)
+            .order_by(ORMOrderItem.line_number)
+            .all()
+        )
+
+        for line_number, remaining_item in enumerate(remaining_items, start=1):
+            remaining_item.line_number = line_number
+
+        self.session.flush()
+
     def save(
         self,
         order: DomainOrder,

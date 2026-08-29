@@ -69,6 +69,19 @@ class Order(AggregateRoot):
 
         self.items.append(item)
 
+    def remove_item(self, item_id: UUID) -> bool:
+        """Remove an item from a new order."""
+
+        if self.status != OrderStatus.NEW:
+            raise OrderException("Cannot remove item from active order")
+
+        for index, item in enumerate(self.items):
+            if item.id == item_id:
+                del self.items[index]
+                return True
+
+        return False
+
     def update_details(
         self,
         *,

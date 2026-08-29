@@ -4,7 +4,7 @@ Order API router.
 
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 
 from app.api.dependencies.auth import get_current_user
@@ -22,6 +22,8 @@ from app.application.order.commands.update_order import (
     UpdateOrderCommand,
 )
 from app.application.order.exceptions import (
+    InstrumentAlreadyInActiveOrderApplicationError,
+    OrderItemNotFoundApplicationError,
     OrderNotFoundApplicationError,
 )
 from app.application.order.queries.order_read_service import (
@@ -104,14 +106,47 @@ def add_order_item(
         get_order_service,
     ),
 ):
-    return service.add_item(
-        AddOrderItemCommand(
-            order_id=order_id,
-            instrument_id=data.instrument_id,
-            requested_operations=frozenset(data.requested_operations),
-        ),
-        user,
-    )
+    try:
+        return service.add_item(
+            AddOrderItemCommand(
+                order_id=order_id,
+                instrument_id=data.instrument_id,
+                requested_operations=frozenset(data.requested_operations),
+            ),
+            user,
+        )
+    except InstrumentAlreadyInActiveOrderApplicationError:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Instrument is already in another active order",
+        ) from None
+
+
+@router.delete(
+    "/{order_id}/items/{item_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(get_current_user), Depends(require_csrf)],
+)
+def delete_order_item(
+    order_id: UUID,
+    item_id: UUID,
+    user: User = Depends(get_current_user),
+    service: OrderApplicationService = Depends(
+        get_order_service,
+    ),
+) -> None:
+    try:
+        service.remove_item(order_id, item_id, user)
+    except OrderNotFoundApplicationError:
+        raise HTTPException(
+            status_code=404,
+            detail="Order not found",
+        ) from None
+    except OrderItemNotFoundApplicationError:
+        raise HTTPException(
+            status_code=404,
+            detail="Order item not found",
+        ) from None
 
 
 @router.patch(
