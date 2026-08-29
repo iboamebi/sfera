@@ -1,3 +1,4 @@
+from datetime import UTC, datetime
 from uuid import UUID, uuid4
 
 from app.application.order.commands.add_order_items import AddOrderItemsCommand
@@ -71,7 +72,7 @@ def test_add_items_creates_requested_quantity_without_instrument_cards():
         id=uuid4(),
         number=OrderNumber("20001"),
         customer_id=uuid4(),
-        received_at=__import__("datetime").datetime.now(__import__("datetime").UTC),
+        received_at=datetime.now(UTC),
     )
     repository.save(order)
     instrument_type_id = uuid4()
@@ -87,4 +88,6 @@ def test_add_items_creates_requested_quantity_without_instrument_cards():
 
     assert len(result.items) == 3
     assert all(item.instrument_id is None for item in result.items)
-    assert all(item.instrument_type_id == instrument_type_id for item in result.items)
+    assert all(
+        item.instrument_type_id == instrument_type_id for item in result.items
+    )
