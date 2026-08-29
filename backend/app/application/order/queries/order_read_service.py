@@ -4,11 +4,11 @@ Order read service.
 
 from uuid import UUID
 
-from app.domains.order.repositories.order_read_repository import (
-    OrderReadRepository,
-)
 from app.application.order.queries.order_read_mapper import (
     OrderReadMapper,
+)
+from app.domains.order.repositories.order_read_repository import (
+    OrderReadRepository,
 )
 from app.schemas.order import OrderRead
 
