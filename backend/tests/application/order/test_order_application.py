@@ -20,11 +20,19 @@ from app.application.order.commands.register_order import (
 from app.application.order.commands.update_order import (
     UpdateOrderCommand,
 )
+from app.application.order.exceptions import (
+    InstrumentAlreadyInActiveOrderApplicationError,
+)
 from app.application.order.services.order_application_service import (
     OrderApplicationService,
 )
 from app.domains.order.entities.order import Order
+from app.domains.order.entities.order_item import OrderItem
 from app.domains.order.repositories.order_repository import OrderRepository
+from app.domains.order.value_objects.order_status import (
+    CONFLICTING_INSTRUMENT_ORDER_STATUSES,
+    OrderStatus,
+)
 from app.domains.user.entities.user import User
 from app.domains.user.value_objects.user_role import UserRole
 from app.shared.unit_of_work.unit_of_work import UnitOfWork
@@ -57,6 +65,21 @@ class FakeOrderRepository(OrderRepository):
 
     def list(self) -> list[Order]:
         return list(self._orders.values())
+
+    def has_conflicting_order_for_instrument(
+        self,
+        instrument_id: UUID,
+        exclude_order_id: UUID,
+    ) -> bool:
+        return any(
+            order.id != exclude_order_id
+            and order.status in CONFLICTING_INSTRUMENT_ORDER_STATUSES
+            and any(
+                item.instrument_id == instrument_id
+                for item in order.items
+            )
+            for order in self._orders.values()
+        )
 
     def save(self, order: Order) -> None:
         self._orders[order.id] = order
@@ -281,3 +304,91 @@ def test_update_order_details():
     assert updated_order.planned_issue_at == planned_issue_at
     assert updated_order.comment == comment
     assert repository.get(order.id) is updated_order
+
+
+def test_add_order_item_rejects_instrument_in_another_active_order():
+    repository = FakeOrderRepository()
+    service = OrderApplicationService(
+        repository,
+        FakeUnitOfWork(),
+    )
+    instrument_id = uuid4()
+
+    existing_order = service.create(
+        CreateOrderCommand(
+            customer_id=uuid4(),
+            number="10007",
+        ),
+        make_operator(),
+    )
+    existing_order.add_item(
+        OrderItem(
+            id=uuid4(),
+            instrument_id=instrument_id,
+        )
+    )
+    existing_order.status = OrderStatus.REGISTERED
+    repository.save(existing_order)
+
+    order = service.create(
+        CreateOrderCommand(
+            customer_id=uuid4(),
+            number="10008",
+        ),
+        make_operator(),
+    )
+
+    with pytest.raises(
+        InstrumentAlreadyInActiveOrderApplicationError,
+    ):
+        service.add_item(
+            AddOrderItemCommand(
+                order_id=order.id,
+                instrument_id=instrument_id,
+            ),
+            make_operator(),
+        )
+
+
+def test_add_order_item_allows_instrument_after_order_completed():
+    repository = FakeOrderRepository()
+    service = OrderApplicationService(
+        repository,
+        FakeUnitOfWork(),
+    )
+    instrument_id = uuid4()
+
+    completed_order = service.create(
+        CreateOrderCommand(
+            customer_id=uuid4(),
+            number="10009",
+        ),
+        make_operator(),
+    )
+    completed_order.add_item(
+        OrderItem(
+            id=uuid4(),
+            instrument_id=instrument_id,
+        )
+    )
+    completed_order.status = OrderStatus.COMPLETED
+    repository.save(completed_order)
+
+    order = service.create(
+        CreateOrderCommand(
+            customer_id=uuid4(),
+            number="10010",
+        ),
+        make_operator(),
+    )
+
+    service.add_item(
+        AddOrderItemCommand(
+            order_id=order.id,
+            instrument_id=instrument_id,
+        ),
+        make_operator(),
+    )
+
+    assert len(order.items) == 1
+    assert order.items[0].instrument_id == instrument_id
