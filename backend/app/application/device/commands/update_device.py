@@ -1,0 +1,21 @@
+"""
+Update device command.
+"""
+
+from dataclasses import dataclass
+from uuid import UUID
+
+
+@dataclass(frozen=True)
+class UpdateDeviceCommand:
+    """Command for updating a device card."""
+
+    device_id: UUID
+    instrument_type_id: UUID
+    serial_number: str
+    registry_number: str | None = None
+    modification: str | None = None
+    factory_number: str | None = None
+    manufacture_year: int | None = None
+    inventory_number: str | None = None
+    comment: str | None = None
