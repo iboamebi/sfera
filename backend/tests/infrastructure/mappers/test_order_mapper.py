@@ -3,6 +3,7 @@
 from datetime import UTC, datetime
 from uuid import uuid4
 
+from app.domains.order.value_objects.order_item_operation import OrderItemOperation
 from app.infrastructure.mappers.order_mapper import OrderMapper
 from app.models.order import Order as OrderModel
 from app.models.order import OrderStatus
@@ -23,6 +24,7 @@ def test_order_mapper_to_domain_preserves_order_items() -> None:
         line_number=1,
         customer_inventory_number="INV-001",
         customer_comment="Customer comment",
+        requested_operations=[OrderItemOperation.VERIFICATION.value],
     )
     order_model = OrderModel(
         id=order_id,
@@ -39,3 +41,4 @@ def test_order_mapper_to_domain_preserves_order_items() -> None:
     assert entity.items[0].id == item_id
     assert entity.items[0].instrument_id == instrument_id
     assert entity.items[0].comment == "Customer comment"
+    assert entity.items[0].requested_operations == {OrderItemOperation.VERIFICATION}
