@@ -25,7 +25,7 @@ function getLocalDateTimePlusDays(days: number): string {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }
 
-function getNextOrderNumber(numbers: string[]): string | undefined {
+function getNextOrderNumber(numbers: string[]): string {
   const numericNumbers = numbers
     .map((number) => Number(number))
     .filter((number) => Number.isInteger(number) && number >= 0);
@@ -60,18 +60,17 @@ export function CreateOrderForm({
     isLoading: isCustomersLoading,
     isError: isCustomersError,
   } = useCustomers();
-  const { data: orders = [] } = useOrders();
+  const { data: orders = [], isLoading: isOrdersLoading } = useOrders();
 
   useEffect(() => {
-    if (dirtyFields.number || getValues("number")) {
+    if (isOrdersLoading || dirtyFields.number || getValues("number")) {
       return;
     }
 
-    const nextNumber = getNextOrderNumber(orders.map((order) => order.number));
-    if (nextNumber) {
-      setValue("number", nextNumber, { shouldValidate: true });
-    }
-  }, [dirtyFields.number, getValues, orders, setValue]);
+    setValue("number", getNextOrderNumber(orders.map((order) => order.number)), {
+      shouldValidate: true,
+    });
+  }, [dirtyFields.number, getValues, isOrdersLoading, orders, setValue]);
 
   const createCustomerMutation = useCreateCustomer({
     onSuccess: (customer) => {
