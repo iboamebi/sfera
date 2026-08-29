@@ -35,6 +35,13 @@ class FakeUnitOfWork(UnitOfWork):
     def rollback(self) -> None:
         pass
 
+    def register_aggregate(
+        self,
+        aggregate: object,
+        operation_id: UUID | None = None,
+    ) -> None:
+        pass
+
 
 class FakeVerificationRepository(VerificationRepository):
     def __init__(self) -> None:
