@@ -1,9 +1,12 @@
 import { Chip, Divider, Stack, Typography } from "@mui/material";
 
+import { DeleteOrderItemButton } from "../delete-order-item/ui/DeleteOrderItemButton";
 import type { OrderItem, OrderItemOperation } from "../model/types";
 
 interface OrderItemsProps {
   items: OrderItem[];
+  deletingItemId?: string | null;
+  onDelete?: (itemId: string) => void;
 }
 
 const OPERATION_LABELS: Record<OrderItemOperation, string> = {
@@ -13,7 +16,11 @@ const OPERATION_LABELS: Record<OrderItemOperation, string> = {
   sale: "Продажа",
 };
 
-export function OrderItems({ items }: OrderItemsProps) {
+export function OrderItems({
+  items,
+  deletingItemId = null,
+  onDelete,
+}: OrderItemsProps) {
   return (
     <Stack spacing={2}>
       <Typography variant="h6">Позиции заказа</Typography>
@@ -25,7 +32,22 @@ export function OrderItems({ items }: OrderItemsProps) {
       ) : (
         items.map((item, index) => (
           <Stack key={item.id} spacing={0.5}>
-            <Typography variant="body1">Позиция {index + 1}</Typography>
+            <Stack
+              direction="row"
+              sx={{
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <Typography variant="body1">Позиция {index + 1}</Typography>
+
+              {onDelete && (
+                <DeleteOrderItemButton
+                  isPending={deletingItemId === item.id}
+                  onClick={() => onDelete(item.id)}
+                />
+              )}
+            </Stack>
 
             <Typography color="text.secondary" variant="body2">
               {item.instrumentTypeName ?? "СИ"}: {item.serialNumber ?? "—"}
