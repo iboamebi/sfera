@@ -13,9 +13,8 @@ from app.api.dependencies.auth import get_current_user
 from app.api.security.csrf import require_csrf
 from app.application.device.commands.connect_device import ConnectDeviceCommand
 from app.application.device.commands.create_device import CreateDeviceCommand
-from app.application.device.commands.disconnect_device import (
-    DisconnectDeviceCommand,
-)
+from app.application.device.commands.disconnect_device import DisconnectDeviceCommand
+from app.application.device.commands.update_device import UpdateDeviceCommand
 from app.application.device.exceptions import (
     DeviceNotAvailableApplicationError,
     DeviceNotFoundApplicationError,
@@ -26,7 +25,7 @@ from app.application.device.services.device_application_service import (
     DeviceApplicationService,
 )
 from app.core.dependencies.services import get_device_service
-from app.schemas.device import DeviceCreate, DeviceRead
+from app.schemas.device import DeviceCreate, DeviceRead, DeviceUpdate
 from app.schemas.device_action import DeviceActionResponse
 
 router = APIRouter(
@@ -65,6 +64,39 @@ def create_device(
 
     try:
         return service.create(command)
+
+    except InstrumentTypeNotFoundApplicationError:
+        raise HTTPException(
+            status_code=404,
+            detail="Instrument type not found",
+        ) from None
+
+
+@router.put(
+    "/{device_id}",
+    response_model=DeviceRead,
+    dependencies=[Depends(get_current_user), Depends(require_csrf)],
+)
+def update_device(
+    device_id: UUID,
+    data: DeviceUpdate,
+    service: DeviceApplicationService = Depends(
+        get_device_service,
+    ),
+):
+    try:
+        return service.update(
+            UpdateDeviceCommand(
+                device_id=device_id,
+                **data.model_dump(),
+            ),
+        )
+
+    except DeviceNotFoundApplicationError:
+        raise HTTPException(
+            status_code=404,
+            detail="Device not found",
+        ) from None
 
     except InstrumentTypeNotFoundApplicationError:
         raise HTTPException(
