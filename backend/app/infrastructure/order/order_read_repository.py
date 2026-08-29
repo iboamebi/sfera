@@ -13,6 +13,7 @@ from app.domains.order.read_models.order_read_models import (
 from app.domains.order.repositories.order_read_repository import (
     OrderReadRepository,
 )
+from app.domains.order.value_objects.order_item_operation import OrderItemOperation
 from app.models.instrument import Instrument
 from app.models.order import Order
 from app.models.order_item import OrderItem
@@ -71,6 +72,10 @@ class OrderReadRepositorySQLAlchemy(OrderReadRepository):
                         else None
                     ),
                     comment=item.customer_comment,
+                    requested_operations={
+                        OrderItemOperation(operation)
+                        for operation in item.requested_operations
+                    },
                 )
                 for item in order.order_items
             ],
