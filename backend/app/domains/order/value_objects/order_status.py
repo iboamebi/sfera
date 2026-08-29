@@ -10,3 +10,13 @@ class OrderStatus(StrEnum):
     ISSUED = "ISSUED"
     CLOSED = "CLOSED"
     CANCELLED = "CANCELLED"
+
+
+CONFLICTING_INSTRUMENT_ORDER_STATUSES = frozenset(
+    {
+        OrderStatus.NEW,
+        OrderStatus.REGISTERED,
+        OrderStatus.IN_WORK,
+        OrderStatus.WAITING,
+    }
+)
