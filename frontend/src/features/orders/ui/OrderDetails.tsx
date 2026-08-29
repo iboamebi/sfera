@@ -1,4 +1,5 @@
 import {
+  Alert,
   Card,
   CardContent,
   Chip,
@@ -9,6 +10,7 @@ import {
 
 import { useCustomer } from "../../customers/model/useCustomer";
 import { AddOrderItemButton } from "../add-order-item/ui/AddOrderItemButton";
+import { useDeleteOrderItem } from "../delete-order-item/model/useDeleteOrderItem";
 import type { OrderRead } from "../model/types";
 import { OrderItems } from "./OrderItems";
 
@@ -70,6 +72,11 @@ function DetailRow({
 
 export function OrderDetails({ order }: OrderDetailsProps) {
   const { data: customer } = useCustomer(order.customerId);
+  const deleteOrderItemMutation = useDeleteOrderItem(order.id);
+
+  const handleDeleteItem = (itemId: string) => {
+    deleteOrderItemMutation.mutate(itemId);
+  };
 
   return (
     <Card>
@@ -118,12 +125,28 @@ export function OrderDetails({ order }: OrderDetailsProps) {
 
           <Divider />
 
+          {deleteOrderItemMutation.isError && (
+            <Alert severity="error">
+              Не удалось удалить позицию заказа.
+            </Alert>
+          )}
+
           <Stack
             direction="row"
             spacing={2}
-            sx={{ alignItems: "center", justifyContent: "space-between" }}
+            sx={{ alignItems: "flex-start", justifyContent: "space-between" }}
           >
-            <OrderItems items={order.items} />
+            <OrderItems
+              items={order.items}
+              deletingItemId={
+                deleteOrderItemMutation.isPending
+                  ? deleteOrderItemMutation.variables
+                  : null
+              }
+              onDelete={
+                order.status === "NEW" ? handleDeleteItem : undefined
+              }
+            />
 
             {order.status === "NEW" && (
               <AddOrderItemButton orderId={order.id} />
