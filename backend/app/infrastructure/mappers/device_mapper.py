@@ -29,6 +29,12 @@ class DeviceMapper(BaseMapper[Device, Instrument]):
             instrument_type_id=model.instrument_type_id,
             serial_number=SerialNumber(model.serial_number),
             status=status,
+            registry_number=model.registry_number,
+            modification=model.modification,
+            factory_number=model.factory_number,
+            manufacture_year=model.manufacture_year,
+            inventory_number=model.inventory_number,
+            comment=model.comment,
         )
 
     def to_model(
@@ -39,5 +45,11 @@ class DeviceMapper(BaseMapper[Device, Instrument]):
         model.instrument_type_id = entity.instrument_type_id
         model.serial_number = entity.serial_number.value
         model.device_status = entity.status.value
+        model.registry_number = entity.registry_number
+        model.modification = entity.modification
+        model.factory_number = entity.factory_number
+        model.manufacture_year = entity.manufacture_year
+        model.inventory_number = entity.inventory_number
+        model.comment = entity.comment
 
         return model
