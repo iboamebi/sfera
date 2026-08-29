@@ -10,6 +10,7 @@ from pydantic import BaseModel, Field
 from app.api.dependencies.auth import get_current_user
 from app.api.security.csrf import require_csrf
 from app.application.order.commands.add_order_item import AddOrderItemCommand
+from app.application.order.commands.add_order_items import AddOrderItemsCommand
 from app.application.order.commands.create_order import CreateOrderCommand
 from app.application.order.commands.register_order import RegisterOrderCommand
 from app.application.order.commands.update_order import UpdateOrderCommand
@@ -33,6 +34,14 @@ class OrderItemCreate(BaseModel):
 
     instrument_id: UUID | None = None
     instrument_type_id: UUID | None = None
+    requested_operations: set[OrderItemOperation] = Field(default_factory=set)
+
+
+class OrderItemsBulkCreate(BaseModel):
+    """Request schema for mass intake of type-only order items."""
+
+    instrument_type_id: UUID
+    quantity: int = Field(gt=0)
     requested_operations: set[OrderItemOperation] = Field(default_factory=set)
 
 
@@ -89,6 +98,31 @@ def add_order_item(
             status_code=status.HTTP_409_CONFLICT,
             detail="Instrument is already in another active order",
         ) from None
+
+
+@router.post(
+    "/{order_id}/items/bulk",
+    response_model=OrderRead,
+    dependencies=[Depends(get_current_user), Depends(require_csrf)],
+)
+def add_order_items_bulk(
+    order_id: UUID,
+    data: OrderItemsBulkCreate,
+    user: User = Depends(get_current_user),
+    service: OrderApplicationService = Depends(get_order_service),
+):
+    try:
+        return service.add_items(
+            AddOrderItemsCommand(
+                order_id=order_id,
+                instrument_type_id=data.instrument_type_id,
+                quantity=data.quantity,
+                requested_operations=frozenset(data.requested_operations),
+            ),
+            user,
+        )
+    except OrderNotFoundApplicationError:
+        raise HTTPException(status_code=404, detail="Order not found") from None
 
 
 @router.delete(
@@ -152,7 +186,4 @@ def get_order(
     order_id: UUID,
     service: OrderReadService = Depends(get_order_read_service),
 ):
-    order = service.get(order_id)
-    if order is None:
-        raise HTTPException(status_code=404, detail="Order not found")
-    return order
+    return service.get(order_id)
