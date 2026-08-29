@@ -1,5 +1,13 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Button, MenuItem, Stack, TextField } from "@mui/material";
+import {
+  Autocomplete,
+  Button,
+  Divider,
+  MenuItem,
+  Stack,
+  TextField,
+  Typography,
+} from "@mui/material";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useQueryClient } from "@tanstack/react-query";
@@ -8,6 +16,8 @@ import { useCreateCustomer } from "../../../customers/model/useCreateCustomer";
 import type { CreateCustomerSchema } from "../../../customers/model/schema";
 import { CustomerForm } from "../../../customers/ui/CustomerForm";
 import { useCustomers } from "../../../customers/model/useCustomers";
+import type { DeviceRead } from "../../../devices/model/types";
+import { useDevices } from "../../../devices/model/useDevices";
 import { useOrders } from "../../model/useOrders";
 import { createOrderSchema } from "../model/schema";
 import type { CreateOrderForm as CreateOrderFormValues } from "../model/types";
@@ -44,6 +54,8 @@ export function CreateOrderForm({
 }: CreateOrderFormProps) {
   const [isCreateCustomerOpen, setIsCreateCustomerOpen] = useState(false);
   const [createdCustomerId, setCreatedCustomerId] = useState<string>();
+  const [selectedDevices, setSelectedDevices] = useState<DeviceRead[]>([]);
+  const [selectedDevice, setSelectedDevice] = useState<DeviceRead | null>(null);
   const queryClient = useQueryClient();
   const {
     register,
@@ -55,6 +67,7 @@ export function CreateOrderForm({
     resolver: zodResolver(createOrderSchema),
     defaultValues: {
       plannedIssueAt: getLocalDateTimePlusDays(14),
+      instrumentIds: [],
     },
   });
 
@@ -64,6 +77,8 @@ export function CreateOrderForm({
     isError: isCustomersError,
   } = useCustomers();
   const { data: orders = [], isLoading: isOrdersLoading } = useOrders();
+  const { data: devices = [], isLoading: isDevicesLoading, isError: isDevicesError } =
+    useDevices();
 
   useEffect(() => {
     if (isOrdersLoading || dirtyFields.number || getValues("number")) {
@@ -92,6 +107,31 @@ export function CreateOrderForm({
 
   const handleCreateCustomer = (data: CreateCustomerSchema) => {
     createCustomerMutation.mutate(data);
+  };
+
+  const handleAddSelectedDevice = () => {
+    if (!selectedDevice || selectedDevices.some((device) => device.id === selectedDevice.id)) {
+      return;
+    }
+
+    const nextDevices = [...selectedDevices, selectedDevice];
+    setSelectedDevices(nextDevices);
+    setValue(
+      "instrumentIds",
+      nextDevices.map((device) => device.id),
+      { shouldValidate: true },
+    );
+    setSelectedDevice(null);
+  };
+
+  const handleRemoveDevice = (deviceId: string) => {
+    const nextDevices = selectedDevices.filter((device) => device.id !== deviceId);
+    setSelectedDevices(nextDevices);
+    setValue(
+      "instrumentIds",
+      nextDevices.map((device) => device.id),
+      { shouldValidate: true },
+    );
   };
 
   if (isCreateCustomerOpen) {
@@ -164,6 +204,71 @@ export function CreateOrderForm({
           }}
         />
 
+        <Divider />
+
+        <Stack spacing={2}>
+          <Typography variant="h6">Позиции заказа</Typography>
+
+          <Autocomplete
+            options={devices.filter(
+              (device) => !selectedDevices.some((selected) => selected.id === device.id),
+            )}
+            value={selectedDevice}
+            loading={isDevicesLoading}
+            disabled={isPending || isDevicesError}
+            getOptionLabel={(device) => device.serialNumber}
+            isOptionEqualToValue={(option, value) => option.id === value.id}
+            onChange={(_, device) => setSelectedDevice(device)}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Средство измерений"
+                placeholder="Введите серийный номер"
+                error={isDevicesError}
+                helperText={
+                  isDevicesError
+                    ? "Не удалось загрузить средства измерений"
+                    : undefined
+                }
+              />
+            )}
+          />
+
+          <Button
+            onClick={handleAddSelectedDevice}
+            disabled={!selectedDevice || isPending}
+            variant="outlined"
+          >
+            Добавить позицию
+          </Button>
+
+          {selectedDevices.length === 0 ? (
+            <Typography color="text.secondary" variant="body2">
+              Позиции отсутствуют
+            </Typography>
+          ) : (
+            selectedDevices.map((device, index) => (
+              <Stack
+                key={device.id}
+                direction="row"
+                spacing={2}
+                sx={{ alignItems: "center", justifyContent: "space-between" }}
+              >
+                <Typography variant="body2">
+                  Позиция {index + 1}: СИ {device.serialNumber}
+                </Typography>
+                <Button
+                  onClick={() => handleRemoveDevice(device.id)}
+                  disabled={isPending}
+                  size="small"
+                >
+                  Удалить
+                </Button>
+              </Stack>
+            ))
+          )}
+        </Stack>
+
         <TextField
           label="Комментарий"
           multiline
@@ -177,7 +282,13 @@ export function CreateOrderForm({
         <Button
           type="submit"
           variant="contained"
-          disabled={isPending || isCustomersLoading || isCustomersError}
+          disabled={
+            isPending ||
+            isCustomersLoading ||
+            isCustomersError ||
+            isDevicesLoading ||
+            isDevicesError
+          }
         >
           {isPending ? "Создание..." : "Создать заказ"}
         </Button>
