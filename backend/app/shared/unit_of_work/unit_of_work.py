@@ -33,6 +33,7 @@ class UnitOfWork(ABC):
         """Rollback transaction."""
         pass
 
+    @abstractmethod
     def register_aggregate(
         self,
         aggregate: object,
