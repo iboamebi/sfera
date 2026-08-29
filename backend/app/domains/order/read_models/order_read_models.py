@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from uuid import UUID
 
+from app.domains.order.value_objects.order_item_operation import OrderItemOperation
 from app.domains.order.value_objects.order_status import OrderStatus
 
 
@@ -18,6 +19,7 @@ class OrderItemReadData:
     instrument_type_name: str | None
     serial_number: str | None
     comment: str | None
+    requested_operations: set[OrderItemOperation]
 
 
 @dataclass(frozen=True)
