@@ -54,6 +54,13 @@ class FakeUnitOfWork(UnitOfWork):
     def rollback(self) -> None:
         self.rollback_count += 1
 
+    def register_aggregate(
+        self,
+        aggregate: object,
+        operation_id: UUID | None = None,
+    ) -> None:
+        pass
+
 
 def test_instrument_type_application_lifecycle():
     repository = FakeInstrumentTypeRepository()
