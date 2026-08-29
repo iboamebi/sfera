@@ -85,6 +85,9 @@ class FakeUnitOfWork(UnitOfWork):
     def rollback(self):
         self.rolled_back = True
 
+    def register_aggregate(self, aggregate: object, operation_id=None):
+        pass
+
 
 def test_device_create():
     instrument_type = InstrumentType(
