@@ -1,6 +1,8 @@
 from datetime import UTC, datetime
 from uuid import uuid4
 
+import pytest
+
 from app.domains.order.entities.order import Order
 from app.domains.order.entities.order_item import OrderItem
 from app.domains.order.exceptions.order_exception import OrderException
@@ -59,3 +61,26 @@ def test_empty_order_cannot_register():
         raise AssertionError()
     except OrderException:
         assert True
+
+
+def test_order_rejects_duplicate_instrument():
+    order = create_order("1004")
+    instrument_id = uuid4()
+
+    order.add_item(
+        OrderItem(
+            id=uuid4(),
+            instrument_id=instrument_id,
+        )
+    )
+
+    with pytest.raises(
+        OrderException,
+        match="Instrument already exists in order",
+    ):
+        order.add_item(
+            OrderItem(
+                id=uuid4(),
+                instrument_id=instrument_id,
+            )
+        )
