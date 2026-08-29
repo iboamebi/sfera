@@ -7,6 +7,7 @@ import {
   FormControlLabel,
   Stack,
 } from "@mui/material";
+import { isAxiosError } from "axios";
 
 import { useCreateDevice } from "../../../devices/model/useCreateDevice";
 import { CreateDeviceForm } from "../../../devices/ui/CreateDeviceForm";
@@ -136,7 +137,8 @@ export function AddOrderItemButton({ orderId }: AddOrderItemButtonProps) {
 
       {addOrderItemMutation.isError && (
         <Alert severity="warning">
-          {addOrderItemMutation.error?.response?.status === 409
+          {isAxiosError(addOrderItemMutation.error) &&
+          addOrderItemMutation.error.response?.status === 409
             ? "СИ уже находится в другом активном заказе. Добавление невозможно."
             : "Не удалось добавить позицию в заказ."}
         </Alert>
