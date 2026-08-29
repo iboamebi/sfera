@@ -54,6 +54,13 @@ class FakeUnitOfWork(UnitOfWork):
     def rollback(self) -> None:
         self.rolled_back = True
 
+    def register_aggregate(
+        self,
+        aggregate: object,
+        operation_id: UUID | None = None,
+    ) -> None:
+        pass
+
 
 def test_login_sets_http_only_session_cookie() -> None:
     user = User(
