@@ -3,4 +3,5 @@ export interface CreateOrderForm {
   customerId: string;
   plannedIssueAt?: string;
   comment?: string;
+  instrumentIds: string[];
 }
