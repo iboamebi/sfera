@@ -1,4 +1,4 @@
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 import pytest
 
@@ -84,6 +84,13 @@ class FakeUnitOfWork(UnitOfWork):
 
     def rollback(self):
         self.rolled_back = True
+
+    def register_aggregate(
+        self,
+        aggregate: object,
+        operation_id: UUID | None = None,
+    ) -> None:
+        pass
 
 
 def test_device_create():
