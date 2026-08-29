@@ -5,7 +5,7 @@ Order API router.
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from app.api.dependencies.auth import get_current_user
 from app.api.security.csrf import require_csrf
@@ -52,7 +52,7 @@ class OrderItemCreate(BaseModel):
     """Request schema for adding an order item."""
 
     instrument_id: UUID | None = None
-    requested_operations: set[OrderItemOperation] = set()
+    requested_operations: set[OrderItemOperation] = Field(default_factory=set)
 
 
 @router.post(
