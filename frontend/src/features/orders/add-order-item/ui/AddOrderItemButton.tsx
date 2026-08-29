@@ -130,7 +130,7 @@ export function AddOrderItemButton({ orderId }: AddOrderItemButtonProps) {
         </Button>
       </Stack>
 
-      <Stack direction="row" spacing={1} flexWrap="wrap">
+      <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap" }}>
         {OPERATION_OPTIONS.map((operation) => (
           <FormControlLabel
             key={operation.value}
