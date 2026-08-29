@@ -22,6 +22,7 @@ from app.application.order.commands.update_order import (
     UpdateOrderCommand,
 )
 from app.application.order.exceptions import (
+    InstrumentAlreadyInActiveOrderApplicationError,
     OrderItemNotFoundApplicationError,
     OrderNotFoundApplicationError,
 )
@@ -105,14 +106,20 @@ def add_order_item(
         get_order_service,
     ),
 ):
-    return service.add_item(
-        AddOrderItemCommand(
-            order_id=order_id,
-            instrument_id=data.instrument_id,
-            requested_operations=frozenset(data.requested_operations),
-        ),
-        user,
-    )
+    try:
+        return service.add_item(
+            AddOrderItemCommand(
+                order_id=order_id,
+                instrument_id=data.instrument_id,
+                requested_operations=frozenset(data.requested_operations),
+            ),
+            user,
+        )
+    except InstrumentAlreadyInActiveOrderApplicationError:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Instrument is already in another active order",
+        ) from None
 
 
 @router.delete(
