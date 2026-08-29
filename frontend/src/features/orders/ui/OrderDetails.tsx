@@ -133,7 +133,12 @@ export function OrderDetails({ order }: OrderDetailsProps) {
             />
 
             {order.status === "NEW" && (
-              <AddOrderItemButton orderId={order.id} />
+              <AddOrderItemButton
+                orderId={order.id}
+                existingInstrumentIds={order.items
+                  .map((item) => item.instrumentId)
+                  .filter((instrumentId): instrumentId is string => Boolean(instrumentId))}
+              />
             )}
           </Stack>
         </Stack>
