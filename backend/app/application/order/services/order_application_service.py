@@ -134,8 +134,7 @@ class OrderApplicationService:
             if not order.remove_item(item_id):
                 raise OrderItemNotFoundApplicationError
 
-            if not self._repository.delete_item(order_id, item_id):
-                raise OrderItemNotFoundApplicationError
+            self._repository.delete_item(order_id, item_id)
 
     def update(
         self,
