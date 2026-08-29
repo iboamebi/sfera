@@ -2,6 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Button, MenuItem, Stack, TextField } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { useQueryClient } from "@tanstack/react-query";
 
 import { useCreateCustomer } from "../../../customers/model/useCreateCustomer";
 import type { CreateCustomerSchema } from "../../../customers/model/schema";
@@ -42,6 +43,8 @@ export function CreateOrderForm({
   isPending = false,
 }: CreateOrderFormProps) {
   const [isCreateCustomerOpen, setIsCreateCustomerOpen] = useState(false);
+  const [createdCustomerId, setCreatedCustomerId] = useState<string>();
+  const queryClient = useQueryClient();
   const {
     register,
     handleSubmit,
@@ -72,9 +75,17 @@ export function CreateOrderForm({
     });
   }, [dirtyFields.number, getValues, isOrdersLoading, orders, setValue]);
 
+  useEffect(() => {
+    if (!isCreateCustomerOpen && createdCustomerId) {
+      setValue("customerId", createdCustomerId, { shouldValidate: true });
+      setCreatedCustomerId(undefined);
+    }
+  }, [createdCustomerId, isCreateCustomerOpen, setValue]);
+
   const createCustomerMutation = useCreateCustomer({
-    onSuccess: (customer) => {
-      setValue("customerId", customer.id, { shouldValidate: true });
+    onSuccess: async (customer) => {
+      await queryClient.invalidateQueries({ queryKey: ["customers"] });
+      setCreatedCustomerId(customer.id);
       setIsCreateCustomerOpen(false);
     },
   });
