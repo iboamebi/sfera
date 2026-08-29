@@ -1,5 +1,6 @@
-import { Button, MenuItem, Stack, TextField, Typography } from "@mui/material";
+import { Autocomplete, Button, Stack, TextField, Typography } from "@mui/material";
 
+import type { DeviceRead } from "../../../devices/model/types";
 import { useDevices } from "../../../devices/model/useDevices";
 
 interface DeviceSelectorProps {
@@ -13,7 +14,9 @@ export function DeviceSelector({
   onChange,
   onCreateDevice,
 }: DeviceSelectorProps) {
-  const { data: devices, isLoading, error } = useDevices();
+  const { data: devices = [], isLoading, error } = useDevices();
+  const selectedDevice =
+    devices.find((device) => device.id === value) ?? null;
 
   if (error) {
     return (
@@ -25,20 +28,24 @@ export function DeviceSelector({
 
   return (
     <Stack spacing={1}>
-      <TextField
-        select
-        fullWidth
-        label="Средство измерений"
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        disabled={isLoading}
-      >
-        {devices?.map((device) => (
-          <MenuItem key={device.id} value={device.id}>
-            {device.serialNumber}
-          </MenuItem>
-        ))}
-      </TextField>
+      <Autocomplete
+        options={devices}
+        value={selectedDevice}
+        loading={isLoading}
+        getOptionLabel={(device) => device.serialNumber}
+        isOptionEqualToValue={(option, selected) => option.id === selected.id}
+        onChange={(_, device: DeviceRead | null) =>
+          onChange(device?.id ?? "")
+        }
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            fullWidth
+            label="Средство измерений"
+            placeholder="Введите серийный номер"
+          />
+        )}
+      />
 
       {onCreateDevice && (
         <Button
