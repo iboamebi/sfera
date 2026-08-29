@@ -2,19 +2,14 @@
 Order read mapper.
 """
 
-from app.domains.order.read_models.order_read_models import (
-    OrderReadData,
-)
+from app.domains.order.read_models.order_read_models import OrderReadData
 from app.schemas.order import OrderItemRead, OrderRead
 
 
 class OrderReadMapper:
     """Maps order read models to API read schemas."""
 
-    def to_schema(
-        self,
-        model: OrderReadData,
-    ) -> OrderRead:
+    def to_schema(self, model: OrderReadData) -> OrderRead:
         return OrderRead(
             id=model.id,
             number=model.number,
@@ -29,8 +24,10 @@ class OrderReadMapper:
                 OrderItemRead(
                     id=item.id,
                     instrument_id=item.instrument_id,
+                    instrument_type_id=item.instrument_type_id,
                     instrument_type_name=item.instrument_type_name,
                     serial_number=item.serial_number,
+                    modification=item.modification,
                     comment=item.comment,
                     requested_operations=item.requested_operations,
                 )
