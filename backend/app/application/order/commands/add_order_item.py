@@ -14,6 +14,7 @@ class AddOrderItemCommand:
 
     order_id: UUID
     instrument_id: UUID | None = None
+    instrument_type_id: UUID | None = None
     requested_operations: frozenset[OrderItemOperation] = field(
         default_factory=frozenset,
     )
