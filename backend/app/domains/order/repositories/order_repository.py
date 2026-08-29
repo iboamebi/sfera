@@ -27,6 +27,15 @@ class OrderRepository(ABC):
         raise NotImplementedError
 
     @abstractmethod
+    def has_conflicting_order_for_instrument(
+        self,
+        instrument_id: UUID,
+        exclude_order_id: UUID,
+    ) -> bool:
+        """Check whether an instrument belongs to another active order."""
+        raise NotImplementedError
+
+    @abstractmethod
     def save(
         self,
         order: Order,
