@@ -1,18 +1,40 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button, MenuItem, Stack, TextField } from "@mui/material";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 
 import { useCreateCustomer } from "../../../customers/model/useCreateCustomer";
 import type { CreateCustomerSchema } from "../../../customers/model/schema";
 import { CustomerForm } from "../../../customers/ui/CustomerForm";
 import { useCustomers } from "../../../customers/model/useCustomers";
+import { useOrders } from "../../model/useOrders";
 import { createOrderSchema } from "../model/schema";
 import type { CreateOrderForm as CreateOrderFormValues } from "../model/types";
 
 interface CreateOrderFormProps {
   onSubmit: (data: CreateOrderFormValues) => void;
   isPending?: boolean;
+}
+
+function getLocalDateTimePlusDays(days: number): string {
+  const date = new Date();
+  date.setDate(date.getDate() + days);
+
+  const pad = (value: number) => String(value).padStart(2, "0");
+
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+function getNextOrderNumber(numbers: string[]): string | undefined {
+  const numericNumbers = numbers
+    .map((number) => Number(number))
+    .filter((number) => Number.isInteger(number) && number >= 0);
+
+  if (numericNumbers.length === 0) {
+    return "1";
+  }
+
+  return String(Math.max(...numericNumbers) + 1);
 }
 
 export function CreateOrderForm({
@@ -24,9 +46,13 @@ export function CreateOrderForm({
     register,
     handleSubmit,
     setValue,
-    formState: { errors },
+    getValues,
+    formState: { errors, dirtyFields },
   } = useForm<CreateOrderFormValues>({
     resolver: zodResolver(createOrderSchema),
+    defaultValues: {
+      plannedIssueAt: getLocalDateTimePlusDays(14),
+    },
   });
 
   const {
@@ -34,6 +60,18 @@ export function CreateOrderForm({
     isLoading: isCustomersLoading,
     isError: isCustomersError,
   } = useCustomers();
+  const { data: orders = [] } = useOrders();
+
+  useEffect(() => {
+    if (dirtyFields.number || getValues("number")) {
+      return;
+    }
+
+    const nextNumber = getNextOrderNumber(orders.map((order) => order.number));
+    if (nextNumber) {
+      setValue("number", nextNumber, { shouldValidate: true });
+    }
+  }, [dirtyFields.number, getValues, orders, setValue]);
 
   const createCustomerMutation = useCreateCustomer({
     onSuccess: (customer) => {
