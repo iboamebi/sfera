@@ -46,6 +46,22 @@ def list_devices(
     return service.list()
 
 
+@router.get(
+    "/{device_id}",
+    response_model=DeviceRead,
+)
+def get_device(
+    device_id: UUID,
+    service: DeviceApplicationService = Depends(
+        get_device_service,
+    ),
+):
+    try:
+        return service.get(device_id)
+    except DeviceNotFoundApplicationError:
+        raise HTTPException(status_code=404, detail="Device not found") from None
+
+
 @router.post(
     "/",
     response_model=DeviceRead,
@@ -88,7 +104,7 @@ def update_device(
         return service.update(
             UpdateDeviceCommand(
                 device_id=device_id,
-                **data.model_dump(),
+                **data.model_dump(exclude_unset=True),
             ),
         )
 
