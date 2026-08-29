@@ -8,6 +8,7 @@ export const createOrderSchema = z.object({
     .regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/)
     .optional(),
   comment: z.string().trim().optional(),
+  instrumentIds: z.array(z.string().uuid()),
 });
 
 export type CreateOrderSchema = z.infer<typeof createOrderSchema>;
