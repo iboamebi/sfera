@@ -34,6 +34,7 @@ from app.core.dependencies.services import (
     get_order_read_service,
     get_order_service,
 )
+from app.domains.order.value_objects.order_item_operation import OrderItemOperation
 from app.domains.user.entities.user import User
 from app.schemas.order import (
     OrderCreate,
@@ -51,6 +52,7 @@ class OrderItemCreate(BaseModel):
     """Request schema for adding an order item."""
 
     instrument_id: UUID | None = None
+    requested_operations: set[OrderItemOperation] = set()
 
 
 @router.post(
@@ -106,6 +108,7 @@ def add_order_item(
         AddOrderItemCommand(
             order_id=order_id,
             instrument_id=data.instrument_id,
+            requested_operations=frozenset(data.requested_operations),
         ),
         user,
     )
