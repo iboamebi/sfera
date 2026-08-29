@@ -15,11 +15,11 @@ export function OrderActions({ order }: OrderActionsProps) {
   const hasItems = order.items.length > 0;
 
   const mutation = useRegisterOrder({
-    onSuccess: (updatedOrder) => {
-      queryClient.setQueryData(
-        ["orders", updatedOrder.id],
-        updatedOrder,
-      );
+    onSuccess: async (updatedOrder) => {
+      queryClient.setQueryData(["orders", updatedOrder.id], updatedOrder);
+      await queryClient.invalidateQueries({
+        queryKey: ["orders", updatedOrder.id],
+      });
     },
   });
 
