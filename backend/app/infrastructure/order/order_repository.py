@@ -78,8 +78,8 @@ class OrderRepositorySQLAlchemy(OrderRepository):
         self,
         order_id: UUID,
         item_id: UUID,
-    ) -> bool:
-        """Delete an order item and renumber remaining items."""
+    ) -> None:
+        """Persist removal of an order item and renumber remaining items."""
 
         item = (
             self.session.query(ORMOrderItem)
@@ -91,7 +91,7 @@ class OrderRepositorySQLAlchemy(OrderRepository):
         )
 
         if item is None:
-            return False
+            return
 
         self.session.delete(item)
         self.session.flush()
@@ -107,7 +107,6 @@ class OrderRepositorySQLAlchemy(OrderRepository):
             remaining_item.line_number = line_number
 
         self.session.flush()
-        return True
 
     def save(
         self,
