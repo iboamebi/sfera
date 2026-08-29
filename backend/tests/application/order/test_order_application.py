@@ -3,7 +3,7 @@ Tests for Order application service.
 """
 
 from datetime import UTC, datetime
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 import pytest
 
@@ -31,11 +31,21 @@ from app.shared.unit_of_work.unit_of_work import UnitOfWork
 
 
 class FakeUnitOfWork(UnitOfWork):
+    def __init__(self) -> None:
+        self.registered_operation_ids: list[UUID | None] = []
+
     def commit(self) -> None:
         pass
 
     def rollback(self) -> None:
         pass
+
+    def register_aggregate(
+        self,
+        aggregate: object,
+        operation_id: UUID | None = None,
+    ) -> None:
+        self.registered_operation_ids.append(operation_id)
 
 
 class FakeOrderRepository(OrderRepository):
@@ -63,9 +73,10 @@ def make_operator() -> User:
 
 def test_create_register_order_flow():
     repository = FakeOrderRepository()
+    uow = FakeUnitOfWork()
     service = OrderApplicationService(
         repository,
-        FakeUnitOfWork(),
+        uow,
     )
 
     customer_id = uuid4()
@@ -106,6 +117,8 @@ def test_create_register_order_flow():
     assert len(order.items) == 1
     assert order.items[0].id is not None
     assert order.status.value == "REGISTERED"
+    assert len(uow.registered_operation_ids) == 1
+    assert isinstance(uow.registered_operation_ids[0], UUID)
 
 
 def test_create_order_rejects_unauthorized_user():
