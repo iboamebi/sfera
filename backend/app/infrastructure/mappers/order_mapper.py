@@ -30,6 +30,7 @@ class OrderMapper(BaseMapper[Order, OrderModel]):
             items=[
                 OrderItem(
                     id=item.id,
+                    instrument_type_id=item.instrument_type_id,
                     instrument_id=item.instrument_id,
                     comment=item.customer_comment,
                     requested_operations={
@@ -59,6 +60,7 @@ class OrderMapper(BaseMapper[Order, OrderModel]):
         for line_number, item in enumerate(entity.items, start=1):
             model.order_items.append(
                 OrderItemModel(
+                    instrument_type_id=item.instrument_type_id,
                     instrument_id=item.instrument_id,
                     line_number=line_number,
                     customer_comment=item.comment,
