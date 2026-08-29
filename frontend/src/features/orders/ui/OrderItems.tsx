@@ -34,7 +34,7 @@ export function OrderItems({ items }: OrderItemsProps) {
               {item.serialNumber ?? "—"}
             </Typography>
 
-            <Stack direction="row" flexWrap="wrap" gap={0.5}>
+            <Stack direction="row" gap={0.5} sx={{ flexWrap: "wrap" }}>
               {item.requestedOperations.map((operation) => (
                 <Chip
                   key={operation}
