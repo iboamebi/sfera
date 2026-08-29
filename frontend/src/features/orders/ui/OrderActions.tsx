@@ -1,33 +1,40 @@
-import { Stack } from "@mui/material";
+import { Alert, Stack } from "@mui/material";
 import { useQueryClient } from "@tanstack/react-query";
 
+import type { OrderRead } from "../model/types";
 import { useRegisterOrder } from "../register-order/model/useRegisterOrder";
 import { RegisterOrderButton } from "../register-order/ui/RegisterOrderButton";
 import { RegisterOrderError } from "../register-order/ui/RegisterOrderError";
 
 interface OrderActionsProps {
-  orderId: string;
+  order: OrderRead;
 }
 
-export function OrderActions({
-  orderId,
-}: OrderActionsProps) {
+export function OrderActions({ order }: OrderActionsProps) {
   const queryClient = useQueryClient();
+  const hasItems = order.items.length > 0;
 
   const mutation = useRegisterOrder({
-    onSuccess: (order) => {
+    onSuccess: (updatedOrder) => {
       queryClient.setQueryData(
-        ["orders", orderId],
-        order,
+        ["orders", updatedOrder.id],
+        updatedOrder,
       );
     },
   });
 
   return (
     <Stack spacing={1}>
+      {!hasItems && (
+        <Alert severity="warning">
+          Добавьте хотя бы одну позицию перед регистрацией заказа.
+        </Alert>
+      )}
+
       <RegisterOrderButton
-        onClick={() => mutation.mutate(orderId)}
+        onClick={() => mutation.mutate(order.id)}
         isPending={mutation.isPending}
+        disabled={!hasItems}
       />
 
       {mutation.isError && <RegisterOrderError />}
