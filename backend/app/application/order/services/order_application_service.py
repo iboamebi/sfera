@@ -99,6 +99,7 @@ class OrderApplicationService:
                 OrderItem(
                     id=uuid4(),
                     instrument_id=command.instrument_id,
+                    requested_operations=set(command.requested_operations),
                 )
             )
 
