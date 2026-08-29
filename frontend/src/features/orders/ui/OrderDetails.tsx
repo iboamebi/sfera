@@ -140,7 +140,7 @@ export function OrderDetails({ order }: OrderDetailsProps) {
               items={order.items}
               deletingItemId={
                 deleteOrderItemMutation.isPending
-                  ? deleteOrderItemMutation.variables
+                  ? deleteOrderItemMutation.variables ?? null
                   : null
               }
               onDelete={
