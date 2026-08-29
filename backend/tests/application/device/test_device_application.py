@@ -5,6 +5,7 @@ import pytest
 from app.application.device.commands.connect_device import ConnectDeviceCommand
 from app.application.device.commands.create_device import CreateDeviceCommand
 from app.application.device.commands.disconnect_device import DisconnectDeviceCommand
+from app.application.device.commands.update_device import UpdateDeviceCommand
 from app.application.device.exceptions import (
     InstrumentTypeNotFoundApplicationError,
 )
@@ -161,6 +162,65 @@ def test_device_create_fails_when_instrument_type_not_found():
 
     assert not uow.committed
     assert uow.rolled_back
+
+
+def test_device_update():
+    old_type = InstrumentType(
+        id=uuid4(),
+        name="Pressure gauge",
+    )
+    new_type = InstrumentType(
+        id=uuid4(),
+        name="Digital pressure gauge",
+    )
+    device = Device(
+        id=uuid4(),
+        instrument_type_id=old_type.id,
+        serial_number=SerialNumber("SN-001"),
+    )
+    repository = FakeDeviceRepository(device)
+    instrument_type_repository = FakeInstrumentTypeRepository(old_type)
+
+    def get_instrument_type(instrument_type_id):
+        if instrument_type_id == old_type.id:
+            return old_type
+        if instrument_type_id == new_type.id:
+            return new_type
+        return None
+
+    instrument_type_repository.get = get_instrument_type
+    uow = FakeUnitOfWork()
+    service = DeviceApplicationService(
+        repository,
+        instrument_type_repository,
+        uow,
+    )
+
+    updated = service.update(
+        UpdateDeviceCommand(
+            device_id=device.id,
+            instrument_type_id=new_type.id,
+            serial_number="SN-002",
+            registry_number="REG-12",
+            modification="M-2",
+            factory_number="F-3",
+            manufacture_year=2024,
+            inventory_number="INV-4",
+            comment="Updated card",
+        ),
+    )
+
+    assert updated.instrument_type_id == new_type.id
+    assert updated.serial_number.value == "SN-002"
+    assert updated.registry_number == "REG-12"
+    assert updated.modification == "M-2"
+    assert updated.factory_number == "F-3"
+    assert updated.manufacture_year == 2024
+    assert updated.inventory_number == "INV-4"
+    assert updated.comment == "Updated card"
+    assert repository.device is updated
+    assert uow.committed
+    assert not uow.rolled_back
 
 
 def test_device_connect_disconnect_flow():
