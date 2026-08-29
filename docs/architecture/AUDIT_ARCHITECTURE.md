@@ -147,19 +147,21 @@ This decision does not introduce:
 
 ## Current Code Evidence
 
-The current backend already contains:
+The current backend contains:
 
 ```text
-app/shared/events/domain_event.py
+app/application/context/operation_context.py
 ```
 
-with a generated `event_id` and `occurred_at`.
+with `operation_id` and optional `actor_id`.
 
-The current Application layer contains Commands and Application Services, but no `OperationContext` implementation.
+`OrderApplicationService.register()` creates an `OperationContext` at the Application boundary using the authenticated user's id and passes its `operation_id` to the Unit of Work.
+
+The Unit of Work correlates collected `DomainEvent` instances with that `operation_id` after the transaction commit. The event's existing `event_id` and `occurred_at` remain unchanged.
 
 The current authentication flow provides the authenticated user through the existing session/current-user services.
 
-Therefore the next implementation step is to introduce the Application operation context without changing existing Domain Event identity semantics.
+The current stage establishes operation-to-event correlation for the Order registration event. Persistent audit records and broader use-case propagation are separate follow-up stages.
 
 ---
 
