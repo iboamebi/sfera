@@ -6,6 +6,7 @@ from datetime import UTC, datetime
 from uuid import UUID, uuid4
 
 from app.application.authorization.authorization import require_role
+from app.application.context.operation_context import OperationContext
 from app.application.order.commands.add_order_item import (
     AddOrderItemCommand,
 )
@@ -131,12 +132,20 @@ class OrderApplicationService:
     ) -> Order:
         require_role(user, UserRole.OPERATOR, UserRole.ADMIN)
 
+        operation_context = OperationContext(
+            operation_id=uuid4(),
+            actor_id=user.id,
+        )
+
         with self._uow:
             order = self.get(command.order_id)
 
             order.register()
 
-            self._uow.register_aggregate(order)
+            self._uow.register_aggregate(
+                order,
+                operation_context.operation_id,
+            )
 
             self._repository.save(order)
 
