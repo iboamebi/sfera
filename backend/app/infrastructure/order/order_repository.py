@@ -10,8 +10,12 @@ from app.domains.order.entities.order import Order as DomainOrder
 from app.domains.order.repositories.order_repository import (
     OrderRepository,
 )
+from app.domains.order.value_objects.order_status import (
+    CONFLICTING_INSTRUMENT_ORDER_STATUSES,
+)
 from app.infrastructure.mappers.order_mapper import OrderMapper
 from app.models.order import Order as ORMOrder
+from app.models.order_item import OrderItem as ORMOrderItem
 
 
 class OrderRepositorySQLAlchemy(OrderRepository):
@@ -45,6 +49,30 @@ class OrderRepositorySQLAlchemy(OrderRepository):
         models = self.session.query(ORMOrder).all()
 
         return [self.mapper.to_domain(model) for model in models]
+
+    def has_conflicting_order_for_instrument(
+        self,
+        instrument_id: UUID,
+        exclude_order_id: UUID,
+    ) -> bool:
+        """Check whether an instrument belongs to another active order."""
+
+        return (
+            self.session.query(ORMOrderItem)
+            .join(ORMOrder)
+            .filter(
+                ORMOrderItem.instrument_id == instrument_id,
+                ORMOrder.id != exclude_order_id,
+                ORMOrder.status.in_(
+                    [
+                        status.value
+                        for status in CONFLICTING_INSTRUMENT_ORDER_STATUSES
+                    ]
+                ),
+            )
+            .first()
+            is not None
+        )
 
     def save(
         self,
