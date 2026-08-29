@@ -3,6 +3,7 @@ Unit of Work abstraction.
 """
 
 from abc import ABC, abstractmethod
+from uuid import UUID
 
 
 class UnitOfWork(ABC):
@@ -32,5 +33,10 @@ class UnitOfWork(ABC):
         """Rollback transaction."""
         pass
 
-    def register_aggregate(self, aggregate: object) -> None:
+    def register_aggregate(
+        self,
+        aggregate: object,
+        operation_id: UUID | None = None,
+    ) -> None:
+        """Register aggregate and its operation correlation metadata."""
         pass
