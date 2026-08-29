@@ -5,7 +5,6 @@ Import all models for SQLAlchemy metadata discovery.
 # ruff: noqa: F401
 
 from app.models.arshin_export import ArshinExport
-from app.models.audit_log import AuditLog
 from app.models.auth_session import AuthSession
 from app.models.customer import Customer
 from app.models.diagnostic import Diagnostic
