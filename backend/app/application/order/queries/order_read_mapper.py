@@ -32,6 +32,7 @@ class OrderReadMapper:
                     instrument_type_name=item.instrument_type_name,
                     serial_number=item.serial_number,
                     comment=item.comment,
+                    requested_operations=item.requested_operations,
                 )
                 for item in model.items
             ],
