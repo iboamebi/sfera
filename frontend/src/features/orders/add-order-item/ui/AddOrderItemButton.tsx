@@ -1,13 +1,29 @@
 import { useState } from "react";
 
-import { Button, Stack } from "@mui/material";
+import {
+  Button,
+  Checkbox,
+  FormControlLabel,
+  Stack,
+} from "@mui/material";
 
 import { useCreateDevice } from "../../../devices/model/useCreateDevice";
 import { CreateDeviceForm } from "../../../devices/ui/CreateDeviceForm";
 import { useCreateInstrumentType } from "../../../instrument-type/model/useCreateInstrumentType";
 import { CreateInstrumentTypeForm } from "../../../instrument-type/ui/CreateInstrumentTypeForm";
+import type { OrderItemOperation } from "../../model/types";
 import { useAddOrderItem } from "../model/useAddOrderItem";
 import { DeviceSelector } from "./DeviceSelector";
+
+const OPERATION_OPTIONS: Array<{
+  value: OrderItemOperation;
+  label: string;
+}> = [
+  { value: "verification", label: "Поверка" },
+  { value: "diagnostic", label: "Диагностика" },
+  { value: "repair", label: "Ремонт" },
+  { value: "sale", label: "Продажа" },
+];
 
 interface AddOrderItemButtonProps {
   orderId: string;
@@ -16,6 +32,9 @@ interface AddOrderItemButtonProps {
 export function AddOrderItemButton({ orderId }: AddOrderItemButtonProps) {
   const [deviceId, setDeviceId] = useState("");
   const [instrumentTypeId, setInstrumentTypeId] = useState("");
+  const [requestedOperations, setRequestedOperations] = useState<
+    OrderItemOperation[]
+  >(["verification"]);
   const [isCreateDeviceOpen, setIsCreateDeviceOpen] = useState(false);
   const [isCreateInstrumentTypeOpen, setIsCreateInstrumentTypeOpen] =
     useState(false);
@@ -23,14 +42,31 @@ export function AddOrderItemButton({ orderId }: AddOrderItemButtonProps) {
   const createDeviceMutation = useCreateDevice();
   const createInstrumentTypeMutation = useCreateInstrumentType();
 
+  const handleOperationChange = (operation: OrderItemOperation) => {
+    setRequestedOperations((current) =>
+      current.includes(operation)
+        ? current.filter((value) => value !== operation)
+        : [...current, operation],
+    );
+  };
+
   const handleAdd = () => {
     if (!deviceId) {
       return;
     }
 
-    addOrderItemMutation.mutate(deviceId, {
-      onSuccess: () => setDeviceId(""),
-    });
+    addOrderItemMutation.mutate(
+      {
+        instrumentId: deviceId,
+        requestedOperations,
+      },
+      {
+        onSuccess: () => {
+          setDeviceId("");
+          setRequestedOperations(["verification"]);
+        },
+      },
+    );
   };
 
   const handleCreateDevice = (data: {
@@ -77,20 +113,37 @@ export function AddOrderItemButton({ orderId }: AddOrderItemButtonProps) {
   }
 
   return (
-    <Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
-      <DeviceSelector
-        value={deviceId}
-        onChange={setDeviceId}
-        onCreateDevice={() => setIsCreateDeviceOpen(true)}
-      />
+    <Stack spacing={1}>
+      <Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
+        <DeviceSelector
+          value={deviceId}
+          onChange={setDeviceId}
+          onCreateDevice={() => setIsCreateDeviceOpen(true)}
+        />
 
-      <Button
-        disabled={!deviceId || addOrderItemMutation.isPending}
-        onClick={handleAdd}
-        variant="outlined"
-      >
-        {addOrderItemMutation.isPending ? "Добавление…" : "Добавить позицию"}
-      </Button>
+        <Button
+          disabled={!deviceId || addOrderItemMutation.isPending}
+          onClick={handleAdd}
+          variant="outlined"
+        >
+          {addOrderItemMutation.isPending ? "Добавление…" : "Добавить позицию"}
+        </Button>
+      </Stack>
+
+      <Stack direction="row" spacing={1} flexWrap="wrap">
+        {OPERATION_OPTIONS.map((operation) => (
+          <FormControlLabel
+            key={operation.value}
+            control={
+              <Checkbox
+                checked={requestedOperations.includes(operation.value)}
+                onChange={() => handleOperationChange(operation.value)}
+              />
+            }
+            label={operation.label}
+          />
+        ))}
+      </Stack>
     </Stack>
   );
 }
