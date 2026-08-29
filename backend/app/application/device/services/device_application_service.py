@@ -84,17 +84,18 @@ class DeviceApplicationService:
         self,
         command: UpdateDeviceCommand,
     ) -> Device:
-        """Update device card details."""
+        """Update supplied device card details."""
 
         with self._uow:
             device = self.get(command.device_id)
 
-            instrument_type = self._instrument_type_repository.get(
-                command.instrument_type_id,
-            )
+            if command.instrument_type_id is not None:
+                instrument_type = self._instrument_type_repository.get(
+                    command.instrument_type_id,
+                )
 
-            if instrument_type is None:
-                raise InstrumentTypeNotFoundApplicationError
+                if instrument_type is None:
+                    raise InstrumentTypeNotFoundApplicationError
 
             device.update_details(
                 instrument_type_id=command.instrument_type_id,
