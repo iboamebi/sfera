@@ -19,6 +19,7 @@ class OrderItemReadData:
     instrument_type_id: UUID | None
     instrument_type_name: str | None
     instrument_type_model: str | None
+    instrument_type_measurement_type: str | None
     serial_number: str | None
     modification: str | None
     comment: str | None
