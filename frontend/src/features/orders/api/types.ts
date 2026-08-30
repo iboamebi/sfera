@@ -8,7 +8,11 @@ export interface OrderItemApiDto {
   instrument_type_model: string | null;
   instrument_type_measurement_type: string | null;
   serial_number: string | null;
+  registry_number: string | null;
   modification: string | null;
+  factory_number: string | null;
+  manufacture_year: number | null;
+  inventory_number: string | null;
   comment: string | null;
   requested_operations: OrderItemOperation[];
 }
