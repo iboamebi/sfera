@@ -12,7 +12,11 @@ export interface OrderItem {
   instrumentTypeModel: string | null;
   instrumentTypeMeasurementType: string | null;
   serialNumber: string | null;
+  registryNumber: string | null;
   modification: string | null;
+  factoryNumber: string | null;
+  manufactureYear: number | null;
+  inventoryNumber: string | null;
   comment: string | null;
   requestedOperations: OrderItemOperation[];
 }
