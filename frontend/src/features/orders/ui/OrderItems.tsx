@@ -135,7 +135,9 @@ export function OrderItems({
               </Stack>
             </Stack>
             <Typography color="text.secondary" variant="body2">
-              {item.instrumentTypeName ?? "СИ"}: {item.serialNumber ?? "—"}
+              {item.instrumentTypeName ?? "СИ"}
+              {item.instrumentTypeModel ? `, ${item.instrumentTypeModel}` : ""}
+              : {item.serialNumber ?? "—"}
             </Typography>
             {item.modification && (
               <Typography color="text.secondary" variant="body2">Модификация: {item.modification}</Typography>
@@ -155,7 +157,10 @@ export function OrderItems({
         <DialogTitle>{editingItem?.instrumentId ? "Редактирование СИ" : "Идентификация СИ"}</DialogTitle>
         <DialogContent>
           <Stack spacing={2} sx={{ pt: 1 }}>
-            <Typography color="text.secondary" variant="body2">{editingItem?.instrumentTypeName ?? "СИ"}</Typography>
+            <Typography variant="body2">
+              {editingItem?.instrumentTypeName ?? "СИ"}
+              {editingItem?.instrumentTypeModel ? `, ${editingItem.instrumentTypeModel}` : ""}
+            </Typography>
 
             {!editingItem?.instrumentId && (
               <TextField
