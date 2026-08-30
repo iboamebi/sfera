@@ -41,7 +41,7 @@ export function OrderItems({
   const updateDeviceMutation = useUpdateDevice();
 
   const openEditor = (item: OrderItem) => {
-    if (!item.instrumentId || !item.instrumentTypeId) {
+    if (!item.instrumentId) {
       return;
     }
 
@@ -100,7 +100,7 @@ export function OrderItems({
               <Typography variant="body1">Позиция {index + 1}</Typography>
 
               <Stack direction="row" spacing={1}>
-                {item.instrumentId && item.instrumentTypeId && (
+                {item.instrumentId && (
                   <Button size="small" onClick={() => openEditor(item)}>
                     Редактировать СИ
                   </Button>
@@ -165,6 +165,12 @@ export function OrderItems({
               fullWidth
             />
 
+            {!editingItem?.instrumentTypeId && (
+              <Alert severity="warning">
+                Для этой позиции не указан тип СИ, поэтому сохранить карточку пока нельзя.
+              </Alert>
+            )}
+
             {updateDeviceMutation.isError && (
               <Alert severity="error">
                 Не удалось сохранить карточку СИ.
@@ -179,7 +185,11 @@ export function OrderItems({
           <Button
             variant="contained"
             onClick={saveDevice}
-            disabled={!serialNumber.trim() || updateDeviceMutation.isPending}
+            disabled={
+              !serialNumber.trim() ||
+              !editingItem?.instrumentTypeId ||
+              updateDeviceMutation.isPending
+            }
           >
             Сохранить
           </Button>
