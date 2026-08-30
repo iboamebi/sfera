@@ -27,6 +27,7 @@ DDD + Clean Architecture
 - Clean Architecture;
 - Application Service Pattern;
 - Repository Pattern;
+- Unit of Work;
 - Domain Events;
 - Dependency Injection;
 - явные границы бизнес-контекстов.
@@ -58,7 +59,8 @@ docs/
 - валидация запросов;
 - преобразование DTO;
 - Dependency Injection;
-- вызов Application Services.
+- вызов Application Services/use cases;
+- преобразование Application errors в HTTP responses.
 
 Расположение:
 
@@ -66,7 +68,7 @@ docs/
 backend/app/api/
 ```
 
-API не содержит бизнес-логики и не работает с БД напрямую.
+API не содержит бизнес-логики, не обращается к Repository напрямую и не работает с БД напрямую.
 
 ---
 
@@ -77,14 +79,19 @@ API не содержит бизнес-логики и не работает с 
 - выполнение бизнес-сценариев;
 - координация действий;
 - Commands и Use Cases;
-- управление Unit of Work;
-- передача контекста выполнения операции.
+- управление границами Unit of Work;
+- вызов Domain behavior;
+- взаимодействие с Repository Interfaces;
+- передача контекста выполнения операции;
+- координация Domain Events в соответствии с Application flow.
 
 Расположение:
 
 ```text
 backend/app/application/
 ```
+
+Application не зависит от Infrastructure implementations и не содержит persistence implementation.
 
 ---
 
@@ -227,6 +234,51 @@ Next stage
 
 ---
 
+# Migration Rules
+
+Миграция существующего функционала выполняется поэтапно:
+
+```text
+Analyze
+    ↓
+Domain
+    ↓
+Application
+    ↓
+Repository Interface
+    ↓
+Infrastructure Repository
+    ↓
+API
+    ↓
+Tests
+    ↓
+Legacy removal / archive
+    ↓
+Documentation
+    ↓
+Checkpoint
+```
+
+Правила:
+
+- миграция начинается с аудита фактического кода;
+- новый use case реализуется через Application Service/use case и Repository abstraction;
+- бизнес-правила переносятся в Domain;
+- SQLAlchemy и ORM остаются в Infrastructure;
+- API не получает прямой доступ к Repository или Database;
+- Legacy CRUD не используется как архитектурный слой нового use case;
+- legacy удаляется или архивируется только после переноса логики и валидации;
+- feature migration и architectural cleanup не смешиваются без необходимости для корректности.
+
+Контроль статуса миграции по модулям ведётся в:
+
+```text
+docs/architecture/MIGRATION_MATRIX.md
+```
+
+---
+
 # Architecture Rules
 
 ## Rule 1 — Dependency Direction
@@ -241,21 +293,103 @@ Domain
 
 Infrastructure реализует необходимые интерфейсы и подключается через Dependency Injection.
 
+Запрещено:
+
+```text
+Domain
+ ↓
+Infrastructure
+```
+
+```text
+Application
+ ↓
+Infrastructure
+```
+
+```text
+Application
+ ↓
+CRUD
+```
+
+```text
+Router
+ ↓
+Repository
+```
+
+```text
+Router
+ ↓
+Database
+```
+
+---
+
 ## Rule 2 — Business Logic
 
 Бизнес-правила находятся в Domain. Application координирует use cases. API отвечает за транспорт.
 
+---
+
 ## Rule 3 — Repository Boundary
 
-Repository Interface находится в Domain/Application boundary согласно конкретному use case; SQLAlchemy implementation находится в Infrastructure.
+Repository Interface является контрактом доступа Application к данным и определяется в Domain/соответствующем domain contract boundary.
 
-## Rule 4 — Audit Boundary
+SQLAlchemy Repository implementation находится в Infrastructure.
+
+Repository не изменяет бизнес-правила и не принимает бизнес-решения.
+
+---
+
+## Rule 4 — Unit of Work
+
+Application Service определяет транзакционную границу use case и координирует Unit of Work.
+
+Изменения, требующие транзакционной целостности, выполняются в рамках одной транзакционной границы.
+
+Unit of Work отвечает за управление транзакцией и persistence coordination, но не содержит бизнес-правила.
+
+---
+
+## Rule 5 — Audit Boundary
 
 Audit operation context является Application concern и не становится Domain Entity или бизнес-правилом.
 
-## Rule 5 — History
+`operation_id` используется для корреляции операций и связанных Domain Events.
+
+---
+
+## Rule 6 — DTO and ORM Boundary
+
+API DTO не являются Domain entities или ORM models.
+
+Правила:
+
+- API преобразует HTTP DTO в Application Commands/queries;
+- Application работает с Application/Domain contracts;
+- Infrastructure выполняет mapping между ORM models и Domain entities;
+- ORM models не импортируются в Domain;
+- SQLAlchemy не импортируется в Domain или Application.
+
+---
+
+## Rule 7 — Legacy Boundary
+
+Legacy CRUD не является частью новой архитектуры.
+
+Новые use cases не должны зависеть от legacy CRUD или возвращать legacy CRUD abstractions.
+
+Legacy код может использоваться только как источник информации при миграции существующего функционала.
+
+---
+
+## Rule 8 — History
 
 Для значимой бизнес-истории не следует заменять исторические изменения одним destructive update. Исправления должны оставлять необходимую трассируемость.
+
+Для соответствующих сущностей используется логическое архивирование в соответствии с бизнес-требованиями.
 
 ---
 
@@ -271,6 +405,8 @@ Order operation-to-event correlation  COMPLETE
 Persistent Audit Trail                NEXT
 Frontend architecture                 IN PROGRESS
 ```
+
+Статус миграции отдельных модулей является частью `MIGRATION_MATRIX.md` и не дублируется здесь.
 
 ---
 
