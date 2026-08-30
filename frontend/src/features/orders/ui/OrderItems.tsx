@@ -41,7 +41,7 @@ export function OrderItems({
   const updateDeviceMutation = useUpdateDevice();
 
   const openEditor = (item: OrderItem) => {
-    if (!item.instrumentId) {
+    if (!item.instrumentId || !item.instrumentTypeId) {
       return;
     }
 
@@ -58,17 +58,25 @@ export function OrderItems({
   };
 
   const saveDevice = () => {
-    if (!editingItem?.instrumentId || !serialNumber.trim()) {
+    if (
+      !editingItem?.instrumentId ||
+      !editingItem.instrumentTypeId ||
+      !serialNumber.trim()
+    ) {
       return;
     }
 
-    updateDeviceMutation.mutate({
-      deviceId: editingItem.instrumentId,
-      serialNumber: serialNumber.trim(),
-      modification: modification.trim() || null,
-    }, {
-      onSuccess: () => setEditingItem(null),
-    });
+    updateDeviceMutation.mutate(
+      {
+        deviceId: editingItem.instrumentId,
+        instrumentTypeId: editingItem.instrumentTypeId,
+        serialNumber: serialNumber.trim(),
+        modification: modification.trim() || null,
+      },
+      {
+        onSuccess: () => setEditingItem(null),
+      },
+    );
   };
 
   return (
@@ -92,11 +100,8 @@ export function OrderItems({
               <Typography variant="body1">Позиция {index + 1}</Typography>
 
               <Stack direction="row" spacing={1}>
-                {item.instrumentId && (
-                  <Button
-                    size="small"
-                    onClick={() => openEditor(item)}
-                  >
+                {item.instrumentId && item.instrumentTypeId && (
+                  <Button size="small" onClick={() => openEditor(item)}>
                     Редактировать СИ
                   </Button>
                 )}
@@ -120,10 +125,7 @@ export function OrderItems({
               </Typography>
             )}
 
-            <Stack
-              direction="row"
-              sx={{ flexWrap: "wrap", gap: 0.5 }}
-            >
+            <Stack direction="row" sx={{ flexWrap: "wrap", gap: 0.5 }}>
               {item.requestedOperations.map((operation) => (
                 <Chip
                   key={operation}
