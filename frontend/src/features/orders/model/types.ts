@@ -9,6 +9,7 @@ export interface OrderItem {
   instrumentId: string | null;
   instrumentTypeId: string | null;
   instrumentTypeName: string | null;
+  instrumentTypeModel: string | null;
   serialNumber: string | null;
   modification: string | null;
   comment: string | null;
