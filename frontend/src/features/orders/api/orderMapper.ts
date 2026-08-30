@@ -18,6 +18,7 @@ export function mapOrder(dto: OrderApiDto): OrderRead {
       instrumentTypeId: item.instrument_type_id,
       instrumentTypeName: item.instrument_type_name,
       instrumentTypeModel: item.instrument_type_model,
+      instrumentTypeMeasurementType: item.instrument_type_measurement_type,
       serialNumber: item.serial_number,
       modification: item.modification,
       comment: item.comment,
