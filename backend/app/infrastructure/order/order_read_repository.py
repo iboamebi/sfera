@@ -79,7 +79,11 @@ class OrderReadRepositorySQLAlchemy(OrderReadRepository):
                         else None
                     ),
                     serial_number=item.instrument.serial_number if item.instrument else None,
+                    registry_number=item.instrument.registry_number if item.instrument else None,
                     modification=item.instrument.modification if item.instrument else None,
+                    factory_number=item.instrument.factory_number if item.instrument else None,
+                    manufacture_year=item.instrument.manufacture_year if item.instrument else None,
+                    inventory_number=item.instrument.inventory_number if item.instrument else None,
                     comment=item.customer_comment,
                     requested_operations={
                         OrderItemOperation(operation)
