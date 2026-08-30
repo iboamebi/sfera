@@ -21,7 +21,11 @@ class OrderItemReadData:
     instrument_type_model: str | None
     instrument_type_measurement_type: str | None
     serial_number: str | None
+    registry_number: str | None
     modification: str | None
+    factory_number: str | None
+    manufacture_year: int | None
+    inventory_number: str | None
     comment: str | None
     requested_operations: set[OrderItemOperation]
 
