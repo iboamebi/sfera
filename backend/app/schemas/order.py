@@ -42,7 +42,11 @@ class OrderItemRead(BaseModel):
     instrument_type_model: str | None = None
     instrument_type_measurement_type: str | None = None
     serial_number: str | None = None
+    registry_number: str | None = None
     modification: str | None = None
+    factory_number: str | None = None
+    manufacture_year: int | None = None
+    inventory_number: str | None = None
     comment: str | None = None
     requested_operations: list[OrderItemOperation] = Field(default_factory=list)
 
