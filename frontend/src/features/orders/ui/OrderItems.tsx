@@ -1,48 +1,27 @@
-import {
-  Alert,
-  Button,
-  Chip,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Divider,
-  MenuItem,
-  Stack,
-  TextField,
-  Typography,
-} from "@mui/material";
-import { useEffect, useState } from "react";
+import { Alert, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, Divider, MenuItem, Stack, TextField, Typography } from "@mui/material";
+import { useMemo, useState } from "react";
 
-import { useCreateDevice } from "../../devices/model/useCreateDevice";
-import { useDevices } from "../../devices/model/useDevices";
-import { useUpdateDevice } from "../../devices/model/useUpdateDevice";
-import { DeleteOrderItemButton } from "../delete-order-item/ui/DeleteOrderItemButton";
+import { assignOrderItemInstrument } from "../api/assignOrderItemInstrument";
 import { useAssignOrderItemInstrument } from "../model/useAssignOrderItemInstrument";
-import type { OrderItem, OrderItemOperation } from "../model/types";
+import { useDevices } from "../../devices/model/useDevices";
+import { useCreateDevice } from "../../devices/model/useCreateDevice";
+import { useUpdateDevice } from "../../devices/model/useUpdateDevice";
+import type { Device } from "../../devices/model/types";
+import type { OrderItem } from "../model/types";
 
-interface OrderItemsProps {
-  items: OrderItem[];
-  orderId?: string;
-  deletingItemId?: string | null;
-  onDelete?: (itemId: string) => void;
-}
-
-const OPERATION_LABELS: Record<OrderItemOperation, string> = {
+const OPERATION_LABELS: Record<string, string> = {
   verification: "Поверка",
-  diagnostic: "Диагностика",
   repair: "Ремонт",
-  sale: "Продажа",
+  diagnostics: "Диагностика",
 };
 
-export function OrderItems({
-  items,
-  orderId = "",
-  deletingItemId = null,
-  onDelete,
-}: OrderItemsProps) {
+interface OrderItemsProps {
+  orderId: string;
+  items: OrderItem[];
+}
+
+export function OrderItems({ orderId, items }: OrderItemsProps) {
   const [editingItem, setEditingItem] = useState<OrderItem | null>(null);
-  const [selectedInstrumentId, setSelectedInstrumentId] = useState("");
   const [serialNumber, setSerialNumber] = useState("");
   const [registryNumber, setRegistryNumber] = useState("");
   const [modification, setModification] = useState("");
@@ -50,184 +29,98 @@ export function OrderItems({
   const [manufactureYear, setManufactureYear] = useState("");
   const [inventoryNumber, setInventoryNumber] = useState("");
   const [comment, setComment] = useState("");
-  const updateDeviceMutation = useUpdateDevice(orderId);
-  const createDeviceMutation = useCreateDevice();
-  const assignMutation = useAssignOrderItemInstrument(orderId);
+  const [selectedInstrumentId, setSelectedInstrumentId] = useState("");
+
   const devicesQuery = useDevices();
+  const createDeviceMutation = useCreateDevice();
+  const updateDeviceMutation = useUpdateDevice();
+  const assignMutation = useAssignOrderItemInstrument(orderId);
 
-  const resetDeviceFields = () => {
-    setSerialNumber("");
-    setRegistryNumber("");
-    setModification("");
-    setFactoryNumber("");
-    setManufactureYear("");
-    setInventoryNumber("");
-    setComment("");
-  };
-
-  const fillDeviceFields = (device: (typeof devicesQuery.data extends (infer T)[] | undefined ? T : never) | undefined) => {
-    setSerialNumber(device?.serialNumber ?? "");
-    setRegistryNumber(device?.registryNumber ?? "");
-    setModification(device?.modification ?? "");
-    setFactoryNumber(device?.factoryNumber ?? "");
-    setManufactureYear(device?.manufactureYear?.toString() ?? "");
-    setInventoryNumber(device?.inventoryNumber ?? "");
-    setComment(device?.comment ?? "");
-  };
+  const matchingDevices = useMemo<Device[]>(() => {
+    if (!editingItem?.instrumentTypeId) return [];
+    return (devicesQuery.data ?? []).filter(
+      (device) => device.instrumentTypeId === editingItem.instrumentTypeId,
+    );
+  }, [devicesQuery.data, editingItem?.instrumentTypeId]);
 
   const openEditor = (item: OrderItem) => {
     setEditingItem(item);
+    setSerialNumber(item.serialNumber ?? "");
+    setRegistryNumber(item.registryNumber ?? "");
+    setModification(item.modification ?? "");
+    setFactoryNumber(item.factoryNumber ?? "");
+    setManufactureYear(item.manufactureYear?.toString() ?? "");
+    setInventoryNumber(item.inventoryNumber ?? "");
+    setComment(item.comment ?? "");
     setSelectedInstrumentId(item.instrumentId ?? "");
-    resetDeviceFields();
-    const device = devicesQuery.data?.find((candidate) => candidate.id === item.instrumentId);
-    if (device) {
-      fillDeviceFields(device);
-    } else {
-      setSerialNumber(item.serialNumber ?? "");
-      setModification(item.modification ?? "");
-      setComment(item.comment ?? "");
-    }
-    updateDeviceMutation.reset();
-    createDeviceMutation.reset();
-    assignMutation.reset();
   };
 
-  useEffect(() => {
-    if (!editingItem?.instrumentId || !devicesQuery.data) {
-      return;
-    }
-
-    const device = devicesQuery.data.find((candidate) => candidate.id === editingItem.instrumentId);
-    if (device) {
-      fillDeviceFields(device);
-    }
-  }, [devicesQuery.data, editingItem]);
-
-  const closeEditor = () => {
-    if (!updateDeviceMutation.isPending && !createDeviceMutation.isPending && !assignMutation.isPending) {
-      setEditingItem(null);
-    }
-  };
+  const closeEditor = () => setEditingItem(null);
 
   const selectKnownDevice = (deviceId: string) => {
     setSelectedInstrumentId(deviceId);
-    if (!deviceId) {
-      resetDeviceFields();
-      return;
-    }
-
-    const device = devicesQuery.data?.find((candidate) => candidate.id === deviceId);
-    fillDeviceFields(device);
+    const device = matchingDevices.find((item) => item.id === deviceId);
+    if (!device) return;
+    setSerialNumber(device.serialNumber ?? "");
+    setRegistryNumber(device.registryNumber ?? "");
+    setModification(device.modification ?? "");
+    setFactoryNumber(device.factoryNumber ?? "");
+    setManufactureYear(device.manufactureYear?.toString() ?? "");
+    setInventoryNumber(device.inventoryNumber ?? "");
+    setComment(device.comment ?? "");
   };
 
-  const saveDevice = () => {
-    if (!editingItem?.instrumentTypeId || !serialNumber.trim()) {
-      return;
-    }
+  const saveDevice = async () => {
+    if (!editingItem?.instrumentTypeId) return;
 
-    const input = {
+    const payload = {
       instrumentTypeId: editingItem.instrumentTypeId,
       serialNumber: serialNumber.trim(),
       registryNumber: registryNumber.trim() || null,
       modification: modification.trim() || null,
       factoryNumber: factoryNumber.trim() || null,
-      manufactureYear: manufactureYear.trim() ? Number(manufactureYear) : null,
+      manufactureYear: manufactureYear ? Number(manufactureYear) : null,
       inventoryNumber: inventoryNumber.trim() || null,
       comment: comment.trim() || null,
     };
 
-    if (editingItem.instrumentId) {
-      updateDeviceMutation.mutate(
-        {
-          deviceId: editingItem.instrumentId,
-          ...input,
-        },
-        { onSuccess: () => setEditingItem(null) },
-      );
-      return;
-    }
-
     if (selectedInstrumentId) {
-      assignMutation.mutate(
-        { itemId: editingItem.id, instrumentId: selectedInstrumentId },
-        { onSuccess: () => setEditingItem(null) },
-      );
-      return;
+      await updateDeviceMutation.mutateAsync({ id: selectedInstrumentId, ...payload });
+      await assignMutation.mutateAsync({ orderItemId: editingItem.id, instrumentId: selectedInstrumentId });
+    } else {
+      const device = await createDeviceMutation.mutateAsync(payload);
+      await assignMutation.mutateAsync({ orderItemId: editingItem.id, instrumentId: device.id });
     }
 
-    createDeviceMutation.mutate(
-      {
-        instrumentTypeId: editingItem.instrumentTypeId,
-        serialNumber: serialNumber.trim(),
-      },
-      {
-        onSuccess: (device) => {
-          updateDeviceMutation.mutate(
-            {
-              deviceId: device.id,
-              ...input,
-            },
-            {
-              onSuccess: () => {
-                assignMutation.mutate(
-                  { itemId: editingItem.id, instrumentId: device.id },
-                  { onSuccess: () => setEditingItem(null) },
-                );
-              },
-            },
-          );
-        },
-      },
-    );
+    closeEditor();
   };
 
-  const matchingDevices = devicesQuery.data?.filter(
-    (device) => device.instrumentTypeId === editingItem?.instrumentTypeId,
-  ) ?? [];
-
   const isPending =
-    updateDeviceMutation.isPending || createDeviceMutation.isPending || assignMutation.isPending;
+    createDeviceMutation.isPending || updateDeviceMutation.isPending || assignMutation.isPending;
 
   return (
     <Stack spacing={2}>
-      <Typography variant="h6">Позиции заказа</Typography>
-      {items.length === 0 ? (
-        <Typography color="text.secondary" variant="body2">Позиции отсутствуют</Typography>
-      ) : (
-        items.map((item, index) => (
-          <Stack key={item.id} spacing={0.5}>
-            <Stack direction="row" sx={{ alignItems: "center", justifyContent: "space-between" }}>
-              <Typography variant="body1">Позиция {index + 1}</Typography>
-              <Stack direction="row" spacing={1}>
-                <Button size="small" onClick={() => openEditor(item)}>
-                  Редактировать СИ
-                </Button>
-                {onDelete && (
-                  <DeleteOrderItemButton
-                    isPending={deletingItemId === item.id}
-                    onClick={() => onDelete(item.id)}
-                  />
-                )}
-              </Stack>
-            </Stack>
-            <Typography color="text.secondary" variant="body2">
-              {item.instrumentTypeName ?? "СИ"}
-              {item.instrumentTypeModel ? `, ${item.instrumentTypeModel}` : ""}
-              : {item.serialNumber ?? "—"}
+      {items.map((item, index) => (
+        <Stack key={item.id} spacing={1}>
+          <Stack direction="row" justifyContent="space-between" alignItems="center">
+            <Typography variant="subtitle1">
+              {item.instrumentTypeName || "Позиция заказа"}
             </Typography>
-            {item.modification && (
-              <Typography color="text.secondary" variant="body2">Модификация: {item.modification}</Typography>
-            )}
-            <Stack direction="row" sx={{ flexWrap: "wrap", gap: 0.5 }}>
-              {item.requestedOperations.map((operation) => (
-                <Chip key={operation} label={OPERATION_LABELS[operation]} size="small" />
-              ))}
-            </Stack>
-            <Typography variant="body2">{item.comment || "—"}</Typography>
-            {index < items.length - 1 && <Divider sx={{ pt: 1 }} />}
+            <Button size="small" onClick={() => openEditor(item)}>
+              Редактировать
+            </Button>
           </Stack>
-        ))
-      )}
+          <Typography variant="body2">Заводской номер: {item.serialNumber || "—"}</Typography>
+          {item.modification && <Typography variant="body2">Модификация: {item.modification}</Typography>}
+          <Stack direction="row" sx={{ flexWrap: "wrap", gap: 0.5 }}>
+            {item.requestedOperations.map((operation) => (
+              <Chip key={operation} label={OPERATION_LABELS[operation] ?? operation} size="small" />
+            ))}
+          </Stack>
+          <Typography variant="body2">{item.comment || "—"}</Typography>
+          {index < items.length - 1 && <Divider sx={{ pt: 1 }} />}
+        </Stack>
+      ))}
 
       <Dialog open={Boolean(editingItem)} onClose={closeEditor} fullWidth maxWidth="sm">
         <DialogTitle>Редактирование карточки СИ</DialogTitle>
@@ -250,64 +143,15 @@ export function OrderItems({
               </TextField>
             )}
 
-            <TextField
-              label="Тип СИ"
-              value={editingItem?.instrumentTypeMeasurementType ?? ""}
-              InputProps={{ readOnly: true }}
-              fullWidth
-            />
-            <TextField
-              label="Наименование СИ"
-              value={editingItem?.instrumentTypeName ?? ""}
-              InputProps={{ readOnly: true }}
-              fullWidth
-            />
-            <TextField
-              label="Модификация"
-              value={modification}
-              onChange={(event) => setModification(event.target.value)}
-              fullWidth
-            />
-            <TextField
-              label="Заводской номер"
-              value={serialNumber}
-              onChange={(event) => setSerialNumber(event.target.value)}
-              required
-              fullWidth
-            />
-            <TextField
-              label="Регистрационный номер в Госреестре"
-              value={registryNumber}
-              onChange={(event) => setRegistryNumber(event.target.value)}
-              fullWidth
-            />
-            <TextField
-              label="Заводской номер изделия"
-              value={factoryNumber}
-              onChange={(event) => setFactoryNumber(event.target.value)}
-              fullWidth
-            />
-            <TextField
-              label="Год выпуска"
-              type="number"
-              value={manufactureYear}
-              onChange={(event) => setManufactureYear(event.target.value)}
-              fullWidth
-            />
-            <TextField
-              label="Инвентарный номер"
-              value={inventoryNumber}
-              onChange={(event) => setInventoryNumber(event.target.value)}
-              fullWidth
-            />
-            <TextField
-              label="Комментарий"
-              value={comment}
-              onChange={(event) => setComment(event.target.value)}
-              fullWidth
-              multiline
-              minRows={2}
-            />
+            <TextField label="Тип СИ" value={editingItem?.instrumentTypeMeasurementType ?? ""} slotProps={{ input: { readOnly: true } }} fullWidth />
+            <TextField label="Наименование СИ" value={editingItem?.instrumentTypeName ?? ""} slotProps={{ input: { readOnly: true } }} fullWidth />
+            <TextField label="Модификация" value={modification} onChange={(event) => setModification(event.target.value)} fullWidth />
+            <TextField label="Заводской номер" value={serialNumber} onChange={(event) => setSerialNumber(event.target.value)} required fullWidth />
+            <TextField label="Регистрационный номер" value={registryNumber} onChange={(event) => setRegistryNumber(event.target.value)} fullWidth />
+            <TextField label="Заводской номер изделия" value={factoryNumber} onChange={(event) => setFactoryNumber(event.target.value)} fullWidth />
+            <TextField label="Год выпуска" type="number" value={manufactureYear} onChange={(event) => setManufactureYear(event.target.value)} fullWidth />
+            <TextField label="Инвентарный номер" value={inventoryNumber} onChange={(event) => setInventoryNumber(event.target.value)} fullWidth />
+            <TextField label="Комментарий" value={comment} onChange={(event) => setComment(event.target.value)} fullWidth multiline minRows={2} />
 
             {devicesQuery.isError && !editingItem?.instrumentId && (
               <Alert severity="warning">Не удалось загрузить список известных СИ. Можно создать новое СИ.</Alert>
@@ -319,11 +163,7 @@ export function OrderItems({
         </DialogContent>
         <DialogActions>
           <Button onClick={closeEditor} disabled={isPending}>Отмена</Button>
-          <Button
-            variant="contained"
-            onClick={saveDevice}
-            disabled={(!selectedInstrumentId && !serialNumber.trim()) || !editingItem?.instrumentTypeId || isPending}
-          >
+          <Button variant="contained" onClick={saveDevice} disabled={(!selectedInstrumentId && !serialNumber.trim()) || !editingItem?.instrumentTypeId || isPending}>
             Сохранить
           </Button>
         </DialogActions>
