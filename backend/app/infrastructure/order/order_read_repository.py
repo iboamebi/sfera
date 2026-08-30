@@ -70,6 +70,14 @@ class OrderReadRepositorySQLAlchemy(OrderReadRepository):
                         if item.instrument_type
                         else None
                     ),
+                    instrument_type_measurement_type=(
+                        item.instrument.instrument_type.measurement_type
+                        if item.instrument
+                        and item.instrument.instrument_type
+                        else item.instrument_type.measurement_type
+                        if item.instrument_type
+                        else None
+                    ),
                     serial_number=item.instrument.serial_number if item.instrument else None,
                     modification=item.instrument.modification if item.instrument else None,
                     comment=item.customer_comment,
