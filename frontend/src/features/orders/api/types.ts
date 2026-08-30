@@ -5,6 +5,7 @@ export interface OrderItemApiDto {
   instrument_id: string | null;
   instrument_type_id: string | null;
   instrument_type_name: string | null;
+  instrument_type_model: string | null;
   serial_number: string | null;
   modification: string | null;
   comment: string | null;
