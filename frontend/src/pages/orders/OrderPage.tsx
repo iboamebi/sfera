@@ -1,4 +1,3 @@
-import { ArrowBack } from "@mui/icons-material";
 import { Button, Stack, Typography } from "@mui/material";
 import { useNavigate, useParams } from "react-router";
 
@@ -28,11 +27,10 @@ export function OrderPage() {
   return (
     <Stack spacing={2}>
       <Button
-        startIcon={<ArrowBack />}
         onClick={() => navigate("/orders")}
         sx={{ alignSelf: "flex-start" }}
       >
-        Назад к заказам
+        ← Назад к заказам
       </Button>
       <OrderDetails order={data} />
       <OrderActions order={data} />
