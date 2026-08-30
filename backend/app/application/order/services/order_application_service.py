@@ -81,12 +81,9 @@ class OrderApplicationService:
             order = self.get(order_id)
             if self._repository.has_conflicting_order_for_instrument(instrument_id, exclude_order_id=order.id):
                 raise InstrumentAlreadyInActiveOrderApplicationError
-            try:
-                order.assign_instrument(item_id, instrument_id)
-            except Exception as exc:
-                if str(exc) == "Order item not found":
-                    raise OrderItemNotFoundApplicationError from None
-                raise
+            if not any(item.id == item_id for item in order.items):
+                raise OrderItemNotFoundApplicationError
+            order.assign_instrument(item_id, instrument_id)
             self._repository.save(order)
         return order
 
