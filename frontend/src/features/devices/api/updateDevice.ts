@@ -6,8 +6,13 @@ import type { DeviceApiDto } from "./types";
 type UpdateDeviceInput = {
   deviceId: string;
   instrumentTypeId: string;
-  serialNumber?: string;
+  serialNumber: string;
+  registryNumber?: string | null;
   modification?: string | null;
+  factoryNumber?: string | null;
+  manufactureYear?: number | null;
+  inventoryNumber?: string | null;
+  comment?: string | null;
 };
 
 export async function updateDevice(
@@ -15,12 +20,13 @@ export async function updateDevice(
 ): Promise<DeviceRead> {
   const response = await http.put<DeviceApiDto>(`/devices/${input.deviceId}`, {
     instrument_type_id: input.instrumentTypeId,
-    ...(input.serialNumber !== undefined && {
-      serial_number: input.serialNumber,
-    }),
-    ...(input.modification !== undefined && {
-      modification: input.modification,
-    }),
+    serial_number: input.serialNumber,
+    registry_number: input.registryNumber,
+    modification: input.modification,
+    factory_number: input.factoryNumber,
+    manufacture_year: input.manufactureYear,
+    inventory_number: input.inventoryNumber,
+    comment: input.comment,
   });
 
   return mapDevice(response.data);
