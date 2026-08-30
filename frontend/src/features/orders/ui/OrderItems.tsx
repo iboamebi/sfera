@@ -251,6 +251,24 @@ export function OrderItems({
             )}
 
             <TextField
+              label="Тип СИ"
+              value={editingItem?.instrumentTypeMeasurementType ?? ""}
+              InputProps={{ readOnly: true }}
+              fullWidth
+            />
+            <TextField
+              label="Наименование СИ"
+              value={editingItem?.instrumentTypeName ?? ""}
+              InputProps={{ readOnly: true }}
+              fullWidth
+            />
+            <TextField
+              label="Модификация"
+              value={modification}
+              onChange={(event) => setModification(event.target.value)}
+              fullWidth
+            />
+            <TextField
               label="Заводской номер"
               value={serialNumber}
               onChange={(event) => setSerialNumber(event.target.value)}
@@ -258,15 +276,9 @@ export function OrderItems({
               fullWidth
             />
             <TextField
-              label="Регистрационный номер"
+              label="Регистрационный номер в Госреестре"
               value={registryNumber}
               onChange={(event) => setRegistryNumber(event.target.value)}
-              fullWidth
-            />
-            <TextField
-              label="Модификация"
-              value={modification}
-              onChange={(event) => setModification(event.target.value)}
               fullWidth
             />
             <TextField
