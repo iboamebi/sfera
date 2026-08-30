@@ -10,6 +10,7 @@ export interface OrderItem {
   instrumentTypeId: string | null;
   instrumentTypeName: string | null;
   instrumentTypeModel: string | null;
+  instrumentTypeMeasurementType: string | null;
   serialNumber: string | null;
   modification: string | null;
   comment: string | null;
