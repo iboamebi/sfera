@@ -229,15 +229,10 @@ export function OrderItems({
         ))
       )}
 
-      <Dialog open={editingItem !== null} onClose={closeEditor} fullWidth maxWidth="sm">
-        <DialogTitle>{editingItem?.instrumentId ? "Редактирование СИ" : "Идентификация СИ"}</DialogTitle>
+      <Dialog open={Boolean(editingItem)} onClose={closeEditor} fullWidth maxWidth="sm">
+        <DialogTitle>Редактирование карточки СИ</DialogTitle>
         <DialogContent>
           <Stack spacing={2} sx={{ pt: 1 }}>
-            <Typography variant="body2">
-              {editingItem?.instrumentTypeName ?? "СИ"}
-              {editingItem?.instrumentTypeModel ? `, ${editingItem.instrumentTypeModel}` : ""}
-            </Typography>
-
             {!editingItem?.instrumentId && (
               <TextField
                 select
@@ -261,28 +256,24 @@ export function OrderItems({
               onChange={(event) => setSerialNumber(event.target.value)}
               required
               fullWidth
-              disabled={Boolean(selectedInstrumentId)}
             />
             <TextField
               label="Регистрационный номер"
               value={registryNumber}
               onChange={(event) => setRegistryNumber(event.target.value)}
               fullWidth
-              disabled={Boolean(selectedInstrumentId)}
             />
             <TextField
               label="Модификация"
               value={modification}
               onChange={(event) => setModification(event.target.value)}
               fullWidth
-              disabled={Boolean(selectedInstrumentId)}
             />
             <TextField
               label="Заводской номер изделия"
               value={factoryNumber}
               onChange={(event) => setFactoryNumber(event.target.value)}
               fullWidth
-              disabled={Boolean(selectedInstrumentId)}
             />
             <TextField
               label="Год выпуска"
@@ -290,14 +281,12 @@ export function OrderItems({
               value={manufactureYear}
               onChange={(event) => setManufactureYear(event.target.value)}
               fullWidth
-              disabled={Boolean(selectedInstrumentId)}
             />
             <TextField
               label="Инвентарный номер"
               value={inventoryNumber}
               onChange={(event) => setInventoryNumber(event.target.value)}
               fullWidth
-              disabled={Boolean(selectedInstrumentId)}
             />
             <TextField
               label="Комментарий"
@@ -306,7 +295,6 @@ export function OrderItems({
               fullWidth
               multiline
               minRows={2}
-              disabled={Boolean(selectedInstrumentId)}
             />
 
             {devicesQuery.isError && !editingItem?.instrumentId && (
