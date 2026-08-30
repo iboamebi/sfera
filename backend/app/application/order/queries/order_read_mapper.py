@@ -26,6 +26,7 @@ class OrderReadMapper:
                     instrument_id=item.instrument_id,
                     instrument_type_id=item.instrument_type_id,
                     instrument_type_name=item.instrument_type_name,
+                    instrument_type_model=item.instrument_type_model,
                     serial_number=item.serial_number,
                     modification=item.modification,
                     comment=item.comment,
