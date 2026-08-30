@@ -12,7 +12,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { useCreateDevice } from "../../devices/model/useCreateDevice";
 import { useDevices } from "../../devices/model/useDevices";
@@ -44,21 +44,64 @@ export function OrderItems({
   const [editingItem, setEditingItem] = useState<OrderItem | null>(null);
   const [selectedInstrumentId, setSelectedInstrumentId] = useState("");
   const [serialNumber, setSerialNumber] = useState("");
+  const [registryNumber, setRegistryNumber] = useState("");
   const [modification, setModification] = useState("");
-  const updateDeviceMutation = useUpdateDevice();
+  const [factoryNumber, setFactoryNumber] = useState("");
+  const [manufactureYear, setManufactureYear] = useState("");
+  const [inventoryNumber, setInventoryNumber] = useState("");
+  const [comment, setComment] = useState("");
+  const updateDeviceMutation = useUpdateDevice(orderId);
   const createDeviceMutation = useCreateDevice();
   const assignMutation = useAssignOrderItemInstrument(orderId);
   const devicesQuery = useDevices();
 
+  const resetDeviceFields = () => {
+    setSerialNumber("");
+    setRegistryNumber("");
+    setModification("");
+    setFactoryNumber("");
+    setManufactureYear("");
+    setInventoryNumber("");
+    setComment("");
+  };
+
+  const fillDeviceFields = (device: (typeof devicesQuery.data extends (infer T)[] | undefined ? T : never) | undefined) => {
+    setSerialNumber(device?.serialNumber ?? "");
+    setRegistryNumber(device?.registryNumber ?? "");
+    setModification(device?.modification ?? "");
+    setFactoryNumber(device?.factoryNumber ?? "");
+    setManufactureYear(device?.manufactureYear?.toString() ?? "");
+    setInventoryNumber(device?.inventoryNumber ?? "");
+    setComment(device?.comment ?? "");
+  };
+
   const openEditor = (item: OrderItem) => {
     setEditingItem(item);
     setSelectedInstrumentId(item.instrumentId ?? "");
-    setSerialNumber(item.serialNumber ?? "");
-    setModification(item.modification ?? "");
+    resetDeviceFields();
+    const device = devicesQuery.data?.find((candidate) => candidate.id === item.instrumentId);
+    if (device) {
+      fillDeviceFields(device);
+    } else {
+      setSerialNumber(item.serialNumber ?? "");
+      setModification(item.modification ?? "");
+      setComment(item.comment ?? "");
+    }
     updateDeviceMutation.reset();
     createDeviceMutation.reset();
     assignMutation.reset();
   };
+
+  useEffect(() => {
+    if (!editingItem?.instrumentId || !devicesQuery.data) {
+      return;
+    }
+
+    const device = devicesQuery.data.find((candidate) => candidate.id === editingItem.instrumentId);
+    if (device) {
+      fillDeviceFields(device);
+    }
+  }, [devicesQuery.data, editingItem]);
 
   const closeEditor = () => {
     if (!updateDeviceMutation.isPending && !createDeviceMutation.isPending && !assignMutation.isPending) {
@@ -66,18 +109,38 @@ export function OrderItems({
     }
   };
 
+  const selectKnownDevice = (deviceId: string) => {
+    setSelectedInstrumentId(deviceId);
+    if (!deviceId) {
+      resetDeviceFields();
+      return;
+    }
+
+    const device = devicesQuery.data?.find((candidate) => candidate.id === deviceId);
+    fillDeviceFields(device);
+  };
+
   const saveDevice = () => {
     if (!editingItem?.instrumentTypeId || !serialNumber.trim()) {
       return;
     }
 
+    const input = {
+      instrumentTypeId: editingItem.instrumentTypeId,
+      serialNumber: serialNumber.trim(),
+      registryNumber: registryNumber.trim() || null,
+      modification: modification.trim() || null,
+      factoryNumber: factoryNumber.trim() || null,
+      manufactureYear: manufactureYear.trim() ? Number(manufactureYear) : null,
+      inventoryNumber: inventoryNumber.trim() || null,
+      comment: comment.trim() || null,
+    };
+
     if (editingItem.instrumentId) {
       updateDeviceMutation.mutate(
         {
           deviceId: editingItem.instrumentId,
-          instrumentTypeId: editingItem.instrumentTypeId,
-          serialNumber: serialNumber.trim(),
-          modification: modification.trim() || null,
+          ...input,
         },
         { onSuccess: () => setEditingItem(null) },
       );
@@ -99,9 +162,19 @@ export function OrderItems({
       },
       {
         onSuccess: (device) => {
-          assignMutation.mutate(
-            { itemId: editingItem.id, instrumentId: device.id },
-            { onSuccess: () => setEditingItem(null) },
+          updateDeviceMutation.mutate(
+            {
+              deviceId: device.id,
+              ...input,
+            },
+            {
+              onSuccess: () => {
+                assignMutation.mutate(
+                  { itemId: editingItem.id, instrumentId: device.id },
+                  { onSuccess: () => setEditingItem(null) },
+                );
+              },
+            },
           );
         },
       },
@@ -111,6 +184,9 @@ export function OrderItems({
   const matchingDevices = devicesQuery.data?.filter(
     (device) => device.instrumentTypeId === editingItem?.instrumentTypeId,
   ) ?? [];
+
+  const isPending =
+    updateDeviceMutation.isPending || createDeviceMutation.isPending || assignMutation.isPending;
 
   return (
     <Stack spacing={2}>
@@ -167,7 +243,7 @@ export function OrderItems({
                 select
                 label="Известное СИ"
                 value={selectedInstrumentId}
-                onChange={(event) => setSelectedInstrumentId(event.target.value)}
+                onChange={(event) => selectKnownDevice(event.target.value)}
                 fullWidth
               >
                 <MenuItem value="">Новое СИ</MenuItem>
@@ -180,10 +256,17 @@ export function OrderItems({
             )}
 
             <TextField
-              label="Серийный номер"
+              label="Заводской номер"
               value={serialNumber}
               onChange={(event) => setSerialNumber(event.target.value)}
               required
+              fullWidth
+              disabled={Boolean(selectedInstrumentId)}
+            />
+            <TextField
+              label="Регистрационный номер"
+              value={registryNumber}
+              onChange={(event) => setRegistryNumber(event.target.value)}
               fullWidth
               disabled={Boolean(selectedInstrumentId)}
             />
@@ -192,6 +275,37 @@ export function OrderItems({
               value={modification}
               onChange={(event) => setModification(event.target.value)}
               fullWidth
+              disabled={Boolean(selectedInstrumentId)}
+            />
+            <TextField
+              label="Заводской номер изделия"
+              value={factoryNumber}
+              onChange={(event) => setFactoryNumber(event.target.value)}
+              fullWidth
+              disabled={Boolean(selectedInstrumentId)}
+            />
+            <TextField
+              label="Год выпуска"
+              type="number"
+              value={manufactureYear}
+              onChange={(event) => setManufactureYear(event.target.value)}
+              fullWidth
+              disabled={Boolean(selectedInstrumentId)}
+            />
+            <TextField
+              label="Инвентарный номер"
+              value={inventoryNumber}
+              onChange={(event) => setInventoryNumber(event.target.value)}
+              fullWidth
+              disabled={Boolean(selectedInstrumentId)}
+            />
+            <TextField
+              label="Комментарий"
+              value={comment}
+              onChange={(event) => setComment(event.target.value)}
+              fullWidth
+              multiline
+              minRows={2}
               disabled={Boolean(selectedInstrumentId)}
             />
 
@@ -204,11 +318,11 @@ export function OrderItems({
           </Stack>
         </DialogContent>
         <DialogActions>
-          <Button onClick={closeEditor} disabled={updateDeviceMutation.isPending || createDeviceMutation.isPending || assignMutation.isPending}>Отмена</Button>
+          <Button onClick={closeEditor} disabled={isPending}>Отмена</Button>
           <Button
             variant="contained"
             onClick={saveDevice}
-            disabled={(!selectedInstrumentId && !serialNumber.trim()) || !editingItem?.instrumentTypeId || updateDeviceMutation.isPending || createDeviceMutation.isPending || assignMutation.isPending}
+            disabled={(!selectedInstrumentId && !serialNumber.trim()) || !editingItem?.instrumentTypeId || isPending}
           >
             Сохранить
           </Button>
