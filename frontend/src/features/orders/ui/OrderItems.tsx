@@ -1,12 +1,11 @@
 import { Alert, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, Divider, MenuItem, Stack, TextField, Typography } from "@mui/material";
 import { useMemo, useState } from "react";
 
-import { assignOrderItemInstrument } from "../api/assignOrderItemInstrument";
 import { useAssignOrderItemInstrument } from "../model/useAssignOrderItemInstrument";
 import { useDevices } from "../../devices/model/useDevices";
 import { useCreateDevice } from "../../devices/model/useCreateDevice";
 import { useUpdateDevice } from "../../devices/model/useUpdateDevice";
-import type { Device } from "../../devices/model/types";
+import type { DeviceRead } from "../../devices/model/types";
 import type { OrderItem } from "../model/types";
 
 const OPERATION_LABELS: Record<string, string> = {
@@ -18,9 +17,11 @@ const OPERATION_LABELS: Record<string, string> = {
 interface OrderItemsProps {
   orderId: string;
   items: OrderItem[];
+  deletingItemId?: string | null;
+  onDelete?: (itemId: string) => void;
 }
 
-export function OrderItems({ orderId, items }: OrderItemsProps) {
+export function OrderItems({ orderId, items, deletingItemId, onDelete }: OrderItemsProps) {
   const [editingItem, setEditingItem] = useState<OrderItem | null>(null);
   const [serialNumber, setSerialNumber] = useState("");
   const [registryNumber, setRegistryNumber] = useState("");
@@ -33,10 +34,10 @@ export function OrderItems({ orderId, items }: OrderItemsProps) {
 
   const devicesQuery = useDevices();
   const createDeviceMutation = useCreateDevice();
-  const updateDeviceMutation = useUpdateDevice();
+  const updateDeviceMutation = useUpdateDevice(orderId);
   const assignMutation = useAssignOrderItemInstrument(orderId);
 
-  const matchingDevices = useMemo<Device[]>(() => {
+  const matchingDevices = useMemo<DeviceRead[]>(() => {
     if (!editingItem?.instrumentTypeId) return [];
     return (devicesQuery.data ?? []).filter(
       (device) => device.instrumentTypeId === editingItem.instrumentTypeId,
@@ -85,11 +86,11 @@ export function OrderItems({ orderId, items }: OrderItemsProps) {
     };
 
     if (selectedInstrumentId) {
-      await updateDeviceMutation.mutateAsync({ id: selectedInstrumentId, ...payload });
-      await assignMutation.mutateAsync({ orderItemId: editingItem.id, instrumentId: selectedInstrumentId });
+      await updateDeviceMutation.mutateAsync({ deviceId: selectedInstrumentId, ...payload });
+      await assignMutation.mutateAsync({ itemId: editingItem.id, instrumentId: selectedInstrumentId });
     } else {
       const device = await createDeviceMutation.mutateAsync(payload);
-      await assignMutation.mutateAsync({ orderItemId: editingItem.id, instrumentId: device.id });
+      await assignMutation.mutateAsync({ itemId: editingItem.id, instrumentId: device.id });
     }
 
     closeEditor();
@@ -102,16 +103,31 @@ export function OrderItems({ orderId, items }: OrderItemsProps) {
     <Stack spacing={2}>
       {items.map((item, index) => (
         <Stack key={item.id} spacing={1}>
-          <Stack direction="row" justifyContent="space-between" alignItems="center">
+          <Stack direction="row" sx={{ alignItems: "center", justifyContent: "space-between" }}>
             <Typography variant="subtitle1">
               {item.instrumentTypeName || "Позиция заказа"}
             </Typography>
-            <Button size="small" onClick={() => openEditor(item)}>
-              Редактировать
-            </Button>
+            <Stack direction="row" spacing={1}>
+              <Button size="small" onClick={() => openEditor(item)}>
+                Редактировать
+              </Button>
+              {onDelete && (
+                <Button
+                  size="small"
+                  color="error"
+                  onClick={() => onDelete(item.id)}
+                  disabled={deletingItemId === item.id}
+                >
+                  {deletingItemId === item.id ? "Удаление…" : "Удалить"}
+                </Button>
+              )}
+            </Stack>
           </Stack>
-          <Typography variant="body2">Заводской номер: {item.serialNumber || "—"}</Typography>
+          <Typography variant="body2">Тип: {item.instrumentTypeMeasurementType || "—"}</Typography>
+          <Typography variant="body2">Наименование: {item.instrumentTypeName || "—"}</Typography>
           {item.modification && <Typography variant="body2">Модификация: {item.modification}</Typography>}
+          <Typography variant="body2">Заводской номер: {item.serialNumber || "—"}</Typography>
+          {item.registryNumber && <Typography variant="body2">Регистрационный номер: {item.registryNumber}</Typography>}
           <Stack direction="row" sx={{ flexWrap: "wrap", gap: 0.5 }}>
             {item.requestedOperations.map((operation) => (
               <Chip key={operation} label={OPERATION_LABELS[operation] ?? operation} size="small" />
