@@ -5,6 +5,7 @@ import type { DeviceApiDto } from "./types";
 
 type UpdateDeviceInput = {
   deviceId: string;
+  instrumentTypeId: string;
   serialNumber?: string;
   modification?: string | null;
 };
@@ -13,6 +14,7 @@ export async function updateDevice(
   input: UpdateDeviceInput,
 ): Promise<DeviceRead> {
   const response = await http.put<DeviceApiDto>(`/devices/${input.deviceId}`, {
+    instrument_type_id: input.instrumentTypeId,
     ...(input.serialNumber !== undefined && {
       serial_number: input.serialNumber,
     }),
