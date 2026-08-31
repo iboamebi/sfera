@@ -8,6 +8,8 @@ export function mapOrder(dto: OrderApiDto): OrderRead {
     customerId: dto.customer_id,
     status: dto.status,
     receivedAt: dto.received_at,
+    createdAt: dto.created_at,
+    updatedAt: dto.updated_at,
     plannedIssueAt: dto.planned_issue_at,
     issuedAt: dto.issued_at,
     comment: dto.comment,
