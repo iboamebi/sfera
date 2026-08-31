@@ -31,7 +31,6 @@ class DeviceMapper(BaseMapper[Device, Instrument]):
             serial_number=SerialNumber(model.serial_number),
             registry_number=model.registry_number,
             modification=model.modification,
-            factory_number=model.factory_number,
             manufacture_year=model.manufacture_year,
             inventory_number=model.inventory_number,
             comment=model.comment,
@@ -49,7 +48,6 @@ class DeviceMapper(BaseMapper[Device, Instrument]):
         model.device_status = entity.status.value
         model.registry_number = entity.registry_number
         model.modification = entity.modification
-        model.factory_number = entity.factory_number
         model.manufacture_year = entity.manufacture_year
         model.inventory_number = entity.inventory_number
         model.comment = entity.comment
