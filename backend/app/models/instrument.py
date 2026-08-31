@@ -7,11 +7,18 @@ from app.models.base_model import BaseModel
 
 
 class Instrument(BaseModel):
+    """ORM model for an individual measuring instrument."""
+
     __tablename__ = "instruments"
 
     instrument_type_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("instrument_types.id"),
         nullable=False,
+    )
+
+    name: Mapped[str | None] = mapped_column(
+        String(255),
+        nullable=True,
     )
 
     serial_number: Mapped[str] = mapped_column(
