@@ -1,3 +1,4 @@
+from datetime import UTC, datetime
 from uuid import uuid4
 
 from fastapi.routing import APIRoute
@@ -13,7 +14,7 @@ from app.api.routers.order import (
 from app.api.security.csrf import require_csrf
 from app.domains.user.entities.user import User
 from app.domains.user.value_objects.user_role import UserRole
-from app.schemas.order import OrderUpdate
+from app.schemas.order import OrderRead, OrderUpdate
 
 
 def get_route_dependencies(endpoint: object) -> list[object]:
@@ -71,12 +72,19 @@ def test_register_order_passes_authenticated_user_to_application_service() -> No
             self.received_user = received_user
             return object()
 
+    class FakeOrderReadService:
+        def get(self, requested_id: object) -> OrderRead:
+            assert requested_id == order_id
+            now = datetime.now(UTC)
+            return OrderRead(\n                id=order_id,\n                number="1001",\n                customer_id=uuid4(),\n                status="REGISTERED",\n                received_at=now,\n                created_at=now,\n                updated_at=now,\n                planned_issue_at=None,\n                issued_at=None,\n                comment=None,\n                archived=False,\n                items=[],\n            )
+
     service = FakeOrderService()
 
     result = register_order(
         order_id=order_id,
         user=user,
         service=service,
+        read_service=FakeOrderReadService(),
     )
 
     assert result is not None
