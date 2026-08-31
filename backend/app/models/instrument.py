@@ -43,11 +43,6 @@ class Instrument(BaseModel):
         nullable=True,
     )
 
-    factory_number: Mapped[str | None] = mapped_column(
-        String(100),
-        nullable=True,
-    )
-
     manufacture_year: Mapped[int | None] = mapped_column(
         nullable=True,
     )
