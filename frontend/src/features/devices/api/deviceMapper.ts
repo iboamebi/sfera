@@ -6,6 +6,12 @@ export function mapDevice(dto: DeviceApiDto): DeviceRead {
     id: dto.id,
     instrumentTypeId: dto.instrument_type_id,
     serialNumber: dto.serial_number,
+    registryNumber: dto.registry_number,
+    modification: dto.modification,
+    factoryNumber: dto.factory_number,
+    manufactureYear: dto.manufacture_year,
+    inventoryNumber: dto.inventory_number,
+    comment: dto.comment,
     status: dto.status,
   };
 }
