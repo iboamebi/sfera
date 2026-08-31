@@ -19,13 +19,29 @@ def test_create_order_returns_api_contract() -> None:
         planned_issue_at=None,
         issued_at=None,
         comment="Test order",
-        created_at=now,
-        updated_at=now,
     )
 
     class FakeOrderService:
         def create(self, command: object, received_user: object) -> Order:
             return order
+
+    class FakeOrderReadService:
+        def get(self, requested_id: object) -> OrderRead:
+            assert requested_id == order.id
+            return OrderRead(
+                id=order.id,
+                number="1001",
+                customer_id=customer_id,
+                status="NEW",
+                received_at=now,
+                created_at=now,
+                updated_at=now,
+                planned_issue_at=None,
+                issued_at=None,
+                comment="Test order",
+                archived=False,
+                items=[],
+            )
 
     result = create_order(
         data=type(
@@ -40,17 +56,16 @@ def test_create_order_returns_api_contract() -> None:
         )(),
         user=object(),
         service=FakeOrderService(),
+        read_service=FakeOrderReadService(),
     )
 
-    response = OrderRead.model_validate(result)
-
-    assert response.id == order.id
-    assert response.number == "1001"
-    assert response.customer_id == customer_id
-    assert response.status.value == "NEW"
-    assert response.archived is False
-    assert response.created_at == now
-    assert response.updated_at == now
+    assert result.id == order.id
+    assert result.number == "1001"
+    assert result.customer_id == customer_id
+    assert result.status.value == "NEW"
+    assert result.archived is False
+    assert result.created_at == now
+    assert result.updated_at == now
 
 
 def test_get_order_returns_api_contract() -> None:
