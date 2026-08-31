@@ -1,6 +1,7 @@
 export interface DeviceApiDto {
   id: string;
   instrument_type_id: string;
+  name: string | null;
   serial_number: string;
   registry_number: string | null;
   modification: string | null;
