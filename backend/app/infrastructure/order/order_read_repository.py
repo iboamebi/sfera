@@ -54,6 +54,7 @@ class OrderReadRepositorySQLAlchemy(OrderReadRepository):
                     id=item.id,
                     instrument_id=item.instrument_id,
                     instrument_type_id=item.instrument_type_id,
+                    instrument_name=item.instrument.name if item.instrument else None,
                     instrument_type_name=(
                         item.instrument.instrument_type.name
                         if item.instrument
