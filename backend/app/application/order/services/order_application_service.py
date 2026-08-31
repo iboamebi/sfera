@@ -9,8 +9,10 @@ from app.application.authorization.authorization import require_role
 from app.application.context.operation_context import OperationContext
 from app.application.order.commands.add_order_item import AddOrderItemCommand
 from app.application.order.commands.create_order import CreateOrderCommand
+from app.application.order.commands.delete_order_item import DeleteOrderItemCommand
 from app.application.order.commands.register_order import RegisterOrderCommand
 from app.application.order.commands.update_order import UpdateOrderCommand
+from app.application.order.commands.update_order_item import UpdateOrderItemCommand
 from app.application.order.exceptions import (
     InstrumentAlreadyInActiveOrderApplicationError,
     OrderNotFoundApplicationError,
@@ -77,7 +79,9 @@ class OrderApplicationService:
                     exclude_order_id=order.id,
                 )
             ):
-                raise InstrumentAlreadyInActiveOrderApplicationError
+                raise InstrumentAlreadyInActiveOrderApplicationError(
+                    "СИ уже находится в другом активном заказе"
+                )
 
             order.add_item(
                 OrderItem(
@@ -87,6 +91,37 @@ class OrderApplicationService:
                     requested_operations=set(command.requested_operations),
                 )
             )
+            self._repository.save(order)
+
+        return order
+
+    def update_item(
+        self,
+        command: UpdateOrderItemCommand,
+        user: User,
+    ) -> Order:
+        require_role(user, UserRole.OPERATOR, UserRole.ADMIN)
+
+        with self._uow:
+            order = self.get(command.order_id)
+            order.update_item(
+                command.item_id,
+                set(command.requested_operations),
+            )
+            self._repository.save(order)
+
+        return order
+
+    def delete_item(
+        self,
+        command: DeleteOrderItemCommand,
+        user: User,
+    ) -> Order:
+        require_role(user, UserRole.OPERATOR, UserRole.ADMIN)
+
+        with self._uow:
+            order = self.get(command.order_id)
+            order.remove_item(command.item_id)
             self._repository.save(order)
 
         return order
