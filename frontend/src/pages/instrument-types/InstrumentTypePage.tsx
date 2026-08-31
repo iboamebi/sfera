@@ -23,21 +23,21 @@ export function InstrumentTypePage() {
 
   return (
     <Stack spacing={2}>
-      <Typography variant="h5">{data.name}</Typography>
+      <Typography variant="h5">Наименование СИ: {data.name}</Typography>
+
+      {data.measurementType && (
+        <Typography>Тип СИ: {data.measurementType}</Typography>
+      )}
+
+      {data.model && (
+        <Typography color="text.secondary">
+          Модификация: {data.model}
+        </Typography>
+      )}
 
       {data.manufacturer && (
         <Typography color="text.secondary">
           Manufacturer: {data.manufacturer}
-        </Typography>
-      )}
-
-      {data.model && (
-        <Typography color="text.secondary">Model: {data.model}</Typography>
-      )}
-
-      {data.measurementType && (
-        <Typography>
-          Measurement type: {data.measurementType}
         </Typography>
       )}
 
