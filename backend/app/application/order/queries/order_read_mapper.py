@@ -16,6 +16,8 @@ class OrderReadMapper:
             customer_id=model.customer_id,
             status=model.status,
             received_at=model.received_at,
+            created_at=model.created_at,
+            updated_at=model.updated_at,
             planned_issue_at=model.planned_issue_at,
             issued_at=model.issued_at,
             comment=model.comment,
