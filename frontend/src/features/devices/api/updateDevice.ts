@@ -12,7 +12,6 @@ export async function updateDevice(
     serial_number: data.serialNumber,
     registry_number: data.registryNumber,
     modification: data.modification,
-    factory_number: data.factoryNumber,
     manufacture_year: data.manufactureYear,
     inventory_number: data.inventoryNumber,
     comment: data.comment,
