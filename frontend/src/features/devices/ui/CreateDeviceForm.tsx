@@ -9,6 +9,7 @@ import { useInstrumentTypes } from "../../instrument-type/model/useInstrumentTyp
 
 const createDeviceSchema = z.object({
   instrumentTypeId: z.string().uuid("Выберите тип средства измерений"),
+  name: z.string().trim().min(1, "Укажите наименование СИ"),
   serialNumber: z.string().trim().min(1, "Укажите серийный номер"),
 });
 
@@ -92,6 +93,14 @@ export function CreateDeviceForm({
             Создать тип СИ
           </Button>
         )}
+
+        <TextField
+          label="Наименование СИ"
+          {...register("name")}
+          error={Boolean(errors.name)}
+          helperText={errors.name?.message}
+          disabled={isPending}
+        />
 
         <TextField
           label="Серийный номер"
