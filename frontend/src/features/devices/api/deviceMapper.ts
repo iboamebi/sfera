@@ -9,7 +9,6 @@ export function mapDevice(dto: DeviceApiDto): DeviceRead {
     serialNumber: dto.serial_number,
     registryNumber: dto.registry_number,
     modification: dto.modification,
-    factoryNumber: dto.factory_number,
     manufactureYear: dto.manufacture_year,
     inventoryNumber: dto.inventory_number,
     comment: dto.comment,
