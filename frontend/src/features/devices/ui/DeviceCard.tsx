@@ -7,6 +7,7 @@ import type { DeviceRead, UpdateDeviceInput } from "../model/types";
 
 interface DeviceCardProps {
   device: DeviceRead;
+  initialEditing?: boolean;
 }
 
 function toForm(device: DeviceRead): UpdateDeviceInput {
@@ -21,10 +22,10 @@ function toForm(device: DeviceRead): UpdateDeviceInput {
   };
 }
 
-export function DeviceCard({ device }: DeviceCardProps) {
+export function DeviceCard({ device, initialEditing = false }: DeviceCardProps) {
   const { data: instrumentType } = useInstrumentType(device.instrumentTypeId);
   const updateMutation = useUpdateDevice(device.id);
-  const [editing, setEditing] = useState(false);
+  const [editing, setEditing] = useState(initialEditing);
   const [form, setForm] = useState<UpdateDeviceInput>(() => toForm(device));
 
   useEffect(() => {
