@@ -11,6 +11,7 @@ class UpdateDeviceCommand:
     """Command for updating a device card."""
 
     device_id: UUID
+    name: str
     serial_number: str
     registry_number: str | None = None
     modification: str | None = None
