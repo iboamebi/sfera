@@ -9,6 +9,7 @@ import type { OrderItem, OrderItemOperation } from "../model/types";
 interface OrderItemsProps {
   items: OrderItem[];
   orderId: string;
+  editable?: boolean;
 }
 
 const OPERATION_LABELS: Record<OrderItemOperation, string> = {
@@ -22,7 +23,7 @@ const OPERATION_OPTIONS = Object.entries(OPERATION_LABELS) as Array<
   [OrderItemOperation, string]
 >;
 
-export function OrderItems({ items, orderId }: OrderItemsProps) {
+export function OrderItems({ items, orderId, editable = false }: OrderItemsProps) {
   const updateMutation = useUpdateOrderItem(orderId);
   const deleteMutation = useDeleteOrderItem(orderId);
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
@@ -56,7 +57,7 @@ export function OrderItems({ items, orderId }: OrderItemsProps) {
   };
 
   return (
-    <Stack spacing={2}>
+    <Stack spacing={2} sx={{ width: "100%" }}>
       <Typography variant="h6">Позиции заказа</Typography>
 
       {items.length === 0 ? (
@@ -101,41 +102,43 @@ export function OrderItems({ items, orderId }: OrderItemsProps) {
 
             <Typography variant="body2">{item.comment || "—"}</Typography>
 
-            <Stack direction="row" spacing={1}>
-              {editingItemId === item.id ? (
-                <>
-                  <Button
-                    size="small"
-                    variant="contained"
-                    disabled={updateMutation.isPending || editedOperations.length === 0}
-                    onClick={() => saveEdit(item.id)}
-                  >
-                    Сохранить
-                  </Button>
-                  <Button
-                    size="small"
-                    disabled={updateMutation.isPending}
-                    onClick={() => setEditingItemId(null)}
-                  >
-                    Отмена
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <Button size="small" onClick={() => startEditing(item)}>
-                    Изменить
-                  </Button>
-                  <Button
-                    size="small"
-                    color="error"
-                    disabled={deleteMutation.isPending}
-                    onClick={() => removeItem(item.id)}
-                  >
-                    Удалить
-                  </Button>
-                </>
-              )}
-            </Stack>
+            {editable && (
+              <Stack direction="row" spacing={1}>
+                {editingItemId === item.id ? (
+                  <>
+                    <Button
+                      size="small"
+                      variant="contained"
+                      disabled={updateMutation.isPending || editedOperations.length === 0}
+                      onClick={() => saveEdit(item.id)}
+                    >
+                      Сохранить
+                    </Button>
+                    <Button
+                      size="small"
+                      disabled={updateMutation.isPending}
+                      onClick={() => setEditingItemId(null)}
+                    >
+                      Отмена
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button size="small" onClick={() => startEditing(item)}>
+                      Изменить
+                    </Button>
+                    <Button
+                      size="small"
+                      color="error"
+                      disabled={deleteMutation.isPending}
+                      onClick={() => removeItem(item.id)}
+                    >
+                      Удалить
+                    </Button>
+                  </>
+                )}
+              </Stack>
+            )}
 
             {index < items.length - 1 && <Divider sx={{ pt: 1 }} />}
           </Stack>
