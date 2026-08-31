@@ -11,4 +11,5 @@ class CreateDeviceCommand:
     """Command for creating a device."""
 
     instrument_type_id: UUID
+    name: str
     serial_number: str
