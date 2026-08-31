@@ -9,6 +9,7 @@ import type { DeviceRead } from "./types";
 
 type CreateDeviceInput = {
   instrumentTypeId: string;
+  name: string;
   serialNumber: string;
 };
 
