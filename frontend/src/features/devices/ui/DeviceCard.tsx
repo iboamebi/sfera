@@ -11,6 +11,7 @@ interface DeviceCardProps {
 
 function toForm(device: DeviceRead): UpdateDeviceInput {
   return {
+    name: device.name ?? "",
     serialNumber: device.serialNumber,
     registryNumber: device.registryNumber,
     modification: device.modification,
@@ -44,10 +45,9 @@ export function DeviceCard({ device }: DeviceCardProps) {
     return (
       <Stack spacing={1.5}>
         <Typography variant="h6">Карта СИ</Typography>
-        <Typography>Наименование СИ: {instrumentType?.name ?? "—"}</Typography>
-        <Typography>Тип СИ: {instrumentType?.measurementType ?? "—"}</Typography>
-        <Typography>Модель СИ: {instrumentType?.model ?? "—"}</Typography>
-        <Typography>Модификация: {device.modification ?? "—"}</Typography>
+        <Typography>Наименование СИ: {device.name ?? "—"}</Typography>
+        <Typography>Тип СИ: {instrumentType?.name ?? "—"}</Typography>
+        <Typography>Модель СИ: {device.modification ?? "—"}</Typography>
         <Typography>Серийный номер: {device.serialNumber}</Typography>
         <Typography>Регистрационный номер: {device.registryNumber ?? "—"}</Typography>
         <Typography>Заводской номер: {device.factoryNumber ?? "—"}</Typography>
@@ -64,22 +64,76 @@ export function DeviceCard({ device }: DeviceCardProps) {
   return (
     <Stack spacing={1.5}>
       <Typography variant="h6">Карта СИ</Typography>
-      <Typography>Наименование СИ: {instrumentType?.name ?? "—"}</Typography>
-      <Typography>Тип СИ: {instrumentType?.measurementType ?? "—"}</Typography>
-      <Typography>Модель СИ: {instrumentType?.model ?? "—"}</Typography>
-      <TextField label="Модификация" value={form.modification ?? ""} onChange={(e) => setField("modification", e.target.value || null)} />
-      <TextField label="Серийный номер" value={form.serialNumber} onChange={(e) => setField("serialNumber", e.target.value)} required />
-      <TextField label="Регистрационный номер" value={form.registryNumber ?? ""} onChange={(e) => setField("registryNumber", e.target.value || null)} />
-      <TextField label="Заводской номер" value={form.factoryNumber ?? ""} onChange={(e) => setField("factoryNumber", e.target.value || null)} />
-      <TextField label="Год выпуска" type="number" value={form.manufactureYear ?? ""} onChange={(e) => setField("manufactureYear", e.target.value ? Number(e.target.value) : null)} />
-      <TextField label="Инвентарный номер" value={form.inventoryNumber ?? ""} onChange={(e) => setField("inventoryNumber", e.target.value || null)} />
-      <TextField label="Комментарий" multiline minRows={3} value={form.comment ?? ""} onChange={(e) => setField("comment", e.target.value || null)} />
-      {updateMutation.error && <Typography color="error">Не удалось сохранить карту СИ.</Typography>}
+      <Typography>Тип СИ: {instrumentType?.name ?? "—"}</Typography>
+      <TextField
+        label="Наименование СИ"
+        value={form.name}
+        onChange={(e) => setField("name", e.target.value)}
+        required
+      />
+      <TextField
+        label="Модель СИ"
+        value={form.modification ?? ""}
+        onChange={(e) => setField("modification", e.target.value || null)}
+      />
+      <TextField
+        label="Серийный номер"
+        value={form.serialNumber}
+        onChange={(e) => setField("serialNumber", e.target.value)}
+        required
+      />
+      <TextField
+        label="Регистрационный номер"
+        value={form.registryNumber ?? ""}
+        onChange={(e) => setField("registryNumber", e.target.value || null)}
+      />
+      <TextField
+        label="Заводской номер"
+        value={form.factoryNumber ?? ""}
+        onChange={(e) => setField("factoryNumber", e.target.value || null)}
+      />
+      <TextField
+        label="Год выпуска"
+        type="number"
+        value={form.manufactureYear ?? ""}
+        onChange={(e) =>
+          setField("manufactureYear", e.target.value ? Number(e.target.value) : null)
+        }
+      />
+      <TextField
+        label="Инвентарный номер"
+        value={form.inventoryNumber ?? ""}
+        onChange={(e) => setField("inventoryNumber", e.target.value || null)}
+      />
+      <TextField
+        label="Комментарий"
+        multiline
+        minRows={3}
+        value={form.comment ?? ""}
+        onChange={(e) => setField("comment", e.target.value || null)}
+      />
+      {updateMutation.error && (
+        <Typography color="error">Не удалось сохранить карту СИ.</Typography>
+      )}
       <Stack direction="row" spacing={1}>
-        <Button variant="contained" disabled={!form.serialNumber.trim() || updateMutation.isPending} onClick={save}>
+        <Button
+          variant="contained"
+          disabled={
+            !form.name.trim() ||
+            !form.serialNumber.trim() ||
+            updateMutation.isPending
+          }
+          onClick={save}
+        >
           Сохранить
         </Button>
-        <Button disabled={updateMutation.isPending} onClick={() => { setForm(toForm(device)); setEditing(false); }}>
+        <Button
+          disabled={updateMutation.isPending}
+          onClick={() => {
+            setForm(toForm(device));
+            setEditing(false);
+          }}
+        >
           Отмена
         </Button>
       </Stack>
