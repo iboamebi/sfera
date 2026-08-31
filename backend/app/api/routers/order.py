@@ -74,7 +74,7 @@ def create_order(
 
 
 @router.get("/", response_model=list[OrderRead])
-def list_orders(service: OrderApplicationService = Depends(get_order_service)):
+def list_orders(service: OrderReadService = Depends(get_order_read_service)):
     return service.list()
 
 
