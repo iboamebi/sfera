@@ -8,6 +8,7 @@ import type { DeviceRead, UpdateDeviceInput } from "../model/types";
 interface DeviceCardProps {
   device: DeviceRead;
   initialEditing?: boolean;
+  onSaved?: () => void;
 }
 
 function toForm(device: DeviceRead): UpdateDeviceInput {
@@ -22,7 +23,11 @@ function toForm(device: DeviceRead): UpdateDeviceInput {
   };
 }
 
-export function DeviceCard({ device, initialEditing = false }: DeviceCardProps) {
+export function DeviceCard({
+  device,
+  initialEditing = false,
+  onSaved,
+}: DeviceCardProps) {
   const { data: instrumentType } = useInstrumentType(device.instrumentTypeId);
   const updateMutation = useUpdateDevice(device.id);
   const [editing, setEditing] = useState(initialEditing);
@@ -38,7 +43,12 @@ export function DeviceCard({ device, initialEditing = false }: DeviceCardProps) 
   ) => setForm((current) => ({ ...current, [field]: value }));
 
   const save = () => {
-    updateMutation.mutate(form, { onSuccess: () => setEditing(false) });
+    updateMutation.mutate(form, {
+      onSuccess: () => {
+        setEditing(false);
+        onSaved?.();
+      },
+    });
   };
 
   if (!editing) {
