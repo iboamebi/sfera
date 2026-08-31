@@ -19,7 +19,7 @@ from app.domains.device.exceptions import (
 )
 from app.domains.device.factories.device_factory import DeviceFactory
 from app.domains.device.repositories.device_repository import DeviceRepository
-from app.domains.device.repositories.device_repository import DeviceRepository
+from app.domains.device.value_objects.serial_number import SerialNumber
 from app.domains.instrument_type.repositories.instrument_type_repository import (
     InstrumentTypeRepository,
 )
@@ -89,7 +89,7 @@ class DeviceApplicationService:
 
         with self._uow:
             device = self.get(command.device_id)
-            device.serial_number = type(device.serial_number)(command.serial_number)
+            device.serial_number = SerialNumber(command.serial_number)
             device.registry_number = command.registry_number
             device.modification = command.modification
             device.factory_number = command.factory_number
