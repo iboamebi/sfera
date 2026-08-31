@@ -5,7 +5,6 @@ export interface DeviceApiDto {
   serial_number: string;
   registry_number: string | null;
   modification: string | null;
-  factory_number: string | null;
   manufacture_year: number | null;
   inventory_number: string | null;
   comment: string | null;
