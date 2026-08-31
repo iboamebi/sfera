@@ -44,8 +44,9 @@ export function DeviceCard({ device }: DeviceCardProps) {
     return (
       <Stack spacing={1.5}>
         <Typography variant="h6">Карта СИ</Typography>
-        <Typography>Наименование СИ: {instrumentType?.model ?? "—"}</Typography>
-        <Typography>Тип СИ: {instrumentType?.name ?? "—"}</Typography>
+        <Typography>Наименование СИ: {instrumentType?.name ?? "—"}</Typography>
+        <Typography>Тип СИ: {instrumentType?.measurementType ?? "—"}</Typography>
+        <Typography>Модель СИ: {instrumentType?.model ?? "—"}</Typography>
         <Typography>Модификация: {device.modification ?? "—"}</Typography>
         <Typography>Серийный номер: {device.serialNumber}</Typography>
         <Typography>Регистрационный номер: {device.registryNumber ?? "—"}</Typography>
@@ -63,8 +64,9 @@ export function DeviceCard({ device }: DeviceCardProps) {
   return (
     <Stack spacing={1.5}>
       <Typography variant="h6">Карта СИ</Typography>
-      <Typography>Наименование СИ: {instrumentType?.model ?? "—"}</Typography>
-      <Typography>Тип СИ: {instrumentType?.name ?? "—"}</Typography>
+      <Typography>Наименование СИ: {instrumentType?.name ?? "—"}</Typography>
+      <Typography>Тип СИ: {instrumentType?.measurementType ?? "—"}</Typography>
+      <Typography>Модель СИ: {instrumentType?.model ?? "—"}</Typography>
       <TextField label="Модификация" value={form.modification ?? ""} onChange={(e) => setField("modification", e.target.value || null)} />
       <TextField label="Серийный номер" value={form.serialNumber} onChange={(e) => setField("serialNumber", e.target.value)} required />
       <TextField label="Регистрационный номер" value={form.registryNumber ?? ""} onChange={(e) => setField("registryNumber", e.target.value || null)} />
