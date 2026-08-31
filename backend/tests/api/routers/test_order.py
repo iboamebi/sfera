@@ -10,14 +10,17 @@ from app.schemas.order import OrderRead
 
 def test_create_order_returns_api_contract() -> None:
     customer_id = uuid4()
+    now = datetime.now(UTC)
     order = Order(
         id=uuid4(),
         number=OrderNumber("1001"),
         customer_id=customer_id,
-        received_at=datetime.now(UTC),
+        received_at=now,
         planned_issue_at=None,
         issued_at=None,
         comment="Test order",
+        created_at=now,
+        updated_at=now,
     )
 
     class FakeOrderService:
@@ -46,9 +49,14 @@ def test_create_order_returns_api_contract() -> None:
     assert response.customer_id == customer_id
     assert response.status.value == "NEW"
     assert response.archived is False
+    assert response.created_at == now
+    assert response.updated_at == now
+
 
 def test_get_order_returns_api_contract() -> None:
     order_id = uuid4()
+    now = datetime.now(UTC)
+
     class FakeOrderReadService:
         def get(self, requested_id: object) -> OrderRead:
             assert requested_id == order_id
@@ -58,7 +66,9 @@ def test_get_order_returns_api_contract() -> None:
                 number="1001",
                 customer_id=uuid4(),
                 status="NEW",
-                received_at=datetime.now(UTC),
+                received_at=now,
+                created_at=now,
+                updated_at=now,
                 planned_issue_at=None,
                 issued_at=None,
                 comment="Test order",
@@ -74,3 +84,5 @@ def test_get_order_returns_api_contract() -> None:
     assert result.id == order_id
     assert result.number == "1001"
     assert result.archived is False
+    assert result.created_at == now
+    assert result.updated_at == now
