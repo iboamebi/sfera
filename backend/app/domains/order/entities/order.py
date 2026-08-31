@@ -9,6 +9,7 @@ from uuid import UUID
 from app.domains.order.entities.order_item import OrderItem
 from app.domains.order.events.order_registered import OrderRegistered
 from app.domains.order.exceptions.order_exception import OrderException
+from app.domains.order.value_objects.order_item_operation import OrderItemOperation
 from app.domains.order.value_objects.order_number import OrderNumber
 from app.domains.order.value_objects.order_status import OrderStatus
 from app.shared.base.aggregate import AggregateRoot
@@ -63,11 +64,39 @@ class Order(AggregateRoot):
             existing.instrument_id == item.instrument_id
             for existing in self.items
         ):
-            raise OrderException(
-                "Instrument already exists in order"
-            )
+            raise OrderException("Instrument already exists in order")
 
         self.items.append(item)
+
+    def update_item(
+        self,
+        item_id: UUID,
+        requested_operations: set[OrderItemOperation],
+    ) -> None:
+        """Update an order item while the order is new."""
+
+        if self.status != OrderStatus.NEW:
+            raise OrderException("Cannot update item in active order")
+
+        for item in self.items:
+            if item.id == item_id:
+                item.requested_operations = requested_operations
+                return
+
+        raise OrderException("Order item not found")
+
+    def remove_item(self, item_id: UUID) -> None:
+        """Remove an order item while the order is new."""
+
+        if self.status != OrderStatus.NEW:
+            raise OrderException("Cannot remove item from active order")
+
+        for index, item in enumerate(self.items):
+            if item.id == item_id:
+                self.items.pop(index)
+                return
+
+        raise OrderException("Order item not found")
 
     def update_details(
         self,
@@ -87,6 +116,4 @@ class Order(AggregateRoot):
             raise OrderException("Order must contain items")
 
         self.status = OrderStatus.REGISTERED
-        self.add_event(
-            OrderRegistered(order_id=self.id)
-        )
+        self.add_event(OrderRegistered(order_id=self.id))
