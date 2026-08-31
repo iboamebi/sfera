@@ -15,8 +15,11 @@ export function mapOrder(dto: OrderApiDto): OrderRead {
     items: dto.items.map((item) => ({
       id: item.id,
       instrumentId: item.instrument_id,
+      instrumentTypeId: item.instrument_type_id,
+      instrumentName: item.instrument_name,
       instrumentTypeName: item.instrument_type_name,
       serialNumber: item.serial_number,
+      modification: item.modification,
       comment: item.comment,
       requestedOperations: item.requested_operations,
     })),
