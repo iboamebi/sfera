@@ -1,10 +1,12 @@
 import { useState } from "react";
 
+import { isAxiosError } from "axios";
 import {
   Button,
   Checkbox,
   FormControlLabel,
   Stack,
+  Typography,
 } from "@mui/material";
 
 import { useCreateDevice } from "../../../devices/model/useCreateDevice";
@@ -29,15 +31,29 @@ interface AddOrderItemButtonProps {
   orderId: string;
 }
 
+function getErrorMessage(error: unknown): string {
+  if (isAxiosError(error)) {
+    const detail = error.response?.data?.detail;
+    if (typeof detail === "string" && detail.trim()) {
+      return detail;
+    }
+  }
+
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+
+  return "Не удалось добавить позицию";
+}
+
 export function AddOrderItemButton({ orderId }: AddOrderItemButtonProps) {
   const [deviceId, setDeviceId] = useState("");
   const [instrumentTypeId, setInstrumentTypeId] = useState("");
-  const [requestedOperations, setRequestedOperations] = useState<
-    OrderItemOperation[]
-  >(["verification"]);
+  const [requestedOperations, setRequestedOperations] = useState<OrderItemOperation[]>([
+    "verification",
+  ]);
   const [isCreateDeviceOpen, setIsCreateDeviceOpen] = useState(false);
-  const [isCreateInstrumentTypeOpen, setIsCreateInstrumentTypeOpen] =
-    useState(false);
+  const [isCreateInstrumentTypeOpen, setIsCreateInstrumentTypeOpen] = useState(false);
   const addOrderItemMutation = useAddOrderItem(orderId);
   const createDeviceMutation = useCreateDevice();
   const createInstrumentTypeMutation = useCreateInstrumentType();
@@ -56,10 +72,7 @@ export function AddOrderItemButton({ orderId }: AddOrderItemButtonProps) {
     }
 
     addOrderItemMutation.mutate(
-      {
-        instrumentId: deviceId,
-        requestedOperations,
-      },
+      { instrumentId: deviceId, requestedOperations },
       {
         onSuccess: () => {
           setDeviceId("");
@@ -120,7 +133,6 @@ export function AddOrderItemButton({ orderId }: AddOrderItemButtonProps) {
           onChange={setDeviceId}
           onCreateDevice={() => setIsCreateDeviceOpen(true)}
         />
-
         <Button
           disabled={!deviceId || addOrderItemMutation.isPending}
           onClick={handleAdd}
@@ -144,6 +156,12 @@ export function AddOrderItemButton({ orderId }: AddOrderItemButtonProps) {
           />
         ))}
       </Stack>
+
+      {addOrderItemMutation.isError && (
+        <Typography color="error" variant="body2">
+          {getErrorMessage(addOrderItemMutation.error)}
+        </Typography>
+      )}
     </Stack>
   );
 }
