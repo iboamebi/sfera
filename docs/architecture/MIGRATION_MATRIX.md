@@ -276,9 +276,39 @@ Validation:
 
 ---
 
-# Current Checkpoint — 2026-08-17
+## Order Domain Events Foundation
 
-The DDD/Clean Architecture migration and the current architecture audits are complete.
+Status:
+
+COMPLETED
+
+Scope:
+
+- AggregateRoot event collection
+- DomainEvent base contract
+- OrderRegistered event
+- UnitOfWork event collection and dispatch
+- EventDispatcher integration
+- operation-to-event correlation
+
+Result:
+
+- `AggregateRoot` collects domain events and exposes them through `collect_events()`.
+- `Order.register()` produces `OrderRegistered`.
+- `SqlAlchemyUnitOfWork` dispatches collected domain events after a successful database commit.
+- `OperationContext.operation_id` is propagated to the event through the UnitOfWork boundary.
+- `EventDispatcher` dispatches events to registered handlers.
+- No persistent audit trail is implemented yet.
+
+Validation:
+
+- Order domain-event foundation tests: 3 passed
+
+---
+
+# Current Checkpoint — 2026-08-31
+
+The DDD/Clean Architecture migration and the main architecture audits are complete.
 
 Completed:
 
@@ -289,23 +319,25 @@ Completed:
 - Infrastructure mapper alignment
 - Legacy CRUD removal
 - Architecture dependency validation
-
-Current validation:
-
-- pytest: 33 passed
-- ruff check: passed
-- ruff format --check: passed
+- Order domain events foundation
+- Order operation-to-event correlation
 
 Open technical debt is intentionally isolated from completed migration work:
 
 1. PriceList / PriceListItem identifier creation contract.
 2. PriceList application test coverage.
 3. Existing API contract debt listed in the API Layer Audit.
+4. Persistent Audit Trail.
+5. Workflow orchestration after event and audit contracts are finalized.
 
-Next work must follow the project rule:
+Current direction:
 
 ```text
-new → integrate → validate → remove legacy
+Persistent Audit Trail
+        ↓
+review event/audit contracts
+        ↓
+workflow orchestration
 ```
 
 Feature migration and architectural cleanup must remain separate changes.
