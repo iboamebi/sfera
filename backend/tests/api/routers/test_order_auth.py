@@ -76,7 +76,20 @@ def test_register_order_passes_authenticated_user_to_application_service() -> No
         def get(self, requested_id: object) -> OrderRead:
             assert requested_id == order_id
             now = datetime.now(UTC)
-            return OrderRead(\n                id=order_id,\n                number="1001",\n                customer_id=uuid4(),\n                status="REGISTERED",\n                received_at=now,\n                created_at=now,\n                updated_at=now,\n                planned_issue_at=None,\n                issued_at=None,\n                comment=None,\n                archived=False,\n                items=[],\n            )
+            return OrderRead(
+                id=order_id,
+                number="1001",
+                customer_id=uuid4(),
+                status="REGISTERED",
+                received_at=now,
+                created_at=now,
+                updated_at=now,
+                planned_issue_at=None,
+                issued_at=None,
+                comment=None,
+                archived=False,
+                items=[],
+            )
 
     service = FakeOrderService()
 
