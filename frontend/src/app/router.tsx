@@ -15,6 +15,7 @@ import { PriceListPage } from "../pages/price-lists/PriceListPage";
 import { CreateOrderPage } from "../pages/orders/CreateOrderPage";
 import { OrderPage } from "../pages/orders/OrderPage";
 import { OrdersPage } from "../pages/orders/OrdersPage";
+import { DevicePage } from "../pages/devices/DevicePage";
 import { DevicesPage } from "../pages/devices/DevicesPage";
 import { InstrumentTypePage } from "../pages/instrument-types/InstrumentTypePage";
 import { InstrumentTypesPage } from "../pages/instrument-types/InstrumentTypesPage";
@@ -27,146 +28,78 @@ export const router = createBrowserRouter([
   },
   {
     path: "/",
-    element: (
-      <RequireAuth>
-        <OrdersPage />
-      </RequireAuth>
-    ),
+    element: <RequireAuth><OrdersPage /></RequireAuth>,
   },
   {
     path: "/orders",
-    element: (
-      <RequireAuth>
-        <OrdersPage />
-      </RequireAuth>
-    ),
+    element: <RequireAuth><OrdersPage /></RequireAuth>,
   },
   {
     path: "/orders/new",
-    element: (
-      <RequireAuth>
-        <CreateOrderPage />
-      </RequireAuth>
-    ),
+    element: <RequireAuth><CreateOrderPage /></RequireAuth>,
   },
   {
     path: "/orders/:orderId",
-    element: (
-      <RequireAuth>
-        <OrderPage />
-      </RequireAuth>
-    ),
+    element: <RequireAuth><OrderPage /></RequireAuth>,
   },
   {
     path: "/customers",
-    element: (
-      <RequireAuth>
-        <CustomersPage />
-      </RequireAuth>
-    ),
+    element: <RequireAuth><CustomersPage /></RequireAuth>,
   },
   {
     path: "/customers/:customerId",
-    element: (
-      <RequireAuth>
-        <CustomerPage />
-      </RequireAuth>
-    ),
+    element: <RequireAuth><CustomerPage /></RequireAuth>,
   },
   {
     path: "/organizations",
-    element: (
-      <RequireAuth>
-        <OrganizationsPage />
-      </RequireAuth>
-    ),
+    element: <RequireAuth><OrganizationsPage /></RequireAuth>,
   },
   {
     path: "/organizations/:organizationId",
-    element: (
-      <RequireAuth>
-        <OrganizationPage />
-      </RequireAuth>
-    ),
+    element: <RequireAuth><OrganizationPage /></RequireAuth>,
   },
   {
     path: "/materials",
-    element: (
-      <RequireAuth>
-        <MaterialsPage />
-      </RequireAuth>
-    ),
+    element: <RequireAuth><MaterialsPage /></RequireAuth>,
   },
   {
     path: "/materials/:materialId",
-    element: (
-      <RequireAuth>
-        <MaterialPage />
-      </RequireAuth>
-    ),
+    element: <RequireAuth><MaterialPage /></RequireAuth>,
   },
   {
     path: "/verifications/:verificationId",
-    element: (
-      <RequireAuth>
-        <VerificationPage />
-      </RequireAuth>
-    ),
+    element: <RequireAuth><VerificationPage /></RequireAuth>,
   },
   {
     path: "/diagnostics/:diagnosticId",
-    element: (
-      <RequireAuth>
-        <DiagnosticPage />
-      </RequireAuth>
-    ),
+    element: <RequireAuth><DiagnosticPage /></RequireAuth>,
   },
   {
     path: "/repairs/:repairId",
-    element: (
-      <RequireAuth>
-        <RepairPage />
-      </RequireAuth>
-    ),
+    element: <RequireAuth><RepairPage /></RequireAuth>,
   },
   {
     path: "/price-lists/:priceListId",
-    element: (
-      <RequireAuth>
-        <PriceListPage />
-      </RequireAuth>
-    ),
+    element: <RequireAuth><PriceListPage /></RequireAuth>,
   },
   {
     path: "/devices",
-    element: (
-      <RequireAuth>
-        <DevicesPage />
-      </RequireAuth>
-    ),
+    element: <RequireAuth><DevicesPage /></RequireAuth>,
+  },
+  {
+    path: "/devices/:deviceId",
+    element: <RequireAuth><DevicePage /></RequireAuth>,
   },
   {
     path: "/instrument-types",
-    element: (
-      <RequireAuth>
-        <InstrumentTypesPage />
-      </RequireAuth>
-    ),
+    element: <RequireAuth><InstrumentTypesPage /></RequireAuth>,
   },
   {
     path: "/instrument-types/:instrumentTypeId",
-    element: (
-      <RequireAuth>
-        <InstrumentTypePage />
-      </RequireAuth>
-    ),
+    element: <RequireAuth><InstrumentTypePage /></RequireAuth>,
   },
   {
     path: "/warehouses/:warehouseId/stocks",
-    element: (
-      <RequireAuth>
-        <WarehouseStockPage />
-      </RequireAuth>
-    ),
+    element: <RequireAuth><WarehouseStockPage /></RequireAuth>,
   },
 ]);
