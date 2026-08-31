@@ -60,6 +60,7 @@ class OrderMapper(BaseMapper[Order, OrderModel]):
         for line_number, item in enumerate(entity.items, start=1):
             model.order_items.append(
                 OrderItemModel(
+                    id=item.id,
                     instrument_id=item.instrument_id,
                     instrument_type_id=item.instrument_type_id,
                     line_number=line_number,
