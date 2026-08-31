@@ -16,10 +16,16 @@ from app.shared.base.aggregate import AggregateRoot
 
 @dataclass(eq=False, kw_only=True)
 class Device(AggregateRoot):
-    """Device aggregate."""
+    """Device aggregate representing an instrument card."""
 
     instrument_type_id: UUID
     serial_number: SerialNumber
+    registry_number: str | None = None
+    modification: str | None = None
+    factory_number: str | None = None
+    manufacture_year: int | None = None
+    inventory_number: str | None = None
+    comment: str | None = None
     status: DeviceStatus = DeviceStatus.AVAILABLE
 
     def connect(self) -> None:
