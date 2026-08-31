@@ -60,6 +60,7 @@ function DetailRow({ label, value }: { label: string; value: string }) {
 
 export function OrderDetails({ order }: OrderDetailsProps) {
   const { data: customer } = useCustomer(order.customerId);
+  const isEditable = order.status === "NEW";
 
   return (
     <Card>
@@ -100,13 +101,13 @@ export function OrderDetails({ order }: OrderDetailsProps) {
 
           <Divider />
 
-          <Stack
-            direction="row"
-            spacing={2}
-            sx={{ alignItems: "flex-start", justifyContent: "space-between" }}
-          >
-            <OrderItems items={order.items} orderId={order.id} />
-            {order.status === "NEW" && <AddOrderItemButton orderId={order.id} />}
+          <Stack spacing={2}>
+            <OrderItems
+              items={order.items}
+              orderId={order.id}
+              editable={isEditable}
+            />
+            {isEditable && <AddOrderItemButton orderId={order.id} />}
           </Stack>
         </Stack>
       </CardContent>
