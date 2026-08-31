@@ -11,7 +11,9 @@ export function DeviceListItem({ device }: DeviceListItemProps) {
   return (
     <Stack spacing={1}>
       <Typography>
-        <Link to={`/devices/${device.id}`}>{device.serialNumber}</Link> — {device.status}
+        <Link to={`/devices/${device.id}`}>{device.name ?? "Без наименования"}</Link>
+        {" — "}
+        {device.serialNumber} — {device.status}
       </Typography>
     </Stack>
   );
