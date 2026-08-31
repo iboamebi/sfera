@@ -22,6 +22,8 @@ export interface OrderRead {
   customerId: string;
   status: string;
   receivedAt: string;
+  createdAt: string;
+  updatedAt: string;
   plannedIssueAt: string | null;
   issuedAt: string | null;
   comment: string | null;
