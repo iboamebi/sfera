@@ -19,8 +19,8 @@ class Device(AggregateRoot):
     """Device aggregate representing an instrument card."""
 
     instrument_type_id: UUID
-    name: str | None = None
     serial_number: SerialNumber
+    name: str | None = None
     registry_number: str | None = None
     modification: str | None = None
     factory_number: str | None = None
