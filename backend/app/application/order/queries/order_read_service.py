@@ -4,12 +4,8 @@ Order read service.
 
 from uuid import UUID
 
-from app.application.order.queries.order_read_mapper import (
-    OrderReadMapper,
-)
-from app.domains.order.repositories.order_read_repository import (
-    OrderReadRepository,
-)
+from app.application.order.queries.order_read_mapper import OrderReadMapper
+from app.domains.order.repositories.order_read_repository import OrderReadRepository
 from app.schemas.order import OrderRead
 
 
@@ -33,3 +29,7 @@ class OrderReadService:
             return None
 
         return self._mapper.to_schema(model)
+
+    def list(self) -> list[OrderRead]:
+        """List orders using the read model."""
+        return [self._mapper.to_schema(model) for model in self._repository.list()]
