@@ -18,6 +18,8 @@ export interface OrderApiDto {
   customer_id: string;
   status: string;
   received_at: string;
+  created_at: string;
+  updated_at: string;
   planned_issue_at: string | null;
   issued_at: string | null;
   comment: string | null;
