@@ -5,6 +5,7 @@ export function mapDevice(dto: DeviceApiDto): DeviceRead {
   return {
     id: dto.id,
     instrumentTypeId: dto.instrument_type_id,
+    name: dto.name,
     serialNumber: dto.serial_number,
     registryNumber: dto.registry_number,
     modification: dto.modification,
