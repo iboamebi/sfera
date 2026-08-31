@@ -8,6 +8,7 @@ export async function updateDevice(
   data: UpdateDeviceInput,
 ): Promise<DeviceRead> {
   const response = await http.put<DeviceApiDto>(`/devices/${deviceId}`, {
+    name: data.name,
     serial_number: data.serialNumber,
     registry_number: data.registryNumber,
     modification: data.modification,
