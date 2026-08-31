@@ -84,6 +84,7 @@ export function AddOrderItemButton({ orderId }: AddOrderItemButtonProps) {
 
   const handleCreateDevice = (data: {
     instrumentTypeId: string;
+    name: string;
     serialNumber: string;
   }) => {
     createDeviceMutation.mutate(data, {
