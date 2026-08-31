@@ -15,7 +15,6 @@ function toForm(device: DeviceRead): UpdateDeviceInput {
     serialNumber: device.serialNumber,
     registryNumber: device.registryNumber,
     modification: device.modification,
-    factoryNumber: device.factoryNumber,
     manufactureYear: device.manufactureYear,
     inventoryNumber: device.inventoryNumber,
     comment: device.comment,
@@ -48,9 +47,8 @@ export function DeviceCard({ device }: DeviceCardProps) {
         <Typography>Наименование СИ: {device.name ?? "—"}</Typography>
         <Typography>Тип СИ: {instrumentType?.name ?? "—"}</Typography>
         <Typography>Модель СИ: {device.modification ?? "—"}</Typography>
-        <Typography>Серийный номер: {device.serialNumber}</Typography>
+        <Typography>Заводской номер: {device.serialNumber}</Typography>
         <Typography>Регистрационный номер: {device.registryNumber ?? "—"}</Typography>
-        <Typography>Заводской номер: {device.factoryNumber ?? "—"}</Typography>
         <Typography>Год выпуска: {device.manufactureYear ?? "—"}</Typography>
         <Typography>Инвентарный номер: {device.inventoryNumber ?? "—"}</Typography>
         <Typography>Комментарий: {device.comment ?? "—"}</Typography>
@@ -77,7 +75,7 @@ export function DeviceCard({ device }: DeviceCardProps) {
         onChange={(e) => setField("modification", e.target.value || null)}
       />
       <TextField
-        label="Серийный номер"
+        label="Заводской номер"
         value={form.serialNumber}
         onChange={(e) => setField("serialNumber", e.target.value)}
         required
@@ -86,11 +84,6 @@ export function DeviceCard({ device }: DeviceCardProps) {
         label="Регистрационный номер"
         value={form.registryNumber ?? ""}
         onChange={(e) => setField("registryNumber", e.target.value || null)}
-      />
-      <TextField
-        label="Заводской номер"
-        value={form.factoryNumber ?? ""}
-        onChange={(e) => setField("factoryNumber", e.target.value || null)}
       />
       <TextField
         label="Год выпуска"
