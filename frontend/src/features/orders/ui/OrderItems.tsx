@@ -78,9 +78,20 @@ export function OrderItems({ items, orderId, editable = false }: OrderItemsProps
           <Stack key={item.id} spacing={0.5}>
             <Typography variant="body1">Позиция {index + 1}</Typography>
 
-            <Typography color="text.secondary" variant="body2">
-              {item.instrumentTypeName ?? "СИ"}: {item.serialNumber ?? "—"}
-            </Typography>
+            <Stack spacing={0.25}>
+              <Typography color="text.secondary" variant="body2">
+                Наименование СИ: {item.instrumentName ?? "—"}
+              </Typography>
+              <Typography color="text.secondary" variant="body2">
+                Тип СИ: {item.instrumentTypeName ?? "—"}
+              </Typography>
+              <Typography color="text.secondary" variant="body2">
+                Модель СИ: {item.modification ?? "—"}
+              </Typography>
+              <Typography color="text.secondary" variant="body2">
+                Заводской номер: {item.serialNumber ?? "—"}
+              </Typography>
+            </Stack>
 
             {item.instrumentId && (
               <Stack direction="row">
