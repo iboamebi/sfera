@@ -58,6 +58,8 @@ class OrderRead(BaseModel):
     customer_id: UUID
     status: OrderStatus
     received_at: datetime
+    created_at: datetime
+    updated_at: datetime
     planned_issue_at: datetime | None = None
     issued_at: datetime | None = None
     comment: str | None = None
