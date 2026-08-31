@@ -15,7 +15,6 @@ class UpdateDeviceCommand:
     serial_number: str
     registry_number: str | None = None
     modification: str | None = None
-    factory_number: str | None = None
     manufacture_year: int | None = None
     inventory_number: str | None = None
     comment: str | None = None
