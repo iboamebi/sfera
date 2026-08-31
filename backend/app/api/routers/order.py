@@ -54,8 +54,9 @@ def create_order(
     data: OrderCreate,
     user: User = Depends(get_current_user),
     service: OrderApplicationService = Depends(get_order_service),
+    read_service: OrderReadService = Depends(get_order_read_service),
 ):
-    return service.create(
+    order = service.create(
         CreateOrderCommand(
             customer_id=data.customer_id,
             number=data.number,
@@ -64,6 +65,12 @@ def create_order(
         ),
         user,
     )
+
+    read_order = read_service.get(order.id)
+    if read_order is None:
+        raise HTTPException(status_code=500, detail="Created order could not be loaded")
+
+    return read_order
 
 
 @router.get("/", response_model=list[OrderRead])
