@@ -45,6 +45,8 @@ class OrderReadRepositorySQLAlchemy(OrderReadRepository):
             customer_id=order.customer_id,
             status=order.status,
             received_at=order.received_at,
+            created_at=order.created_at,
+            updated_at=order.updated_at,
             planned_issue_at=order.planned_issue_at,
             issued_at=order.issued_at,
             comment=order.comment,
