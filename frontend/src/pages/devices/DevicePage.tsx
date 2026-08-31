@@ -1,4 +1,4 @@
-import { Stack, Typography } from "@mui/material";
+import { Button, Stack, Typography } from "@mui/material";
 import { useNavigate, useSearchParams, useParams } from "react-router";
 
 import { DeviceCard } from "../../features/devices/ui/DeviceCard";
@@ -11,6 +11,14 @@ export function DevicePage() {
   const { data, isLoading, error } = useDevice(deviceId ?? "");
   const returnToOrderId = searchParams.get("returnToOrder");
 
+  const goBack = () => {
+    if (returnToOrderId) {
+      navigate(`/orders/${returnToOrderId}`);
+      return;
+    }
+    navigate(-1);
+  };
+
   if (isLoading) {
     return <Typography>Загрузка карты СИ...</Typography>;
   }
@@ -21,6 +29,9 @@ export function DevicePage() {
 
   return (
     <Stack spacing={2}>
+      <Button variant="outlined" onClick={goBack} sx={{ alignSelf: "flex-start" }}>
+        Назад
+      </Button>
       <DeviceCard
         device={data}
         initialEditing={searchParams.get("edit") === "1"}
