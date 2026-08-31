@@ -449,23 +449,18 @@ vite build — passed
 
 Vite reports only a chunk-size warning (>500 kB). This is not a build failure.
 
-Latest commits before documentation renewal:
+Backend validation at the latest architecture checkpoint:
 
 ```text
-320937b fix: map order read data fields correctly
-3563a4a fix: map order read repository to read model
-a53d711 feat: add warehouse stock route integration
-12b6fcc feat: add warehouse stock page
-976c4de feat: add warehouse stock table component
-35e4660 docs: add order lifecycle audit checkpoint
+137 passed
+1 warning
 ```
 
-Backend validation:
-- 137 passed
-- 1 warning
+The Order domain-event foundation was separately validated with:
 
-Latest architecture commit:
-86ffb29 refactor: introduce order read repository architecture
+```text
+3 passed
+```
 
 ## Documentation State
 
@@ -504,7 +499,7 @@ docs/architecture/AUTHORIZATION.md
 
 The current frontend phase has completed a broad sequence of read/list/detail slices.
 
-Next work must start with an audit of the actual `develop` state and backend contracts.
+The current backend technical stage is the transition from the Order lifecycle audit to event-driven workflow orchestration.
 
 Do not:
 
@@ -512,11 +507,8 @@ Do not:
 - invent list→detail links without a confirmed ID source;
 - add authorization without an explicit business owner/requirement;
 - reintroduce legacy CRUD architecture;
-- follow an obsolete roadmap without checking current code.
-
-Order lifecycle audit:
-implement DDD events foundation only after final review of current contracts.
-Do not implement workflow orchestration before event infrastructure is introduced.
+- follow an obsolete roadmap without checking current code;
+- implement workflow orchestration before the event infrastructure contract is reviewed.
 
 ## Order Lifecycle Audit Checkpoint
 
@@ -526,7 +518,9 @@ Do not implement workflow orchestration before event infrastructure is introduce
 
 Документ:
 
+```text
 docs/architecture/ORDER_LIFECYCLE_AUDIT.md
+```
 
 Основные выводы:
 
@@ -562,25 +556,30 @@ Workflow domain существует:
 
 Но интеграция с бизнес-сценариями отсутствует.
 
-Domain Events infrastructure существует:
-- DomainEvent;
-- EventDispatcher;
-- OrderCreated.
+## DDD Events Foundation Checkpoint
 
-Не реализованы:
-- Aggregate event collection;
-- UnitOfWork event dispatch;
-- Event handlers;
-- OrderRegistered event.
+Статус: COMPLETE
+
+Реализовано:
+
+- `AggregateRoot` с накоплением domain events;
+- `DomainEvent` с `event_id`, `occurred_at` и опциональным `operation_id`;
+- `OrderRegistered` domain event;
+- `Order.register()` создаёт `OrderRegistered`;
+- `UnitOfWork` регистрирует aggregate для последующего сбора событий;
+- `SqlAlchemyUnitOfWork` после успешного commit собирает события и передаёт их в `EventDispatcher`;
+- `operation_id` из `OperationContext` переносится в domain event;
+- `EventDispatcher` выполняет зарегистрированные handlers.
+
+Текущая реализация связывает операцию и domain event на границе UnitOfWork. Persistent Audit Trail ещё не реализован.
 
 Следующий технический этап:
 
-DDD events foundation:
+```text
+Persistent Audit Trail
+```
 
-1. AggregateRoot с накоплением domain events.
-2. Интеграция событий с UnitOfWork.
-3. Добавление OrderRegistered event.
-4. После этого — workflow orchestration.
+Workflow orchestration выполняется только после отдельного review event contract и audit requirements.
 
 ## Recovery Checkpoint
 
