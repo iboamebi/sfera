@@ -178,6 +178,28 @@ Workflow
 
 ---
 
+# Instrument Card Context
+
+Конкретный экземпляр средства измерений (`Device` / `Instrument`) отделён от типа средства измерений (`InstrumentType`).
+
+Семантика карты СИ зафиксирована в:
+
+```text
+docs/architecture/INSTRUMENT_CARD.md
+```
+
+Основной контракт:
+
+```text
+Наименование СИ → Device.name
+Тип СИ          → InstrumentType.name
+Модель СИ       → Device.modification
+```
+
+Изменение карты СИ не изменяет `InstrumentType`, поскольку один тип может использоваться несколькими экземплярами.
+
+---
+
 # Operation Audit Context
 
 Для многопользовательской работы система должна уметь определить происхождение значимой операции.
@@ -418,6 +440,7 @@ Frontend architecture                 IN PROGRESS
 docs/architecture/PROJECT_CONSTITUTION.md
 docs/architecture/PROJECT_ARCHITECTURE_STANDARD.md
 docs/architecture/PROJECT_STRUCTURE.md
+docs/architecture/INSTRUMENT_CARD.md
 docs/architecture/AUDIT_ARCHITECTURE.md
 docs/architecture/AUDIT_TRAIL.md
 docs/architecture/AUTHENTICATION.md
@@ -429,8 +452,6 @@ docs/architecture/README.md
 ```
 
 Нормативным документом остаётся `PROJECT_CONSTITUTION.md`. `AUDIT_ARCHITECTURE.md` фиксирует архитектуру operation context и корреляции событий; `AUDIT_TRAIL.md` фиксирует требования к будущему persistent audit mechanism.
-
----
 
 # Rule
 
