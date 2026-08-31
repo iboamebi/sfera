@@ -189,8 +189,15 @@ def register_order(
     order_id: UUID,
     user: User = Depends(get_current_user),
     service: OrderApplicationService = Depends(get_order_service),
+    read_service: OrderReadService = Depends(get_order_read_service),
 ):
-    return service.register(RegisterOrderCommand(order_id=order_id), user)
+    service.register(RegisterOrderCommand(order_id=order_id), user)
+
+    order = read_service.get(order_id)
+    if order is None:
+        raise HTTPException(status_code=500, detail="Registered order could not be loaded")
+
+    return order
 
 
 @router.get("/{order_id}", response_model=OrderRead)
