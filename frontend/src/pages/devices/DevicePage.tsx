@@ -1,11 +1,12 @@
 import { Stack, Typography } from "@mui/material";
-import { useParams } from "react-router";
+import { useSearchParams, useParams } from "react-router";
 
 import { DeviceCard } from "../../features/devices/ui/DeviceCard";
 import { useDevice } from "../../features/devices/model/useDevice";
 
 export function DevicePage() {
   const { deviceId } = useParams<{ deviceId: string }>();
+  const [searchParams] = useSearchParams();
   const { data, isLoading, error } = useDevice(deviceId ?? "");
 
   if (isLoading) {
@@ -18,7 +19,10 @@ export function DevicePage() {
 
   return (
     <Stack spacing={2}>
-      <DeviceCard device={data} />
+      <DeviceCard
+        device={data}
+        initialEditing={searchParams.get("edit") === "1"}
+      />
     </Stack>
   );
 }
