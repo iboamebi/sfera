@@ -56,6 +56,7 @@ class DeviceApplicationService:
             device = DeviceFactory.create(
                 device_id=uuid4(),
                 instrument_type_id=command.instrument_type_id,
+                name=command.name,
                 serial_number=command.serial_number,
             )
 
@@ -89,6 +90,7 @@ class DeviceApplicationService:
 
         with self._uow:
             device = self.get(command.device_id)
+            device.change_name(command.name)
             device.serial_number = SerialNumber(command.serial_number)
             device.registry_number = command.registry_number
             device.modification = command.modification
