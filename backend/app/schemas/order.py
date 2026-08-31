@@ -38,6 +38,7 @@ class OrderItemRead(BaseModel):
     id: UUID
     instrument_id: UUID | None = None
     instrument_type_id: UUID | None = None
+    instrument_name: str | None = None
     instrument_type_name: str | None = None
     serial_number: str | None = None
     modification: str | None = None
