@@ -27,6 +27,7 @@ class DeviceMapper(BaseMapper[Device, Instrument]):
         return Device(
             id=model.id,
             instrument_type_id=model.instrument_type_id,
+            name=model.name,
             serial_number=SerialNumber(model.serial_number),
             registry_number=model.registry_number,
             modification=model.modification,
@@ -43,6 +44,7 @@ class DeviceMapper(BaseMapper[Device, Instrument]):
         model: Instrument,
     ) -> Instrument:
         model.instrument_type_id = entity.instrument_type_id
+        model.name = entity.name
         model.serial_number = entity.serial_number.value
         model.device_status = entity.status.value
         model.registry_number = entity.registry_number
