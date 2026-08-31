@@ -82,6 +82,8 @@ export function OrderDetails({ order }: OrderDetailsProps) {
 
           <Stack spacing={2}>
             <DetailRow label="Клиент" value={customer?.name ?? "—"} />
+            <DetailRow label="Создан" value={formatDate(order.createdAt)} />
+            <DetailRow label="Изменён" value={formatDate(order.updatedAt)} />
             <DetailRow label="Получен" value={formatDate(order.receivedAt)} />
             <DetailRow
               label="Планируемая выдача"
