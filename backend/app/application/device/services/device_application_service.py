@@ -94,7 +94,6 @@ class DeviceApplicationService:
             device.serial_number = SerialNumber(command.serial_number)
             device.registry_number = command.registry_number
             device.modification = command.modification
-            device.factory_number = command.factory_number
             device.manufacture_year = command.manufacture_year
             device.inventory_number = command.inventory_number
             device.comment = command.comment
