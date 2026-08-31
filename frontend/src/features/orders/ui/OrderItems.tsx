@@ -1,6 +1,7 @@
 import { useState } from "react";
 
 import { Button, Checkbox, Chip, Divider, FormControlLabel, Stack, Typography } from "@mui/material";
+import { useNavigate } from "react-router";
 
 import { useDeleteOrderItem } from "../add-order-item/model/useDeleteOrderItem";
 import { useUpdateOrderItem } from "../add-order-item/model/useUpdateOrderItem";
@@ -24,6 +25,7 @@ const OPERATION_OPTIONS = Object.entries(OPERATION_LABELS) as Array<
 >;
 
 export function OrderItems({ items, orderId, editable = false }: OrderItemsProps) {
+  const navigate = useNavigate();
   const updateMutation = useUpdateOrderItem(orderId);
   const deleteMutation = useDeleteOrderItem(orderId);
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
@@ -56,6 +58,13 @@ export function OrderItems({ items, orderId, editable = false }: OrderItemsProps
     deleteMutation.mutate(itemId);
   };
 
+  const openDeviceCard = (instrumentId: string | null) => {
+    if (!instrumentId) {
+      return;
+    }
+    navigate(`/devices/${instrumentId}`);
+  };
+
   return (
     <Stack spacing={2} sx={{ width: "100%" }}>
       <Typography variant="h6">Позиции заказа</Typography>
@@ -72,6 +81,18 @@ export function OrderItems({ items, orderId, editable = false }: OrderItemsProps
             <Typography color="text.secondary" variant="body2">
               {item.instrumentTypeName ?? "СИ"}: {item.serialNumber ?? "—"}
             </Typography>
+
+            {item.instrumentId && (
+              <Stack direction="row">
+                <Button
+                  size="small"
+                  variant="outlined"
+                  onClick={() => openDeviceCard(item.instrumentId)}
+                >
+                  Редактировать карту СИ
+                </Button>
+              </Stack>
+            )}
 
             {editingItemId === item.id ? (
               <Stack direction="row" sx={{ flexWrap: "wrap" }}>
