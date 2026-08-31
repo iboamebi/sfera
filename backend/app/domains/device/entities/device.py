@@ -19,6 +19,7 @@ class Device(AggregateRoot):
     """Device aggregate representing an instrument card."""
 
     instrument_type_id: UUID
+    name: str | None = None
     serial_number: SerialNumber
     registry_number: str | None = None
     modification: str | None = None
@@ -27,6 +28,11 @@ class Device(AggregateRoot):
     inventory_number: str | None = None
     comment: str | None = None
     status: DeviceStatus = DeviceStatus.AVAILABLE
+
+    def change_name(self, name: str) -> None:
+        """Change the instrument card name."""
+
+        self.name = name
 
     def connect(self) -> None:
         """Connect device to work."""
