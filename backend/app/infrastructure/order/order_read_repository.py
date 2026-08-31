@@ -23,22 +23,7 @@ class OrderReadRepositorySQLAlchemy(OrderReadRepository):
     def __init__(self, session: Session) -> None:
         self.session = session
 
-    def get(self, order_id: UUID) -> OrderReadData | None:
-        order = (
-            self.session.query(Order)
-            .options(
-                joinedload(Order.order_items)
-                .joinedload(OrderItem.instrument)
-                .joinedload(Instrument.instrument_type),
-                joinedload(Order.order_items).joinedload(OrderItem.instrument_type),
-            )
-            .filter(Order.id == order_id)
-            .first()
-        )
-
-        if order is None:
-            return None
-
+    def _to_read_model(self, order: Order) -> OrderReadData:
         return OrderReadData(
             id=order.id,
             number=order.number,
@@ -76,3 +61,21 @@ class OrderReadRepositorySQLAlchemy(OrderReadRepository):
                 for item in order.order_items
             ],
         )
+
+    def _query(self):
+        return self.session.query(Order).options(
+            joinedload(Order.order_items)
+            .joinedload(OrderItem.instrument)
+            .joinedload(Instrument.instrument_type),
+            joinedload(Order.order_items).joinedload(OrderItem.instrument_type),
+        )
+
+    def get(self, order_id: UUID) -> OrderReadData | None:
+        order = self._query().filter(Order.id == order_id).first()
+        if order is None:
+            return None
+        return self._to_read_model(order)
+
+    def list(self) -> list[OrderReadData]:
+        """List orders as read models."""
+        return [self._to_read_model(order) for order in self._query().all()]
