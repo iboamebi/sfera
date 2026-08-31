@@ -62,7 +62,7 @@ export function OrderItems({ items, orderId, editable = false }: OrderItemsProps
     if (!instrumentId) {
       return;
     }
-    navigate(`/devices/${instrumentId}`);
+    navigate(`/devices/${instrumentId}?edit=1`);
   };
 
   return (
