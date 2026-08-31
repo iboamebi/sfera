@@ -16,10 +16,15 @@ export function useUpdateDevice(
   return useMutation({
     mutationFn: (data) => updateDevice(deviceId, data),
     ...options,
-    onSuccess: async (data, variables, context) => {
+    onSuccess: async (data, variables, onMutateResult, context) => {
       queryClient.setQueryData(["devices", deviceId], data);
       await queryClient.invalidateQueries({ queryKey: ["devices"] });
-      await options?.onSuccess?.(data, variables, context);
+      await options?.onSuccess?.(
+        data,
+        variables,
+        onMutateResult,
+        context,
+      );
     },
   });
 }
