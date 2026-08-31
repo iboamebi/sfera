@@ -18,3 +18,8 @@ class OrderReadRepository(ABC):
     ) -> OrderReadData | None:
         """Get order read data."""
         raise NotImplementedError
+
+    @abstractmethod
+    def list(self) -> list[OrderReadData]:
+        """List order read data."""
+        raise NotImplementedError
