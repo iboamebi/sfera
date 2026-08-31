@@ -453,6 +453,8 @@ docs/architecture/README.md
 
 Нормативным документом остаётся `PROJECT_CONSTITUTION.md`. `AUDIT_ARCHITECTURE.md` фиксирует архитектуру operation context и корреляции событий; `AUDIT_TRAIL.md` фиксирует требования к будущему persistent audit mechanism.
 
+---
+
 # Rule
 
 Архитектурная документация является частью исходного кода и должна отражать фактическое состояние системы.
