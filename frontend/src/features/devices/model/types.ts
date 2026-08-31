@@ -12,7 +12,6 @@ export interface DeviceRead {
   serialNumber: string;
   registryNumber: string | null;
   modification: string | null;
-  factoryNumber: string | null;
   manufactureYear: number | null;
   inventoryNumber: string | null;
   comment: string | null;
@@ -24,7 +23,6 @@ export interface UpdateDeviceInput {
   serialNumber: string;
   registryNumber: string | null;
   modification: string | null;
-  factoryNumber: string | null;
   manufactureYear: number | null;
   inventoryNumber: string | null;
   comment: string | null;
