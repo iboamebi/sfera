@@ -8,6 +8,7 @@ export type DeviceStatus =
 export interface DeviceRead {
   id: string;
   instrumentTypeId: string;
+  name: string | null;
   serialNumber: string;
   registryNumber: string | null;
   modification: string | null;
@@ -19,6 +20,7 @@ export interface DeviceRead {
 }
 
 export interface UpdateDeviceInput {
+  name: string;
   serialNumber: string;
   registryNumber: string | null;
   modification: string | null;
