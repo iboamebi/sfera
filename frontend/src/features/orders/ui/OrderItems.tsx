@@ -1,9 +1,14 @@
-import { Chip, Divider, Stack, Typography } from "@mui/material";
+import { useState } from "react";
 
+import { Button, Checkbox, Chip, Divider, FormControlLabel, Stack, Typography } from "@mui/material";
+
+import { useDeleteOrderItem } from "../add-order-item/model/useDeleteOrderItem";
+import { useUpdateOrderItem } from "../add-order-item/model/useUpdateOrderItem";
 import type { OrderItem, OrderItemOperation } from "../model/types";
 
 interface OrderItemsProps {
   items: OrderItem[];
+  orderId: string;
 }
 
 const OPERATION_LABELS: Record<OrderItemOperation, string> = {
@@ -13,7 +18,43 @@ const OPERATION_LABELS: Record<OrderItemOperation, string> = {
   sale: "Продажа",
 };
 
-export function OrderItems({ items }: OrderItemsProps) {
+const OPERATION_OPTIONS = Object.entries(OPERATION_LABELS) as Array<
+  [OrderItemOperation, string]
+>;
+
+export function OrderItems({ items, orderId }: OrderItemsProps) {
+  const updateMutation = useUpdateOrderItem(orderId);
+  const deleteMutation = useDeleteOrderItem(orderId);
+  const [editingItemId, setEditingItemId] = useState<string | null>(null);
+  const [editedOperations, setEditedOperations] = useState<OrderItemOperation[]>([]);
+
+  const startEditing = (item: OrderItem) => {
+    setEditingItemId(item.id);
+    setEditedOperations(item.requestedOperations);
+  };
+
+  const toggleOperation = (operation: OrderItemOperation) => {
+    setEditedOperations((current) =>
+      current.includes(operation)
+        ? current.filter((value) => value !== operation)
+        : [...current, operation],
+    );
+  };
+
+  const saveEdit = (itemId: string) => {
+    updateMutation.mutate(
+      { itemId, requestedOperations: editedOperations },
+      { onSuccess: () => setEditingItemId(null) },
+    );
+  };
+
+  const removeItem = (itemId: string) => {
+    if (!window.confirm("Удалить позицию заказа?")) {
+      return;
+    }
+    deleteMutation.mutate(itemId);
+  };
+
   return (
     <Stack spacing={2}>
       <Typography variant="h6">Позиции заказа</Typography>
@@ -31,20 +72,70 @@ export function OrderItems({ items }: OrderItemsProps) {
               {item.instrumentTypeName ?? "СИ"}: {item.serialNumber ?? "—"}
             </Typography>
 
-            <Stack
-              direction="row"
-              sx={{ flexWrap: "wrap", gap: 0.5 }}
-            >
-              {item.requestedOperations.map((operation) => (
-                <Chip
-                  key={operation}
-                  label={OPERATION_LABELS[operation]}
-                  size="small"
-                />
-              ))}
-            </Stack>
+            {editingItemId === item.id ? (
+              <Stack direction="row" sx={{ flexWrap: "wrap" }}>
+                {OPERATION_OPTIONS.map(([operation, label]) => (
+                  <FormControlLabel
+                    key={operation}
+                    control={
+                      <Checkbox
+                        checked={editedOperations.includes(operation)}
+                        onChange={() => toggleOperation(operation)}
+                      />
+                    }
+                    label={label}
+                  />
+                ))}
+              </Stack>
+            ) : (
+              <Stack direction="row" sx={{ flexWrap: "wrap", gap: 0.5 }}>
+                {item.requestedOperations.map((operation) => (
+                  <Chip
+                    key={operation}
+                    label={OPERATION_LABELS[operation]}
+                    size="small"
+                  />
+                ))}
+              </Stack>
+            )}
 
             <Typography variant="body2">{item.comment || "—"}</Typography>
+
+            <Stack direction="row" spacing={1}>
+              {editingItemId === item.id ? (
+                <>
+                  <Button
+                    size="small"
+                    variant="contained"
+                    disabled={updateMutation.isPending || editedOperations.length === 0}
+                    onClick={() => saveEdit(item.id)}
+                  >
+                    Сохранить
+                  </Button>
+                  <Button
+                    size="small"
+                    disabled={updateMutation.isPending}
+                    onClick={() => setEditingItemId(null)}
+                  >
+                    Отмена
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button size="small" onClick={() => startEditing(item)}>
+                    Изменить
+                  </Button>
+                  <Button
+                    size="small"
+                    color="error"
+                    disabled={deleteMutation.isPending}
+                    onClick={() => removeItem(item.id)}
+                  >
+                    Удалить
+                  </Button>
+                </>
+              )}
+            </Stack>
 
             {index < items.length - 1 && <Divider sx={{ pt: 1 }} />}
           </Stack>
