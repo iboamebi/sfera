@@ -90,9 +90,15 @@ export function DeviceCard({ device, initialEditing = false }: DeviceCardProps) 
         label="Год выпуска"
         type="number"
         value={form.manufactureYear ?? ""}
-        onChange={(e) =>
-          setField("manufactureYear", e.target.value ? Number(e.target.value) : null)
-        }
+        slotProps={{ htmlInput: { step: 1, min: 0 } }}
+        onChange={(e) => {
+          const value = e.target.value;
+          if (!value) {
+            setField("manufactureYear", null);
+          } else if (/^\d{1,4}$/.test(value)) {
+            setField("manufactureYear", Number(value));
+          }
+        }}
       />
       <TextField
         label="Инвентарный номер"
