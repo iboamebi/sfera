@@ -26,10 +26,7 @@ const statusLabels: Record<string, string> = {
   CLOSED: "Закрыт",
 };
 
-const statusColors: Record<
-  string,
-  "default" | "primary" | "warning" | "success"
-> = {
+const statusColors: Record<string, "default" | "primary" | "warning" | "success"> = {
   NEW: "default",
   REGISTERED: "primary",
   IN_WORK: "warning",
@@ -50,19 +47,12 @@ function formatDate(value: string | null): string {
   }).format(new Date(value));
 }
 
-function DetailRow({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
-}) {
+function DetailRow({ label, value }: { label: string; value: string }) {
   return (
     <Stack spacing={0.5}>
       <Typography color="text.secondary" variant="body2">
         {label}
       </Typography>
-
       <Typography variant="body1">{value}</Typography>
     </Stack>
   );
@@ -78,13 +68,9 @@ export function OrderDetails({ order }: OrderDetailsProps) {
           <Stack
             direction="row"
             spacing={2}
-            sx={{
-              alignItems: "flex-start",
-              justifyContent: "space-between",
-            }}
+            sx={{ alignItems: "flex-start", justifyContent: "space-between" }}
           >
             <Typography variant="h5">Заказ № {order.number}</Typography>
-
             <Chip
               color={statusColors[order.status] ?? "default"}
               label={statusLabels[order.status] ?? order.status}
@@ -95,14 +81,11 @@ export function OrderDetails({ order }: OrderDetailsProps) {
 
           <Stack spacing={2}>
             <DetailRow label="Клиент" value={customer?.name ?? "—"} />
-
             <DetailRow label="Получен" value={formatDate(order.receivedAt)} />
-
             <DetailRow
               label="Планируемая выдача"
               value={formatDate(order.plannedIssueAt)}
             />
-
             <DetailRow label="Выдан" value={formatDate(order.issuedAt)} />
           </Stack>
 
@@ -112,7 +95,6 @@ export function OrderDetails({ order }: OrderDetailsProps) {
             <Typography color="text.secondary" variant="body2">
               Комментарий
             </Typography>
-
             <Typography variant="body1">{order.comment || "—"}</Typography>
           </Stack>
 
@@ -121,13 +103,10 @@ export function OrderDetails({ order }: OrderDetailsProps) {
           <Stack
             direction="row"
             spacing={2}
-            sx={{ alignItems: "center", justifyContent: "space-between" }}
+            sx={{ alignItems: "flex-start", justifyContent: "space-between" }}
           >
-            <OrderItems items={order.items} />
-
-            {order.status === "NEW" && (
-              <AddOrderItemButton orderId={order.id} />
-            )}
+            <OrderItems items={order.items} orderId={order.id} />
+            {order.status === "NEW" && <AddOrderItemButton orderId={order.id} />}
           </Stack>
         </Stack>
       </CardContent>
