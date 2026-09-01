@@ -31,26 +31,37 @@ from app.application.diagnostic.services.diagnostic_application_service import (
 from app.application.instrument_type.services import (
     instrument_type_application_service,
 )
-from app.application.material.services.material_application_service import MaterialApplicationService
+from app.application.material.services.material_application_service import (
+    MaterialApplicationService,
+)
 from app.application.order.queries.order_read_service import (
     OrderReadService,
 )
-from app.application.order.services.order_application_service import OrderApplicationService
+from app.application.order.services.order_application_service import (
+    OrderApplicationService,
+)
 from app.application.organization.services.organization_application_service import (
     OrganizationApplicationService,
 )
 from app.application.price_list.services.price_list_application_service import (
     PriceListApplicationService,
 )
-from app.application.repair.services.repair_application_service import RepairApplicationService
+from app.application.repair.services.repair_application_service import (
+    RepairApplicationService,
+)
 from app.application.verification.services.verification_application_service import (
     VerificationApplicationService,
 )
 from app.application.warehouse.queries.warehouse_stock_read_service import (
     WarehouseStockReadService,
 )
-from app.application.warehouse.services.warehouse_application_service import WarehouseApplicationService
-from app.application.workflow.services.workflow_application_service import WorkflowApplicationService
+from app.application.warehouse.services.warehouse_application_service import (
+    WarehouseApplicationService,
+)
+from app.application.workflow.services.workflow_application_service import (
+    WorkflowApplicationService,
+)
+from app.core.dependencies.events import get_event_dispatcher
 from app.core.dependencies.repositories import (
     get_audit_operation_repository,
     get_audit_repository,
@@ -74,12 +85,13 @@ from app.core.dependencies.repositories import (
     get_workflow_instance_repository,
     get_workflow_repository,
 )
-from app.core.dependencies.events import get_event_dispatcher
 from app.core.dependencies.uow import get_unit_of_work
 from app.domains.auth.repositories.session_repository import SessionRepository
 from app.domains.customer.repositories.customer_repository import CustomerRepository
 from app.domains.device.repositories.device_repository import DeviceRepository
-from app.domains.diagnostic.repositories.diagnostic_repository import DiagnosticRepository
+from app.domains.diagnostic.repositories.diagnostic_repository import (
+    DiagnosticRepository,
+)
 from app.domains.instrument_type.repositories.instrument_type_repository import (
     InstrumentTypeRepository,
 )
@@ -88,18 +100,31 @@ from app.domains.order.repositories.order_read_repository import (
     OrderReadRepository,
 )
 from app.domains.order.repositories.order_repository import OrderRepository
-from app.domains.organization.repositories.organization_repository import OrganizationRepository
-from app.domains.price_list.repositories.price_list_repository import PriceListRepository
+from app.domains.organization.repositories.organization_repository import (
+    OrganizationRepository,
+)
+from app.domains.price_list.repositories.price_list_repository import (
+    PriceListRepository,
+)
 from app.domains.repair.repositories.repair_repository import RepairRepository
 from app.domains.user.repositories.user_repository import UserRepository
-from app.domains.verification.repositories.verification_repository import VerificationRepository
-from app.domains.warehouse.repositories.warehouse_movement_repository import WarehouseMovementRepository
+from app.domains.verification.repositories.verification_repository import (
+    VerificationRepository,
+)
+from app.domains.warehouse.repositories.warehouse_movement_repository import (
+    WarehouseMovementRepository,
+)
 from app.domains.warehouse.repositories.warehouse_repository import WarehouseRepository
 from app.domains.warehouse.repositories.warehouse_stock_read_repository import (
     WarehouseStockReadRepository,
 )
-from app.domains.warehouse.repositories.warehouse_stock_repository import WarehouseStockRepository
-from app.domains.workflow.repositories.workflow_repository import WorkflowInstanceRepository, WorkflowRepository
+from app.domains.warehouse.repositories.warehouse_stock_repository import (
+    WarehouseStockRepository,
+)
+from app.domains.workflow.repositories.workflow_repository import (
+    WorkflowInstanceRepository,
+    WorkflowRepository,
+)
 from app.infrastructure.auth.password_hasher import Argon2PasswordHasher
 from app.infrastructure.auth.session_token_generator import SecureSessionTokenGenerator
 from app.shared.events.event_dispatcher import EventDispatcher
@@ -161,7 +186,9 @@ def get_order_read_service(
 def get_verification_service(
     repository: VerificationRepository = Depends(get_verification_repository),
     uow: UnitOfWork = Depends(get_unit_of_work),
-    audit_operation_repository: AuditOperationRepository = Depends(get_audit_operation_repository),
+    audit_operation_repository: AuditOperationRepository = Depends(
+        get_audit_operation_repository,
+    ),
     audit_repository: AuditRepository = Depends(get_audit_repository),
 ) -> VerificationApplicationService:
     """Provide Verification application service."""
