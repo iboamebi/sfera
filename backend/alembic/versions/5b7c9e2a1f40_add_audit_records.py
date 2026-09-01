@@ -1,7 +1,7 @@
 """add audit records
 
 Revision ID: 5b7c9e2a1f40
-Revises: 071a88b4b6da
+Revises: 071a88b4b6da, 9b1c7d4e2f30
 Create Date: 2026-09-01
 
 """
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 from alembic import op
 
 revision: str = "5b7c9e2a1f40"
-down_revision: str | Sequence[str] | None = "071a88b4b6da"
+down_revision: tuple[str, str] = ("071a88b4b6da", "9b1c7d4e2f30")
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 
