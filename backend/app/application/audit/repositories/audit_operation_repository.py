@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from app.application.audit.models import AuditOperation
+from app.shared.audit.models import AuditOperation
 
 
 class AuditOperationRepository(ABC):
