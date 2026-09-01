@@ -88,9 +88,10 @@ def add_order_item(
     data: OrderItemCreate,
     user: User = Depends(get_current_user),
     service: OrderApplicationService = Depends(get_order_service),
+    read_service: OrderReadService = Depends(get_order_read_service),
 ):
     try:
-        return service.add_item(
+        service.add_item(
             AddOrderItemCommand(
                 order_id=order_id,
                 instrument_id=data.instrument_id,
@@ -99,6 +100,15 @@ def add_order_item(
             ),
             user,
         )
+
+        order = read_service.get(order_id)
+        if order is None:
+            raise HTTPException(
+                status_code=500,
+                detail="Added order item order could not be loaded",
+            )
+
+        return order
     except OrderNotFoundApplicationError:
         raise HTTPException(status_code=404, detail="Order not found") from None
     except InstrumentAlreadyInActiveOrderApplicationError as exc:
@@ -118,9 +128,10 @@ def update_order_item(
     data: OrderItemUpdate,
     user: User = Depends(get_current_user),
     service: OrderApplicationService = Depends(get_order_service),
+    read_service: OrderReadService = Depends(get_order_read_service),
 ):
     try:
-        return service.update_item(
+        service.update_item(
             UpdateOrderItemCommand(
                 order_id=order_id,
                 item_id=item_id,
@@ -128,6 +139,15 @@ def update_order_item(
             ),
             user,
         )
+
+        order = read_service.get(order_id)
+        if order is None:
+            raise HTTPException(
+                status_code=500,
+                detail="Updated order item order could not be loaded",
+            )
+
+        return order
     except OrderNotFoundApplicationError:
         raise HTTPException(status_code=404, detail="Order not found") from None
     except OrderException as exc:
@@ -144,12 +164,22 @@ def delete_order_item(
     item_id: UUID,
     user: User = Depends(get_current_user),
     service: OrderApplicationService = Depends(get_order_service),
+    read_service: OrderReadService = Depends(get_order_read_service),
 ):
     try:
-        return service.delete_item(
+        service.delete_item(
             DeleteOrderItemCommand(order_id=order_id, item_id=item_id),
             user,
         )
+
+        order = read_service.get(order_id)
+        if order is None:
+            raise HTTPException(
+                status_code=500,
+                detail="Deleted order item order could not be loaded",
+            )
+
+        return order
     except OrderNotFoundApplicationError:
         raise HTTPException(status_code=404, detail="Order not found") from None
     except OrderException as exc:
