@@ -29,6 +29,9 @@ from app.shared.unit_of_work.unit_of_work import UnitOfWork
 
 
 class FakeUnitOfWork(UnitOfWork):
+    def __init__(self) -> None:
+        self.registered_operation_ids: list[UUID | None] = []
+
     def commit(self) -> None:
         pass
 
@@ -40,7 +43,7 @@ class FakeUnitOfWork(UnitOfWork):
         aggregate: object,
         operation_id: UUID | None = None,
     ) -> None:
-        pass
+        self.registered_operation_ids.append(operation_id)
 
 
 class FakeVerificationRepository(VerificationRepository):
