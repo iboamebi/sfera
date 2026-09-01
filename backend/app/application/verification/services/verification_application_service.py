@@ -2,7 +2,7 @@
 Application service for verification use cases.
 """
 
-from uuid import UUID, uuid4
+from uuid import UUID
 
 from app.application.audit.models import AuditOperation, AuditRecord
 from app.application.audit.repositories.audit_operation_repository import (
@@ -66,6 +66,7 @@ class VerificationApplicationService:
             operation = AuditOperation(initiated_by=user.id)
             old_result = verification.result
             old_valid_until = verification.valid_until
+            old_unsuitable_reason = verification.unsuitable_reason
 
             verification.mark_suitable(command.valid_until)
 
@@ -92,8 +93,8 @@ class VerificationApplicationService:
                             else None,
                         },
                         "unsuitable_reason": {
-                            "old": None,
-                            "new": None,
+                            "old": old_unsuitable_reason,
+                            "new": verification.unsuitable_reason,
                         },
                     },
                 )
