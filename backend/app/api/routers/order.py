@@ -97,6 +97,7 @@ def add_order_item(
                 order_id=order_id,
                 instrument_id=data.instrument_id,
                 instrument_type_id=data.instrument_type_id,
+                quantity=data.quantity,
                 requested_operations=frozenset(data.requested_operations),
             ),
             user,
