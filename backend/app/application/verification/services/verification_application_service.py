@@ -4,7 +4,6 @@ Application service for verification use cases.
 
 from uuid import UUID
 
-from app.application.audit.models import AuditOperation, AuditRecord
 from app.application.audit.repositories.audit_operation_repository import (
     AuditOperationRepository,
 )
@@ -25,6 +24,7 @@ from app.domains.verification.entities.verification import Verification
 from app.domains.verification.repositories.verification_repository import (
     VerificationRepository,
 )
+from app.shared.audit.models import AuditOperation, AuditRecord
 from app.shared.unit_of_work.unit_of_work import UnitOfWork
 
 
