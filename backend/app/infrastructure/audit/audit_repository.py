@@ -27,7 +27,6 @@ class AuditRepositorySQLAlchemy(AuditRepository):
                 changes=record.changes,
                 reason=record.reason,
                 related_record_id=record.related_record_id,
-                occurred_at=record.occurred_at,
             )
         )
         self.session.flush()
