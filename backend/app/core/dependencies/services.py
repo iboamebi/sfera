@@ -6,10 +6,10 @@ from datetime import timedelta
 
 from fastapi import Depends
 
-from app.application.audit.repositories.audit_operation_repository import (
+from app.shared.audit.repositories.audit_operation_repository import (
     AuditOperationRepository,
 )
-from app.application.audit.repositories.audit_repository import AuditRepository
+from app.shared.audit.repositories.audit_repository import AuditRepository
 from app.application.auth.services.authentication_application_service import (
     AuthenticationApplicationService,
 )
