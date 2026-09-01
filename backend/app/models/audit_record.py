@@ -34,9 +34,9 @@ class AuditRecordModel(Base):
     )
     action: Mapped[str] = mapped_column(String(100), nullable=False)
     entity_type: Mapped[str] = mapped_column(String(100), nullable=False)
-    entity_id: Mapped[UUID] = mapped_column(
+    entity_id: Mapped[UUID | None] = mapped_column(
         PostgreSQLUUID(as_uuid=True),
-        nullable=False,
+        nullable=True,
         index=True,
     )
     changes: Mapped[dict] = mapped_column(JSONB, nullable=False)
