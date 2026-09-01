@@ -3,6 +3,11 @@ from uuid import UUID, uuid4
 
 import pytest
 
+from app.application.audit.models import AuditOperation, AuditRecord
+from app.application.audit.repositories.audit_operation_repository import (
+    AuditOperationRepository,
+)
+from app.application.audit.repositories.audit_repository import AuditRepository
 from app.application.authorization.authorization import AuthorizationError
 from app.application.verification.commands.approve_verification import (
     ApproveVerificationCommand,
@@ -63,12 +68,39 @@ class FakeVerificationRepository(VerificationRepository):
         self._items[verification.id] = verification
 
 
+class FakeAuditOperationRepository(AuditOperationRepository):
+    def __init__(self) -> None:
+        self.items: list[AuditOperation] = []
+
+    def save(self, operation: AuditOperation) -> None:
+        self.items.append(operation)
+
+
+class FakeAuditRepository(AuditRepository):
+    def __init__(self) -> None:
+        self.items: list[AuditRecord] = []
+
+    def save(self, record: AuditRecord) -> None:
+        self.items.append(record)
+
+
 def make_user(role: UserRole) -> User:
     return User(
         id=uuid4(),
         username="test-user",
         password_hash="test-hash",
         role=role,
+    )
+
+
+def make_service(
+    repository: FakeVerificationRepository,
+) -> VerificationApplicationService:
+    return VerificationApplicationService(
+        repository,
+        FakeUnitOfWork(),
+        FakeAuditOperationRepository(),
+        FakeAuditRepository(),
     )
 
 
@@ -83,10 +115,7 @@ def test_approve_verification():
 
     repository.save(verification)
 
-    service = VerificationApplicationService(
-        repository,
-        FakeUnitOfWork(),
-    )
+    service = make_service(repository)
 
     service.approve(
         ApproveVerificationCommand(
@@ -111,10 +140,7 @@ def test_reject_verification():
 
     repository.save(verification)
 
-    service = VerificationApplicationService(
-        repository,
-        FakeUnitOfWork(),
-    )
+    service = make_service(repository)
 
     service.reject(
         RejectVerificationCommand(
@@ -140,10 +166,7 @@ def test_verification_approval_requires_metrologist_or_admin():
 
     repository.save(verification)
 
-    service = VerificationApplicationService(
-        repository,
-        FakeUnitOfWork(),
-    )
+    service = make_service(repository)
 
     with pytest.raises(AuthorizationError):
         service.approve(
@@ -166,10 +189,7 @@ def test_verification_rejection_requires_metrologist_or_admin():
 
     repository.save(verification)
 
-    service = VerificationApplicationService(
-        repository,
-        FakeUnitOfWork(),
-    )
+    service = make_service(repository)
 
     with pytest.raises(AuthorizationError):
         service.reject(
@@ -190,7 +210,7 @@ def test_verification_approval_allows_admin():
     )
     repository.save(verification)
 
-    service = VerificationApplicationService(repository, FakeUnitOfWork())
+    service = make_service(repository)
 
     service.approve(
         ApproveVerificationCommand(
@@ -212,7 +232,7 @@ def test_verification_rejection_allows_admin():
     )
     repository.save(verification)
 
-    service = VerificationApplicationService(repository, FakeUnitOfWork())
+    service = make_service(repository)
 
     service.reject(
         RejectVerificationCommand(
@@ -226,10 +246,7 @@ def test_verification_rejection_allows_admin():
 
 
 def test_verification_approval_raises_when_not_found():
-    service = VerificationApplicationService(
-        FakeVerificationRepository(),
-        FakeUnitOfWork(),
-    )
+    service = make_service(FakeVerificationRepository())
 
     with pytest.raises(VerificationNotFoundApplicationError):
         service.approve(
@@ -242,10 +259,7 @@ def test_verification_approval_raises_when_not_found():
 
 
 def test_verification_rejection_raises_when_not_found():
-    service = VerificationApplicationService(
-        FakeVerificationRepository(),
-        FakeUnitOfWork(),
-    )
+    service = make_service(FakeVerificationRepository())
 
     with pytest.raises(VerificationNotFoundApplicationError):
         service.reject(
