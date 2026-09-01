@@ -32,6 +32,7 @@ class OrderMapper(BaseMapper[Order, OrderModel]):
                     id=item.id,
                     instrument_id=item.instrument_id,
                     instrument_type_id=item.instrument_type_id,
+                    quantity=item.quantity,
                     customer_inventory_number=item.customer_inventory_number,
                     comment=item.customer_comment,
                     requested_operations={
@@ -64,6 +65,7 @@ class OrderMapper(BaseMapper[Order, OrderModel]):
                     id=item.id,
                     instrument_id=item.instrument_id,
                     instrument_type_id=item.instrument_type_id,
+                    quantity=item.quantity,
                     customer_inventory_number=item.customer_inventory_number,
                     line_number=line_number,
                     customer_comment=item.comment,
