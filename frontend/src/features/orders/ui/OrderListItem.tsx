@@ -10,10 +10,13 @@ interface OrderListItemProps {
 export function OrderListItem({ order }: OrderListItemProps) {
   return (
     <Stack
-      direction="row"
-      alignItems="center"
-      justifyContent="space-between"
       spacing={2}
+      sx={{
+        display: "flex",
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+      }}
     >
       <Typography>
         {order.number} — {order.status}
