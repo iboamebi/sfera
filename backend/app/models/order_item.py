@@ -30,6 +30,11 @@ class OrderItem(BaseModel):
         nullable=False,
     )
 
+    quantity: Mapped[int] = mapped_column(
+        nullable=False,
+        default=1,
+    )
+
     customer_inventory_number: Mapped[str | None] = mapped_column(
         String(100),
         nullable=True,
