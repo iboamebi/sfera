@@ -35,6 +35,7 @@ class OrderItemCreate(BaseModel):
 
     instrument_id: UUID | None = None
     instrument_type_id: UUID | None = None
+    quantity: int = Field(default=1, ge=1)
     requested_operations: set[OrderItemOperation] = Field(default_factory=set)
 
 
