@@ -2,9 +2,9 @@
 
 from sqlalchemy.orm import Session
 
-from app.application.audit.repositories.audit_repository import AuditRepository
 from app.models.audit_record import AuditRecordModel
 from app.shared.audit.models import AuditRecord
+from app.shared.audit.repositories.audit_repository import AuditRepository
 
 
 class AuditRepositorySQLAlchemy(AuditRepository):
