@@ -4,10 +4,10 @@ Application service for verification use cases.
 
 from uuid import UUID
 
-from app.application.audit.repositories.audit_operation_repository import (
+from app.shared.audit.repositories.audit_operation_repository import (
     AuditOperationRepository,
 )
-from app.application.audit.repositories.audit_repository import AuditRepository
+from app.shared.audit.repositories.audit_repository import AuditRepository
 from app.application.authorization.authorization import require_role
 from app.application.verification.commands.approve_verification import (
     ApproveVerificationCommand,
