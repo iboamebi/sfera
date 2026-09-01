@@ -2,11 +2,11 @@
 
 from sqlalchemy.orm import Session
 
-from app.application.audit.repositories.audit_operation_repository import (
-    AuditOperationRepository,
-)
 from app.models.audit_operation import AuditOperationModel
 from app.shared.audit.models import AuditOperation
+from app.shared.audit.repositories.audit_operation_repository import (
+    AuditOperationRepository,
+)
 
 
 class AuditOperationRepositorySQLAlchemy(AuditOperationRepository):
