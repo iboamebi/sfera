@@ -1,9 +1,9 @@
 from unittest.mock import Mock
 from uuid import uuid4
 
-from app.application.audit.models import AuditRecord
 from app.infrastructure.audit.audit_repository import AuditRepositorySQLAlchemy
 from app.models.audit_record import AuditRecordModel
+from app.shared.audit.models import AuditRecord
 
 
 def test_audit_repository_class_exists():
