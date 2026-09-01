@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from uuid import UUID
 
 from app.application.audit.models import AuditOperation
 
