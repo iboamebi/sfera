@@ -5,13 +5,16 @@ import {
   Button,
   Checkbox,
   FormControlLabel,
+  MenuItem,
   Stack,
+  TextField,
   Typography,
 } from "@mui/material";
 
 import { useCreateDevice } from "../../../devices/model/useCreateDevice";
 import { CreateDeviceForm } from "../../../devices/ui/CreateDeviceForm";
 import { useCreateInstrumentType } from "../../../instrument-type/model/useCreateInstrumentType";
+import { useInstrumentTypes } from "../../../instrument-type/model/useInstrumentTypes";
 import { CreateInstrumentTypeForm } from "../../../instrument-type/ui/CreateInstrumentTypeForm";
 import type { OrderItemOperation } from "../../model/types";
 import { useAddOrderItem } from "../model/useAddOrderItem";
@@ -49,14 +52,24 @@ function getErrorMessage(error: unknown): string {
 export function AddOrderItemButton({ orderId }: AddOrderItemButtonProps) {
   const [deviceId, setDeviceId] = useState("");
   const [instrumentTypeId, setInstrumentTypeId] = useState("");
-  const [requestedOperations, setRequestedOperations] = useState<OrderItemOperation[]>([
-    "verification",
-  ]);
+  const [requestedOperations, setRequestedOperations] = useState<
+    OrderItemOperation[]
+  >(["verification"]);
   const [isCreateDeviceOpen, setIsCreateDeviceOpen] = useState(false);
-  const [isCreateInstrumentTypeOpen, setIsCreateInstrumentTypeOpen] = useState(false);
+  const [isCreateInstrumentTypeOpen, setIsCreateInstrumentTypeOpen] =
+    useState(false);
   const addOrderItemMutation = useAddOrderItem(orderId);
   const createDeviceMutation = useCreateDevice();
   const createInstrumentTypeMutation = useCreateInstrumentType();
+  const {
+    data: instrumentTypes = [],
+    isLoading: isInstrumentTypesLoading,
+    isError: isInstrumentTypesError,
+  } = useInstrumentTypes();
+
+  const activeInstrumentTypes = instrumentTypes.filter(
+    (instrumentType) => !instrumentType.archived,
+  );
 
   const handleOperationChange = (operation: OrderItemOperation) => {
     setRequestedOperations((current) =>
@@ -67,15 +80,20 @@ export function AddOrderItemButton({ orderId }: AddOrderItemButtonProps) {
   };
 
   const handleAdd = () => {
-    if (!deviceId) {
+    if (!deviceId && !instrumentTypeId) {
       return;
     }
 
     addOrderItemMutation.mutate(
-      { instrumentId: deviceId, requestedOperations },
+      {
+        instrumentId: deviceId || null,
+        instrumentTypeId: instrumentTypeId || null,
+        requestedOperations,
+      },
       {
         onSuccess: () => {
           setDeviceId("");
+          setInstrumentTypeId("");
           setRequestedOperations(["verification"]);
         },
       },
@@ -90,7 +108,7 @@ export function AddOrderItemButton({ orderId }: AddOrderItemButtonProps) {
     createDeviceMutation.mutate(data, {
       onSuccess: (device) => {
         setDeviceId(device.id);
-        setInstrumentTypeId("");
+        setInstrumentTypeId(device.instrumentTypeId);
         setIsCreateDeviceOpen(false);
       },
     });
@@ -127,7 +145,27 @@ export function AddOrderItemButton({ orderId }: AddOrderItemButtonProps) {
   }
 
   return (
-    <Stack spacing={1}>
+    <Stack spacing={2}>
+      <TextField
+        select
+        label="Группа СИ"
+        value={instrumentTypeId}
+        onChange={(event) => setInstrumentTypeId(event.target.value)}
+        disabled={isInstrumentTypesLoading || isInstrumentTypesError}
+        helperText={
+          isInstrumentTypesError
+            ? "Не удалось загрузить группы СИ"
+            : "Можно добавить позицию по группе без конкретного СИ"
+        }
+      >
+        <MenuItem value="">Не выбрана</MenuItem>
+        {activeInstrumentTypes.map((instrumentType) => (
+          <MenuItem key={instrumentType.id} value={instrumentType.id}>
+            {instrumentType.name}
+          </MenuItem>
+        ))}
+      </TextField>
+
       <Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
         <DeviceSelector
           value={deviceId}
@@ -135,7 +173,10 @@ export function AddOrderItemButton({ orderId }: AddOrderItemButtonProps) {
           onCreateDevice={() => setIsCreateDeviceOpen(true)}
         />
         <Button
-          disabled={!deviceId || addOrderItemMutation.isPending}
+          disabled={
+            (!deviceId && !instrumentTypeId) ||
+            addOrderItemMutation.isPending
+          }
           onClick={handleAdd}
           variant="outlined"
         >
