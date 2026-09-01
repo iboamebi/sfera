@@ -6,6 +6,7 @@ Import all models for SQLAlchemy metadata discovery.
 
 from app.models.arshin_export import ArshinExport
 from app.models.audit_log import AuditLog
+from app.models.audit_record import AuditRecordModel
 from app.models.auth_session import AuthSession
 from app.models.customer import Customer
 from app.models.diagnostic import Diagnostic
