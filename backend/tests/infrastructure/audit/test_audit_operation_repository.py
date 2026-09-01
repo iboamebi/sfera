@@ -1,11 +1,11 @@
 from unittest.mock import Mock
 from uuid import uuid4
 
-from app.application.audit.models import AuditOperation
 from app.infrastructure.audit.audit_operation_repository import (
     AuditOperationRepositorySQLAlchemy,
 )
 from app.models.audit_operation import AuditOperationModel
+from app.shared.audit.models import AuditOperation
 
 
 def test_audit_operation_repository_class_exists():
