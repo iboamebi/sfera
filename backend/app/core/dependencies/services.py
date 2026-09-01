@@ -154,7 +154,9 @@ def get_session_service(
     token_generator: SecureSessionTokenGenerator = Depends(get_session_token_generator),
 ) -> SessionApplicationService:
     """Provide authenticated session application service."""
-    return SessionApplicationService(repository, token_generator, ttl=timedelta(hours=12))
+    return SessionApplicationService(
+        repository, token_generator, ttl=timedelta(hours=12)
+    )
 
 
 def get_current_user_service(
@@ -171,7 +173,11 @@ def get_order_service(
     event_dispatcher: EventDispatcher = Depends(get_event_dispatcher),
 ) -> OrderApplicationService:
     """Provide Order application service."""
-    return OrderApplicationService(repository, uow, event_dispatcher,)
+    return OrderApplicationService(
+        repository,
+        uow,
+        event_dispatcher,
+    )
 
 
 def get_order_read_service(
@@ -202,7 +208,9 @@ def get_verification_service(
 
 def get_device_service(
     repository: DeviceRepository = Depends(get_device_repository),
-    instrument_type_repository: InstrumentTypeRepository = Depends(get_instrument_type_repository),
+    instrument_type_repository: InstrumentTypeRepository = Depends(
+        get_instrument_type_repository
+    ),
     uow: UnitOfWork = Depends(get_unit_of_work),
 ) -> DeviceApplicationService:
     """Provide Device application service."""
@@ -237,8 +245,12 @@ def get_material_service(
 
 def get_warehouse_service(
     warehouse_repository: WarehouseRepository = Depends(get_warehouse_repository),
-    stock_repository: WarehouseStockRepository = Depends(get_warehouse_stock_repository),
-    movement_repository: WarehouseMovementRepository = Depends(get_warehouse_movement_repository),
+    stock_repository: WarehouseStockRepository = Depends(
+        get_warehouse_stock_repository
+    ),
+    movement_repository: WarehouseMovementRepository = Depends(
+        get_warehouse_movement_repository
+    ),
     uow: UnitOfWork = Depends(get_unit_of_work),
 ) -> WarehouseApplicationService:
     """Provide Warehouse application service."""
@@ -268,7 +280,9 @@ def get_organization_service(
 
 def get_workflow_service(
     repository: WorkflowRepository = Depends(get_workflow_repository),
-    instance_repository: WorkflowInstanceRepository = Depends(get_workflow_instance_repository),
+    instance_repository: WorkflowInstanceRepository = Depends(
+        get_workflow_instance_repository
+    ),
 ) -> WorkflowApplicationService:
     """Provide Workflow application service."""
     return WorkflowApplicationService(repository, instance_repository)
