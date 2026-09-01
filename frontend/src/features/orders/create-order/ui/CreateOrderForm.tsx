@@ -63,10 +63,14 @@ export function CreateOrderForm({
     isLoading: isCustomersLoading,
     isError: isCustomersError,
   } = useCustomers();
-  const { data: orders = [] } = useOrders();
+  const {
+    data: orders = [],
+    isLoading: isOrdersLoading,
+    isError: isOrdersError,
+  } = useOrders();
 
   useEffect(() => {
-    if (getValues("number")) {
+    if (isOrdersLoading || isOrdersError || getValues("number")) {
       return;
     }
 
@@ -74,7 +78,7 @@ export function CreateOrderForm({
       "number",
       getNextOrderNumber(orders.map((order) => order.number)),
     );
-  }, [orders, getValues, setValue]);
+  }, [getValues, isOrdersError, isOrdersLoading, orders, setValue]);
 
   const createCustomerMutation = useCreateCustomer({
     onSuccess: (customer) => {
