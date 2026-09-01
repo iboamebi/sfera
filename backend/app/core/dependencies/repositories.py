@@ -5,6 +5,7 @@ Repository dependency providers.
 from fastapi import Depends
 from sqlalchemy.orm import Session
 
+from app.application.audit.repositories.audit_repository import AuditRepository
 from app.core.dependencies.database import get_session
 from app.domains.auth.repositories.session_repository import SessionRepository
 from app.domains.customer.repositories.customer_repository import (
@@ -57,6 +58,7 @@ from app.domains.workflow.repositories.workflow_repository import (
     WorkflowInstanceRepository,
     WorkflowRepository,
 )
+from app.infrastructure.audit.audit_repository import AuditRepositorySQLAlchemy
 from app.infrastructure.auth.session_repository import (
     SessionRepositorySQLAlchemy,
 )
@@ -110,6 +112,14 @@ from app.infrastructure.workflow.workflow_instance_repository import (
     WorkflowInstanceRepositorySQLAlchemy,
 )
 from app.infrastructure.workflow.workflow_repository import WorkflowRepositorySQLAlchemy
+
+
+def get_audit_repository(
+    session: Session = Depends(get_session),
+) -> AuditRepository:
+    """Provide Audit repository."""
+
+    return AuditRepositorySQLAlchemy(session)
 
 
 def get_material_repository(
