@@ -2,7 +2,7 @@
 
 ## Status
 
-Architecture decision recorded. Implementation is not yet introduced.
+Architecture decision recorded. Audit foundation implementation is introduced; transactional integration is not yet complete.
 
 ## Date
 
@@ -12,7 +12,7 @@ Architecture decision recorded. Implementation is not yet introduced.
 
 This document records the audit requirements and architectural decisions established during the production-readiness audit of Verification and the comparison with the current Sfera architecture.
 
-The document describes the required audit mechanism based on the current code. It does not treat future implementation as already existing.
+The document describes the required audit mechanism and distinguishes the implemented audit foundation from the remaining integration work.
 
 ---
 
@@ -59,7 +59,7 @@ Handlers
 
 Domain event dispatch occurs after the database commit. Therefore a mandatory audit record must not depend exclusively on the current Domain Event dispatcher.
 
-The current `UnitOfWork` provides the application transaction abstraction. However, the exact SQLAlchemy session wiring and concrete transaction implementation must still be verified from the current Infrastructure/dependency code before audit persistence is implemented.
+The current `UnitOfWork` provides the application transaction abstraction. The exact SQLAlchemy session wiring and concrete transaction implementation remain an integration concern to be verified before transactional audit persistence is considered complete.
 
 ---
 
@@ -205,6 +205,8 @@ The same principle applies to the audit journal itself: an audit record that is 
 ## 7. Audit Operation and Record Model
 
 One logical application operation is represented by an `AuditOperation`. Individual changes produced by that operation are represented by `AuditRecord` entries.
+
+The Application audit foundation currently provides these contracts as immutable dataclasses.
 
 Conceptual model:
 
@@ -576,17 +578,20 @@ System/background actors must also be identifiable. Anonymous audit operations a
 - Application authorization for Verification approve/reject;
 - `UnitOfWork` abstraction with commit/rollback behavior;
 - Domain Events infrastructure;
-- logical `archived` state on the shared model base.
+- logical `archived` state on the shared model base;
+- immutable Application `AuditOperation` and `AuditRecord` contracts;
+- Application `AuditRepository` persistence boundary;
+- SQLAlchemy `AuditRecordModel` persistence model;
+- explicit model registration in `app.db.model_registry`.
 
 ### Not yet implemented
 
-- persistent `AuditOperation` model;
-- persistent `AuditRecord` model;
-- Audit Repository contract;
-- Infrastructure audit persistence;
+- Alembic migration for `audit_records`;
+- Infrastructure Audit Repository implementation;
+- Audit mapper;
 - transactional audit write integration;
 - immutable database/application enforcement for audit records;
-- operation correlation generation/propagation;
+- operation correlation generation/propagation through business use cases;
 - field-level change generation;
 - audit read/query contract;
 - complete system-wide audit-worthy operation matrix;
@@ -599,18 +604,18 @@ System/background actors must also be identifiable. Anonymous audit operations a
 
 The following remain deliberately open until the relevant current code is audited:
 
-1. Exact Audit domain/shared contract and ownership.
-2. Exact SQLAlchemy persistence model and migration.
-3. How field-level changes are generated without duplicating business logic.
-4. How `operation_id` is propagated through nested application operations.
-5. Exact concrete transaction/session wiring needed to guarantee that Audit and business mutation share one SQLAlchemy transaction.
-6. Exact representation and lifecycle of the system/background actor.
-7. Which additional modules and use cases are mandatory in the first audit rollout.
-8. Whether audit read access requires a dedicated read model and authorization policy.
-9. Retention and operational storage requirements for long-term history.
-10. Whether multi-record correction relationships are required beyond the current Verification scope.
+1. How field-level changes are generated without duplicating business logic.
+2. How `operation_id` is propagated through nested application operations.
+3. Exact concrete transaction/session wiring needed to guarantee that Audit and business mutation share one SQLAlchemy transaction.
+4. Exact representation and lifecycle of the system/background actor.
+5. Which additional modules and use cases are mandatory in the first audit rollout.
+6. Whether audit read access requires a dedicated read model and authorization policy.
+7. Retention and operational storage requirements for long-term history.
+8. Whether multi-record correction relationships are required beyond the current Verification scope.
 
-These questions must be answered from the current code and explicit business requirements before implementation.
+The previously open questions about basic Audit contract ownership, the persistence model and the repository boundary have been resolved by the current implementation foundation.
+
+These remaining questions must be answered from the current code and explicit business requirements before full transactional implementation is considered complete.
 
 ---
 
@@ -641,4 +646,4 @@ Approved decisions:
 20. The exact concrete SQLAlchemy transaction/session wiring remains an implementation verification task.
 ```
 
-Implementation must begin only after the remaining open design questions are resolved from the actual project contracts.
+The current branch contains the Audit application/persistence foundation. Full Audit Trail implementation remains incomplete until the remaining transactional, migration, immutability, propagation and rollout requirements are resolved.
