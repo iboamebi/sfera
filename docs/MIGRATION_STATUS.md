@@ -87,7 +87,37 @@ Order registration
 Authorization is kept in Application. The API only supplies the authenticated user and maps application authorization errors to HTTP responses.
 
 Roles and permissions are not implemented as frontend-only checks.
+
 ---
+
+## Audit Trail Checkpoint
+
+Audit Trail foundation and the first transactional integration slice are complete.
+
+Implemented:
+
+- AuditOperation and AuditRecord application contracts;
+- audit repository contracts;
+- SQLAlchemy audit repositories;
+- audit database models;
+- Alembic migrations;
+- audit repository dependency injection;
+- Verification approve/reject audit integration;
+- shared SQLAlchemy session and transaction boundary;
+- automated audit/verification tests.
+
+Status:
+
+```text
+Audit foundation:              COMPLETE
+Persistence:                   COMPLETE
+Verification integration:      COMPLETE
+System-wide audit coverage:    OPEN
+Audit read/query:              OPEN
+DB append-only enforcement:    OPEN
+```
+
+The Audit Trail is not yet considered system-wide complete. Remaining mutation points require an audit coverage review.
 
 ## Current Read Architecture Checkpoint
 
