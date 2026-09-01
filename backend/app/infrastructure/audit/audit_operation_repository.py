@@ -1,0 +1,27 @@
+"""SQLAlchemy implementation of AuditOperationRepository."""
+
+from sqlalchemy.orm import Session
+
+from app.application.audit.models import AuditOperation
+from app.application.audit.repositories.audit_operation_repository import (
+    AuditOperationRepository,
+)
+from app.models.audit_operation import AuditOperationModel
+
+
+class AuditOperationRepositorySQLAlchemy(AuditOperationRepository):
+    """SQLAlchemy audit operation repository."""
+
+    def __init__(self, session: Session) -> None:
+        self.session = session
+
+    def save(self, operation: AuditOperation) -> None:
+        """Persist an audit operation."""
+
+        self.session.add(
+            AuditOperationModel(
+                operation_id=operation.operation_id,
+                initiated_by=operation.initiated_by,
+            )
+        )
+        self.session.flush()
