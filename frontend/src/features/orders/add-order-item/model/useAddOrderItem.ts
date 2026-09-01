@@ -9,11 +9,19 @@ export function useAddOrderItem(orderId: string) {
   return useMutation({
     mutationFn: ({
       instrumentId,
+      instrumentTypeId,
       requestedOperations,
     }: {
       instrumentId: string | null;
+      instrumentTypeId: string | null;
       requestedOperations: OrderItemOperation[];
-    }) => addOrderItem(orderId, instrumentId, requestedOperations),
+    }) =>
+      addOrderItem(
+        orderId,
+        instrumentId,
+        instrumentTypeId,
+        requestedOperations,
+      ),
     onSuccess: (order: OrderRead) => {
       queryClient.setQueryData(["orders", orderId], order);
     },
