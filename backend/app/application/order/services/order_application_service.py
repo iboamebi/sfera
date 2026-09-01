@@ -88,6 +88,7 @@ class OrderApplicationService:
                     id=uuid4(),
                     instrument_id=command.instrument_id,
                     instrument_type_id=command.instrument_type_id,
+                    quantity=command.quantity,
                     requested_operations=set(command.requested_operations),
                 )
             )
