@@ -48,6 +48,8 @@ from app.application.warehouse.queries.warehouse_stock_read_service import (
 from app.application.warehouse.services.warehouse_application_service import WarehouseApplicationService
 from app.application.workflow.services.workflow_application_service import WorkflowApplicationService
 from app.core.dependencies.repositories import (
+    get_audit_operation_repository,
+    get_audit_repository,
     get_customer_repository,
     get_device_repository,
     get_diagnostic_repository,
@@ -98,6 +100,8 @@ from app.infrastructure.auth.password_hasher import Argon2PasswordHasher
 from app.infrastructure.auth.session_token_generator import SecureSessionTokenGenerator
 from app.shared.events.event_dispatcher import EventDispatcher
 from app.shared.unit_of_work.unit_of_work import UnitOfWork
+from app.application.audit.repositories.audit_operation_repository import AuditOperationRepository
+from app.application.audit.repositories.audit_repository import AuditRepository
 
 
 def get_password_hasher() -> Argon2PasswordHasher:
@@ -155,9 +159,16 @@ def get_order_read_service(
 def get_verification_service(
     repository: VerificationRepository = Depends(get_verification_repository),
     uow: UnitOfWork = Depends(get_unit_of_work),
+    audit_operation_repository: AuditOperationRepository = Depends(get_audit_operation_repository),
+    audit_repository: AuditRepository = Depends(get_audit_repository),
 ) -> VerificationApplicationService:
     """Provide Verification application service."""
-    return VerificationApplicationService(repository, uow)
+    return VerificationApplicationService(
+        repository,
+        uow,
+        audit_operation_repository,
+        audit_repository,
+    )
 
 
 def get_device_service(
