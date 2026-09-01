@@ -1,8 +1,35 @@
 # Sfera Project AI Context
 
-## Project
+## Назначение
 
-Sfera is an information system for a service center and metrology laboratory.
+Этот документ содержит изменяющееся техническое состояние проекта «Сфера», checkpoints и ближайшее направление работы.
+
+Постоянные правила работы ИИ находятся в:
+
+```text
+docs/AI_WORKING_PROTOCOL.md
+```
+
+Нормативные архитектурные правила находятся в:
+
+```text
+docs/architecture/PROJECT_CONSTITUTION.md
+```
+
+## Проект
+
+Сфера — информационная система сервисного центра и метрологической лаборатории.
+
+Основные направления:
+
+- учёт средств измерений;
+- поверка;
+- ремонт;
+- диагностика;
+- документы;
+- склад;
+- финансы;
+- интеграция с ФГИС Аршин.
 
 Repository:
 
@@ -10,174 +37,558 @@ Repository:
 git@github.com:iboamebi/sfera.git
 ```
 
-Primary development branch:
+Working branch:
 
 ```text
 develop
 ```
 
+Local root:
+
+```text
+~/sfera
+```
+
 ## Architecture
 
-Sfera follows DDD + Clean Architecture:
+Project architecture:
 
 ```text
-Domain → Application → Infrastructure → API
+DDD + Clean Architecture
 ```
 
-Rules:
-
-- API contains transport concerns only;
-- Application coordinates use cases;
-- Domain owns business state transitions;
-- Infrastructure owns persistence, SQLAlchemy repositories and mappers;
-- Domain does not import ORM models;
-- Domain does not import Infrastructure;
-- legacy CRUD/services are not active architectural dependencies;
-- no `BaseRouter` usage;
-- API create routers do not generate application-owned identifiers.
-
-## Backend Baseline
-
-Python 3.12, FastAPI, PostgreSQL, SQLAlchemy, Alembic, Pydantic and pytest are used by the backend.
-
-The migrated backend modules currently recorded as complete are:
-
-- Organization
-- Customer
-- Order
-- Material
-- Warehouse
-- Verification
-- Repair
-- Diagnostic
-- PriceList
-- PriceListItem
-- Device
-- Workflow
-- InstrumentType
-
-## Audit Trail — Current Checkpoint
-
-Date: 2026-09-01
-
-The Audit Trail foundation is implemented.
-
-Application contracts:
+Dependency direction:
 
 ```text
-AuditOperation
-AuditRecord
-AuditOperationRepository
-AuditRepository
+API
+  ↓
+Application
+  ↓
+Domain
+  ↓
+Repository Interface
+  ↑
+Infrastructure Repository
+  ↓
+Database
 ```
 
-Infrastructure:
+Legacy CRUD migration is complete and must not be reintroduced.
+
+## Backend Current State
+
+Backend migration to DDD/Clean Architecture:
 
 ```text
-AuditOperationModel
-AuditRecordModel
-AuditOperationRepositorySQLAlchemy
-AuditRepositorySQLAlchemy
+COMPLETE
 ```
 
-Persistence migrations are present for:
-
-- `audit_records`;
-- nullable `audit_records.entity_id`;
-- `audit_operations`.
-
-Repository dependency providers are present.
-
-The business repository, audit repositories and `UnitOfWork` use the same request-scoped SQLAlchemy session dependency, so current Verification audit persistence participates in the same transaction as the business mutation.
-
-## Verification Audit Integration
-
-`VerificationApplicationService` currently persists audit information for:
+Legacy CRUD:
 
 ```text
-approve → verification.approved
-reject  → verification.rejected
+REMOVED
 ```
 
-Audit records capture field-level changes and rejection reason where applicable.
+Authorization is implemented for concrete business use cases with a defined owner. Do not broaden authorization mechanically.
 
-Current focused validation:
+Current role ownership:
 
 ```text
-Verification application tests: 8 passed
-Audit/Verification/dependency/infrastructure tests: 14 passed
-Ruff: passed for changed audit/dependency files
+Order
+  → OPERATOR / ADMIN
+
+Customer
+  → OPERATOR / ADMIN
+
+Organization
+  → OPERATOR / ADMIN
+
+Material
+  → WAREHOUSE / ADMIN
+
+Warehouse
+  → WAREHOUSE / ADMIN
+
+Verification
+  → METROLOGIST / ADMIN
+
+Diagnostic
+  → TECHNICIAN / ADMIN
+
+Repair
+  → TECHNICIAN / ADMIN
 ```
 
-This is **not** system-wide audit completion.
+Do not add authorization to `Device`, `InstrumentType`, `PriceList` or `Workflow` without an explicit business requirement.
 
-Still open:
-
-- Verification create/archive/correction audit;
-- audit coverage of remaining Application mutation points;
-- audit read/query API and authorization;
-- database-level append-only enforcement;
-- explicit system/background actor;
-- nested operation correlation;
-- retention/archival policy.
-
-See:
+Authorization contract:
 
 ```text
-docs/architecture/AUDIT_TRAIL.md
-docs/architecture/MIGRATION_MATRIX.md
+docs/architecture/AUTHORIZATION.md
+```
+
+Order read architecture:
+- GET /orders/{id} uses dedicated OrderReadService.
+- OrderReadRepository separated from command repository.
+- Read model contract moved to domain layer.
+- Infrastructure provides SQLAlchemy read implementation.
+
+Warehouse stock read architecture:
+- WarehouseStockReadService provides warehouse stock queries.
+- WarehouseStockReadRepository separated from command repository.
+- Warehouse stock read model moved to domain layer.
+- Infrastructure provides SQLAlchemy read projection.
+- GET /warehouse-stocks/warehouse/{warehouse_id} exposes read contract.
+
+Warehouse stock read slice is complete:
+
+- WarehouseStockReadService;
+- WarehouseStockReadRepository;
+- WarehouseStockReadData;
+- SQLAlchemy read projection;
+- GET /warehouse-stocks/warehouse/{warehouse_id};
+- frontend warehouse stock page;
+- route integration.
+
+## Order Items Checkpoint
+
+Order item persistence and read contract are complete:
+
+```text
+OrderModel.order_items
+        ↓
+OrderMapper.to_domain()
+        ↓
+Domain Order.items
+        ↓
+OrderRead.items
+```
+
+Frontend:
+
+```text
+OrderApiDto.items
+        ↓
+orderMapper
+        ↓
+OrderRead.items
+        ↓
+OrderItems
+```
+
+`OrderItems` contains presentation only.
+
+Order read side is complete:
+- OrderReadService
+- OrderReadRepository
+- OrderReadData
+- OrderReadMapper
+- frontend order item read contract synchronization
+
+## Frontend Current State
+
+Frontend stack:
+
+```text
+React 19
+TypeScript 7
+Vite 8
+React Router 8
+TanStack Query 5
+Axios
+Material UI 9
+React Hook Form
+Zod
+```
+
+Architecture:
+
+```text
+feature-oriented
++ Feature-Sliced Design principles
+```
+
+Current protected routes are defined in `frontend/src/app/router.tsx`:
+
+```text
+/
+/orders
+/orders/new
+/orders/:orderId
+/customers
+/customers/:customerId
+/organizations
+/organizations/:organizationId
+/materials
+/materials/:materialId
+/verifications/:verificationId
+/diagnostics/:diagnosticId
+/repairs/:repairId
+/price-lists/:priceListId
+/instrument-types
+/instrument-types/:instrumentTypeId
+/warehouse-stocks/warehouse/:warehouseId
+```
+
+Public route:
+
+```text
+/login
+```
+
+## Completed Frontend Slices
+
+### Orders
+
+Complete current flows:
+
+- orders list;
+- loading/error/empty states;
+- order creation;
+- order detail;
+- order items display;
+- order registration;
+- cache update after registration;
+- customer selection.
+
+### Customer
+
+List/detail integration is implemented, including API/model boundary, query hooks and detail page.
+
+### Organization
+
+List/detail integration is implemented. The organization list is linked to detail.
+
+### Material
+
+List/detail integration is implemented. The material list is linked to detail.
+
+### Verification
+
+Detail read slice is complete:
+
+```text
+API DTO
+  ↓
+mapper
+  ↓
+frontend model
+  ↓
+getVerification()
+  ↓
+useVerification()
+  ↓
+VerificationPage
+  ↓
+/verifications/:verificationId
+```
+
+### Diagnostic
+
+Detail read slice is complete:
+
+```text
+API DTO → mapper → frontend model → getDiagnostic() → useDiagnostic() → DiagnosticPage
+```
+
+Route:
+
+```text
+/diagnostics/:diagnosticId
+```
+
+### Repair
+
+Detail read slice is complete:
+
+```text
+API DTO → mapper → frontend model → getRepair() → useRepair() → RepairPage
+```
+
+Route:
+
+```text
+/repairs/:repairId
+```
+
+### PriceList
+
+Detail read slice is complete:
+
+```text
+API DTO
+  ↓
+mapper
+  ↓
+frontend model
+  ↓
+getPriceList()
+  ↓
+usePriceList()
+  ↓
+PriceListPage
+  ↓
+/price-lists/:priceListId
+```
+
+No confirmed existing frontend source of `priceListId` was found for list→detail navigation, so no link was added.
+
+### InstrumentType
+
+List and detail read slices are complete.
+
+Backend contract includes:
+
+```text
+GET /instrument-types/
+GET /instrument-types/{instrument_type_id}
+POST /instrument-types/
+PUT /instrument-types/{instrument_type_id}
+POST /instrument-types/{instrument_type_id}/archive
+POST /instrument-types/{instrument_type_id}/restore
+```
+
+Frontend currently implements only read/list/detail. CRUD mutations remain intentionally absent.
+
+## API Boundary Rule
+
+Common frontend flow:
+
+```text
+FastAPI backend
+      ↓
+Axios API layer
+      ↓
+backend DTO
+      ↓
+mapper
+      ↓
+frontend model
+      ↓
+React Query hook
+      ↓
+Page / Feature UI
+```
+
+Backend `snake_case` must not leak into UI models. Example:
+
+```text
+instrument_id → instrumentId
+measurement_type → measurementType
+```
+
+Generated TypeScript API client is not used.
+
+## Authentication State
+
+Authentication uses server-side sessions:
+
+```text
+Browser
+  ↓
+HttpOnly session cookie
+  ↓
+server-side auth_sessions
+  ↓
+SessionRepository
+  ↓
+PostgreSQL
+```
+
+Authentication and authorization remain separate concerns.
+
+Authentication foundation includes User domain/repository, Argon2 password hashing, session domain/repository/persistence, login/current-user/logout API, HttpOnly cookie and CSRF protection.
+
+Contract:
+
+```text
+docs/architecture/AUTHENTICATION.md
+```
+
+## Production State
+
+Production topology remains:
+
+```text
+ZeroTier client
+    ↓
+DNS: top.vlsfera.ru
+    ↓
+10.147.17.242:80
+    ↓
+nginx
+    ├── React SPA
+    │     /var/www/sfera
+    │
+    └── /api/*
+          ↓
+        127.0.0.1:8000
+          ↓
+        sfera-backend.service
+          ↓
+        PostgreSQL
+```
+
+Production frontend is built with Vite and served through nginx. Vite development server is not a production dependency.
+
+## Validation Checkpoint
+
+Latest frontend validation:
+
+```text
+npm run typecheck — passed
+npm run build     — passed
+```
+
+Latest build:
+
+```text
+1227 modules transformed
+vite build — passed
+```
+
+Vite reports only a chunk-size warning (>500 kB). This is not a build failure.
+
+Backend validation at the latest architecture checkpoint:
+
+```text
+137 passed
+1 warning
+```
+
+The Order domain-event foundation was separately validated with:
+
+```text
+3 passed
+```
+
+## Documentation State
+
+Working protocol:
+
+```text
+docs/AI_WORKING_PROTOCOL.md
+```
+
+Volatile project state:
+
+```text
+docs/AI_CONTEXT.md
+```
+
+Frontend architecture:
+
+```text
+docs/FRONTEND_ARCHITECTURE.md
+```
+
+Architecture governance:
+
+```text
+docs/architecture/PROJECT_CONSTITUTION.md
+docs/ARCHITECTURE.md
 docs/MIGRATION_STATUS.md
+docs/architecture/MIGRATION_MATRIX.md
+docs/architecture/AUTHENTICATION.md
+docs/architecture/AUTHORIZATION.md
 ```
 
-## Development Protocol
+`PROJECT_CONSTITUTION.md` is normative and must not be changed as routine documentation.
 
-Work in this order:
+## Next Direction
+
+The current frontend phase has completed a broad sequence of read/list/detail slices.
+
+The current backend technical stage is the transition from the Order lifecycle audit to event-driven workflow orchestration.
+
+Do not:
+
+- add CRUD mechanically;
+- invent list→detail links without a confirmed ID source;
+- add authorization without an explicit business owner/requirement;
+- reintroduce legacy CRUD architecture;
+- follow an obsolete roadmap without checking current code;
+- implement workflow orchestration before the event infrastructure contract is reviewed.
+
+## Order Lifecycle Audit Checkpoint
+
+Дата: 2026-08-23
+
+Проведён аудит Order lifecycle без изменения кода.
+
+Документ:
 
 ```text
-analyze
-→ read current code from GitHub
-→ minimal change
-→ validate
-→ commit/push
-→ local validation
-→ analyze result
-→ next stage
+docs/architecture/ORDER_LIFECYCLE_AUDIT.md
 ```
 
-Do not assume files, modules, APIs or architecture contracts. Read the actual repository state first.
+Основные выводы:
 
-GitHub analysis/reading should be performed immediately. Stop only when local validation is genuinely required.
+- Order lifecycle сейчас реализован до состояния REGISTERED.
+- Реализованы:
+  - create;
+  - add_item;
+  - update;
+  - register.
 
-After a local validation result, analyze it and continue automatically without repeating completed steps.
+- Не реализованы переходы:
+  - REGISTERED → IN_WORK;
+  - IN_WORK → WAITING;
+  - WAITING → COMPLETED;
+  - COMPLETED → ISSUED;
+  - ISSUED → CLOSED.
 
-## Code Generation
+Аудит связей:
 
-New code must follow the existing project constitution and established DDD/Clean Architecture conventions.
+OrderItem является центром исполнения работ:
 
-When presenting code for review, provide it sequentially according to the existing project structure, with the file path and a short description, and concise comments for classes/functions where useful.
+OrderItem
+ ├── Repair
+ ├── Diagnostic
+ └── WorkflowInstance
 
-## Audit Implementation Rule
+Verification является отдельным результатом поверки и не имеет подтверждённой orchestration-связи с OrderItem.
 
-For an audit-worthy business mutation:
+Workflow domain существует:
+- Workflow;
+- WorkflowInstance;
+- WorkflowApplicationService.
+
+Но интеграция с бизнес-сценариями отсутствует.
+
+## DDD Events Foundation Checkpoint
+
+Статус: COMPLETE
+
+Реализовано:
+
+- `AggregateRoot` с накоплением domain events;
+- `DomainEvent` с `event_id`, `occurred_at` и опциональным `operation_id`;
+- `OrderRegistered` domain event;
+- `Order.register()` создаёт `OrderRegistered`;
+- `UnitOfWork` регистрирует aggregate для последующего сбора событий;
+- `SqlAlchemyUnitOfWork` после успешного commit собирает события и передаёт их в `EventDispatcher`;
+- `operation_id` из `OperationContext` переносится в domain event;
+- `EventDispatcher` выполняет зарегистрированные handlers.
+
+Текущая реализация связывает операцию и domain event на границе UnitOfWork. Persistent Audit Trail ещё не реализован.
+
+Следующий технический этап:
 
 ```text
-Application use case
-    ↓
-business mutation
-    +
-AuditOperation
-    +
-AuditRecord(s)
-    ↓
-same UnitOfWork transaction
-    ↓
-commit
+Persistent Audit Trail
 ```
 
-Audit persistence must not depend exclusively on post-commit Domain Events.
+Workflow orchestration выполняется только после отдельного review event contract и audit requirements.
 
-Generic `UnitOfWork` remains audit-agnostic.
+## Recovery Checkpoint
 
-## Next Stage
+After a pause:
 
-Before implementing another audit slice, audit the current Application Services and build the system-wide audit-worthy operation matrix. Then implement the next independent mutation slice using the established transactional pattern and synchronize the audit/migration documentation.
+1. read `docs/AI_WORKING_PROTOCOL.md`;
+2. read `docs/AI_CONTEXT.md`;
+3. read relevant architecture/security documents;
+4. verify current `develop` and latest commits;
+5. audit backend/frontend state;
+6. select the next independent user scenario;
+7. work one file/small step at a time and validate before continuing.
