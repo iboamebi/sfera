@@ -22,6 +22,7 @@ def test_order_mapper_to_domain_preserves_order_items() -> None:
         order_id=order_id,
         instrument_id=instrument_id,
         line_number=1,
+        quantity=1,
         customer_inventory_number="INV-001",
         customer_comment="Customer comment",
         requested_operations=[OrderItemOperation.VERIFICATION.value],
