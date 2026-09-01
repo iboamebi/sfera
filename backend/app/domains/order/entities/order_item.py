@@ -11,5 +11,6 @@ class OrderItem(Entity):
 
     instrument_id: UUID | None = None
     instrument_type_id: UUID | None = None
+    customer_inventory_number: str | None = None
     comment: str | None = None
     requested_operations: set[OrderItemOperation] = field(default_factory=set)

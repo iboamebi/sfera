@@ -40,5 +40,6 @@ def test_order_mapper_to_domain_preserves_order_items() -> None:
     assert len(entity.items) == 1
     assert entity.items[0].id == item_id
     assert entity.items[0].instrument_id == instrument_id
+    assert entity.items[0].customer_inventory_number == "INV-001"
     assert entity.items[0].comment == "Customer comment"
     assert entity.items[0].requested_operations == {OrderItemOperation.VERIFICATION}
