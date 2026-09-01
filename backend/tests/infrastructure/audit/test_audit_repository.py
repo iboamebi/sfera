@@ -22,7 +22,6 @@ def test_audit_repository_save_adds_and_flushes_record():
         changes={"status": {"old": "draft", "new": "registered"}},
         reason="registration",
         related_record_id=None,
-        occurred_at=None,
     )
 
     repository = AuditRepositorySQLAlchemy(session)
@@ -39,5 +38,5 @@ def test_audit_repository_save_adds_and_flushes_record():
     assert model.changes == record.changes
     assert model.reason == record.reason
     assert model.related_record_id == record.related_record_id
-    assert model.occurred_at == record.occurred_at
+    assert model.occurred_at is None
     session.flush.assert_called_once_with()
