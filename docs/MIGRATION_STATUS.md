@@ -1,324 +1,122 @@
 # Sfera Migration Status
 
-## Текущий этап
+## Current Status
 
-Backend DDD/Clean Architecture migration завершена.
+**DDD/Clean Architecture migration is complete for the currently migrated backend modules. Cross-cutting Audit Trail foundation is implemented and Verification approve/reject integration is complete.**
 
-Текущий этап — stabilization after authentication/authorization foundation and incremental business user scenarios.
+Date: 2026-09-01
 
----
-
-## Backend Architecture
-
-Статус:
+## Architecture Baseline
 
 ```text
-COMPLETE
-```
-
-Архитектура:
-
-```text
+Domain
+  ↓
+Application
+  ↓
+Infrastructure
+  ↓
 API
-→ Application Service
-→ Domain
-→ Repository Interface
-↑
-Infrastructure Repository
-→ Database
 ```
 
-Проверено:
+The project follows DDD + Clean Architecture.
 
-- Domain isolation;
-- Application isolation;
-- API isolation;
-- Repository boundaries;
-- mapper consistency;
-- removal of legacy CRUD dependencies.
+Rules remain:
 
----
+- API contains transport concerns only;
+- Application coordinates use cases;
+- Domain owns business state transitions;
+- Infrastructure owns SQLAlchemy, repositories and mappers;
+- Domain does not import ORM/models;
+- Domain does not import Infrastructure;
+- no active legacy CRUD/services dependencies;
+- no `BaseRouter` usage;
+- identifier generation for application-owned entities is not performed by API create routers.
 
-## Authentication / Authorization Checkpoint
+## Migrated Modules
 
-Authentication foundation is implemented with server-side sessions.
+The following modules are recorded as migrated/complete:
 
-```text
-Browser
-  ↓
-HttpOnly session cookie
-  ↓
-server-side auth_sessions
-  ↓
-SessionApplicationService
-  ↓
-SessionRepository
-```
+- Organization
+- Customer
+- Order
+- Material
+- Warehouse
+- Verification
+- Repair
+- Diagnostic
+- PriceList
+- PriceListItem
+- Device
+- Workflow
+- InstrumentType
+
+Migration means that the active application path follows the current Domain → Application → Infrastructure → API boundaries.
+
+## Cross-Cutting Audit Trail
+
+### Foundation complete
 
 Implemented:
 
-- User domain and repository;
-- Argon2 password hashing adapter;
-- authentication application service;
-- session domain;
-- session repository interface;
-- session ORM model and mapper;
-- session repository;
-- auth_sessions migration;
-- login / current-user / logout contracts;
-- authentication API dependencies;
-- CSRF protection for cookie-authenticated state changes;
-- initial authorization roles;
-- UserRole value object;
-- role persistence and migration;
-- Application authorization contract;
-- order registration authorization;
-- API mapping of authorization failures to HTTP 403.
+- Application `AuditOperation` contract;
+- Application `AuditRecord` contract;
+- Application audit repository interfaces;
+- SQLAlchemy audit persistence models;
+- model registry registration;
+- Alembic migrations for audit records and audit operations;
+- nullable `audit_records.entity_id` migration;
+- SQLAlchemy audit repositories;
+- repository dependency providers;
+- same-request/session wiring with the existing UnitOfWork transaction;
+- Verification approve audit persistence;
+- Verification reject audit persistence;
+- focused application/infrastructure/dependency tests.
 
-Current authorization rule:
+### Current Verification coverage
 
-```text
-Order registration
-  OPERATOR → allowed
-  ADMIN    → allowed
-  other    → forbidden
-```
+Audit persistence is currently implemented for:
 
-Authorization is kept in Application. The API only supplies the authenticated user and maps application authorization errors to HTTP responses.
+- `verification.approved`;
+- `verification.rejected`.
 
-Roles and permissions are not implemented as frontend-only checks.
----
+The records capture field-level changes and the rejection reason where applicable.
 
-## Current Read Architecture Checkpoint
+### Remaining audit work
 
-Completed read-side migrations:
+- system-wide audit-worthy operation matrix;
+- audit integration for remaining Verification mutations;
+- audit integration for other application mutation points;
+- audit read/query API and authorization;
+- database-level append-only enforcement;
+- explicit system/background actor;
+- nested operation correlation;
+- retention/archival policy.
 
-```text
-Order
-  - OrderReadService
-  - OrderReadRepository
-  - OrderReadData
-  - dedicated read contract
+## Validation Checkpoint — 2026-09-01
 
-Warehouse Stock
-  - WarehouseStockReadService
-  - WarehouseStockReadRepository
-  - WarehouseStockReadData
-  - SQLAlchemy read projection
-  - GET /warehouse-stocks/warehouse/{warehouse_id}
-```
-Frontend read integration:
-
-- Orders
-- Customer
-- Organization
-- Material
-- Verification
-- Diagnostic
-- Repair
-- PriceList
-- InstrumentType
-- Warehouse Stock
-
----
-
-## Backend Validation
-
-Latest validated checkpoint:
+Focused audit/Verification suite:
 
 ```text
-pytest -q
-111 passed
-
-ruff check .
-All checks passed
-
-ruff format --check .
-410 files already formatted
+14 passed
 ```
 
-Current branch:
+Verification application suite:
 
 ```text
-develop
+8 passed
 ```
 
-Current HEAD:
+Ruff checks for changed audit/dependency files pass.
 
-```text
-4238a5d docs: update authorization documentation
-```
+## Next Stage
 
-Working tree was clean before documentation synchronization.
+Do not treat Audit Trail foundation as system-wide audit completion.
 
----
+Next sequence:
 
-## Deployment Checkpoint — 2026-08-17
-
-Backend запущен через systemd:
-
-```text
-service:
-sfera-backend.service
-
-status:
-active (running)
-
-command:
-/home/alex/sfera/backend/.venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000
-```
-
-Проверено:
-
-```text
-GET /health
-→ {"status":"ok"}
-
-GET /orders/
-→ []
-```
-
-Добавлено:
-
-- ORM model registry import при старте приложения;
-- CORSMiddleware для frontend.
-
----
-
-# Frontend Phase
-
-Статус:
-
-```text
-IN PROGRESS
-```
-
-Frontend stack:
-
-- React;
-- TypeScript;
-- Vite;
-- React Router;
-- TanStack Query;
-- Axios;
-- Material UI;
-- React Hook Form;
-- Zod.
-
----
-
-## Реализовано
-
-Orders feature:
-
-- orders list;
-- order details;
-- create order;
-- update order;
-- register order action;
-- query cache update after mutation;
-- authentication route guard;
-- login route;
-- login form and validation;
-- current-user query;
-- protected application routes.
-
-API integration:
-
-```text
-VITE_API_URL
-    ↓
-axios http.ts
-    ↓
-FastAPI backend
-```
-
----
-
-## Frontend Production Runtime
-
-Frontend production deployment использует статический Vite build, размещенный в nginx.
-
-```text
-Browser
-    ↓
-nginx
-    ├── React SPA static files
-    │
-    └── /api/*
-          ↓
-        FastAPI
-```
-
-SPA routing выполняется через fallback на:
-
-```text
-/index.html
-```
-
-Vite development server на `5173` не является частью production runtime.
-
-Production frontend:
-
-```text
-http://top.vlsfera.ru
-```
-
-Backend production service:
-
-```text
-sfera-backend.service
-```
-
-Frontend deployment выполняется вручную. Автоматический frontend deployment пока не настроен.
-
----
-
-## Frontend Validation
-
-Последняя известная validation:
-
-```text
-npm run typecheck
-passed
-
-npm run build
-passed
-```
-
----
-
-## Следующие шаги
-
-1. Выполнить аудит фактического состояния develop.
-2. Выбрать следующий независимый бизнес-сценарий.
-3. Реализовывать сценарий через существующие DDD/Clean Architecture boundaries.
-4. Не добавлять CRUD механически.
-5. Не расширять authorization без явного business owner.
-
----
-
-## Documentation Governance
-
-Основные документы:
-
-- `docs/AI_CONTEXT.md`;
-- `docs/MIGRATION_STATUS.md`;
-- `docs/ARCHITECTURE.md`;
-- `docs/architecture/AUTHORIZATION.md`;
-- `docs/architecture/AUTHENTICATION.md`;
-- `docs/architecture/PROJECT_CONSTITUTION.md`;
-- `docs/architecture/MIGRATION_MATRIX.md`;
-- `docs/FRONTEND_ARCHITECTURE.md`.
-
-Документация должна соответствовать фактическому состоянию repository.
-
-`PROJECT_CONSTITUTION.md` не изменяется при обычной синхронизации состояния.
-
-Работа продолжается:
-
-```text
-analyze → implement → validate → synchronize → next
-```
-
-Feature migration и architectural cleanup не смешиваются.
+1. audit current Application Services and identify all mandatory mutation points;
+2. create the audit coverage matrix;
+3. implement the next mutation slice transactionally;
+4. add focused tests;
+5. validate;
+6. synchronize this document, `docs/architecture/AUDIT_TRAIL.md` and `docs/architecture/MIGRATION_MATRIX.md`.
