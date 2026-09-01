@@ -1,0 +1,1 @@
+"""Shared audit repository contracts."""
