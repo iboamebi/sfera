@@ -7,11 +7,14 @@ interface OrderListItemProps {
   order: OrderRead;
 }
 
-export function OrderListItem({
-  order,
-}: OrderListItemProps) {
+export function OrderListItem({ order }: OrderListItemProps) {
   return (
-    <Stack spacing={1}>
+    <Stack
+      direction="row"
+      alignItems="center"
+      justifyContent="space-between"
+      spacing={2}
+    >
       <Typography>
         {order.number} — {order.status}
       </Typography>
@@ -20,6 +23,8 @@ export function OrderListItem({
         component={Link}
         to={`/orders/${order.id}`}
         variant="outlined"
+        size="small"
+        sx={{ flexShrink: 0 }}
       >
         Открыть
       </Button>
