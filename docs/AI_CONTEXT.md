@@ -185,6 +185,31 @@ Order read side is complete:
 - OrderReadMapper
 - frontend order item read contract synchronization
 
+## Audit Trail Checkpoint
+
+Audit Trail foundation and the first transactional integration slice are complete:
+
+- `AuditOperation` and `AuditRecord` application contracts;
+- audit repository contracts;
+- SQLAlchemy audit repositories;
+- `audit_operations` and `audit_records` persistence models;
+- Alembic migrations;
+- dependency injection;
+- Verification approve/reject audit integration;
+- shared SQLAlchemy session with the business mutation and `UnitOfWork`;
+- automated audit/verification tests.
+
+Current scope:
+
+```text
+Audit foundation:              COMPLETE
+Persistence:                   COMPLETE
+Verification integration:      COMPLETE
+System-wide audit coverage:    OPEN
+Audit read/query:              OPEN
+DB append-only enforcement:    OPEN
+```
+
 ## Frontend Current State
 
 Frontend stack:
