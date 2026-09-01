@@ -298,7 +298,7 @@ Result:
 - `SqlAlchemyUnitOfWork` dispatches collected domain events after a successful database commit.
 - `OperationContext.operation_id` is propagated to the event through the UnitOfWork boundary.
 - `EventDispatcher` dispatches events to registered handlers.
-- No persistent audit trail is implemented yet.
+- Persistent Audit Trail foundation and the first transactional Verification integration slice are implemented; system-wide audit coverage remains open.
 
 Validation:
 
@@ -327,15 +327,14 @@ Open technical debt is intentionally isolated from completed migration work:
 1. PriceList / PriceListItem identifier creation contract.
 2. PriceList application test coverage.
 3. Existing API contract debt listed in the API Layer Audit.
-4. Persistent Audit Trail.
-5. Workflow orchestration after event and audit contracts are finalized.
+4. Workflow orchestration after event and audit contracts are finalized.
 
 Current direction:
 
 ```text
-Persistent Audit Trail
+Persistent Audit Trail foundation
         ↓
-review event/audit contracts
+system-wide audit coverage review
         ↓
 workflow orchestration
 ```
