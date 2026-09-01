@@ -6,6 +6,10 @@ from datetime import timedelta
 
 from fastapi import Depends
 
+from app.application.audit.repositories.audit_operation_repository import (
+    AuditOperationRepository,
+)
+from app.application.audit.repositories.audit_repository import AuditRepository
 from app.application.auth.services.authentication_application_service import (
     AuthenticationApplicationService,
 )
@@ -100,8 +104,6 @@ from app.infrastructure.auth.password_hasher import Argon2PasswordHasher
 from app.infrastructure.auth.session_token_generator import SecureSessionTokenGenerator
 from app.shared.events.event_dispatcher import EventDispatcher
 from app.shared.unit_of_work.unit_of_work import UnitOfWork
-from app.application.audit.repositories.audit_operation_repository import AuditOperationRepository
-from app.application.audit.repositories.audit_repository import AuditRepository
 
 
 def get_password_hasher() -> Argon2PasswordHasher:
