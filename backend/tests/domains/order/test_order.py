@@ -84,3 +84,24 @@ def test_order_rejects_duplicate_instrument():
                 instrument_id=instrument_id,
             )
         )
+
+
+def test_order_item_quantity_defaults_to_one():
+    item = OrderItem(id=uuid4())
+
+    assert item.quantity == 1
+
+
+def test_order_item_accepts_positive_quantity():
+    item = OrderItem(id=uuid4(), quantity=5)
+
+    assert item.quantity == 5
+
+
+@pytest.mark.parametrize("quantity", [0, -1])
+def test_order_item_rejects_non_positive_quantity(quantity: int):
+    with pytest.raises(
+        OrderException,
+        match="Order item quantity must be at least one",
+    ):
+        OrderItem(id=uuid4(), quantity=quantity)
