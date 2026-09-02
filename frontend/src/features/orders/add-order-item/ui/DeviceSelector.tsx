@@ -7,16 +7,21 @@ interface DeviceSelectorProps {
   value: string;
   onChange: (deviceId: string) => void;
   onCreateDevice?: () => void;
+  instrumentTypeId?: string | null;
 }
 
 export function DeviceSelector({
   value,
   onChange,
   onCreateDevice,
+  instrumentTypeId,
 }: DeviceSelectorProps) {
   const { data: devices = [], isLoading, error } = useDevices();
+  const availableDevices = instrumentTypeId
+    ? devices.filter((device) => device.instrumentTypeId === instrumentTypeId)
+    : devices;
   const selectedDevice =
-    devices.find((device) => device.id === value) ?? null;
+    availableDevices.find((device) => device.id === value) ?? null;
 
   if (error) {
     return (
@@ -30,7 +35,7 @@ export function DeviceSelector({
     <Stack spacing={1} sx={{ width: "100%" }}>
       <Autocomplete
         fullWidth
-        options={devices}
+        options={availableDevices}
         value={selectedDevice}
         loading={isLoading}
         getOptionLabel={(device) => device.serialNumber}
