@@ -1,7 +1,13 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button, MenuItem, Stack, TextField } from "@mui/material";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 
+import {
+  OrganizationForm,
+} from "../../organizations/ui/OrganizationForm";
+import type { CreateOrganizationSchema } from "../../organizations/model/schema";
+import { useCreateOrganization } from "../../organizations/model/useCreateOrganization";
 import { useOrganizations } from "../../organizations/model/useOrganizations";
 import {
   createCustomerSchema,
@@ -17,9 +23,12 @@ export function CustomerForm({
   onSubmit,
   isPending = false,
 }: CustomerFormProps) {
+  const [isCreateOrganizationOpen, setIsCreateOrganizationOpen] =
+    useState(false);
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<CreateCustomerSchema>({
     resolver: zodResolver(createCustomerSchema),
@@ -32,7 +41,37 @@ export function CustomerForm({
     data: organizations = [],
     isLoading: isOrganizationsLoading,
     isError: isOrganizationsError,
+    refetch: refetchOrganizations,
   } = useOrganizations();
+
+  const createOrganizationMutation = useCreateOrganization({
+    onSuccess: async (organization) => {
+      await refetchOrganizations();
+      setValue("organizationId", organization.id, { shouldValidate: true });
+      setIsCreateOrganizationOpen(false);
+    },
+  });
+
+  const handleCreateOrganization = (data: CreateOrganizationSchema) => {
+    createOrganizationMutation.mutate(data);
+  };
+
+  if (isCreateOrganizationOpen) {
+    return (
+      <Stack spacing={2}>
+        <OrganizationForm
+          onSubmit={handleCreateOrganization}
+          isPending={createOrganizationMutation.isPending}
+        />
+        <Button
+          onClick={() => setIsCreateOrganizationOpen(false)}
+          disabled={createOrganizationMutation.isPending}
+        >
+          Вернуться к клиенту
+        </Button>
+      </Stack>
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
@@ -58,6 +97,14 @@ export function CustomerForm({
             </MenuItem>
           ))}
         </TextField>
+
+        <Button
+          onClick={() => setIsCreateOrganizationOpen(true)}
+          variant="outlined"
+          disabled={isPending}
+        >
+          Создать организацию
+        </Button>
 
         <TextField
           label="Название"
