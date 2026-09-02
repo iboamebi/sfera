@@ -19,7 +19,7 @@ export function OrderListItem({ order }: OrderListItemProps) {
       }}
     >
       <Typography>
-        <Link to={`/orders/${order.id}`}>{order.number}</Link> — {order.status}
+        <Link to={`/orders/${order.id}`}>{order.number}</Link> — {order.customerName} — {order.status}
       </Typography>
     </Stack>
   );
