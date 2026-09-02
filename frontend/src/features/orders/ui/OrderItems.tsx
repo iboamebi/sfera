@@ -3,8 +3,10 @@ import { useState } from "react";
 import { Button, Checkbox, Chip, Divider, FormControlLabel, Stack, Typography } from "@mui/material";
 import { useNavigate } from "react-router";
 
+import { useAssignOrderItemInstrument } from "../add-order-item/model/useAssignOrderItemInstrument";
 import { useDeleteOrderItem } from "../add-order-item/model/useDeleteOrderItem";
 import { useUpdateOrderItem } from "../add-order-item/model/useUpdateOrderItem";
+import { DeviceSelector } from "../add-order-item/ui/DeviceSelector";
 import type { OrderItem, OrderItemOperation } from "../model/types";
 
 interface OrderItemsProps {
@@ -27,9 +29,12 @@ const OPERATION_OPTIONS = Object.entries(OPERATION_LABELS) as Array<
 export function OrderItems({ items, orderId, editable = false }: OrderItemsProps) {
   const navigate = useNavigate();
   const updateMutation = useUpdateOrderItem(orderId);
+  const assignInstrumentMutation = useAssignOrderItemInstrument(orderId);
   const deleteMutation = useDeleteOrderItem(orderId);
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
   const [editedOperations, setEditedOperations] = useState<OrderItemOperation[]>([]);
+  const [assigningItemId, setAssigningItemId] = useState<string | null>(null);
+  const [selectedInstrumentId, setSelectedInstrumentId] = useState("");
 
   const startEditing = (item: OrderItem) => {
     setEditingItemId(item.id);
@@ -65,6 +70,32 @@ export function OrderItems({ items, orderId, editable = false }: OrderItemsProps
     navigate(`/devices/${instrumentId}?edit=1&returnToOrder=${orderId}`);
   };
 
+  const startAssigningInstrument = (item: OrderItem) => {
+    setAssigningItemId(item.id);
+    setSelectedInstrumentId("");
+  };
+
+  const cancelAssigningInstrument = () => {
+    setAssigningItemId(null);
+    setSelectedInstrumentId("");
+  };
+
+  const saveInstrumentAssignment = (itemId: string) => {
+    if (!selectedInstrumentId) {
+      return;
+    }
+
+    assignInstrumentMutation.mutate(
+      { itemId, instrumentId: selectedInstrumentId },
+      {
+        onSuccess: () => {
+          setAssigningItemId(null);
+          setSelectedInstrumentId("");
+        },
+      },
+    );
+  };
+
   return (
     <Stack spacing={2} sx={{ width: "100%" }}>
       <Typography variant="h6">Позиции заказа</Typography>
@@ -93,6 +124,35 @@ export function OrderItems({ items, orderId, editable = false }: OrderItemsProps
               </Typography>
             </Stack>
 
+            {editable && !item.instrumentId && assigningItemId === item.id && (
+              <Stack spacing={1}>
+                <DeviceSelector
+                  value={selectedInstrumentId}
+                  instrumentTypeId={item.instrumentTypeId}
+                  onChange={setSelectedInstrumentId}
+                />
+                <Stack direction="row" spacing={1}>
+                  <Button
+                    size="small"
+                    variant="contained"
+                    disabled={
+                      assignInstrumentMutation.isPending || !selectedInstrumentId
+                    }
+                    onClick={() => saveInstrumentAssignment(item.id)}
+                  >
+                    Назначить СИ
+                  </Button>
+                  <Button
+                    size="small"
+                    disabled={assignInstrumentMutation.isPending}
+                    onClick={cancelAssigningInstrument}
+                  >
+                    Отмена
+                  </Button>
+                </Stack>
+              </Stack>
+            )}
+
             {item.instrumentId && (
               <Stack direction="row">
                 <Button
@@ -101,6 +161,18 @@ export function OrderItems({ items, orderId, editable = false }: OrderItemsProps
                   onClick={() => openDeviceCard(item.instrumentId)}
                 >
                   Редактировать карту СИ
+                </Button>
+              </Stack>
+            )}
+
+            {editable && !item.instrumentId && assigningItemId !== item.id && (
+              <Stack direction="row">
+                <Button
+                  size="small"
+                  variant="outlined"
+                  onClick={() => startAssigningInstrument(item)}
+                >
+                  Назначить СИ
                 </Button>
               </Stack>
             )}
