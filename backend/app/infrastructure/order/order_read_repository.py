@@ -28,6 +28,7 @@ class OrderReadRepositorySQLAlchemy(OrderReadRepository):
             id=order.id,
             number=order.number,
             customer_id=order.customer_id,
+            customer_name=order.customer.name,
             status=order.status,
             received_at=order.received_at,
             created_at=order.created_at,
@@ -64,6 +65,7 @@ class OrderReadRepositorySQLAlchemy(OrderReadRepository):
 
     def _query(self):
         return self.session.query(Order).options(
+            joinedload(Order.customer),
             joinedload(Order.order_items)
             .joinedload(OrderItem.instrument)
             .joinedload(Instrument.instrument_type),
