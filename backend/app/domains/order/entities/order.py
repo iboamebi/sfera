@@ -85,6 +85,30 @@ class Order(AggregateRoot):
 
         raise OrderException("Order item not found")
 
+    def assign_instrument(
+        self,
+        item_id: UUID,
+        instrument_id: UUID,
+    ) -> None:
+        """Assign a concrete instrument to an order item."""
+
+        if self.status != OrderStatus.NEW:
+            raise OrderException("Cannot assign instrument in active order")
+
+        if any(
+            item.instrument_id == instrument_id
+            for item in self.items
+            if item.id != item_id
+        ):
+            raise OrderException("Instrument already exists in order")
+
+        for item in self.items:
+            if item.id == item_id:
+                item.instrument_id = instrument_id
+                return
+
+        raise OrderException("Order item not found")
+
     def remove_item(self, item_id: UUID) -> None:
         """Remove an order item while the order is new."""
 
