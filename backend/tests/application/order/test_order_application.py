@@ -350,6 +350,42 @@ def test_add_order_item_rejects_instrument_in_another_active_order():
         )
 
 
+def test_add_order_item_creates_separate_items_for_group_quantity():
+    repository = FakeOrderRepository()
+    service = OrderApplicationService(
+        repository,
+        FakeUnitOfWork(),
+    )
+
+    order = service.create(
+        CreateOrderCommand(
+            customer_id=uuid4(),
+            number="10011",
+        ),
+        make_operator(),
+    )
+
+    instrument_type_id = uuid4()
+
+    service.add_item(
+        AddOrderItemCommand(
+            order_id=order.id,
+            instrument_type_id=instrument_type_id,
+            quantity=3,
+        ),
+        make_operator(),
+    )
+
+    assert len(order.items) == 3
+    assert all(item.quantity == 1 for item in order.items)
+    assert all(
+        item.instrument_type_id == instrument_type_id
+        for item in order.items
+    )
+    assert all(item.instrument_id is None for item in order.items)
+    assert len({item.id for item in order.items}) == 3
+
+
 def test_add_order_item_allows_instrument_after_order_completed():
     repository = FakeOrderRepository()
     service = OrderApplicationService(
