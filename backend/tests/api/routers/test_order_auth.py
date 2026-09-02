@@ -80,6 +80,7 @@ def test_register_order_passes_authenticated_user_to_application_service() -> No
                 id=order_id,
                 number="1001",
                 customer_id=uuid4(),
+                customer_name="Test Customer",
                 status="REGISTERED",
                 received_at=now,
                 created_at=now,
