@@ -1,9 +1,10 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button, MenuItem, Stack, TextField } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 
 import { useCreateCustomer } from "../../../customers/model/useCreateCustomer";
+import { queryClient } from "../../../shared/api/queryClient";
 import type { CreateCustomerSchema } from "../../../customers/model/schema";
 import { CustomerForm } from "../../../customers/ui/CustomerForm";
 import { useCustomers } from "../../../customers/model/useCustomers";
@@ -45,6 +46,7 @@ export function CreateOrderForm({
   isPending = false,
 }: CreateOrderFormProps) {
   const [isCreateCustomerOpen, setIsCreateCustomerOpen] = useState(false);
+  const customerSelectRef = useRef<HTMLInputElement | null>(null);
   const {
     register,
     handleSubmit,
@@ -81,9 +83,11 @@ export function CreateOrderForm({
   }, [getValues, isOrdersError, isOrdersLoading, orders, setValue]);
 
   const createCustomerMutation = useCreateCustomer({
-    onSuccess: (customer) => {
+    onSuccess: async (customer) => {
+      await queryClient.invalidateQueries({ queryKey: ["customers"] });
       setValue("customerId", customer.id, { shouldValidate: true });
       setIsCreateCustomerOpen(false);
+      requestAnimationFrame(() => customerSelectRef.current?.focus());
     },
   });
 
@@ -122,6 +126,7 @@ export function CreateOrderForm({
         <TextField
           select
           label="Клиент"
+          inputRef={customerSelectRef}
           {...register("customerId")}
           error={Boolean(errors.customerId)}
           helperText={
