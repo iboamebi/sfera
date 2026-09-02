@@ -6,6 +6,7 @@ export function mapOrder(dto: OrderApiDto): OrderRead {
     id: dto.id,
     number: dto.number,
     customerId: dto.customer_id,
+    customerName: dto.customer_name,
     status: dto.status,
     receivedAt: dto.received_at,
     createdAt: dto.created_at,
