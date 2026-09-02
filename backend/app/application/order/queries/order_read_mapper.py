@@ -14,6 +14,7 @@ class OrderReadMapper:
             id=model.id,
             number=model.number,
             customer_id=model.customer_id,
+            customer_name=model.customer_name,
             status=model.status,
             received_at=model.received_at,
             created_at=model.created_at,
