@@ -83,15 +83,16 @@ class OrderApplicationService:
                     "СИ уже находится в другом активном заказе"
                 )
 
-            order.add_item(
-                OrderItem(
-                    id=uuid4(),
-                    instrument_id=command.instrument_id,
-                    instrument_type_id=command.instrument_type_id,
-                    quantity=command.quantity,
-                    requested_operations=set(command.requested_operations),
+            for _ in range(command.quantity):
+                order.add_item(
+                    OrderItem(
+                        id=uuid4(),
+                        instrument_id=command.instrument_id,
+                        instrument_type_id=command.instrument_type_id,
+                        quantity=1,
+                        requested_operations=set(command.requested_operations),
+                    )
                 )
-            )
             self._repository.save(order)
 
         return order
