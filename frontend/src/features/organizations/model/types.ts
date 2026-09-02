@@ -11,3 +11,16 @@ export interface OrganizationRead {
   website: string | null;
   comment: string | null;
 }
+
+export interface CreateOrganizationForm {
+  name: string;
+  shortName?: string;
+  inn?: string;
+  kpp?: string;
+  ogrn?: string;
+  address?: string;
+  phone?: string;
+  email?: string;
+  website?: string;
+  comment?: string;
+}
