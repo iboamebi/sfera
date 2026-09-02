@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 
 import { useCreateCustomer } from "../../../customers/model/useCreateCustomer";
-import { queryClient } from "../../../shared/api/queryClient";
+import { useQueryClient } from "@tanstack/react-query";
 import type { CreateCustomerSchema } from "../../../customers/model/schema";
 import { CustomerForm } from "../../../customers/ui/CustomerForm";
 import { useCustomers } from "../../../customers/model/useCustomers";
@@ -45,6 +45,7 @@ export function CreateOrderForm({
   onSubmit,
   isPending = false,
 }: CreateOrderFormProps) {
+  const queryClient = useQueryClient();
   const [isCreateCustomerOpen, setIsCreateCustomerOpen] = useState(false);
   const customerSelectRef = useRef<HTMLInputElement | null>(null);
   const {
