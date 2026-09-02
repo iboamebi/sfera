@@ -16,6 +16,7 @@ export interface OrderApiDto {
   id: string;
   number: string;
   customer_id: string;
+  customer_name: string;
   status: string;
   received_at: string;
   created_at: string;
