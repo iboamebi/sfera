@@ -6,6 +6,7 @@ import type { OrderItemOperation, OrderRead } from "../../model/types";
 interface AddOrderItemRequest {
   instrument_id: string | null;
   instrument_type_id: string | null;
+  quantity: number;
   requested_operations: OrderItemOperation[];
 }
 
@@ -13,6 +14,7 @@ export async function addOrderItem(
   orderId: string,
   instrumentId: string | null,
   instrumentTypeId: string | null,
+  quantity: number,
   requestedOperations: OrderItemOperation[],
 ): Promise<OrderRead> {
   const response = await http.post<OrderApiDto>(
@@ -20,6 +22,7 @@ export async function addOrderItem(
     {
       instrument_id: instrumentId,
       instrument_type_id: instrumentTypeId,
+      quantity,
       requested_operations: requestedOperations,
     } satisfies AddOrderItemRequest,
   );
