@@ -32,6 +32,7 @@ class OrderReadData:
     id: UUID
     number: str
     customer_id: UUID
+    customer_name: str
     status: OrderStatus
     received_at: datetime
     created_at: datetime
