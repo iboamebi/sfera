@@ -177,7 +177,7 @@ export function AddOrderItemButton({ orderId }: AddOrderItemButtonProps) {
             type="number"
             value={quantity}
             onChange={(event) => setQuantity(Math.max(1, Number(event.target.value)))}
-            inputProps={{ min: 1, step: 1 }}
+            slotProps={{ htmlInput: { min: 1, step: 1 } }}
             required
             sx={{ width: 140 }}
           />
