@@ -20,6 +20,7 @@ export interface OrderRead {
   id: string;
   number: string;
   customerId: string;
+  customerName: string;
   status: string;
   receivedAt: string;
   createdAt: string;
