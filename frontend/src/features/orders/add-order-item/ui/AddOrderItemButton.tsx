@@ -52,6 +52,7 @@ function getErrorMessage(error: unknown): string {
 export function AddOrderItemButton({ orderId }: AddOrderItemButtonProps) {
   const [deviceId, setDeviceId] = useState("");
   const [instrumentTypeId, setInstrumentTypeId] = useState("");
+  const [quantity, setQuantity] = useState(1);
   const [requestedOperations, setRequestedOperations] = useState<
     OrderItemOperation[]
   >(["verification"]);
@@ -88,12 +89,14 @@ export function AddOrderItemButton({ orderId }: AddOrderItemButtonProps) {
       {
         instrumentId: deviceId || null,
         instrumentTypeId: instrumentTypeId || null,
+        quantity: deviceId ? 1 : quantity,
         requestedOperations,
       },
       {
         onSuccess: () => {
           setDeviceId("");
           setInstrumentTypeId("");
+          setQuantity(1);
           setRequestedOperations(["verification"]);
         },
       },
@@ -146,25 +149,40 @@ export function AddOrderItemButton({ orderId }: AddOrderItemButtonProps) {
 
   return (
     <Stack spacing={2}>
-      <TextField
-        select
-        label="Группа СИ"
-        value={instrumentTypeId}
-        onChange={(event) => setInstrumentTypeId(event.target.value)}
-        disabled={isInstrumentTypesLoading || isInstrumentTypesError}
-        helperText={
-          isInstrumentTypesError
-            ? "Не удалось загрузить группы СИ"
-            : "Можно добавить позицию по группе без конкретного СИ"
-        }
-      >
-        <MenuItem value="">Не выбрана</MenuItem>
-        {activeInstrumentTypes.map((instrumentType) => (
-          <MenuItem key={instrumentType.id} value={instrumentType.id}>
-            {instrumentType.name}
-          </MenuItem>
-        ))}
-      </TextField>
+      <Stack direction="row" spacing={2} sx={{ alignItems: "flex-start" }}>
+        <TextField
+          select
+          label="Группа СИ"
+          value={instrumentTypeId}
+          onChange={(event) => setInstrumentTypeId(event.target.value)}
+          disabled={isInstrumentTypesLoading || isInstrumentTypesError}
+          helperText={
+            isInstrumentTypesError
+              ? "Не удалось загрузить группы СИ"
+              : "Можно добавить позицию по группе без конкретного СИ"
+          }
+          sx={{ minWidth: 280 }}
+        >
+          <MenuItem value="">Не выбрана</MenuItem>
+          {activeInstrumentTypes.map((instrumentType) => (
+            <MenuItem key={instrumentType.id} value={instrumentType.id}>
+              {instrumentType.name}
+            </MenuItem>
+          ))}
+        </TextField>
+
+        {!deviceId && instrumentTypeId && (
+          <TextField
+            label="Количество"
+            type="number"
+            value={quantity}
+            onChange={(event) => setQuantity(Math.max(1, Number(event.target.value)))}
+            inputProps={{ min: 1, step: 1 }}
+            required
+            sx={{ width: 140 }}
+          />
+        )}
+      </Stack>
 
       <Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
         <DeviceSelector
@@ -175,6 +193,7 @@ export function AddOrderItemButton({ orderId }: AddOrderItemButtonProps) {
         <Button
           disabled={
             (!deviceId && !instrumentTypeId) ||
+            (!deviceId && quantity < 1) ||
             addOrderItemMutation.isPending
           }
           onClick={handleAdd}
