@@ -10,16 +10,19 @@ export function useAddOrderItem(orderId: string) {
     mutationFn: ({
       instrumentId,
       instrumentTypeId,
+      quantity,
       requestedOperations,
     }: {
       instrumentId: string | null;
       instrumentTypeId: string | null;
+      quantity: number;
       requestedOperations: OrderItemOperation[];
     }) =>
       addOrderItem(
         orderId,
         instrumentId,
         instrumentTypeId,
+        quantity,
         requestedOperations,
       ),
     onSuccess: (order: OrderRead) => {
