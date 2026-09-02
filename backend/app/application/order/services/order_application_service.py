@@ -8,6 +8,9 @@ from uuid import UUID, uuid4
 from app.application.authorization.authorization import require_role
 from app.application.context.operation_context import OperationContext
 from app.application.order.commands.add_order_item import AddOrderItemCommand
+from app.application.order.commands.assign_order_item_instrument import (
+    AssignOrderItemInstrumentCommand,
+)
 from app.application.order.commands.create_order import CreateOrderCommand
 from app.application.order.commands.delete_order_item import DeleteOrderItemCommand
 from app.application.order.commands.register_order import RegisterOrderCommand
@@ -109,6 +112,33 @@ class OrderApplicationService:
             order.update_item(
                 command.item_id,
                 set(command.requested_operations),
+            )
+            self._repository.save(order)
+
+        return order
+
+    def assign_item_instrument(
+        self,
+        command: AssignOrderItemInstrumentCommand,
+        user: User,
+    ) -> Order:
+        """Assign a concrete instrument to an order item."""
+        require_role(user, UserRole.OPERATOR, UserRole.ADMIN)
+
+        with self._uow:
+            order = self.get(command.order_id)
+
+            if self._repository.has_conflicting_order_for_instrument(
+                command.instrument_id,
+                exclude_order_id=order.id,
+            ):
+                raise InstrumentAlreadyInActiveOrderApplicationError(
+                    "СИ уже находится в другом активном заказе"
+                )
+
+            order.assign_instrument(
+                command.item_id,
+                command.instrument_id,
             )
             self._repository.save(order)
 
