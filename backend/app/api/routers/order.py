@@ -10,6 +10,9 @@ from pydantic import BaseModel, Field
 from app.api.dependencies.auth import get_current_user
 from app.api.security.csrf import require_csrf
 from app.application.order.commands.add_order_item import AddOrderItemCommand
+from app.application.order.commands.assign_order_item_instrument import (
+    AssignOrderItemInstrumentCommand,
+)
 from app.application.order.commands.create_order import CreateOrderCommand
 from app.application.order.commands.delete_order_item import DeleteOrderItemCommand
 from app.application.order.commands.register_order import RegisterOrderCommand
@@ -43,6 +46,12 @@ class OrderItemUpdate(BaseModel):
     """Request schema for updating an order item."""
 
     requested_operations: set[OrderItemOperation] = Field(default_factory=set)
+
+
+class OrderItemInstrumentAssign(BaseModel):
+    """Request schema for assigning a concrete instrument to an order item."""
+
+    instrument_id: UUID
 
 
 @router.post(
@@ -152,6 +161,45 @@ def update_order_item(
         return order
     except OrderNotFoundApplicationError:
         raise HTTPException(status_code=404, detail="Order not found") from None
+    except OrderException as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from None
+
+
+@router.patch(
+    "/{order_id}/items/{item_id}/instrument",
+    response_model=OrderRead,
+    dependencies=[Depends(get_current_user), Depends(require_csrf)],
+)
+def assign_order_item_instrument(
+    order_id: UUID,
+    item_id: UUID,
+    data: OrderItemInstrumentAssign,
+    user: User = Depends(get_current_user),
+    service: OrderApplicationService = Depends(get_order_service),
+    read_service: OrderReadService = Depends(get_order_read_service),
+):
+    try:
+        service.assign_item_instrument(
+            AssignOrderItemInstrumentCommand(
+                order_id=order_id,
+                item_id=item_id,
+                instrument_id=data.instrument_id,
+            ),
+            user,
+        )
+
+        order = read_service.get(order_id)
+        if order is None:
+            raise HTTPException(
+                status_code=500,
+                detail="Assigned order item instrument order could not be loaded",
+            )
+
+        return order
+    except OrderNotFoundApplicationError:
+        raise HTTPException(status_code=404, detail="Order not found") from None
+    except InstrumentAlreadyInActiveOrderApplicationError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from None
     except OrderException as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from None
 
