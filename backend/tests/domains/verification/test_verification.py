@@ -15,6 +15,7 @@ from app.domains.verification.value_objects.verification_result import (
 def test_mark_suitable():
     verification = Verification(
         id=uuid4(),
+        order_item_id=uuid4(),
         verification_date=date.today(),
         result=VerificationResult.UNSUITABLE,
     )
@@ -29,6 +30,7 @@ def test_mark_suitable():
 def test_mark_unsuitable():
     verification = Verification(
         id=uuid4(),
+        order_item_id=uuid4(),
         verification_date=date.today(),
         result=VerificationResult.SUITABLE,
     )
@@ -43,6 +45,7 @@ def test_mark_unsuitable():
 def test_unsuitable_requires_reason():
     verification = Verification(
         id=uuid4(),
+        order_item_id=uuid4(),
         verification_date=date.today(),
         result=VerificationResult.SUITABLE,
     )
