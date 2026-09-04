@@ -15,11 +15,18 @@ class VerificationResult(StrEnum):
 
 
 class Verification(BaseModel):
+    """ORM model for an instrument verification result."""
+
     __tablename__ = "verifications"
 
     order_item_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("order_items.id"),
         nullable=False,
+    )
+
+    instrument_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("instruments.id"),
+        nullable=True,
     )
 
     verification_date: Mapped[date] = mapped_column(
