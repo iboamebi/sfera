@@ -24,6 +24,8 @@ class VerificationMapper(
     ) -> Verification:
         return Verification(
             id=model.id,
+            order_item_id=model.order_item_id,
+            instrument_id=model.instrument_id,
             verification_date=model.verification_date,
             result=VerificationResult(model.result),
             valid_until=model.valid_until,
@@ -36,6 +38,8 @@ class VerificationMapper(
         entity: Verification,
         model: VerificationModel,
     ) -> VerificationModel:
+        model.order_item_id = entity.order_item_id
+        model.instrument_id = entity.instrument_id
         model.verification_date = entity.verification_date
         model.result = entity.result.value
         model.valid_until = entity.valid_until
