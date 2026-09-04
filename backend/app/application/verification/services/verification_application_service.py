@@ -71,7 +71,9 @@ class VerificationApplicationService:
         require_role(user, UserRole.METROLOGIST, UserRole.ADMIN)
 
         with self._uow:
-            order = self._order_repository.get(command.order_item_id)
+            order = self._order_repository.get_by_order_item_id(
+                command.order_item_id,
+            )
             if order is None:
                 raise VerificationOrderItemNotFoundApplicationError
 
