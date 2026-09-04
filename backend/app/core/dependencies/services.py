@@ -6,10 +6,6 @@ from datetime import timedelta
 
 from fastapi import Depends
 
-from app.shared.audit.repositories.audit_operation_repository import (
-    AuditOperationRepository,
-)
-from app.shared.audit.repositories.audit_repository import AuditRepository
 from app.application.auth.services.authentication_application_service import (
     AuthenticationApplicationService,
 )
@@ -127,6 +123,10 @@ from app.domains.workflow.repositories.workflow_repository import (
 )
 from app.infrastructure.auth.password_hasher import Argon2PasswordHasher
 from app.infrastructure.auth.session_token_generator import SecureSessionTokenGenerator
+from app.shared.audit.repositories.audit_operation_repository import (
+    AuditOperationRepository,
+)
+from app.shared.audit.repositories.audit_repository import AuditRepository
 from app.shared.events.event_dispatcher import EventDispatcher
 from app.shared.unit_of_work.unit_of_work import UnitOfWork
 
@@ -173,17 +173,11 @@ def get_order_service(
     event_dispatcher: EventDispatcher = Depends(get_event_dispatcher),
 ) -> OrderApplicationService:
     """Provide Order application service."""
-    return OrderApplicationService(
-        repository,
-        uow,
-        event_dispatcher,
-    )
+    return OrderApplicationService(repository, uow, event_dispatcher)
 
 
 def get_order_read_service(
-    repository: OrderReadRepository = Depends(
-        get_order_read_repository,
-    ),
+    repository: OrderReadRepository = Depends(get_order_read_repository),
 ) -> OrderReadService:
     """Provide Order read service."""
     return OrderReadService(repository)
@@ -191,6 +185,7 @@ def get_order_read_service(
 
 def get_verification_service(
     repository: VerificationRepository = Depends(get_verification_repository),
+    order_repository: OrderRepository = Depends(get_order_repository),
     uow: UnitOfWork = Depends(get_unit_of_work),
     audit_operation_repository: AuditOperationRepository = Depends(
         get_audit_operation_repository,
@@ -200,6 +195,7 @@ def get_verification_service(
     """Provide Verification application service."""
     return VerificationApplicationService(
         repository,
+        order_repository,
         uow,
         audit_operation_repository,
         audit_repository,
