@@ -20,6 +20,14 @@ class OrderRepository(ABC):
         raise NotImplementedError
 
     @abstractmethod
+    def get_by_order_item_id(
+        self,
+        order_item_id: UUID,
+    ) -> Order | None:
+        """Get the order containing an order item."""
+        raise NotImplementedError
+
+    @abstractmethod
     def list(
         self,
     ) -> list[Order]:
