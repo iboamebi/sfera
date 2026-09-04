@@ -109,6 +109,7 @@ def test_approve_verification():
 
     verification = Verification(
         id=uuid4(),
+        order_item_id=uuid4(),
         verification_date=date.today(),
         result=VerificationResult.UNSUITABLE,
     )
@@ -134,6 +135,7 @@ def test_reject_verification():
 
     verification = Verification(
         id=uuid4(),
+        order_item_id=uuid4(),
         verification_date=date.today(),
         result=VerificationResult.SUITABLE,
     )
@@ -160,6 +162,7 @@ def test_verification_approval_requires_metrologist_or_admin():
 
     verification = Verification(
         id=uuid4(),
+        order_item_id=uuid4(),
         verification_date=date.today(),
         result=VerificationResult.UNSUITABLE,
     )
@@ -183,6 +186,7 @@ def test_verification_rejection_requires_metrologist_or_admin():
 
     verification = Verification(
         id=uuid4(),
+        order_item_id=uuid4(),
         verification_date=date.today(),
         result=VerificationResult.SUITABLE,
     )
@@ -205,6 +209,7 @@ def test_verification_approval_allows_admin():
     repository = FakeVerificationRepository()
     verification = Verification(
         id=uuid4(),
+        order_item_id=uuid4(),
         verification_date=date.today(),
         result=VerificationResult.UNSUITABLE,
     )
@@ -227,6 +232,7 @@ def test_verification_rejection_allows_admin():
     repository = FakeVerificationRepository()
     verification = Verification(
         id=uuid4(),
+        order_item_id=uuid4(),
         verification_date=date.today(),
         result=VerificationResult.SUITABLE,
     )
