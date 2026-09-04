@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from datetime import date
+from uuid import UUID
 
 from app.domains.verification.exceptions import (
     InvalidUnsuitableReasonDomainError,
@@ -12,9 +13,11 @@ from app.shared.base.aggregate import AggregateRoot
 
 @dataclass(eq=False, kw_only=True)
 class Verification(AggregateRoot):
+    order_item_id: UUID
     verification_date: date
     result: VerificationResult
 
+    instrument_id: UUID | None = None
     valid_until: date | None = None
     unsuitable_reason: str | None = None
     methodology: str | None = None
