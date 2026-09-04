@@ -63,6 +63,17 @@ class FakeOrderRepository(OrderRepository):
     def get(self, order_id):
         return self._orders.get(order_id)
 
+    def get_by_order_item_id(self, order_item_id: UUID) -> Order | None:
+        """Get the order containing an order item."""
+        return next(
+            (
+                order
+                for order in self._orders.values()
+                if any(item.id == order_item_id for item in order.items)
+            ),
+            None,
+        )
+
     def list(self) -> list[Order]:
         return list(self._orders.values())
 
