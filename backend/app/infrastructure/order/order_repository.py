@@ -41,6 +41,24 @@ class OrderRepositorySQLAlchemy(OrderRepository):
 
         return self.mapper.to_domain(model)
 
+    def get_by_order_item_id(
+        self,
+        order_item_id: UUID,
+    ) -> DomainOrder | None:
+        """Get the order containing an order item."""
+
+        model = (
+            self.session.query(ORMOrder)
+            .join(ORMOrderItem, ORMOrderItem.order_id == ORMOrder.id)
+            .filter(ORMOrderItem.id == order_item_id)
+            .first()
+        )
+
+        if model is None:
+            return None
+
+        return self.mapper.to_domain(model)
+
     def list(
         self,
     ) -> list[DomainOrder]:
