@@ -7,6 +7,8 @@ from app.models.base_model import BaseModel
 
 
 class Customer(BaseModel):
+    """ORM model for a customer contact."""
+
     __tablename__ = "customers"
 
     organization_id: Mapped[uuid.UUID] = mapped_column(
@@ -49,6 +51,12 @@ class Customer(BaseModel):
     organization = relationship(
         "Organization",
         back_populates="customers",
+    )
+
+    customer_organizations = relationship(
+        "CustomerOrganization",
+        back_populates="customer",
+        cascade="all, delete-orphan",
     )
 
     orders = relationship(
