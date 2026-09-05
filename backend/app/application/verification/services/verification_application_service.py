@@ -87,7 +87,7 @@ class VerificationApplicationService:
             if item.instrument_id is None:
                 raise VerificationInstrumentRequiredApplicationError
 
-            verification = Verification(
+            verification = Verification.create(
                 id=uuid4(),
                 order_item_id=command.order_item_id,
                 instrument_id=item.instrument_id,
