@@ -85,52 +85,30 @@ from app.core.dependencies.repositories import (
     get_workflow_instance_repository,
     get_workflow_repository,
 )
-from app.core.dependencies.uow import get_unit_of_work
 from app.domains.auth.repositories.session_repository import SessionRepository
 from app.domains.customer.repositories.customer_repository import CustomerRepository
 from app.domains.device.repositories.device_repository import DeviceRepository
-from app.domains.diagnostic.repositories.diagnostic_repository import (
-    DiagnosticRepository,
-)
-from app.domains.instrument_type.repositories.instrument_type_repository import (
-    InstrumentTypeRepository,
-)
+from app.domains.diagnostic.repositories.diagnostic_repository import DiagnosticRepository
+from app.domains.instrument_type.repositories.instrument_type_repository import InstrumentTypeRepository
 from app.domains.material.repositories.material_repository import MaterialRepository
-from app.domains.order.repositories.order_read_repository import (
-    OrderReadRepository,
-)
+from app.domains.order.repositories.order_read_repository import OrderReadRepository
 from app.domains.order.repositories.order_repository import OrderRepository
-from app.domains.organization.repositories.organization_repository import (
-    OrganizationRepository,
-)
-from app.domains.price_list.repositories.price_list_repository import (
-    PriceListRepository,
-)
+from app.domains.organization.repositories.organization_repository import OrganizationRepository
+from app.domains.price_list.repositories.price_list_repository import PriceListRepository
 from app.domains.repair.repositories.repair_repository import RepairRepository
 from app.domains.site.repositories.site_repository import SiteRepository
 from app.domains.user.repositories.user_repository import UserRepository
-from app.domains.verification.repositories.verification_repository import (
-    VerificationRepository,
-)
-from app.domains.warehouse.repositories.warehouse_movement_repository import (
-    WarehouseMovementRepository,
-)
+from app.domains.verification.repositories.verification_repository import VerificationRepository
+from app.domains.warehouse.repositories.warehouse_movement_repository import WarehouseMovementRepository
 from app.domains.warehouse.repositories.warehouse_repository import WarehouseRepository
-from app.domains.warehouse.repositories.warehouse_stock_read_repository import (
-    WarehouseStockReadRepository,
-)
-from app.domains.warehouse.repositories.warehouse_stock_repository import (
-    WarehouseStockRepository,
-)
+from app.domains.warehouse.repositories.warehouse_stock_read_repository import WarehouseStockReadRepository
+from app.domains.warehouse.repositories.warehouse_stock_repository import WarehouseStockRepository
 from app.domains.workflow.repositories.workflow_repository import (
     WorkflowInstanceRepository,
     WorkflowRepository,
 )
-from app.infrastructure.auth.password_hasher import Argon2PasswordHasher
 from app.infrastructure.auth.session_token_generator import SecureSessionTokenGenerator
-from app.shared.audit.repositories.audit_operation_repository import (
-    AuditOperationRepository,
-)
+from app.shared.audit.repositories.audit_operation_repository import AuditOperationRepository
 from app.shared.audit.repositories.audit_repository import AuditRepository
 from app.shared.events.event_dispatcher import EventDispatcher
 from app.shared.unit_of_work.unit_of_work import UnitOfWork
@@ -174,147 +152,14 @@ def get_current_user_service(
 
 def get_order_service(
     repository: OrderRepository = Depends(get_order_repository),
+    customer_repository: CustomerRepository = Depends(get_customer_repository),
     uow: UnitOfWork = Depends(get_unit_of_work),
     event_dispatcher: EventDispatcher = Depends(get_event_dispatcher),
 ) -> OrderApplicationService:
     """Provide Order application service."""
-    return OrderApplicationService(repository, uow, event_dispatcher)
-
-
-def get_order_read_service(
-    repository: OrderReadRepository = Depends(get_order_read_repository),
-) -> OrderReadService:
-    """Provide Order read service."""
-    return OrderReadService(repository)
-
-
-def get_verification_service(
-    repository: VerificationRepository = Depends(get_verification_repository),
-    order_repository: OrderRepository = Depends(get_order_repository),
-    uow: UnitOfWork = Depends(get_unit_of_work),
-    audit_operation_repository: AuditOperationRepository = Depends(
-        get_audit_operation_repository,
-    ),
-    audit_repository: AuditRepository = Depends(get_audit_repository),
-) -> VerificationApplicationService:
-    """Provide Verification application service."""
-    return VerificationApplicationService(
+    return OrderApplicationService(
         repository,
-        order_repository,
+        customer_repository,
         uow,
-        audit_operation_repository,
-        audit_repository,
+        event_dispatcher,
     )
-
-
-def get_device_service(
-    repository: DeviceRepository = Depends(get_device_repository),
-    instrument_type_repository: InstrumentTypeRepository = Depends(
-        get_instrument_type_repository
-    ),
-    uow: UnitOfWork = Depends(get_unit_of_work),
-) -> DeviceApplicationService:
-    """Provide Device application service."""
-    return DeviceApplicationService(repository, instrument_type_repository, uow)
-
-
-def get_instrument_type_service(
-    repository: InstrumentTypeRepository = Depends(get_instrument_type_repository),
-    uow: UnitOfWork = Depends(get_unit_of_work),
-) -> instrument_type_application_service.InstrumentTypeApplicationService:
-    """Provide InstrumentType application service."""
-    return instrument_type_application_service.InstrumentTypeApplicationService(
-        repository,
-        uow,
-    )
-
-
-def get_customer_service(
-    repository: CustomerRepository = Depends(get_customer_repository),
-    uow: UnitOfWork = Depends(get_unit_of_work),
-) -> CustomerApplicationService:
-    """Provide Customer application service."""
-    return CustomerApplicationService(repository, uow)
-
-
-def get_material_service(
-    repository: MaterialRepository = Depends(get_material_repository),
-) -> MaterialApplicationService:
-    """Provide Material application service."""
-    return MaterialApplicationService(repository)
-
-
-def get_warehouse_service(
-    warehouse_repository: WarehouseRepository = Depends(get_warehouse_repository),
-    stock_repository: WarehouseStockRepository = Depends(
-        get_warehouse_stock_repository
-    ),
-    movement_repository: WarehouseMovementRepository = Depends(
-        get_warehouse_movement_repository
-    ),
-    uow: UnitOfWork = Depends(get_unit_of_work),
-) -> WarehouseApplicationService:
-    """Provide Warehouse application service."""
-    return WarehouseApplicationService(
-        warehouse_repository,
-        stock_repository,
-        movement_repository,
-        uow,
-    )
-
-
-def get_warehouse_stock_read_service(
-    repository: WarehouseStockReadRepository = Depends(
-        get_warehouse_stock_read_repository,
-    ),
-) -> WarehouseStockReadService:
-    return WarehouseStockReadService(repository)
-
-
-def get_organization_service(
-    repository: OrganizationRepository = Depends(get_organization_repository),
-    uow: UnitOfWork = Depends(get_unit_of_work),
-) -> OrganizationApplicationService:
-    """Provide Organization application service."""
-    return OrganizationApplicationService(repository, uow)
-
-
-def get_site_service(
-    repository: SiteRepository = Depends(get_site_repository),
-    uow: UnitOfWork = Depends(get_unit_of_work),
-) -> SiteApplicationService:
-    """Provide Site application service."""
-    return SiteApplicationService(repository, uow)
-
-
-def get_workflow_service(
-    repository: WorkflowRepository = Depends(get_workflow_repository),
-    instance_repository: WorkflowInstanceRepository = Depends(
-        get_workflow_instance_repository
-    ),
-) -> WorkflowApplicationService:
-    """Provide Workflow application service."""
-    return WorkflowApplicationService(repository, instance_repository)
-
-
-def get_price_list_service(
-    repository: PriceListRepository = Depends(get_price_list_repository),
-) -> PriceListApplicationService:
-    """Provide PriceList application service."""
-    return PriceListApplicationService(repository)
-
-
-def get_repair_service(
-    repository: RepairRepository = Depends(get_repair_repository),
-    uow: UnitOfWork = Depends(get_unit_of_work),
-) -> RepairApplicationService:
-    """Provide Repair application service."""
-    return RepairApplicationService(repository, uow)
-
-
-def get_diagnostic_service(
-    repository: DiagnosticRepository = Depends(get_diagnostic_repository),
-    uow: UnitOfWork = Depends(get_unit_of_work),
-) -> DiagnosticApplicationService:
-    """Provide Diagnostic application service."""
-    return DiagnosticApplicationService(repository, uow)
