@@ -3,10 +3,12 @@ from uuid import uuid4
 import pytest
 from fastapi import HTTPException
 
-from app.api.routers.site import create_site
-from app.api.routers.site import get_organization_sites
-from app.api.routers.site import get_site
-from app.api.routers.site import get_sites
+from app.api.routers.site import (
+    create_site,
+    get_organization_sites,
+    get_site,
+    get_sites,
+)
 from app.domains.site.entities.site import Site
 from app.schemas.site import SiteCreate, SiteRead
 
