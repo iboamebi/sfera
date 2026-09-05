@@ -117,6 +117,7 @@ def upgrade() -> None:
     op.create_foreign_key(
         "fk_instruments_site_id_sites",
         "instruments",
+        "sites",
         ["site_id"],
         ["id"],
     )
