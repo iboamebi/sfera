@@ -64,3 +64,8 @@ class Organization(BaseModel):
         back_populates="organization",
         cascade="all, delete-orphan",
     )
+
+    sites = relationship(
+        "Site",
+        back_populates="organization",
+    )
