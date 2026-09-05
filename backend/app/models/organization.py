@@ -5,6 +5,8 @@ from app.models.base_model import BaseModel
 
 
 class Organization(BaseModel):
+    """ORM model for a legal or business organization."""
+
     __tablename__ = "organizations"
 
     name: Mapped[str] = mapped_column(
@@ -62,7 +64,11 @@ class Organization(BaseModel):
     customers = relationship(
         "Customer",
         back_populates="organization",
-        cascade="all, delete-orphan",
+    )
+
+    customer_organizations = relationship(
+        "CustomerOrganization",
+        back_populates="organization",
     )
 
     sites = relationship(
