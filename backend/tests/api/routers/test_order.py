@@ -13,11 +13,13 @@ from app.schemas.order import OrderRead
 
 def test_create_order_returns_api_contract() -> None:
     customer_id = uuid4()
+    organization_id = uuid4()
     now = datetime.now(UTC)
     order = Order(
         id=uuid4(),
         number=OrderNumber("1001"),
         customer_id=customer_id,
+        organization_id=organization_id,
         received_at=now,
         planned_issue_at=None,
         issued_at=None,
@@ -75,11 +77,13 @@ def test_create_order_returns_api_contract() -> None:
 def test_add_order_item_returns_read_model() -> None:
     order_id = uuid4()
     customer_id = uuid4()
+    organization_id = uuid4()
     now = datetime.now(UTC)
     order = Order(
         id=order_id,
         number=OrderNumber("1001"),
         customer_id=customer_id,
+        organization_id=organization_id,
         received_at=now,
     )
     read_order = OrderRead(
@@ -183,6 +187,7 @@ def test_register_order_returns_read_model() -> None:
                 id=order_id,
                 number=OrderNumber("1001"),
                 customer_id=read_order.customer_id,
+                organization_id=uuid4(),
                 received_at=now,
             )
 
