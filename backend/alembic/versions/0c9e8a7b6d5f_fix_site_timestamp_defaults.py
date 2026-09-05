@@ -11,7 +11,6 @@ import sqlalchemy as sa
 
 from alembic import op
 
-
 revision: str = "0c9e8a7b6d5f"
 down_revision: str | None = "f1a2b3c4d5e6"
 branch_labels: str | Sequence[str] | None = None
@@ -37,7 +36,7 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    """Remove database defaults from Site timestamps."""
+    """Remove database defaults for Site timestamps."""
     op.alter_column(
         "sites",
         "updated_at",
