@@ -7,6 +7,7 @@ from uuid import UUID, uuid4
 
 from app.application.authorization.authorization import require_role
 from app.application.context.operation_context import OperationContext
+from app.application.customer.exceptions import CustomerNotFoundApplicationError
 from app.application.order.commands.add_order_item import AddOrderItemCommand
 from app.application.order.commands.assign_order_item_instrument import (
     AssignOrderItemInstrumentCommand,
@@ -20,6 +21,7 @@ from app.application.order.exceptions import (
     InstrumentAlreadyInActiveOrderApplicationError,
     OrderNotFoundApplicationError,
 )
+from app.domains.customer.repositories.customer_repository import CustomerRepository
 from app.domains.order.entities.order import Order
 from app.domains.order.entities.order_item import OrderItem
 from app.domains.order.repositories.order_repository import OrderRepository
@@ -35,21 +37,28 @@ class OrderApplicationService:
     def __init__(
         self,
         repository: OrderRepository,
+        customer_repository: CustomerRepository,
         unit_of_work: UnitOfWork,
         event_dispatcher: object | None = None,
     ) -> None:
         self._repository = repository
+        self._customer_repository = customer_repository
         self._uow = unit_of_work
         self._event_dispatcher = event_dispatcher
 
     def create(self, command: CreateOrderCommand, user: User) -> Order:
         require_role(user, UserRole.OPERATOR, UserRole.ADMIN)
 
+        customer = self._customer_repository.get(command.customer_id)
+        if customer is None:
+            raise CustomerNotFoundApplicationError
+
         with self._uow:
             order = Order.create(
                 id=uuid4(),
                 number=OrderNumber(command.number),
                 customer_id=command.customer_id,
+                organization_id=customer.organization_id,
                 received_at=datetime.now(UTC),
                 planned_issue_at=command.planned_issue_at,
                 comment=command.comment,
