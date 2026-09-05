@@ -37,6 +37,7 @@ from app.domains.price_list.repositories.price_list_repository import (
 from app.domains.repair.repositories.repair_repository import (
     RepairRepository,
 )
+from app.domains.site.repositories.site_repository import SiteRepository
 from app.domains.user.repositories.user_repository import UserRepository
 from app.domains.verification.repositories.verification_repository import (
     VerificationRepository,
@@ -94,6 +95,7 @@ from app.infrastructure.price_list.price_list_repository import (
 from app.infrastructure.repair.repair_repository import (
     RepairRepositorySQLAlchemy,
 )
+from app.infrastructure.site.site_repository import SiteRepositorySQLAlchemy
 from app.infrastructure.user.user_repository import UserRepositorySQLAlchemy
 from app.infrastructure.verification.verification_repository import (
     VerificationRepositorySQLAlchemy,
@@ -252,6 +254,14 @@ def get_repair_repository(
     """Provide Repair repository."""
 
     return RepairRepositorySQLAlchemy(session)
+
+
+def get_site_repository(
+    session: Session = Depends(get_session),
+) -> SiteRepository:
+    """Provide Site repository."""
+
+    return SiteRepositorySQLAlchemy(session)
 
 
 def get_user_repository(
