@@ -137,10 +137,11 @@ The following Verification application use cases require one of:
 
 Implemented use cases:
 
+- `create`;
 - `approve`;
 - `reject`.
 
-Authorization is performed in the Application layer. The existing Verification API currently exposes only its read operation, so no new mutation endpoints are introduced by this authorization stage.
+Authorization is performed in the Application layer. Verification creation and state-changing API routes authenticate the user, retain CSRF protection, and pass the authenticated user to the Application use case.
 
 ### Diagnostic
 
@@ -205,7 +206,7 @@ Implemented:
 - authorization of Organization creation and update;
 - authorization of Material creation, update, archive and restore;
 - authorization of Warehouse state-changing operations covered by the current application contract;
-- authorization of Verification approval and rejection;
+- authorization of Verification creation, approval and rejection;
 - authorization of Diagnostic creation, completion and recommendation;
 - authorization of Repair creation, start, completion and cancellation;
 - API forwarding of authenticated users for implemented state-changing boundaries;
