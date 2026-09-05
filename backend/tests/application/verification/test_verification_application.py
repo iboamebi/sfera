@@ -158,6 +158,7 @@ def make_order_with_item(
         id=uuid4(),
         number=OrderNumber(f"TEST-{uuid4().hex[:8]}"),
         customer_id=uuid4(),
+        organization_id=uuid4(),
         received_at=date.today(),
         items=[item],
     )
