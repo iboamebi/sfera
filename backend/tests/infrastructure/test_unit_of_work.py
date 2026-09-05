@@ -56,6 +56,7 @@ def test_commit_dispatches_order_registered_event():
         id=uuid4(),
         number=OrderNumber("10011"),
         customer_id=uuid4(),
+        organization_id=uuid4(),
         received_at=datetime(2026, 8, 31, 15, 30, tzinfo=UTC),
     )
     order.add_item(OrderItem(id=uuid4()))
