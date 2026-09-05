@@ -72,6 +72,11 @@ class Organization(BaseModel):
         back_populates="organization",
     )
 
+    orders = relationship(
+        "Order",
+        back_populates="organization",
+    )
+
     sites = relationship(
         "Site",
         back_populates="organization",
