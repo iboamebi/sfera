@@ -10,6 +10,7 @@ from app.models.audit_operation import AuditOperationModel
 from app.models.audit_record import AuditRecordModel
 from app.models.auth_session import AuthSession
 from app.models.customer import Customer
+from app.models.customer_organization import CustomerOrganization
 from app.models.diagnostic import Diagnostic
 from app.models.document import Document
 from app.models.document_template import DocumentTemplate
@@ -28,6 +29,7 @@ from app.models.production_movement import ProductionMovement
 from app.models.repair import Repair
 from app.models.role import Role
 from app.models.role_permission import RolePermission
+from app.models.site import Site
 from app.models.user import User
 from app.models.user_role import UserRole
 from app.models.verification import Verification
