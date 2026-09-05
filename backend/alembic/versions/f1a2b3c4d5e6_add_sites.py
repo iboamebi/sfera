@@ -25,9 +25,24 @@ def upgrade() -> None:
         sa.Column("organization_id", sa.UUID(), nullable=False),
         sa.Column("name", sa.String(length=255), nullable=False),
         sa.Column("address", sa.Text(), nullable=False),
-        sa.Column("archived", sa.Boolean(), nullable=False, server_default=sa.false()),
-        sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
-        sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False),
+        sa.Column(
+            "archived",
+            sa.Boolean(),
+            nullable=False,
+            server_default=sa.false(),
+        ),
+        sa.Column(
+            "created_at",
+            sa.DateTime(timezone=True),
+            nullable=False,
+            server_default=sa.text("now()"),
+        ),
+        sa.Column(
+            "updated_at",
+            sa.DateTime(timezone=True),
+            nullable=False,
+            server_default=sa.text("now()"),
+        ),
         sa.ForeignKeyConstraint(["organization_id"], ["organizations.id"]),
         sa.PrimaryKeyConstraint("id"),
     )
