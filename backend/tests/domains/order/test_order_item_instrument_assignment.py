@@ -18,6 +18,7 @@ def make_order() -> Order:
         id=uuid4(),
         number=OrderNumber("10020"),
         customer_id=uuid4(),
+        organization_id=uuid4(),
         received_at=datetime.now(UTC),
     )
 
