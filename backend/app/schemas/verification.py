@@ -33,4 +33,5 @@ class VerificationRead(VerificationBase):
     model_config = ConfigDict(from_attributes=True)
 
     id: UUID
+    instrument_id: UUID | None = None
     archived: bool
