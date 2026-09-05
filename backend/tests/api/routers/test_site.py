@@ -1,11 +1,14 @@
 from uuid import uuid4
 
+import pytest
+from fastapi import HTTPException
+
 from app.api.routers.site import create_site
 from app.api.routers.site import get_organization_sites
 from app.api.routers.site import get_site
 from app.api.routers.site import get_sites
 from app.domains.site.entities.site import Site
-from app.schemas.site import SiteRead
+from app.schemas.site import SiteCreate, SiteRead
 
 
 def make_site() -> Site:
@@ -30,20 +33,11 @@ def test_create_site_returns_api_contract() -> None:
             return site
 
     result = create_site(
-        data=type(
-            "SiteCreateData",
-            (),
-            {
-                "organization_id": site.organization_id,
-                "name": site.name,
-                "address": site.address,
-                "model_dump": lambda self: {
-                    "organization_id": self.organization_id,
-                    "name": self.name,
-                    "address": self.address,
-                },
-            },
-        )(),
+        data=SiteCreate(
+            organization_id=site.organization_id,
+            name=site.name,
+            address=site.address,
+        ),
         user=object(),
         service=FakeSiteService(),
     )
@@ -75,23 +69,19 @@ def test_get_site_returns_api_contract() -> None:
 
 
 def test_get_site_raises_404_when_site_is_missing() -> None:
-    from fastapi import HTTPException
-
     class FakeSiteService:
         def get(self, requested_id: object) -> Site | None:
             assert requested_id is not None
             return None
 
-    try:
+    with pytest.raises(HTTPException) as exc_info:
         get_site(
             site_id=uuid4(),
             service=FakeSiteService(),
         )
-    except HTTPException as exc:
-        assert exc.status_code == 404
-        assert exc.detail == "Site not found"
-    else:
-        raise AssertionError("Expected HTTPException")
+
+    assert exc_info.value.status_code == 404
+    assert exc_info.value.detail == "Site not found"
 
 
 def test_get_sites_returns_sites() -> None:
