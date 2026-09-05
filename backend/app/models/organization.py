@@ -64,6 +64,7 @@ class Organization(BaseModel):
     customers = relationship(
         "Customer",
         back_populates="organization",
+        cascade="all, delete-orphan",
     )
 
     customer_organizations = relationship(
