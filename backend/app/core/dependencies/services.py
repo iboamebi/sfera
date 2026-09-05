@@ -45,6 +45,9 @@ from app.application.price_list.services.price_list_application_service import (
 from app.application.repair.services.repair_application_service import (
     RepairApplicationService,
 )
+from app.application.site.services.site_application_service import (
+    SiteApplicationService,
+)
 from app.application.verification.services.verification_application_service import (
     VerificationApplicationService,
 )
@@ -72,6 +75,7 @@ from app.core.dependencies.repositories import (
     get_price_list_repository,
     get_repair_repository,
     get_session_repository,
+    get_site_repository,
     get_user_repository,
     get_verification_repository,
     get_warehouse_movement_repository,
@@ -103,6 +107,7 @@ from app.domains.price_list.repositories.price_list_repository import (
     PriceListRepository,
 )
 from app.domains.repair.repositories.repair_repository import RepairRepository
+from app.domains.site.repositories.site_repository import SiteRepository
 from app.domains.user.repositories.user_repository import UserRepository
 from app.domains.verification.repositories.verification_repository import (
     VerificationRepository,
@@ -272,6 +277,14 @@ def get_organization_service(
 ) -> OrganizationApplicationService:
     """Provide Organization application service."""
     return OrganizationApplicationService(repository, uow)
+
+
+def get_site_service(
+    repository: SiteRepository = Depends(get_site_repository),
+    uow: UnitOfWork = Depends(get_unit_of_work),
+) -> SiteApplicationService:
+    """Provide Site application service."""
+    return SiteApplicationService(repository, uow)
 
 
 def get_workflow_service(
