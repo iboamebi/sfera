@@ -63,9 +63,9 @@ def upgrade() -> None:
             )
             SELECT
                 gen_random_uuid(),
-                customer_id,
-                organization_id
-            FROM customers
+                c.customer_id,
+                c.organization_id
+            FROM customers AS c
             """
         )
     )
@@ -117,7 +117,6 @@ def upgrade() -> None:
     op.create_foreign_key(
         "fk_instruments_site_id_sites",
         "instruments",
-        "sites",
         ["site_id"],
         ["id"],
     )
