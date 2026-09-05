@@ -19,6 +19,7 @@ def create_order(
         id=uuid4(),
         number=OrderNumber(number),
         customer_id=uuid4(),
+        organization_id=uuid4(),
         received_at=datetime.now(UTC),
         planned_issue_at=planned_issue_at,
         comment=comment,
