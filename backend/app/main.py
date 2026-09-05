@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from app.api.routers import instrument_type, organization
+from app.api.routers import instrument_type, organization, site
 from app.api.routers.auth import router as auth_router
 from app.api.routers.customer import router as customer_router
 from app.api.routers.device import router as device_router
@@ -65,6 +65,7 @@ app.add_middleware(
 
 app.include_router(auth_router)
 app.include_router(organization.router)
+app.include_router(site.router)
 app.include_router(customer_router)
 app.include_router(order_router)
 app.include_router(verification_router)
