@@ -16,6 +16,11 @@ class Instrument(BaseModel):
         nullable=False,
     )
 
+    site_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("sites.id"),
+        nullable=True,
+    )
+
     name: Mapped[str | None] = mapped_column(
         String(255),
         nullable=True,
@@ -59,5 +64,10 @@ class Instrument(BaseModel):
 
     instrument_type = relationship(
         "InstrumentType",
+        back_populates="instruments",
+    )
+
+    site = relationship(
+        "Site",
         back_populates="instruments",
     )
