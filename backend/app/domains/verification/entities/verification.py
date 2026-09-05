@@ -21,6 +21,7 @@ class Verification(AggregateRoot):
     valid_until: date | None = None
     unsuitable_reason: str | None = None
     methodology: str | None = None
+    archived: bool = False
 
     def mark_suitable(
         self,
