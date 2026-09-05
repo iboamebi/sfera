@@ -1,11 +1,13 @@
 from datetime import UTC, datetime
 from uuid import uuid4
 
-from app.api.routers.order import add_order_item
-from app.api.routers.order import create_order
-from app.api.routers.order import get_order
-from app.api.routers.order import register_order
-from app.api.routers.order import OrderItemCreate
+from app.api.routers.order import (
+    OrderItemCreate,
+    add_order_item,
+    create_order,
+    get_order,
+    register_order,
+)
 from app.domains.order.entities.order import Order
 from app.domains.order.value_objects.order_number import OrderNumber
 from app.schemas.order import OrderRead
@@ -163,6 +165,7 @@ def test_get_order_returns_api_contract() -> None:
 
 def test_register_order_returns_read_model() -> None:
     order_id = uuid4()
+    organization_id = uuid4()
     now = datetime.now(UTC)
     read_order = OrderRead(
         id=order_id,
@@ -187,7 +190,7 @@ def test_register_order_returns_read_model() -> None:
                 id=order_id,
                 number=OrderNumber("1001"),
                 customer_id=read_order.customer_id,
-                organization_id=uuid4(),
+                organization_id=organization_id,
                 received_at=now,
             )
 
