@@ -63,7 +63,7 @@ def upgrade() -> None:
             )
             SELECT
                 gen_random_uuid(),
-                c.customer_id,
+                c.id,
                 c.organization_id
             FROM customers AS c
             """
