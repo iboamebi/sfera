@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime, timezone
 from uuid import uuid4
 
 import pytest
@@ -12,108 +12,105 @@ from app.domains.verification.exceptions import (
 from app.domains.verification.value_objects.verification_result import (
     VerificationResult,
 )
+from app.domains.verification.value_objects.verification_status import (
+    VerificationStatus,
+)
 
 
-def test_mark_suitable():
-    verification = Verification(
-        id=uuid4(),
-        order_item_id=uuid4(),
-        verification_date=date.today(),
-        result=VerificationResult.UNSUITABLE,
-    )
-
-    verification.mark_suitable(date(2030, 1, 1))
-
-    assert verification.result == VerificationResult.SUITABLE
-    assert verification.valid_until == date(2030, 1, 1)
-    assert verification.unsuitable_reason is None
+DECISION_AT = datetime(2030, 1, 1, 12, 0, tzinfo=timezone.utc)
 
 
-def test_mark_unsuitable():
-    verification = Verification(
-        id=uuid4(),
-        order_item_id=uuid4(),
-        verification_date=date.today(),
-        result=VerificationResult.SUITABLE,
-    )
-
-    verification.mark_unsuitable("Broken seal")
-
-    assert verification.result == VerificationResult.UNSUITABLE
-    assert verification.valid_until is None
-    assert verification.unsuitable_reason == "Broken seal"
-
-
-def test_unsuitable_requires_reason():
-    verification = Verification(
-        id=uuid4(),
-        order_item_id=uuid4(),
-        verification_date=date.today(),
-        result=VerificationResult.SUITABLE,
-    )
-
-    with pytest.raises(InvalidUnsuitableReasonDomainError):
-        verification.mark_unsuitable("")
-
-
-def test_create_suitable_verification_requires_valid_until():
-    with pytest.raises(InvalidSuitableValidUntilDomainError):
-        Verification.create(
-            id=uuid4(),
-            order_item_id=uuid4(),
-            instrument_id=uuid4(),
-            verification_date=date.today(),
-            result=VerificationResult.SUITABLE,
-        )
-
-
-def test_create_unsuitable_verification_requires_reason():
-    with pytest.raises(InvalidUnsuitableReasonDomainError):
-        Verification.create(
-            id=uuid4(),
-            order_item_id=uuid4(),
-            instrument_id=uuid4(),
-            verification_date=date.today(),
-            result=VerificationResult.UNSUITABLE,
-        )
-
-
-def test_create_suitable_verification_rejects_unsuitable_reason():
-    with pytest.raises(InvalidVerificationResultStateDomainError):
-        Verification.create(
-            id=uuid4(),
-            order_item_id=uuid4(),
-            instrument_id=uuid4(),
-            verification_date=date.today(),
-            result=VerificationResult.SUITABLE,
-            valid_until=date(2030, 1, 1),
-            unsuitable_reason="Broken seal",
-        )
-
-
-def test_create_unsuitable_verification_rejects_valid_until():
-    with pytest.raises(InvalidVerificationResultStateDomainError):
-        Verification.create(
-            id=uuid4(),
-            order_item_id=uuid4(),
-            instrument_id=uuid4(),
-            verification_date=date.today(),
-            result=VerificationResult.UNSUITABLE,
-            valid_until=date(2030, 1, 1),
-            unsuitable_reason="Broken seal",
-        )
-
-
-def test_create_verification_returns_result_consistent_state():
-    verification = Verification.create(
+def create_verification() -> Verification:
+    """Create a verification in its initial lifecycle state."""
+    return Verification.create(
         id=uuid4(),
         order_item_id=uuid4(),
         instrument_id=uuid4(),
         verification_date=date.today(),
-        result=VerificationResult.SUITABLE,
-        valid_until=date(2030, 1, 1),
     )
 
+
+def test_create_verification_starts_in_created_state():
+    verification = create_verification()
+
+    assert verification.status == VerificationStatus.CREATED
+    assert verification.result is None
+    assert verification.decision_at is None
+    assert verification.valid_until is None
+    assert verification.unsuitable_reason is None
+
+
+def test_start_moves_verification_to_in_progress():
+    verification = create_verification()
+
+    verification.start()
+
+    assert verification.status == VerificationStatus.IN_PROGRESS
+    assert verification.result is None
+    assert verification.decision_at is None
+
+
+def test_mark_suitable_completes_verification():
+    verification = create_verification()
+    verification.start()
+
+    verification.mark_suitable(date(2030, 1, 1), decision_at=DECISION_AT)
+
+    assert verification.status == VerificationStatus.DECIDED
     assert verification.result == VerificationResult.SUITABLE
     assert verification.valid_until == date(2030, 1, 1)
     assert verification.unsuitable_reason is None
+    assert verification.decision_at == DECISION_AT
+
+
+def test_mark_unsuitable_completes_verification():
+    verification = create_verification()
+    verification.start()
+
+    verification.mark_unsuitable("Broken seal", decision_at=DECISION_AT)
+
+    assert verification.status == VerificationStatus.DECIDED
+    assert verification.result == VerificationResult.UNSUITABLE
+    assert verification.valid_until is None
+    assert verification.unsuitable_reason == "Broken seal"
+    assert verification.decision_at == DECISION_AT
+
+
+def test_unsuitable_requires_reason():
+    verification = create_verification()
+    verification.start()
+
+    with pytest.raises(InvalidUnsuitableReasonDomainError):
+        verification.mark_unsuitable("", decision_at=DECISION_AT)
+
+
+def test_suitable_requires_valid_until():
+    verification = create_verification()
+    verification.start()
+
+    with pytest.raises(InvalidSuitableValidUntilDomainError):
+        verification.mark_suitable(None, decision_at=DECISION_AT)
+
+
+def test_decision_requires_in_progress_state():
+    verification = create_verification()
+
+    with pytest.raises(InvalidVerificationResultStateDomainError):
+        verification.mark_suitable(date(2030, 1, 1), decision_at=DECISION_AT)
+
+
+def test_decided_verification_cannot_be_decided_again():
+    verification = create_verification()
+    verification.start()
+    verification.mark_suitable(date(2030, 1, 1), decision_at=DECISION_AT)
+
+    with pytest.raises(InvalidVerificationResultStateDomainError):
+        verification.mark_unsuitable("Broken seal", decision_at=DECISION_AT)
+
+
+def test_start_requires_created_state():
+    verification = create_verification()
+    verification.start()
+
+    with pytest.raises(InvalidVerificationResultStateDomainError):
+        verification.start()
