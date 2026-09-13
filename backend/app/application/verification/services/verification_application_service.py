@@ -2,6 +2,7 @@
 Application service for verification use cases.
 """
 
+from datetime import datetime, timezone
 from uuid import UUID, uuid4
 
 from app.application.authorization.authorization import require_role
@@ -67,7 +68,7 @@ class VerificationApplicationService:
         command: CreateVerificationCommand,
         user: User,
     ) -> Verification:
-        """Create verification for a concrete instrument assigned to an order item."""
+        """Create and start verification for a concrete instrument."""
         require_role(user, UserRole.METROLOGIST, UserRole.ADMIN)
 
         with self._uow:
@@ -92,11 +93,9 @@ class VerificationApplicationService:
                 order_item_id=command.order_item_id,
                 instrument_id=item.instrument_id,
                 verification_date=command.verification_date,
-                result=command.result,
-                valid_until=command.valid_until,
-                unsuitable_reason=command.unsuitable_reason,
                 methodology=command.methodology,
             )
+            verification.start()
             self._repository.save(verification)
 
         return verification
@@ -115,7 +114,10 @@ class VerificationApplicationService:
             old_valid_until = verification.valid_until
             old_unsuitable_reason = verification.unsuitable_reason
 
-            verification.mark_suitable(command.valid_until)
+            verification.mark_suitable(
+                command.valid_until,
+                decision_at=datetime.now(timezone.utc),
+            )
 
             self._repository.save(verification)
             self._audit_operation_repository.save(operation)
@@ -128,7 +130,7 @@ class VerificationApplicationService:
                     entity_id=verification.id,
                     changes={
                         "result": {
-                            "old": old_result.value,
+                            "old": old_result.value if old_result is not None else None,
                             "new": verification.result.value,
                         },
                         "valid_until": {
@@ -163,7 +165,10 @@ class VerificationApplicationService:
             old_valid_until = verification.valid_until
             old_unsuitable_reason = verification.unsuitable_reason
 
-            verification.mark_unsuitable(command.reason)
+            verification.mark_unsuitable(
+                command.reason,
+                decision_at=datetime.now(timezone.utc),
+            )
 
             self._repository.save(verification)
             self._audit_operation_repository.save(operation)
@@ -176,7 +181,7 @@ class VerificationApplicationService:
                     entity_id=verification.id,
                     changes={
                         "result": {
-                            "old": old_result.value,
+                            "old": old_result.value if old_result is not None else None,
                             "new": verification.result.value,
                         },
                         "valid_until": {
