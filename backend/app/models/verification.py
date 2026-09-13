@@ -1,8 +1,8 @@
 import uuid
-from datetime import date
+from datetime import date, datetime
 from enum import StrEnum
 
-from sqlalchemy import Date, ForeignKey, String, Text
+from sqlalchemy import Date, DateTime, ForeignKey, String, Text
 from sqlalchemy import Enum as SqlEnum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -14,8 +14,14 @@ class VerificationResult(StrEnum):
     UNSUITABLE = "UNSUITABLE"
 
 
+class VerificationStatus(StrEnum):
+    CREATED = "CREATED"
+    IN_PROGRESS = "IN_PROGRESS"
+    DECIDED = "DECIDED"
+
+
 class Verification(BaseModel):
-    """ORM model for an instrument verification result."""
+    """ORM model for an instrument verification process."""
 
     __tablename__ = "verifications"
 
@@ -34,14 +40,24 @@ class Verification(BaseModel):
         nullable=False,
     )
 
+    status: Mapped[VerificationStatus] = mapped_column(
+        SqlEnum(VerificationStatus, name="verification_status"),
+        nullable=False,
+    )
+
+    decision_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
+
     valid_until: Mapped[date | None] = mapped_column(
         Date,
         nullable=True,
     )
 
-    result: Mapped[VerificationResult] = mapped_column(
+    result: Mapped[VerificationResult | None] = mapped_column(
         SqlEnum(VerificationResult),
-        nullable=False,
+        nullable=True,
     )
 
     unsuitable_reason: Mapped[str | None] = mapped_column(
