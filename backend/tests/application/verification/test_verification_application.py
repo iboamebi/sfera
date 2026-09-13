@@ -34,6 +34,9 @@ from app.domains.verification.repositories.verification_repository import (
 from app.domains.verification.value_objects.verification_result import (
     VerificationResult,
 )
+from app.domains.verification.value_objects.verification_status import (
+    VerificationStatus,
+)
 from app.shared.audit.models import AuditOperation, AuditRecord
 from app.shared.audit.repositories.audit_operation_repository import (
     AuditOperationRepository,
@@ -165,6 +168,18 @@ def make_order_with_item(
     return order, item
 
 
+def make_verification() -> Verification:
+    """Create a verification in the active execution state."""
+    verification = Verification.create(
+        id=uuid4(),
+        order_item_id=uuid4(),
+        instrument_id=uuid4(),
+        verification_date=date.today(),
+    )
+    verification.start()
+    return verification
+
+
 def test_create_verification_copies_instrument_from_order_item():
     repository = FakeVerificationRepository()
     order_repository = FakeOrderRepository()
@@ -176,14 +191,15 @@ def test_create_verification_copies_instrument_from_order_item():
         CreateVerificationCommand(
             order_item_id=item.id,
             verification_date=date(2026, 9, 4),
-            result=VerificationResult.SUITABLE,
-            valid_until=date(2030, 1, 1),
         ),
         make_user(UserRole.METROLOGIST),
     )
 
     assert verification.order_item_id == item.id
     assert verification.instrument_id == item.instrument_id
+    assert verification.status == VerificationStatus.IN_PROGRESS
+    assert verification.result is None
+    assert verification.decision_at is None
     assert repository.get(verification.id) is verification
 
 
@@ -195,7 +211,6 @@ def test_create_verification_requires_existing_order_item():
             CreateVerificationCommand(
                 order_item_id=uuid4(),
                 verification_date=date.today(),
-                result=VerificationResult.SUITABLE,
             ),
             make_user(UserRole.METROLOGIST),
         )
@@ -213,7 +228,6 @@ def test_create_verification_requires_concrete_instrument():
             CreateVerificationCommand(
                 order_item_id=item.id,
                 verification_date=date.today(),
-                result=VerificationResult.SUITABLE,
             ),
             make_user(UserRole.METROLOGIST),
         )
@@ -233,7 +247,6 @@ def test_create_verification_requires_metrologist_or_admin():
             CreateVerificationCommand(
                 order_item_id=item.id,
                 verification_date=date.today(),
-                result=VerificationResult.SUITABLE,
             ),
             make_user(UserRole.OPERATOR),
         )
@@ -241,14 +254,7 @@ def test_create_verification_requires_metrologist_or_admin():
 
 def test_approve_verification():
     repository = FakeVerificationRepository()
-
-    verification = Verification(
-        id=uuid4(),
-        order_item_id=uuid4(),
-        verification_date=date.today(),
-        result=VerificationResult.UNSUITABLE,
-    )
-
+    verification = make_verification()
     repository.save(verification)
 
     service = make_service(repository)
@@ -261,20 +267,16 @@ def test_approve_verification():
         make_user(UserRole.METROLOGIST),
     )
 
+    assert verification.status == VerificationStatus.DECIDED
     assert verification.result == VerificationResult.SUITABLE
     assert verification.valid_until == date(2030, 1, 1)
+    assert verification.unsuitable_reason is None
+    assert verification.decision_at is not None
 
 
 def test_reject_verification():
     repository = FakeVerificationRepository()
-
-    verification = Verification(
-        id=uuid4(),
-        order_item_id=uuid4(),
-        verification_date=date.today(),
-        result=VerificationResult.SUITABLE,
-    )
-
+    verification = make_verification()
     repository.save(verification)
 
     service = make_service(repository)
@@ -287,21 +289,16 @@ def test_reject_verification():
         make_user(UserRole.METROLOGIST),
     )
 
+    assert verification.status == VerificationStatus.DECIDED
     assert verification.result == VerificationResult.UNSUITABLE
     assert verification.valid_until is None
     assert verification.unsuitable_reason == "Broken seal"
+    assert verification.decision_at is not None
 
 
 def test_verification_approval_requires_metrologist_or_admin():
     repository = FakeVerificationRepository()
-
-    verification = Verification(
-        id=uuid4(),
-        order_item_id=uuid4(),
-        verification_date=date.today(),
-        result=VerificationResult.UNSUITABLE,
-    )
-
+    verification = make_verification()
     repository.save(verification)
 
     service = make_service(repository)
@@ -318,14 +315,7 @@ def test_verification_approval_requires_metrologist_or_admin():
 
 def test_verification_rejection_requires_metrologist_or_admin():
     repository = FakeVerificationRepository()
-
-    verification = Verification(
-        id=uuid4(),
-        order_item_id=uuid4(),
-        verification_date=date.today(),
-        result=VerificationResult.SUITABLE,
-    )
-
+    verification = make_verification()
     repository.save(verification)
 
     service = make_service(repository)
@@ -342,12 +332,7 @@ def test_verification_rejection_requires_metrologist_or_admin():
 
 def test_verification_approval_allows_admin():
     repository = FakeVerificationRepository()
-    verification = Verification(
-        id=uuid4(),
-        order_item_id=uuid4(),
-        verification_date=date.today(),
-        result=VerificationResult.UNSUITABLE,
-    )
+    verification = make_verification()
     repository.save(verification)
 
     service = make_service(repository)
@@ -360,17 +345,14 @@ def test_verification_approval_allows_admin():
         make_user(UserRole.ADMIN),
     )
 
+    assert verification.status == VerificationStatus.DECIDED
     assert verification.result == VerificationResult.SUITABLE
+    assert verification.decision_at is not None
 
 
 def test_verification_rejection_allows_admin():
     repository = FakeVerificationRepository()
-    verification = Verification(
-        id=uuid4(),
-        order_item_id=uuid4(),
-        verification_date=date.today(),
-        result=VerificationResult.SUITABLE,
-    )
+    verification = make_verification()
     repository.save(verification)
 
     service = make_service(repository)
@@ -383,7 +365,9 @@ def test_verification_rejection_allows_admin():
         make_user(UserRole.ADMIN),
     )
 
+    assert verification.status == VerificationStatus.DECIDED
     assert verification.result == VerificationResult.UNSUITABLE
+    assert verification.decision_at is not None
 
 
 def test_verification_approval_raises_when_not_found():
