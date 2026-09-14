@@ -518,13 +518,33 @@ docs/architecture/AUTHENTICATION.md
 docs/architecture/AUTHORIZATION.md
 ```
 
+Verification method registry:
+
+```text
+docs/metrology/VERIFICATION_METHODS.md
+```
+
 `PROJECT_CONSTITUTION.md` is normative and must not be changed as routine documentation.
 
 ## Next Direction
 
 The current frontend phase has completed a broad sequence of read/list/detail slices.
 
-The current backend technical stage is the transition from the Order lifecycle audit to event-driven workflow orchestration.
+The backend DDD/Clean Architecture migration is complete. The Verification lifecycle slice is aligned with the current domain lifecycle:
+
+```text
+CREATED → IN_PROGRESS → DECIDED
+                         ├── SUITABLE
+                         └── UNSUITABLE
+```
+
+The current metrology stage is to consolidate verification methodology knowledge before introducing methodology-specific execution models:
+
+- maintain the verification methods registry;
+- accumulate and analyze real verification methods;
+- record completeness and unresolved normative questions explicitly;
+- keep Method / MethodVersion / MethodVariant distinct from Verification;
+- audit the Verification domain/application/infrastructure model against the documented lifecycle and invariants.
 
 Do not:
 
@@ -533,7 +553,10 @@ Do not:
 - add authorization without an explicit business owner/requirement;
 - reintroduce legacy CRUD architecture;
 - follow an obsolete roadmap without checking current code;
-- implement workflow orchestration before the event infrastructure contract is reviewed.
+- implement a universal verification engine;
+- introduce universal measurement or uncertainty models before method analysis requires them;
+- encode incomplete verification methods as finalized normative rules;
+- implement methodology-specific persistence/UI prematurely.
 
 ## Order Lifecycle Audit Checkpoint
 
@@ -596,15 +619,7 @@ Workflow domain существует:
 - `operation_id` из `OperationContext` переносится в domain event;
 - `EventDispatcher` выполняет зарегистрированные handlers.
 
-Текущая реализация связывает операцию и domain event на границе UnitOfWork. Persistent Audit Trail ещё не реализован.
-
-Следующий технический этап:
-
-```text
-Persistent Audit Trail
-```
-
-Workflow orchestration выполняется только после отдельного review event contract и audit requirements.
+Текущая реализация связывает операцию и domain event на границе UnitOfWork.
 
 ## Recovery Checkpoint
 
