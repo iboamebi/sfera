@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime, timezone
 from uuid import UUID, uuid4
 
 import pytest
@@ -178,6 +178,7 @@ def make_verification() -> Verification:
         order_item_id=uuid4(),
         instrument_id=uuid4(),
         verification_date=date.today(),
+        created_at=datetime(2026, 9, 5, 10, 0, tzinfo=timezone.utc),
         verification_type=VerificationType.PERIODIC,
     )
     verification.start()
@@ -254,6 +255,7 @@ def test_create_verification_requires_metrologist_or_admin():
             CreateVerificationCommand(
                 order_item_id=item.id,
                 verification_date=date.today(),
+                verification_type=VerificationType.PERIODIC,
             ),
             make_user(UserRole.OPERATOR),
         )
