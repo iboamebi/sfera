@@ -9,6 +9,7 @@ from app.domains.verification.value_objects.verification_result import (
 from app.domains.verification.value_objects.verification_status import (
     VerificationStatus,
 )
+from app.domains.verification.value_objects.verification_type import VerificationType
 from app.infrastructure.mappers.base_mapper import BaseMapper
 from app.models.verification import Verification as VerificationModel
 
@@ -30,6 +31,8 @@ class VerificationMapper(
             order_item_id=model.order_item_id,
             instrument_id=model.instrument_id,
             verification_date=model.verification_date,
+            created_at=model.created_at,
+            verification_type=VerificationType(model.verification_type),
             status=VerificationStatus(model.status),
             result=(
                 VerificationResult(model.result)
@@ -50,6 +53,8 @@ class VerificationMapper(
         model.order_item_id = entity.order_item_id
         model.instrument_id = entity.instrument_id
         model.verification_date = entity.verification_date
+        model.created_at = entity.created_at
+        model.verification_type = entity.verification_type.value
         model.status = entity.status.value
         model.result = (
             entity.result.value

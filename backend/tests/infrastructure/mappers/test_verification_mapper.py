@@ -10,12 +10,14 @@ from app.domains.verification.value_objects.verification_result import (
 from app.domains.verification.value_objects.verification_status import (
     VerificationStatus,
 )
+from app.domains.verification.value_objects.verification_type import VerificationType
 from app.infrastructure.mappers.verification_mapper import VerificationMapper
 from app.models.verification import Verification as VerificationModel
 
 
 def test_verification_mapper_to_domain_preserves_instrument_id() -> None:
     """Map ORM verification to domain with instrument association."""
+    created_at = datetime(2026, 9, 5, 10, 0, tzinfo=UTC)
     instrument_id = uuid4()
     decision_at = datetime(2026, 9, 5, 12, 0, tzinfo=UTC)
 
@@ -24,6 +26,8 @@ def test_verification_mapper_to_domain_preserves_instrument_id() -> None:
         order_item_id=uuid4(),
         instrument_id=instrument_id,
         verification_date=date(2026, 9, 5),
+        created_at=created_at,
+        verification_type=VerificationType.PRIMARY,
         status=VerificationStatus.DECIDED,
         decision_at=decision_at,
         result=VerificationResult.SUITABLE,
@@ -33,6 +37,8 @@ def test_verification_mapper_to_domain_preserves_instrument_id() -> None:
     entity = VerificationMapper().to_domain(model)
 
     assert entity.instrument_id == instrument_id
+    assert entity.created_at == created_at
+    assert entity.verification_type == VerificationType.PRIMARY
     assert entity.status == VerificationStatus.DECIDED
     assert entity.result == VerificationResult.SUITABLE
     assert entity.valid_until == date(2027, 9, 5)
@@ -41,6 +47,7 @@ def test_verification_mapper_to_domain_preserves_instrument_id() -> None:
 
 def test_verification_mapper_to_model_preserves_instrument_id() -> None:
     """Map domain verification to ORM with instrument association."""
+    created_at = datetime(2026, 9, 5, 10, 0, tzinfo=UTC)
     instrument_id = uuid4()
     decision_at = datetime(2026, 9, 5, 12, 0, tzinfo=UTC)
 
@@ -49,6 +56,8 @@ def test_verification_mapper_to_model_preserves_instrument_id() -> None:
         order_item_id=uuid4(),
         instrument_id=instrument_id,
         verification_date=date(2026, 9, 5),
+        created_at=created_at,
+        verification_type=VerificationType.PERIODIC,
         status=VerificationStatus.DECIDED,
         result=VerificationResult.SUITABLE,
         valid_until=date(2027, 9, 5),
@@ -58,6 +67,8 @@ def test_verification_mapper_to_model_preserves_instrument_id() -> None:
         id=entity.id,
         order_item_id=entity.order_item_id,
         verification_date=entity.verification_date,
+        created_at=created_at,
+        verification_type=VerificationType.PERIODIC,
         status=VerificationStatus.DECIDED,
         result=entity.result,
         valid_until=entity.valid_until,
@@ -66,6 +77,8 @@ def test_verification_mapper_to_model_preserves_instrument_id() -> None:
     VerificationMapper().to_model(entity, model)
 
     assert model.instrument_id == instrument_id
+    assert model.created_at == created_at
+    assert model.verification_type == VerificationType.PERIODIC
     assert model.status == VerificationStatus.DECIDED
     assert model.result == VerificationResult.SUITABLE
     assert model.valid_until == date(2027, 9, 5)
@@ -74,11 +87,15 @@ def test_verification_mapper_to_model_preserves_instrument_id() -> None:
 
 def test_verification_mapper_preserves_null_instrument_id() -> None:
     """Map historical verification without an instrument association."""
+    created_at = datetime(2026, 9, 5, 10, 0, tzinfo=UTC)
+
     model = VerificationModel(
         id=uuid4(),
         order_item_id=uuid4(),
         instrument_id=None,
         verification_date=date(2026, 9, 5),
+        created_at=created_at,
+        verification_type=VerificationType.AFTER_REPAIR,
         status=VerificationStatus.DECIDED,
         decision_at=datetime(2026, 9, 5, tzinfo=UTC),
         result=VerificationResult.SUITABLE,
@@ -88,15 +105,21 @@ def test_verification_mapper_preserves_null_instrument_id() -> None:
     entity = VerificationMapper().to_domain(model)
 
     assert entity.instrument_id is None
+    assert entity.created_at == created_at
+    assert entity.verification_type == VerificationType.AFTER_REPAIR
 
 
 def test_verification_mapper_preserves_in_progress_state() -> None:
     """Map an active verification without a final decision."""
+    created_at = datetime(2026, 9, 5, 10, 0, tzinfo=UTC)
+
     model = VerificationModel(
         id=uuid4(),
         order_item_id=uuid4(),
         instrument_id=uuid4(),
         verification_date=date(2026, 9, 5),
+        created_at=created_at,
+        verification_type=VerificationType.PRIMARY,
         status=VerificationStatus.IN_PROGRESS,
         result=None,
         decision_at=None,
@@ -106,6 +129,8 @@ def test_verification_mapper_preserves_in_progress_state() -> None:
 
     entity = VerificationMapper().to_domain(model)
 
+    assert entity.created_at == created_at
+    assert entity.verification_type == VerificationType.PRIMARY
     assert entity.status == VerificationStatus.IN_PROGRESS
     assert entity.result is None
     assert entity.decision_at is None

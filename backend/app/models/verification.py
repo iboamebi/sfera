@@ -20,6 +20,12 @@ class VerificationStatus(StrEnum):
     DECIDED = "DECIDED"
 
 
+class VerificationType(StrEnum):
+    PRIMARY = "PRIMARY"
+    PERIODIC = "PERIODIC"
+    AFTER_REPAIR = "AFTER_REPAIR"
+
+
 class Verification(BaseModel):
     """ORM model for an instrument verification process."""
 
@@ -68,6 +74,11 @@ class Verification(BaseModel):
     methodology: Mapped[str | None] = mapped_column(
         String(255),
         nullable=True,
+    )
+
+    verification_type: Mapped[VerificationType] = mapped_column(
+        SqlEnum(VerificationType, name="verification_type"),
+        nullable=False,
     )
 
     order_item = relationship(
