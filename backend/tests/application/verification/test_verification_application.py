@@ -235,7 +235,6 @@ def test_create_verification_requires_concrete_instrument():
                 order_item_id=item.id,
                 verification_date=date.today(),
                 verification_type=VerificationType.PERIODIC,
-                verification_type=VerificationType.PERIODIC,
             ),
             make_user(UserRole.METROLOGIST),
         )
