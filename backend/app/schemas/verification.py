@@ -6,6 +6,9 @@ from pydantic import BaseModel, ConfigDict
 from app.domains.verification.value_objects.verification_result import (
     VerificationResult,
 )
+from app.domains.verification.value_objects.verification_type import (
+    VerificationType,
+)
 
 
 class VerificationBase(BaseModel):
@@ -17,8 +20,11 @@ class VerificationBase(BaseModel):
     methodology: str | None = None
 
 
-class VerificationCreate(VerificationBase):
-    pass
+class VerificationCreate(BaseModel):
+    order_item_id: UUID
+    verification_date: date
+    verification_type: VerificationType
+    methodology: str | None = None
 
 
 class VerificationUpdate(BaseModel):

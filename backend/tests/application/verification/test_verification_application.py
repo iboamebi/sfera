@@ -37,6 +37,9 @@ from app.domains.verification.value_objects.verification_result import (
 from app.domains.verification.value_objects.verification_status import (
     VerificationStatus,
 )
+from app.domains.verification.value_objects.verification_type import (
+    VerificationType,
+)
 from app.shared.audit.models import AuditOperation, AuditRecord
 from app.shared.audit.repositories.audit_operation_repository import (
     AuditOperationRepository,
@@ -175,6 +178,7 @@ def make_verification() -> Verification:
         order_item_id=uuid4(),
         instrument_id=uuid4(),
         verification_date=date.today(),
+        verification_type=VerificationType.PERIODIC,
     )
     verification.start()
     return verification

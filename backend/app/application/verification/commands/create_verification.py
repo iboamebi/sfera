@@ -6,6 +6,8 @@ from dataclasses import dataclass
 from datetime import date
 from uuid import UUID
 
+from app.domains.verification.value_objects.verification_type import VerificationType
+
 
 @dataclass(frozen=True)
 class CreateVerificationCommand:
@@ -13,4 +15,5 @@ class CreateVerificationCommand:
 
     order_item_id: UUID
     verification_date: date
+    verification_type: VerificationType
     methodology: str | None = None

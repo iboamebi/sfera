@@ -10,6 +10,7 @@ from app.domains.verification.exceptions import (
 from app.domains.verification.value_objects.verification_result import (
     VerificationResult,
 )
+from app.domains.verification.value_objects.verification_type import VerificationType
 from app.domains.verification.value_objects.verification_status import (
     VerificationStatus,
 )
@@ -22,6 +23,8 @@ class Verification(AggregateRoot):
 
     order_item_id: UUID
     verification_date: date
+    created_at: datetime
+    verification_type: VerificationType
     status: VerificationStatus = VerificationStatus.CREATED
     result: VerificationResult | None = None
 
@@ -40,6 +43,8 @@ class Verification(AggregateRoot):
         order_item_id: UUID,
         instrument_id: UUID,
         verification_date: date,
+        created_at: datetime,
+        verification_type: VerificationType,
         methodology: str | None = None,
     ) -> "Verification":
         """Create a verification before the final suitability decision."""
@@ -48,6 +53,8 @@ class Verification(AggregateRoot):
             order_item_id=order_item_id,
             instrument_id=instrument_id,
             verification_date=verification_date,
+            created_at=created_at,
+            verification_type=verification_type,
             status=VerificationStatus.CREATED,
             result=None,
             methodology=methodology,

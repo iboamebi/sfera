@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import UTC, date, datetime
 from uuid import uuid4
 
 from fastapi.testclient import TestClient
@@ -16,6 +16,9 @@ from app.domains.user.value_objects.user_role import UserRole
 from app.domains.verification.entities.verification import Verification
 from app.domains.verification.value_objects.verification_result import (
     VerificationResult,
+)
+from app.domains.verification.value_objects.verification_type import (
+    VerificationType,
 )
 from app.main import app
 
@@ -72,6 +75,8 @@ def test_create_verification_returns_created_verification():
         order_item_id=order_item_id,
         instrument_id=uuid4(),
         verification_date=date(2026, 9, 5),
+        created_at=datetime(2026, 9, 5, tzinfo=UTC),
+        verification_type=VerificationType.PERIODIC,
         result=VerificationResult.SUITABLE,
         valid_until=date(2027, 9, 5),
         methodology="MI 123",

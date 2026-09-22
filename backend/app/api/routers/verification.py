@@ -68,9 +68,7 @@ def create_verification(
             CreateVerificationCommand(
                 order_item_id=data.order_item_id,
                 verification_date=data.verification_date,
-                result=data.result,
-                valid_until=data.valid_until,
-                unsuitable_reason=data.unsuitable_reason,
+                verification_type=data.verification_type,
                 methodology=data.methodology,
             ),
             user,

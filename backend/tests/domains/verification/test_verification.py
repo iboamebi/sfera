@@ -15,6 +15,9 @@ from app.domains.verification.value_objects.verification_result import (
 from app.domains.verification.value_objects.verification_status import (
     VerificationStatus,
 )
+from app.domains.verification.value_objects.verification_type import (
+    VerificationType,
+)
 
 
 DECISION_AT = datetime(2030, 1, 1, 12, 0, tzinfo=timezone.utc)
@@ -27,6 +30,8 @@ def create_verification() -> Verification:
         order_item_id=uuid4(),
         instrument_id=uuid4(),
         verification_date=date.today(),
+        created_at=datetime(2026, 9, 5, 10, 0, tzinfo=timezone.utc),
+        verification_type=VerificationType.PERIODIC,
     )
 
 
@@ -34,6 +39,7 @@ def test_create_verification_starts_in_created_state():
     verification = create_verification()
 
     assert verification.status == VerificationStatus.CREATED
+    assert verification.verification_type == VerificationType.PERIODIC
     assert verification.result is None
     assert verification.decision_at is None
     assert verification.valid_until is None

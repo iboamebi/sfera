@@ -93,6 +93,8 @@ class VerificationApplicationService:
                 order_item_id=command.order_item_id,
                 instrument_id=item.instrument_id,
                 verification_date=command.verification_date,
+                created_at=datetime.now(timezone.utc),
+                verification_type=command.verification_type,
                 methodology=command.methodology,
             )
             verification.start()
