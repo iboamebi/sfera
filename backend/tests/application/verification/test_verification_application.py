@@ -195,6 +195,7 @@ def test_create_verification_copies_instrument_from_order_item():
         CreateVerificationCommand(
             order_item_id=item.id,
             verification_date=date(2026, 9, 4),
+            verification_type=VerificationType.PERIODIC,
         ),
         make_user(UserRole.METROLOGIST),
     )
@@ -215,6 +216,7 @@ def test_create_verification_requires_existing_order_item():
             CreateVerificationCommand(
                 order_item_id=uuid4(),
                 verification_date=date.today(),
+                verification_type=VerificationType.PERIODIC,
             ),
             make_user(UserRole.METROLOGIST),
         )
@@ -232,6 +234,8 @@ def test_create_verification_requires_concrete_instrument():
             CreateVerificationCommand(
                 order_item_id=item.id,
                 verification_date=date.today(),
+                verification_type=VerificationType.PERIODIC,
+                verification_type=VerificationType.PERIODIC,
             ),
             make_user(UserRole.METROLOGIST),
         )
