@@ -224,27 +224,26 @@ Business authorization remains enforced at the Application boundary. New permiss
 
 ## 10. Frontend integration
 
-Frontend authentication remains a separate integration stage:
+The frontend authentication slice is implemented on `feat/user-first-login-password`:
 
 ```text
-API
- ↓
-Auth feature
- ↓
-Current-user query
- ↓
-Auth state
- ↓
-Protected route boundary
- ↓
-User interface
+Login
+  ↓
+Authenticated user DTO → frontend model
+  ↓
+Current-user query / React Query cache
+  ↓
+RequireAuth
+  ├── unauthenticated → /login
+  ├── mustChangePassword → /change-password
+  └── password changed → business routes
 ```
 
-The frontend HTTP client must send authenticated requests according to the server session contract.
+The frontend uses the server-managed HttpOnly session cookie and sends credentials with Axios. The CSRF cookie is read by Axios and forwarded in `X-CSRF-Token` for cross-origin API requests.
 
-The frontend must treat `401 Unauthorized` as an authentication state transition, not as a generic business error.
+The password-change screen submits the current and new passwords to `POST /auth/change-password`. After success, the current-user query is invalidated and the user is redirected to the orders page.
 
-The backend authentication contract exists; frontend auth API/model and login UI still require implementation and validation as a separate feature stage.
+Frontend route guards provide navigation behavior only. The backend business-route gate remains the security boundary.
 
 ---
 
