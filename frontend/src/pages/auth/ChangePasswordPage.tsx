@@ -22,7 +22,7 @@ export function ChangePasswordPage() {
   };
 
   return (
-    <Stack spacing={3} maxWidth={480}>
+    <Stack spacing={3} sx={{ maxWidth: 480 }}>
       <Typography variant="h4">Смена пароля</Typography>
       <Typography>
         Перед началом работы необходимо установить новый пароль.
