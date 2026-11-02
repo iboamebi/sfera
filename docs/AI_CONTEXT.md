@@ -461,7 +461,7 @@ Local backend validation after that correction:
 - Ruff check passed;
 - formatting check passed.
 
-Frontend first-login integration is implemented on this branch; local typecheck/build validation is pending.
+Frontend first-login integration and user administration UI are implemented on this branch. Local typecheck/build passed after the initial user administration UI implementation; the latest UI changes require a fresh local validation.
 
 User administration backend currently supports:
 - administrator-only user listing, including inactive accounts and optional archived accounts;
@@ -474,9 +474,15 @@ User administration backend currently supports:
 - duplicate username mapped to HTTP 409, including archived usernames;
 - missing target user mapped to HTTP 404 for role changes.
 
+Frontend user administration UI is implemented on the active branch:
+- list users, optionally including archived accounts;
+- create users with a selected role;
+- display and copy the temporary password from the creation response, with an explicit hide action;
+- change roles;
+- activate/deactivate non-archived accounts;
+- archive and restore accounts.
+
 Still not implemented:
-- archive/restore endpoints;
-- frontend user administration UI;
 - setting the existing `alex` account to ADMIN after inspecting its actual database row;
 - Order → Verification navigation.
 
@@ -583,7 +589,7 @@ Current active work is first-login authentication and user administration. Seque
 1. Frontend login/current-user integration, forced password-change screen, and protected route guard are implemented; local typecheck/build validation is the current step.
 2. Validate the user administration API list/create slice locally.
 3. Role change, activation/deactivation, archive and restore Application/API slices are implemented on the active branch; locally validate the user administration test slice and scoped lint/format checks.
-4. Implement the admin user management UI, including one-time display and copy of a temporary password.
+4. User administration frontend UI and API integration are implemented; run local typecheck/build and review the UI behavior.
 5. Inspect the actual local database row and migration state before changing the existing `alex` user's role to `admin`.
 6. Continue with Order → Verification navigation only after inspecting the current backend and frontend relationship contracts.
 
