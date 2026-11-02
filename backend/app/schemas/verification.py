@@ -15,7 +15,7 @@ class VerificationBase(BaseModel):
     order_item_id: UUID
     verification_date: date
     valid_until: date | None = None
-    result: VerificationResult
+    result: VerificationResult | None = None
     unsuitable_reason: str | None = None
     methodology: str | None = None
 
