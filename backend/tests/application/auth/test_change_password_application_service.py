@@ -18,10 +18,7 @@ class FakePasswordHasher(PasswordHasher):
         return f"hashed:{password}"
 
     def verify(self, password: str, password_hash: str) -> bool:
-        return (
-            password == "temporary-password"
-            and password_hash == "temporary-hash"
-        )
+        return password == "temporary-password" and password_hash == "temporary-hash"
 
 
 class FakeUserRepository(UserRepository):
