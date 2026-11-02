@@ -8,6 +8,7 @@ from app.api.dependencies.auth import get_current_user
 from app.api.security.csrf import require_csrf
 from app.application.user.commands.change_user_role import ChangeUserRoleCommand
 from app.application.user.commands.create_user import CreateUserCommand
+from app.application.user.commands.set_user_active import SetUserActiveCommand
 from app.application.user.exceptions import (
     UserAlreadyExistsApplicationError,
     UserNotFoundApplicationError,
@@ -18,7 +19,13 @@ from app.application.user.services.user_administration_application_service impor
 from app.core.dependencies.services import get_user_administration_service
 from app.domains.user.entities.user import User
 from app.domains.user.value_objects.user_role import UserRole
-from app.schemas.user import UserCreate, UserCreated, UserRead, UserRoleUpdate
+from app.schemas.user import (
+    UserActiveUpdate,
+    UserCreate,
+    UserCreated,
+    UserRead,
+    UserRoleUpdate,
+)
 
 router = APIRouter(
     prefix="/users",
@@ -58,6 +65,32 @@ def change_user_role(
     try:
         return service.change_role(
             ChangeUserRoleCommand(user_id=user_id, role=data.role),
+            actor,
+        )
+    except UserNotFoundApplicationError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found",
+        ) from None
+
+
+@router.patch(
+    "/{user_id}/status",
+    response_model=UserRead,
+    dependencies=[Depends(require_csrf)],
+)
+def set_user_active(
+    user_id: UUID,
+    data: UserActiveUpdate,
+    actor: User = Depends(get_current_user),
+    service: UserAdministrationApplicationService = Depends(
+        get_user_administration_service,
+    ),
+) -> User:
+    """Activate or deactivate a user account."""
+    try:
+        return service.set_active(
+            SetUserActiveCommand(user_id=user_id, is_active=data.is_active),
             actor,
         )
     except UserNotFoundApplicationError:
