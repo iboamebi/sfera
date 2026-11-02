@@ -29,10 +29,7 @@ from app.application.verification.exceptions import (
 )
 from app.db import model_registry  # noqa: F401
 
-app = FastAPI(
-    title="Sphere",
-    dependencies=[Depends(require_password_change_completed)],
-)
+app = FastAPI(title="Sphere")
 
 
 @app.exception_handler(AuthorizationError)
@@ -68,23 +65,74 @@ app.add_middleware(
 )
 
 app.include_router(auth_router)
-app.include_router(organization.router)
-app.include_router(site.router)
-app.include_router(customer_router)
-app.include_router(order_router)
-app.include_router(verification_router)
-app.include_router(verification_actions_router)
-app.include_router(diagnostic_router)
-app.include_router(repair_router)
-app.include_router(material_router)
-app.include_router(warehouse_router)
-app.include_router(warehouse_stock_router)
-app.include_router(warehouse_movement_router)
-app.include_router(price_list_router)
-app.include_router(price_list_item_router)
-app.include_router(device_router)
-app.include_router(instrument_type.router)
-app.include_router(workflow_router)
+app.include_router(
+    organization.router,
+    dependencies=[Depends(require_password_change_completed)],
+)
+app.include_router(
+    site.router,
+    dependencies=[Depends(require_password_change_completed)],
+)
+app.include_router(
+    customer_router,
+    dependencies=[Depends(require_password_change_completed)],
+)
+app.include_router(
+    order_router,
+    dependencies=[Depends(require_password_change_completed)],
+)
+app.include_router(
+    verification_router,
+    dependencies=[Depends(require_password_change_completed)],
+)
+app.include_router(
+    verification_actions_router,
+    dependencies=[Depends(require_password_change_completed)],
+)
+app.include_router(
+    diagnostic_router,
+    dependencies=[Depends(require_password_change_completed)],
+)
+app.include_router(
+    repair_router,
+    dependencies=[Depends(require_password_change_completed)],
+)
+app.include_router(
+    material_router,
+    dependencies=[Depends(require_password_change_completed)],
+)
+app.include_router(
+    warehouse_router,
+    dependencies=[Depends(require_password_change_completed)],
+)
+app.include_router(
+    warehouse_stock_router,
+    dependencies=[Depends(require_password_change_completed)],
+)
+app.include_router(
+    warehouse_movement_router,
+    dependencies=[Depends(require_password_change_completed)],
+)
+app.include_router(
+    price_list_router,
+    dependencies=[Depends(require_password_change_completed)],
+)
+app.include_router(
+    price_list_item_router,
+    dependencies=[Depends(require_password_change_completed)],
+)
+app.include_router(
+    device_router,
+    dependencies=[Depends(require_password_change_completed)],
+)
+app.include_router(
+    instrument_type.router,
+    dependencies=[Depends(require_password_change_completed)],
+)
+app.include_router(
+    workflow_router,
+    dependencies=[Depends(require_password_change_completed)],
+)
 
 
 @app.get("/health")
