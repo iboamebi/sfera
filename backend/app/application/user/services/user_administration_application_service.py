@@ -1,7 +1,7 @@
 """Application service for user administration."""
 
 import secrets
-from uuid import UUID, uuid4
+from uuid import uuid4
 
 from app.application.auth.ports.password_hasher import PasswordHasher
 from app.application.authorization.authorization import require_role
