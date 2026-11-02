@@ -10,6 +10,11 @@ export function mapVerification(dto: VerificationApiDto): VerificationRead {
     result: dto.result,
     unsuitableReason: dto.unsuitable_reason,
     methodology: dto.methodology,
+    createdAt: dto.created_at,
+    startedAt: dto.started_at,
+    decisionAt: dto.decision_at,
+    status: dto.status,
+    verificationType: dto.verification_type,
     archived: dto.archived,
   };
 }
