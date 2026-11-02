@@ -23,6 +23,7 @@ from app.api.routers.warehouse import router as warehouse_router
 from app.api.routers.warehouse_movement import router as warehouse_movement_router
 from app.api.routers.warehouse_stock import router as warehouse_stock_router
 from app.api.routers.workflow import router as workflow_router
+from app.api.routers.users import router as users_router
 from app.application.authorization.authorization import AuthorizationError
 from app.application.verification.exceptions import (
     VerificationNotFoundApplicationError,
@@ -131,6 +132,10 @@ app.include_router(
 )
 app.include_router(
     workflow_router,
+    dependencies=[Depends(require_password_change_completed)],
+)
+app.include_router(
+    users_router,
     dependencies=[Depends(require_password_change_completed)],
 )
 
