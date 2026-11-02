@@ -1,8 +1,9 @@
-import { ApproveVerificationButton } from "../../features/verifications/approve-verification/ui/ApproveVerificationButton";
-import { RejectVerificationButton } from "../../features/verifications/reject-verification/ui/RejectVerificationButton";
 import { Stack, Typography } from "@mui/material";
 import { useParams } from "react-router";
 
+import { ApproveVerificationButton } from "../../features/verifications/approve-verification/ui/ApproveVerificationButton";
+import { RejectVerificationButton } from "../../features/verifications/reject-verification/ui/RejectVerificationButton";
+import { StartVerificationButton } from "../../features/verifications/start-verification/ui/StartVerificationButton";
 import { useVerification } from "../../features/verifications/model/useVerification";
 
 export function VerificationPage() {
@@ -26,14 +27,26 @@ export function VerificationPage() {
       <Typography variant="h5">Verification</Typography>
       <Typography>Order item: {data.orderItemId}</Typography>
       <Typography>Verification date: {data.verificationDate}</Typography>
+      <Typography>Verification type: {data.verificationType}</Typography>
+      <Typography>Status: {data.status}</Typography>
+      <Typography>Created at: {data.createdAt}</Typography>
+      {data.startedAt && <Typography>Started at: {data.startedAt}</Typography>}
+      {data.decisionAt && <Typography>Decision at: {data.decisionAt}</Typography>}
       {data.validUntil && <Typography>Valid until: {data.validUntil}</Typography>}
-      <Typography>Result: {data.result}</Typography>
+      <Typography>Result: {data.result ?? "—"}</Typography>
       {data.unsuitableReason && (
         <Typography>Unsuitable reason: {data.unsuitableReason}</Typography>
       )}
       {data.methodology && <Typography>Methodology: {data.methodology}</Typography>}
-      <ApproveVerificationButton verificationId={data.id} />
-      <RejectVerificationButton verificationId={data.id} />
+      {!data.archived && data.status === "CREATED" && (
+        <StartVerificationButton verificationId={data.id} />
+      )}
+      {!data.archived && data.status === "IN_PROGRESS" && (
+        <>
+          <ApproveVerificationButton verificationId={data.id} />
+          <RejectVerificationButton verificationId={data.id} />
+        </>
+      )}
       <Typography>Status: {data.archived ? "Archived" : "Active"}</Typography>
     </Stack>
   );
