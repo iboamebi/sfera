@@ -103,6 +103,7 @@ App
 
 ```text
 /login
+/change-password
 /
 /orders
 /orders/new
