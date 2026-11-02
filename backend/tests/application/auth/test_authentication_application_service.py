@@ -22,6 +22,9 @@ class FakePasswordHasher(PasswordHasher):
     def __init__(self, valid_password: str) -> None:
         self.valid_password = valid_password
 
+    def hash(self, password: str) -> str:
+        return f"hashed:{password}"
+
     def verify(self, password: str, password_hash: str) -> bool:
         return password == self.valid_password and password_hash == "stored-hash"
 
