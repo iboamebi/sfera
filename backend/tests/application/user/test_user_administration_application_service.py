@@ -167,7 +167,8 @@ def test_change_role_raises_when_user_does_not_exist() -> None:
         )
 
     assert repository.users == []
-    assert uow.committed is True
+    assert uow.committed is False
+    assert uow.rolled_back is True
 
 
 def test_create_user_generates_temporary_password_and_requires_change() -> None:
