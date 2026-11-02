@@ -27,7 +27,9 @@ class UserMapper(
             username=model.username,
             password_hash=model.password_hash,
             role=UserRole(model.role),
-            archived=model.archived or not model.is_active,
+            archived=model.archived,
+            is_active=model.is_active,
+            must_change_password=model.must_change_password,
         )
 
     def to_model(
@@ -35,11 +37,13 @@ class UserMapper(
         entity: User,
         model: UserModel,
     ) -> UserModel:
-        """Convert domain entity to ORM model."""
+        """Convert User between domain entity and ORM model."""
 
         model.username = entity.username
         model.password_hash = entity.password_hash
         model.role = entity.role.value
         model.archived = entity.archived
+        model.is_active = entity.is_active
+        model.must_change_password = entity.must_change_password
 
         return model

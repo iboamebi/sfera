@@ -10,7 +10,7 @@ from app.infrastructure.mappers.user_mapper import UserMapper
 from app.models.user import User as UserModel
 
 
-def test_user_mapper_to_domain_preserves_authentication_state() -> None:
+def test_user_mapper_to_domain_preserves_account_state() -> None:
     user_id = uuid4()
     model = UserModel(
         id=user_id,
@@ -19,6 +19,7 @@ def test_user_mapper_to_domain_preserves_authentication_state() -> None:
         role="operator",
         is_active=True,
         archived=False,
+        must_change_password=True,
     )
 
     entity = UserMapper().to_domain(model)
@@ -28,9 +29,11 @@ def test_user_mapper_to_domain_preserves_authentication_state() -> None:
     assert entity.password_hash == "hash"
     assert entity.role is UserRole.OPERATOR
     assert entity.archived is False
+    assert entity.is_active is True
+    assert entity.must_change_password is True
 
 
-def test_user_mapper_treats_inactive_user_as_archived() -> None:
+def test_user_mapper_keeps_inactive_and_archived_states_separate() -> None:
     model = UserModel(
         id=uuid4(),
         username="inactive-user",
@@ -38,11 +41,13 @@ def test_user_mapper_treats_inactive_user_as_archived() -> None:
         role="operator",
         is_active=False,
         archived=False,
+        must_change_password=False,
     )
 
     entity = UserMapper().to_domain(model)
 
-    assert entity.archived is True
+    assert entity.archived is False
+    assert entity.is_active is False
 
 
 def test_user_mapper_to_model_updates_authentication_fields() -> None:
@@ -54,6 +59,7 @@ def test_user_mapper_to_model_updates_authentication_fields() -> None:
         role="operator",
         is_active=True,
         archived=False,
+        must_change_password=False,
     )
 
     entity = User(
@@ -62,6 +68,8 @@ def test_user_mapper_to_model_updates_authentication_fields() -> None:
         password_hash="new-hash",
         role=UserRole.ADMIN,
         archived=True,
+        is_active=False,
+        must_change_password=True,
     )
 
     result = UserMapper().to_model(entity, model)
@@ -71,3 +79,5 @@ def test_user_mapper_to_model_updates_authentication_fields() -> None:
     assert result.password_hash == "new-hash"
     assert result.role == "admin"
     assert result.archived is True
+    assert result.is_active is False
+    assert result.must_change_password is True

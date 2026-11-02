@@ -10,12 +10,14 @@ from app.shared.base.entity import Entity
 
 @dataclass(eq=False, kw_only=True)
 class User(Entity):
-    """User identity used by authentication flows."""
+    """User identity used by authentication and administration flows."""
 
     username: str
     password_hash: str
     role: UserRole = UserRole.OPERATOR
     archived: bool = False
+    is_active: bool = True
+    must_change_password: bool = False
 
     def archive(self) -> None:
         """Archive user and prevent authentication."""
@@ -26,3 +28,19 @@ class User(Entity):
         """Restore archived user."""
 
         self.archived = False
+
+    def deactivate(self) -> None:
+        """Disable the user account without archiving its history."""
+
+        self.is_active = False
+
+    def activate(self) -> None:
+        """Enable the user account."""
+
+        self.is_active = True
+
+    def change_password(self, password_hash: str) -> None:
+        """Replace the password and clear the first-login requirement."""
+
+        self.password_hash = password_hash
+        self.must_change_password = False
