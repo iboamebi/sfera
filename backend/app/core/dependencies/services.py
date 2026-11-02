@@ -9,6 +9,9 @@ from fastapi import Depends
 from app.application.auth.services.authentication_application_service import (
     AuthenticationApplicationService,
 )
+from app.application.auth.services.change_password_application_service import (
+    ChangePasswordApplicationService,
+)
 from app.application.auth.services.current_user_application_service import (
     CurrentUserApplicationService,
 )
@@ -147,6 +150,15 @@ def get_authentication_service(
 ) -> AuthenticationApplicationService:
     """Provide Authentication application service."""
     return AuthenticationApplicationService(repository, password_hasher)
+
+
+def get_change_password_service(
+    repository: UserRepository = Depends(get_user_repository),
+    password_hasher: Argon2PasswordHasher = Depends(get_password_hasher),
+    uow: UnitOfWork = Depends(get_unit_of_work),
+) -> ChangePasswordApplicationService:
+    """Provide ChangePassword application service."""
+    return ChangePasswordApplicationService(repository, password_hasher, uow)
 
 
 def get_session_token_generator() -> SecureSessionTokenGenerator:
