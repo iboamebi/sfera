@@ -463,9 +463,19 @@ Local backend validation after that correction:
 
 Frontend first-login integration is implemented on this branch; local typecheck/build validation is pending.
 
-Not yet implemented:
-- admin-only user list/create/update/archive/activation management;
-- secure temporary password generation and one-time display;
+User administration backend currently supports:
+- administrator-only user listing, including inactive accounts and optional archived accounts;
+- administrator-only user creation with a selected role;
+- cryptographically secure temporary password generation;
+- Argon2 password hash storage and mandatory first-login password change;
+- temporary password returned only in the creation response;
+- duplicate username mapped to HTTP 409, including archived usernames.
+
+Still not implemented:
+- role changes;
+- activation/deactivation;
+- archive/restore endpoints;
+- frontend user administration UI;
 - setting the existing `alex` account to ADMIN after inspecting its actual database row;
 - Order → Verification navigation.
 
@@ -570,10 +580,11 @@ docs/metrology/VERIFICATION_METHODS.md
 Current active work is first-login authentication and user administration. Sequence:
 
 1. Frontend login/current-user integration, forced password-change screen, and protected route guard are implemented; local typecheck/build validation is the current step.
-2. Implement admin-only user list/create/role/state/archive management.
-3. Generate cryptographically secure temporary passwords, store only Argon2 hashes, and show plaintext only once to the creating admin.
-4. Inspect the actual local database row and migration state before changing the existing `alex` user's role to `admin`.
-5. Continue with Order → Verification navigation only after inspecting the current backend and frontend relationship contracts.
+2. Validate the user administration API list/create slice locally.
+3. Implement role changes, activation/deactivation, and archive/restore in small Application/API stages.
+4. Implement the admin user management UI, including one-time display and copy of a temporary password.
+5. Inspect the actual local database row and migration state before changing the existing `alex` user's role to `admin`.
+6. Continue with Order → Verification navigation only after inspecting the current backend and frontend relationship contracts.
 
 The metrology methodology consolidation direction below remains valid but is not the active implementation stage.
 
