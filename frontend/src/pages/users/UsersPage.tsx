@@ -1,4 +1,5 @@
 import { useState } from "react";
+import type { FormEvent } from "react";
 import {
   Alert,
   Button,
@@ -55,7 +56,7 @@ export function UsersPage() {
   const { data: users, isLoading, isError } = useUsers(includeArchived);
   const administration = useUserAdministration();
 
-  const handleCreate = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleCreate = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const normalizedUsername = username.trim();
     if (!normalizedUsername) return;
