@@ -7,6 +7,16 @@ from argon2 import PasswordHasher as Argon2PasswordHasherImpl
 from app.infrastructure.auth.password_hasher import Argon2PasswordHasher
 
 
+def test_hash_password_returns_verifiable_argon2_hash():
+    hasher = Argon2PasswordHasher()
+
+    password_hash = hasher.hash("correct-password")
+
+    assert password_hash.startswith("$argon2id$")
+    assert hasher.verify("correct-password", password_hash) is True
+    assert hasher.verify("wrong-password", password_hash) is False
+
+
 def test_verify_password():
     password = "correct-password"
     password_hash = Argon2PasswordHasherImpl().hash(password)
