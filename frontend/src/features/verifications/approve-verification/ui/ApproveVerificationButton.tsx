@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { Button, Stack, TextField } from "@mui/material";
+import { Alert, Button, Stack, TextField } from "@mui/material";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { useApproveVerification } from "../model/useApproveVerification";
@@ -16,7 +16,7 @@ export function ApproveVerificationButton({
 
   const queryClient = useQueryClient();
 
-  const { mutate, isPending } = useApproveVerification({
+  const { mutate, isPending, error } = useApproveVerification({
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["verifications", verificationId],
@@ -26,6 +26,7 @@ export function ApproveVerificationButton({
 
   return (
     <Stack spacing={1}>
+      {error && <Alert severity="error">{error.message}</Alert>}
       <TextField
         label="Valid until"
         type="date"
