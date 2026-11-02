@@ -466,13 +466,14 @@ Frontend first-login integration is implemented on this branch; local typecheck/
 User administration backend currently supports:
 - administrator-only user listing, including inactive accounts and optional archived accounts;
 - administrator-only user creation with a selected role;
+- administrator-only role changes;
 - cryptographically secure temporary password generation;
 - Argon2 password hash storage and mandatory first-login password change;
 - temporary password returned only in the creation response;
-- duplicate username mapped to HTTP 409, including archived usernames.
+- duplicate username mapped to HTTP 409, including archived usernames;
+- missing target user mapped to HTTP 404 for role changes.
 
 Still not implemented:
-- role changes;
 - activation/deactivation;
 - archive/restore endpoints;
 - frontend user administration UI;
@@ -581,7 +582,7 @@ Current active work is first-login authentication and user administration. Seque
 
 1. Frontend login/current-user integration, forced password-change screen, and protected route guard are implemented; local typecheck/build validation is the current step.
 2. Validate the user administration API list/create slice locally.
-3. Implement role changes, activation/deactivation, and archive/restore in small Application/API stages.
+3. Role change Application/API slice is implemented on the active branch; locally validate it, then implement activation/deactivation and archive/restore in small stages.
 4. Implement the admin user management UI, including one-time display and copy of a temporary password.
 5. Inspect the actual local database row and migration state before changing the existing `alex` user's role to `admin`.
 6. Continue with Order → Verification navigation only after inspecting the current backend and frontend relationship contracts.
