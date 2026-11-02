@@ -76,8 +76,8 @@ def test_create_verification_returns_created_verification():
         verification_date=date(2026, 9, 5),
         created_at=datetime(2026, 9, 5, tzinfo=UTC),
         verification_type=VerificationType.PERIODIC,
-        result=VerificationResult.SUITABLE,
-        valid_until=date(2027, 9, 5),
+        result=None,
+        valid_until=None,
         methodology="MI 123",
     )
     client = make_client(FakeVerificationService(verification))
@@ -94,8 +94,8 @@ def test_create_verification_returns_created_verification():
     assert response.json() == {
         "order_item_id": str(order_item_id),
         "verification_date": "2026-09-05",
-        "valid_until": "2027-09-05",
-        "result": "SUITABLE",
+        "valid_until": None,
+        "result": None,
         "unsuitable_reason": None,
         "methodology": "MI 123",
         "id": str(verification.id),
