@@ -122,7 +122,7 @@ App
 /warehouse-stocks/warehouse/:warehouseId
 ```
 
-`/login` является публичным. Остальные пользовательские маршруты защищены `RequireAuth`. Это соответствует фактическому router contract на текущем `develop`. fileciteturn143file0
+`/login` является публичным. `/change-password` доступен только аутентифицированному пользователю. Остальные пользовательские маршруты защищены `RequireAuth`.
 
 ---
 
@@ -145,6 +145,20 @@ WarehouseStockPage
 ```
 
 Frontend отвечает только за отображение и orchestration server state.
+
+### 6.1 Authentication and first-login flow
+
+Implemented:
+
+- login and current-user API adapters;
+- mapping of backend `must_change_password` into frontend `mustChangePassword`;
+- React Query current-user state;
+- authenticated route guard;
+- mandatory redirect to `/change-password` while first-login password change is pending;
+- password-change form and mutation;
+- CSRF header forwarding for cookie-authenticated cross-origin requests.
+
+The frontend route guard is not a security boundary. Backend business routers enforce authentication and first-login completion.
 
 ## 7. Реализованные frontend slices
 
