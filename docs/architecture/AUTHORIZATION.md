@@ -184,6 +184,16 @@ New permissions must be introduced from an explicit business use case and covere
 
 No permissions are currently introduced for unrelated use cases merely because they are state-changing.
 
+## User Administration
+
+The user administration application service currently exposes user listing to administrators only.
+
+Implemented use case:
+- list users, including inactive accounts;
+- optionally include archived accounts when explicitly requested.
+
+The Application layer enforces the `admin` role through the shared authorization contract. API endpoints and the remaining user-management use cases are separate implementation stages.
+
 ## Current Persistence
 
 User roles are persisted as part of the existing `users` table.
