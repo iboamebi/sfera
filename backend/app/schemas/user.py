@@ -14,6 +14,12 @@ class UserCreate(BaseModel):
     role: UserRole
 
 
+class UserRoleUpdate(BaseModel):
+    """Role assignment accepted by user administration."""
+
+    role: UserRole
+
+
 class UserRead(BaseModel):
     """Public account state returned to administrators."""
 
