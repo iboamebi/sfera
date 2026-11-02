@@ -2,7 +2,7 @@
 Application service for verification use cases.
 """
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import UUID, uuid4
 
 from app.application.authorization.authorization import require_role
@@ -93,7 +93,7 @@ class VerificationApplicationService:
                 order_item_id=command.order_item_id,
                 instrument_id=item.instrument_id,
                 verification_date=command.verification_date,
-                created_at=datetime.now(timezone.utc),
+                created_at=datetime.now(UTC),
                 verification_type=command.verification_type,
                 methodology=command.methodology,
             )
@@ -160,7 +160,7 @@ class VerificationApplicationService:
 
             verification.mark_suitable(
                 command.valid_until,
-                decision_at=datetime.now(timezone.utc),
+                decision_at=datetime.now(UTC),
             )
 
             self._repository.save(verification)
@@ -211,7 +211,7 @@ class VerificationApplicationService:
 
             verification.mark_unsuitable(
                 command.reason,
-                decision_at=datetime.now(timezone.utc),
+                decision_at=datetime.now(UTC),
             )
 
             self._repository.save(verification)
