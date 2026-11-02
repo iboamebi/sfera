@@ -172,8 +172,14 @@ class VerificationApplicationService:
                     entity_type="Verification",
                     entity_id=verification.id,
                     changes={
-                        "status": {"old": old_status, "new": verification.status.value},
-                        "started_at": {"old": None, "new": verification.started_at.isoformat()},
+                        "status": {
+                            "old": old_status,
+                            "new": verification.status.value,
+                        },
+                        "started_at": {
+                            "old": None,
+                            "new": verification.started_at.isoformat(),
+                        },
                     },
                 )
             )

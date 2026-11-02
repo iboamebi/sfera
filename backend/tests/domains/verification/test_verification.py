@@ -1,4 +1,4 @@
-from datetime import UTC, date, datetime
+from datetime import date, datetime, UTC
 from uuid import uuid4
 
 import pytest

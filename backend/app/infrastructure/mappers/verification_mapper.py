@@ -56,9 +56,7 @@ class VerificationMapper(
         model.started_at = entity.started_at
         model.verification_type = entity.verification_type.value
         model.status = entity.status.value
-        model.result = (
-            entity.result.value if entity.result is not None else None
-        )
+        model.result = entity.result.value if entity.result is not None else None
         model.valid_until = entity.valid_until
         model.unsuitable_reason = entity.unsuitable_reason
         model.methodology = entity.methodology

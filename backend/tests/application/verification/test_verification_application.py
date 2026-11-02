@@ -296,7 +296,9 @@ def test_create_verification_requires_metrologist_or_admin():
 def test_start_verification_transitions_and_audits():
     repository = FakeVerificationRepository()
     verification = Verification.create(
-        id=uuid4(), order_item_id=uuid4(), instrument_id=uuid4(),
+        id=uuid4(),
+        order_item_id=uuid4(),
+        instrument_id=uuid4(),
         verification_date=date.today(),
         created_at=datetime(2026, 9, 5, 10, 0, tzinfo=UTC),
         verification_type=VerificationType.PERIODIC,
@@ -305,15 +307,19 @@ def test_start_verification_transitions_and_audits():
     audit_operations = FakeAuditOperationRepository()
     audit_records = FakeAuditRepository()
     service = VerificationApplicationService(
-        repository, FakeOrderRepository(), FakeUnitOfWork(),
-        audit_operations, audit_records,
+        repository,
+        FakeOrderRepository(),
+        FakeUnitOfWork(),
+        audit_operations,
+        audit_records,
     )
     result = service.start(
         StartVerificationCommand(verification_id=verification.id),
         make_user(UserRole.METROLOGIST),
     )
     assert result.status == VerificationStatus.IN_PROGRESS
-    assert result.started_at is not None and result.started_at.tzinfo is not None
+    assert result.started_at is not None
+    assert result.started_at.tzinfo is not None
     assert len(audit_operations.items) == len(audit_records.items) == 1
     record = audit_records.items[0]
     assert record.action == "verification.started"
