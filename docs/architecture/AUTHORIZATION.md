@@ -186,19 +186,20 @@ No permissions are currently introduced for unrelated use cases merely because t
 
 ## User Administration
 
-The user administration application service and API currently support administrator-only user listing, creation, and role changes.
+The user administration application service and API currently support administrator-only user listing, creation, role changes, and account activation/deactivation.
 
 Implemented use cases:
 - list users, including inactive accounts;
 - optionally include archived accounts when explicitly requested;
 - create a user with a selected role;
 - change an existing user's role;
+- activate or deactivate non-archived accounts;
 - generate a cryptographically secure temporary password;
 - store only its password hash and require password change on first login;
 - return the temporary password only in the creation response;
 - return HTTP 409 when the username is already reserved, including by an archived account.
 
-The Application layer enforces the `admin` role through the shared authorization contract. The API authenticates requests, retains CSRF protection for state-changing operations, and maps duplicate usernames to HTTP 409 and missing users to HTTP 404. Account activation/deactivation, archive/restore, and frontend administration UI remain separate implementation stages.
+The Application layer enforces the `admin` role through the shared authorization contract. The API authenticates requests, retains CSRF protection for state-changing operations, and maps duplicate usernames to HTTP 409 and missing users to HTTP 404. Archived accounts cannot be activated or deactivated; restore is a separate lifecycle operation. Archive/restore and frontend administration UI remain separate implementation stages.
 
 ## Current Persistence
 
