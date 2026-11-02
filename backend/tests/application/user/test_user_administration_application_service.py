@@ -28,11 +28,7 @@ class FakeUserRepository(UserRepository):
         return next((user for user in self.users if user.username == username), None)
 
     def get_all(self, include_archived: bool = False) -> list[User]:
-        return [
-            user
-            for user in self.users
-            if include_archived or not user.archived
-        ]
+        return [user for user in self.users if include_archived or not user.archived]
 
     def save(self, user: User) -> User:
         return user
