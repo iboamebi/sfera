@@ -10,10 +10,10 @@ from app.domains.verification.exceptions import (
 from app.domains.verification.value_objects.verification_result import (
     VerificationResult,
 )
-from app.domains.verification.value_objects.verification_type import VerificationType
 from app.domains.verification.value_objects.verification_status import (
     VerificationStatus,
 )
+from app.domains.verification.value_objects.verification_type import VerificationType
 from app.shared.base.aggregate import AggregateRoot
 
 

@@ -52,6 +52,7 @@ def test_verification_mapper_to_model_preserves_instrument_id() -> None:
     """Map domain verification to ORM with instrument association."""
     created_at = datetime(2026, 9, 5, 10, 0, tzinfo=UTC)
     instrument_id = uuid4()
+    started_at = datetime(2026, 9, 5, 11, 0, tzinfo=UTC)
     decision_at = datetime(2026, 9, 5, 12, 0, tzinfo=UTC)
 
     entity = Verification(
@@ -117,6 +118,7 @@ def test_verification_mapper_preserves_null_instrument_id() -> None:
 def test_verification_mapper_preserves_in_progress_state() -> None:
     """Map an active verification without a final decision."""
     created_at = datetime(2026, 9, 5, 10, 0, tzinfo=UTC)
+    started_at = datetime(2026, 9, 5, 11, 0, tzinfo=UTC)
 
     model = VerificationModel(
         id=uuid4(),
@@ -124,6 +126,7 @@ def test_verification_mapper_preserves_in_progress_state() -> None:
         instrument_id=uuid4(),
         verification_date=date(2026, 9, 5),
         created_at=created_at,
+        started_at=started_at,
         verification_type=VerificationType.PRIMARY,
         status=VerificationStatus.IN_PROGRESS,
         result=None,
@@ -135,6 +138,7 @@ def test_verification_mapper_preserves_in_progress_state() -> None:
     entity = VerificationMapper().to_domain(model)
 
     assert entity.created_at == created_at
+    assert entity.started_at == started_at
     assert entity.verification_type == VerificationType.PRIMARY
     assert entity.status == VerificationStatus.IN_PROGRESS
     assert entity.result is None

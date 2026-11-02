@@ -1,4 +1,4 @@
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 from uuid import uuid4
 
 import pytest
@@ -20,7 +20,7 @@ from app.domains.verification.value_objects.verification_type import (
 )
 
 
-DECISION_AT = datetime(2030, 1, 1, 12, 0, tzinfo=timezone.utc)
+DECISION_AT = datetime(2030, 1, 1, 12, 0, tzinfo=UTC)
 
 
 def create_verification() -> Verification:
@@ -30,7 +30,7 @@ def create_verification() -> Verification:
         order_item_id=uuid4(),
         instrument_id=uuid4(),
         verification_date=date.today(),
-        created_at=datetime(2026, 9, 5, 10, 0, tzinfo=timezone.utc),
+        created_at=datetime(2026, 9, 5, 10, 0, tzinfo=UTC),
         verification_type=VerificationType.PERIODIC,
     )
 

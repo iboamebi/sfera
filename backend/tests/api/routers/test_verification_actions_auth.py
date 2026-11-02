@@ -3,8 +3,8 @@ from fastapi.routing import APIRoute
 from app.api.dependencies.auth import get_current_user
 from app.api.routers.verification_actions import (
     approve_verification,
-    reject_verification,
     start_verification,
+    reject_verification,
     router,
 )
 from app.api.security.csrf import require_csrf

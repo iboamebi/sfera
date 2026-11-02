@@ -36,9 +36,7 @@ class VerificationMapper(
             verification_type=VerificationType(model.verification_type),
             status=VerificationStatus(model.status),
             result=(
-                VerificationResult(model.result)
-                if model.result is not None
-                else None
+                VerificationResult(model.result) if model.result is not None else None
             ),
             valid_until=model.valid_until,
             unsuitable_reason=model.unsuitable_reason,
@@ -59,9 +57,7 @@ class VerificationMapper(
         model.verification_type = entity.verification_type.value
         model.status = entity.status.value
         model.result = (
-            entity.result.value
-            if entity.result is not None
-            else None
+            entity.result.value if entity.result is not None else None
         )
         model.valid_until = entity.valid_until
         model.unsuitable_reason = entity.unsuitable_reason

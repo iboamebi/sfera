@@ -12,11 +12,11 @@ from app.api.security.csrf import require_csrf
 from app.application.verification.commands.approve_verification import (
     ApproveVerificationCommand,
 )
-from app.application.verification.commands.start_verification import (
-    StartVerificationCommand,
-)
 from app.application.verification.commands.reject_verification import (
     RejectVerificationCommand,
+)
+from app.application.verification.commands.start_verification import (
+    StartVerificationCommand,
 )
 from app.application.verification.exceptions import (
     VerificationCannotBeStartedApplicationError,
