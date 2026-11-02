@@ -51,6 +51,9 @@ from app.application.repair.services.repair_application_service import (
 from app.application.site.services.site_application_service import (
     SiteApplicationService,
 )
+from app.application.user.services.user_administration_application_service import (
+    UserAdministrationApplicationService,
+)
 from app.application.verification.services.verification_application_service import (
     VerificationApplicationService,
 )
@@ -62,9 +65,6 @@ from app.application.warehouse.services.warehouse_application_service import (
 )
 from app.application.workflow.services.workflow_application_service import (
     WorkflowApplicationService,
-)
-from app.application.user.services.user_administration_application_service import (
-    UserAdministrationApplicationService,
 )
 from app.core.dependencies.events import get_event_dispatcher
 from app.core.dependencies.repositories import (
