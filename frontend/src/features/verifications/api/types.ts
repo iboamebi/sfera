@@ -3,8 +3,13 @@ export interface VerificationApiDto {
   order_item_id: string;
   verification_date: string;
   valid_until: string | null;
-  result: string;
+  result: "SUITABLE" | "UNSUITABLE" | null;
   unsuitable_reason: string | null;
   methodology: string | null;
+  created_at: string;
+  started_at: string | null;
+  decision_at: string | null;
+  status: "CREATED" | "IN_PROGRESS" | "DECIDED";
+  verification_type: "PRIMARY" | "PERIODIC" | "AFTER_REPAIR";
   archived: boolean;
 }
