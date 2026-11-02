@@ -3,14 +3,19 @@ from uuid import uuid4
 import pytest
 from fastapi import HTTPException
 
-from app.api.routers.users import change_user_role, create_user, get_users
+from app.api.routers.users import (
+    change_user_role,
+    create_user,
+    get_users,
+    set_user_active,
+)
 from app.application.user.exceptions import (
     UserAlreadyExistsApplicationError,
     UserNotFoundApplicationError,
 )
 from app.domains.user.entities.user import User
 from app.domains.user.value_objects.user_role import UserRole
-from app.schemas.user import UserCreate, UserRoleUpdate
+from app.schemas.user import UserActiveUpdate, UserCreate, UserRoleUpdate
 
 
 class FakeUserAdministrationService:
@@ -22,6 +27,7 @@ class FakeUserAdministrationService:
         self.include_archived = False
         self.actor: User | None = None
         self.role_change_error: Exception | None = None
+        self.status_change_error: Exception | None = None
 
     def get_all(
         self,
@@ -38,6 +44,17 @@ class FakeUserAdministrationService:
             raise self.role_change_error
         target = next(user for user in self.users if user.id == command.user_id)
         target.change_role(command.role)
+        return target
+
+    def set_active(self, command: object, actor: User) -> User:
+        self.actor = actor
+        if self.status_change_error is not None:
+            raise self.status_change_error
+        target = next(user for user in self.users if user.id == command.user_id)
+        if command.is_active:
+            target.activate()
+        else:
+            target.deactivate()
         return target
 
     def create(self, command: object, actor: User) -> tuple[User, str]:
@@ -110,6 +127,45 @@ def test_change_user_role_maps_missing_user_to_404() -> None:
         change_user_role(
             user_id=uuid4(),
             data=UserRoleUpdate(role=UserRole.ADMIN),
+            actor=make_user(),
+            service=service,
+        )
+
+    assert exc_info.value.status_code == 404
+    assert exc_info.value.detail == "User not found"
+
+
+def test_set_user_active_returns_updated_account_state() -> None:
+    actor = make_user()
+    target = User(
+        id=uuid4(),
+        username="operator-1",
+        password_hash="$argon2id$hashed",
+        role=UserRole.OPERATOR,
+    )
+    service = FakeUserAdministrationService()
+    service.users = [target]
+
+    result = set_user_active(
+        user_id=target.id,
+        data=UserActiveUpdate(is_active=False),
+        actor=actor,
+        service=service,
+    )
+
+    assert result.id == target.id
+    assert result.is_active is False
+    assert service.actor is actor
+
+
+def test_set_user_active_maps_missing_user_to_404() -> None:
+    service = FakeUserAdministrationService()
+    service.status_change_error = UserNotFoundApplicationError()
+
+    with pytest.raises(HTTPException) as exc_info:
+        set_user_active(
+            user_id=uuid4(),
+            data=UserActiveUpdate(is_active=True),
             actor=make_user(),
             service=service,
         )
