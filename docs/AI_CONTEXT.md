@@ -466,7 +466,6 @@ Frontend first-login integration is implemented on this branch; local typecheck/
 Not yet implemented:
 - admin-only user list/create/update/archive/activation management;
 - secure temporary password generation and one-time display;
-- frontend login/current-user/password-change flow and route guard (implemented; local validation pending);
 - setting the existing `alex` account to ADMIN after inspecting its actual database row;
 - Order → Verification navigation.
 
@@ -570,12 +569,11 @@ docs/metrology/VERIFICATION_METHODS.md
 
 Current active work is first-login authentication and user administration. Sequence:
 
-1. Complete local validation of the API stage on `feat/user-first-login-password`.
-2. Validate the frontend login/current-user integration, forced password-change screen, and protected route guard locally.
-3. Implement admin-only user list/create/role/state/archive management.
-4. Generate cryptographically secure temporary passwords, store only Argon2 hashes, and show plaintext only once to the creating admin.
-5. Inspect the actual local database row and migration state before changing the existing `alex` user's role to `admin`.
-6. Continue with Order → Verification navigation only after inspecting the current backend and frontend relationship contracts.
+1. Frontend login/current-user integration, forced password-change screen, and protected route guard are implemented; local typecheck/build validation is the current step.
+2. Implement admin-only user list/create/role/state/archive management.
+3. Generate cryptographically secure temporary passwords, store only Argon2 hashes, and show plaintext only once to the creating admin.
+4. Inspect the actual local database row and migration state before changing the existing `alex` user's role to `admin`.
+5. Continue with Order → Verification navigation only after inspecting the current backend and frontend relationship contracts.
 
 The metrology methodology consolidation direction below remains valid but is not the active implementation stage.
 
