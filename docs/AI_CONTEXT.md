@@ -40,8 +40,10 @@ git@github.com:iboamebi/sfera.git
 Working branch:
 
 ```text
-develop
+feat/user-first-login-password
 ```
+
+Base branch: `develop`.
 
 Local root:
 
@@ -427,6 +429,38 @@ PostgreSQL
 Authentication and authorization remain separate concerns.
 
 Authentication foundation includes User domain/repository, Argon2 password hashing, session domain/repository/persistence, login/current-user/logout API, HttpOnly cookie and CSRF protection.
+
+The current authentication contract also includes:
+- `must_change_password` persisted on User;
+- `ChangePasswordApplicationService` verifies the current password and stores only an Argon2 hash;
+- `POST /auth/change-password` is available to authenticated users and retains CSRF validation;
+- login and `/auth/me` return `role` and `must_change_password`;
+- all business routers, including read endpoints, require authentication and completion of the first-login password change;
+- `/auth/login`, `/auth/me`, `/auth/change-password`, `/auth/logout`, and `/health` remain outside the first-login business-route gate.
+
+Current active branch:
+
+```text
+feat/user-first-login-password
+```
+
+Latest API implementation commit before local validation:
+
+```text
+f769417 docs: align authentication contract with implementation
+```
+
+Local validation of the API stage is pending. The preceding Application/infrastructure slice was locally validated:
+- 18 tests passed;
+- Ruff check passed;
+- 21 files already formatted.
+
+Not yet implemented:
+- admin-only user list/create/update/archive/activation management;
+- secure temporary password generation and one-time display;
+- frontend login/current-user/password-change flow and route guard;
+- setting the existing `alex` account to ADMIN after inspecting its actual database row;
+- Order → Verification navigation.
 
 Contract:
 
