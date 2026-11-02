@@ -450,21 +450,23 @@ API contract documentation commit:
 f769417 docs: align authentication contract with implementation
 ```
 
-Latest code/style commit before local validation:
+Latest API test correction:
 
 ```text
-610124a style: sort authentication API imports
+83251a2 test: inspect FastAPI included routers for first-login gate
 ```
 
-Local validation of the API stage is pending. The preceding Application/infrastructure slice was locally validated:
-- 18 tests passed;
+Local backend validation after that correction:
+- 30 tests passed;
 - Ruff check passed;
-- 21 files already formatted.
+- formatting check passed.
+
+Frontend first-login integration is implemented on this branch; local typecheck/build validation is pending.
 
 Not yet implemented:
 - admin-only user list/create/update/archive/activation management;
 - secure temporary password generation and one-time display;
-- frontend login/current-user/password-change flow and route guard;
+- frontend login/current-user/password-change flow and route guard (implemented; local validation pending);
 - setting the existing `alex` account to ADMIN after inspecting its actual database row;
 - Order → Verification navigation.
 
@@ -569,7 +571,7 @@ docs/metrology/VERIFICATION_METHODS.md
 Current active work is first-login authentication and user administration. Sequence:
 
 1. Complete local validation of the API stage on `feat/user-first-login-password`.
-2. Implement frontend login/current-user integration, forced password-change screen, and protected route guard.
+2. Validate the frontend login/current-user integration, forced password-change screen, and protected route guard locally.
 3. Implement admin-only user list/create/role/state/archive management.
 4. Generate cryptographically secure temporary passwords, store only Argon2 hashes, and show plaintext only once to the creating admin.
 5. Inspect the actual local database row and migration state before changing the existing `alex` user's role to `admin`.
