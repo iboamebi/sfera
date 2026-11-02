@@ -18,7 +18,10 @@ class FakePasswordHasher(PasswordHasher):
         return f"hashed:{password}"
 
     def verify(self, password: str, password_hash: str) -> bool:
-        return password == "temporary-password" and password_hash == "temporary-hash"
+        return (
+            password == "temporary-password"
+            and password_hash == "temporary-hash"
+        )
 
 
 class FakeUserRepository(UserRepository):
@@ -26,14 +29,22 @@ class FakeUserRepository(UserRepository):
         self.user = user
         self.saved = False
 
-    def get_by_id(self, user_id, include_archived: bool = False) -> User | None:
+    def get_by_id(
+        self,
+        user_id,
+        include_archived: bool = False,
+    ) -> User | None:
         if self.user is None or self.user.id != user_id:
             return None
         if not include_archived and (self.user.archived or not self.user.is_active):
             return None
         return self.user
 
-    def get_by_username(self, username, include_archived: bool = False) -> User | None:
+    def get_by_username(
+        self,
+        username,
+        include_archived: bool = False,
+    ) -> User | None:
         raise NotImplementedError
 
     def save(self, user: User) -> User:
@@ -66,7 +77,11 @@ def test_change_password_hashes_password_and_clears_first_login_flag() -> None:
     )
     repository = FakeUserRepository(user)
     uow = FakeUnitOfWork()
-    service = ChangePasswordApplicationService(repository, FakePasswordHasher(), uow)
+    service = ChangePasswordApplicationService(
+        repository,
+        FakePasswordHasher(),
+        uow,
+    )
 
     service.change(
         ChangePasswordCommand(
