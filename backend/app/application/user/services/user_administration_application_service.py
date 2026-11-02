@@ -5,8 +5,10 @@ from uuid import uuid4
 
 from app.application.auth.ports.password_hasher import PasswordHasher
 from app.application.authorization.authorization import require_role
+from app.application.user.commands.archive_user import ArchiveUserCommand
 from app.application.user.commands.change_user_role import ChangeUserRoleCommand
 from app.application.user.commands.create_user import CreateUserCommand
+from app.application.user.commands.restore_user import RestoreUserCommand
 from app.application.user.commands.set_user_active import SetUserActiveCommand
 from app.application.user.exceptions import (
     UserAlreadyExistsApplicationError,
@@ -68,6 +70,36 @@ class UserAdministrationApplicationService:
             else:
                 user.deactivate()
 
+            return self._repository.save(user)
+
+    def archive(self, command: ArchiveUserCommand, actor: User) -> User:
+        """Archive an existing account while preserving its history."""
+        require_role(actor, UserRole.ADMIN)
+
+        with self._uow:
+            user = self._repository.get_by_id(
+                command.user_id,
+                include_archived=True,
+            )
+            if user is None or user.archived:
+                raise UserNotFoundApplicationError
+
+            user.archive()
+            return self._repository.save(user)
+
+    def restore(self, command: RestoreUserCommand, actor: User) -> User:
+        """Restore an archived account."""
+        require_role(actor, UserRole.ADMIN)
+
+        with self._uow:
+            user = self._repository.get_by_id(
+                command.user_id,
+                include_archived=True,
+            )
+            if user is None or not user.archived:
+                raise UserNotFoundApplicationError
+
+            user.restore()
             return self._repository.save(user)
 
     def create(self, command: CreateUserCommand, actor: User) -> tuple[User, str]:
