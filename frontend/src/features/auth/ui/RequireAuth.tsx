@@ -7,6 +7,8 @@ interface RequireAuthProps {
   children: ReactNode;
 }
 
+const PASSWORD_CHANGE_PATH = "/change-password";
+
 export function RequireAuth({ children }: RequireAuthProps) {
   const location = useLocation();
   const { data: user, isPending, isError } = useCurrentUser();
@@ -17,6 +19,14 @@ export function RequireAuth({ children }: RequireAuthProps) {
 
   if (isError || !user) {
     return <Navigate to="/login" replace state={{ from: location }} />;
+  }
+
+  if (user.mustChangePassword && location.pathname !== PASSWORD_CHANGE_PATH) {
+    return <Navigate to={PASSWORD_CHANGE_PATH} replace />;
+  }
+
+  if (!user.mustChangePassword && location.pathname === PASSWORD_CHANGE_PATH) {
+    return <Navigate to="/orders" replace />;
   }
 
   return children;
