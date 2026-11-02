@@ -444,10 +444,16 @@ Current active branch:
 feat/user-first-login-password
 ```
 
-Latest API implementation commit before local validation:
+API contract documentation commit:
 
 ```text
 f769417 docs: align authentication contract with implementation
+```
+
+Latest code/style commit before local validation:
+
+```text
+610124a style: sort authentication API imports
 ```
 
 Local validation of the API stage is pending. The preceding Application/infrastructure slice was locally validated:
@@ -559,6 +565,17 @@ docs/metrology/VERIFICATION_METHODS.md
 `PROJECT_CONSTITUTION.md` is normative and must not be changed as routine documentation.
 
 ## Next Direction
+
+Current active work is first-login authentication and user administration. Sequence:
+
+1. Complete local validation of the API stage on `feat/user-first-login-password`.
+2. Implement frontend login/current-user integration, forced password-change screen, and protected route guard.
+3. Implement admin-only user list/create/role/state/archive management.
+4. Generate cryptographically secure temporary passwords, store only Argon2 hashes, and show plaintext only once to the creating admin.
+5. Inspect the actual local database row and migration state before changing the existing `alex` user's role to `admin`.
+6. Continue with Order → Verification navigation only after inspecting the current backend and frontend relationship contracts.
+
+The metrology methodology consolidation direction below remains valid but is not the active implementation stage.
 
 The current frontend phase has completed a broad sequence of read/list/detail slices.
 
