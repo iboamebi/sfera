@@ -100,6 +100,48 @@ class VerificationApplicationService:
             verification.start()
             self._repository.save(verification)
 
+            operation = AuditOperation(initiated_by=user.id)
+            self._audit_operation_repository.save(operation)
+            self._audit_repository.save(
+                AuditRecord(
+                    operation_id=operation.operation_id,
+                    actor_id=user.id,
+                    action="verification.created",
+                    entity_type="Verification",
+                    entity_id=verification.id,
+                    changes={
+                        "order_item_id": {
+                            "old": None,
+                            "new": str(verification.order_item_id),
+                        },
+                        "instrument_id": {
+                            "old": None,
+                            "new": str(verification.instrument_id),
+                        },
+                        "verification_date": {
+                            "old": None,
+                            "new": verification.verification_date.isoformat(),
+                        },
+                        "created_at": {
+                            "old": None,
+                            "new": verification.created_at.isoformat(),
+                        },
+                        "verification_type": {
+                            "old": None,
+                            "new": verification.verification_type.value,
+                        },
+                        "status": {
+                            "old": None,
+                            "new": verification.status.value,
+                        },
+                        "methodology": {
+                            "old": None,
+                            "new": verification.methodology,
+                        },
+                    },
+                )
+            )
+
         return verification
 
     def approve(
