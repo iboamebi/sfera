@@ -15,6 +15,7 @@ from app.api.routers.price_list_item import (
     router as price_list_item_router,
 )
 from app.api.routers.repair import router as repair_router
+from app.api.routers.users import router as users_router
 from app.api.routers.verification import router as verification_router
 from app.api.routers.verification_actions import (
     router as verification_actions_router,
@@ -23,7 +24,6 @@ from app.api.routers.warehouse import router as warehouse_router
 from app.api.routers.warehouse_movement import router as warehouse_movement_router
 from app.api.routers.warehouse_stock import router as warehouse_stock_router
 from app.api.routers.workflow import router as workflow_router
-from app.api.routers.users import router as users_router
 from app.application.authorization.authorization import AuthorizationError
 from app.application.verification.exceptions import (
     VerificationNotFoundApplicationError,
