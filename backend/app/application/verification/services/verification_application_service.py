@@ -150,7 +150,11 @@ class VerificationApplicationService:
 
         return verification
 
-    def start(self, command: StartVerificationCommand, user: User) -> Verification:
+    def start(
+        self,
+        command: StartVerificationCommand,
+        user: User,
+    ) -> Verification:
         """Start execution of a previously registered verification."""
         require_role(user, UserRole.METROLOGIST, UserRole.ADMIN)
         with self._uow:
@@ -172,8 +176,14 @@ class VerificationApplicationService:
                     entity_type="Verification",
                     entity_id=verification.id,
                     changes={
-                        "status": {"old": old_status, "new": verification.status.value},
-                        "started_at": {"old": None, "new": verification.started_at.isoformat()},
+                        "status": {
+                            "old": old_status,
+                            "new": verification.status.value,
+                        },
+                        "started_at": {
+                            "old": None,
+                            "new": verification.started_at.isoformat(),
+                        },
                     },
                 )
             )

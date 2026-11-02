@@ -42,10 +42,15 @@ router = APIRouter(
 def start_verification(
     verification_id: UUID,
     user: User = Depends(get_current_user),
-    service: VerificationApplicationService = Depends(get_verification_service),
+    service: VerificationApplicationService = Depends(
+        get_verification_service,
+    ),
 ):
     try:
-        return service.start(StartVerificationCommand(verification_id=verification_id), user)
+        return service.start(
+            StartVerificationCommand(verification_id=verification_id),
+            user,
+        )
     except VerificationCannotBeStartedApplicationError:
         raise HTTPException(
             status_code=409,

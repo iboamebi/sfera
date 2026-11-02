@@ -24,8 +24,8 @@ class Verification(AggregateRoot):
     order_item_id: UUID
     verification_date: date
     created_at: datetime
-    started_at: datetime | None = None
     verification_type: VerificationType
+    started_at: datetime | None = None
     status: VerificationStatus = VerificationStatus.CREATED
     result: VerificationResult | None = None
 
