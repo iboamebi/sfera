@@ -12,11 +12,11 @@ from app.application.auth.commands.create_session import CreateSessionCommand
 from app.application.auth.commands.get_current_user import GetCurrentUserCommand
 from app.application.auth.commands.revoke_session import RevokeSessionCommand
 from app.application.auth.exceptions import AuthenticationFailedApplicationError
-from app.application.auth.services.change_password_application_service import (
-    ChangePasswordApplicationService,
-)
 from app.application.auth.services.authentication_application_service import (
     AuthenticationApplicationService,
+)
+from app.application.auth.services.change_password_application_service import (
+    ChangePasswordApplicationService,
 )
 from app.application.auth.services.current_user_application_service import (
     CurrentUserApplicationService,
