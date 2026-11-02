@@ -3,10 +3,10 @@
 import secrets
 from uuid import uuid4
 
+from app.application.auth.ports.password_hasher import PasswordHasher
 from app.application.authorization.authorization import require_role
 from app.application.user.commands.create_user import CreateUserCommand
 from app.application.user.exceptions import UserAlreadyExistsApplicationError
-from app.application.auth.ports.password_hasher import PasswordHasher
 from app.domains.user.entities.user import User
 from app.domains.user.repositories.user_repository import UserRepository
 from app.domains.user.value_objects.user_role import UserRole
@@ -35,10 +35,13 @@ class UserAdministrationApplicationService:
         """Create an account and return its temporary password exactly once."""
         require_role(actor, UserRole.ADMIN)
 
-        if self._repository.get_by_username(
-            command.username,
-            include_archived=True,
-        ) is not None:
+        if (
+            self._repository.get_by_username(
+                command.username,
+                include_archived=True,
+            )
+            is not None
+        ):
             raise UserAlreadyExistsApplicationError
 
         temporary_password = secrets.token_urlsafe(18)
