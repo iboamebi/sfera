@@ -218,7 +218,7 @@ What may the user do?
 
 Roles and permissions are not defined by this authentication contract. Their current business ownership and enforcement are documented in `AUTHORIZATION.md`.
 
-The next security stage is authorization at the Application/API boundary, without embedding permission checks throughout UI components or domain entities.
+Business authorization remains enforced at the Application boundary. New permissions are introduced only for concrete business use cases and are documented in `AUTHORIZATION.md`.
 
 ---
 
@@ -260,14 +260,6 @@ Authentication changes require at minimum:
 
 Security-sensitive behavior must be covered by regression tests before production deployment.
 
-Current backend validation checkpoint:
-
-```text
-pytest: 105 passed
-ruff check: clean
-ruff format --check: clean
-```
-
 ---
 
 ## 12. Implementation order
@@ -298,18 +290,6 @@ CSRF protection
 Protected business mutation boundary
 ```
 
-The next stage is intentionally separate:
-
-```text
-Authorization
-    ↓
-roles/permissions contract
-    ↓
-Application authorization policy
-    ↓
-API enforcement
-    ↓
-regression tests
-```
+Business authorization is maintained as a separate contract in `AUTHORIZATION.md`. Frontend authentication and first-login route integration remain a separate implementation stage.
 
 No step may bypass the architectural boundaries defined by the project Constitution.
