@@ -298,23 +298,19 @@ Backend lifecycle implementation separates registration and execution:
 - create and start are separately audited in the same Unit of Work as their mutations;
 - API read contract exposes `status`, `created_at`, `started_at`, and `decision_at`.
 
-Frontend detail read slice is complete:
+Frontend detail and lifecycle UI are implemented:
 
 ```text
-API DTO
+API DTO → mapper → frontend model
   ↓
-mapper
-  ↓
-frontend model
-  ↓
-getVerification()
-  ↓
-useVerification()
+getVerification() → useVerification()
   ↓
 VerificationPage
-  ↓
-/verifications/:verificationId
+  ├── CREATED → start
+  └── IN_PROGRESS → approve / reject
 ```
+
+Lifecycle mutations use the backend start, approve and reject endpoints, invalidate the detail query after success, and display mutation errors. Actions are hidden for archived records and are conditional on lifecycle status.
 
 ### Diagnostic
 
@@ -466,21 +462,15 @@ Production frontend is built with Vite and served through nginx. Vite developmen
 
 ## Validation Checkpoint
 
-Latest frontend validation:
+Latest frontend validation before the lifecycle error-state update:
 
 ```text
 npm run typecheck — passed
 npm run build     — passed
+1276 modules transformed
 ```
 
-Latest build:
-
-```text
-1227 modules transformed
-vite build — passed
-```
-
-Vite reports only a chunk-size warning (>500 kB). This is not a build failure.
+Vite reports only a chunk-size warning (>500 kB). This is not a build failure. The lifecycle error-state update still requires local typecheck/build validation.
 
 Backend validation at the latest architecture checkpoint:
 
