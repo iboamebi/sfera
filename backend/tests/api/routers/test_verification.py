@@ -14,9 +14,6 @@ from app.core.dependencies.services import get_verification_service
 from app.domains.user.entities.user import User
 from app.domains.user.value_objects.user_role import UserRole
 from app.domains.verification.entities.verification import Verification
-from app.domains.verification.value_objects.verification_result import (
-    VerificationResult,
-)
 from app.domains.verification.value_objects.verification_type import (
     VerificationType,
 )
