@@ -14,6 +14,12 @@ class UserCreate(BaseModel):
     role: UserRole
 
 
+class UserActiveUpdate(BaseModel):
+    """Account activation state accepted by user administration."""
+
+    is_active: bool
+
+
 class UserRoleUpdate(BaseModel):
     """Role assignment accepted by user administration."""
 
