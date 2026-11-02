@@ -8,6 +8,7 @@ from app.application.auth.ports.password_hasher import PasswordHasher
 from app.application.authorization.authorization import AuthorizationError
 from app.application.user.commands.change_user_role import ChangeUserRoleCommand
 from app.application.user.commands.create_user import CreateUserCommand
+from app.application.user.commands.set_user_active import SetUserActiveCommand
 from app.application.user.exceptions import (
     UserAlreadyExistsApplicationError,
     UserNotFoundApplicationError,
@@ -167,6 +168,65 @@ def test_change_role_raises_when_user_does_not_exist() -> None:
         )
 
     assert repository.users == []
+    assert uow.committed is False
+    assert uow.rolled_back is True
+
+
+def test_set_active_deactivates_existing_user_and_commits() -> None:
+    target = make_user("operator")
+    service, repository, uow = make_service([target])
+
+    updated = service.set_active(
+        SetUserActiveCommand(user_id=target.id, is_active=False),
+        make_user("admin", UserRole.ADMIN),
+    )
+
+    assert updated.is_active is False
+    assert repository.users == [updated]
+    assert uow.committed is True
+
+
+def test_set_active_activates_existing_user_and_commits() -> None:
+    target = make_user("operator")
+    target.deactivate()
+    service, repository, uow = make_service([target])
+
+    updated = service.set_active(
+        SetUserActiveCommand(user_id=target.id, is_active=True),
+        make_user("admin", UserRole.ADMIN),
+    )
+
+    assert updated.is_active is True
+    assert repository.users == [updated]
+    assert uow.committed is True
+
+
+def test_set_active_requires_admin_role() -> None:
+    target = make_user("operator")
+    service, _, uow = make_service([target])
+
+    with pytest.raises(AuthorizationError, match="not authorized"):
+        service.set_active(
+            SetUserActiveCommand(user_id=target.id, is_active=False),
+            make_user("operator", UserRole.OPERATOR),
+        )
+
+    assert target.is_active is True
+    assert uow.committed is False
+
+
+def test_set_active_rejects_archived_user() -> None:
+    target = make_user("archived")
+    target.archive()
+    service, _, uow = make_service([target])
+
+    with pytest.raises(UserNotFoundApplicationError):
+        service.set_active(
+            SetUserActiveCommand(user_id=target.id, is_active=True),
+            make_user("admin", UserRole.ADMIN),
+        )
+
+    assert target.is_active is True
     assert uow.committed is False
     assert uow.rolled_back is True
 
