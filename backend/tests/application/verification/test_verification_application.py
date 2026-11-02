@@ -345,7 +345,9 @@ def test_start_verification_rejects_invalid_state():
 def test_start_verification_requires_metrologist_or_admin():
     repository = FakeVerificationRepository()
     verification = Verification.create(
-        id=uuid4(), order_item_id=uuid4(), instrument_id=uuid4(),
+        id=uuid4(),
+        order_item_id=uuid4(),
+        instrument_id=uuid4(),
         verification_date=date.today(),
         created_at=datetime(2026, 9, 5, 10, 0, tzinfo=UTC),
         verification_type=VerificationType.PERIODIC,
