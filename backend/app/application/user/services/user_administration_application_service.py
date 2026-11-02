@@ -7,6 +7,7 @@ from app.application.auth.ports.password_hasher import PasswordHasher
 from app.application.authorization.authorization import require_role
 from app.application.user.commands.change_user_role import ChangeUserRoleCommand
 from app.application.user.commands.create_user import CreateUserCommand
+from app.application.user.commands.set_user_active import SetUserActiveCommand
 from app.application.user.exceptions import (
     UserAlreadyExistsApplicationError,
     UserNotFoundApplicationError,
@@ -48,6 +49,25 @@ class UserAdministrationApplicationService:
                 raise UserNotFoundApplicationError
 
             user.change_role(command.role)
+            return self._repository.save(user)
+
+    def set_active(self, command: SetUserActiveCommand, actor: User) -> User:
+        """Activate or deactivate a non-archived account."""
+        require_role(actor, UserRole.ADMIN)
+
+        with self._uow:
+            user = self._repository.get_by_id(
+                command.user_id,
+                include_archived=True,
+            )
+            if user is None or user.archived:
+                raise UserNotFoundApplicationError
+
+            if command.is_active:
+                user.activate()
+            else:
+                user.deactivate()
+
             return self._repository.save(user)
 
     def create(self, command: CreateUserCommand, actor: User) -> tuple[User, str]:
