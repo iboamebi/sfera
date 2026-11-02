@@ -6,8 +6,10 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from app.api.dependencies.auth import get_current_user
 from app.api.security.csrf import require_csrf
+from app.application.user.commands.archive_user import ArchiveUserCommand
 from app.application.user.commands.change_user_role import ChangeUserRoleCommand
 from app.application.user.commands.create_user import CreateUserCommand
+from app.application.user.commands.restore_user import RestoreUserCommand
 from app.application.user.commands.set_user_active import SetUserActiveCommand
 from app.application.user.exceptions import (
     UserAlreadyExistsApplicationError,
@@ -93,6 +95,50 @@ def set_user_active(
             SetUserActiveCommand(user_id=user_id, is_active=data.is_active),
             actor,
         )
+    except UserNotFoundApplicationError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found",
+        ) from None
+
+
+@router.post(
+    "/{user_id}/archive",
+    response_model=UserRead,
+    dependencies=[Depends(require_csrf)],
+)
+def archive_user(
+    user_id: UUID,
+    actor: User = Depends(get_current_user),
+    service: UserAdministrationApplicationService = Depends(
+        get_user_administration_service,
+    ),
+) -> User:
+    """Archive a user account without deleting its history."""
+    try:
+        return service.archive(ArchiveUserCommand(user_id=user_id), actor)
+    except UserNotFoundApplicationError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found",
+        ) from None
+
+
+@router.post(
+    "/{user_id}/restore",
+    response_model=UserRead,
+    dependencies=[Depends(require_csrf)],
+)
+def restore_user(
+    user_id: UUID,
+    actor: User = Depends(get_current_user),
+    service: UserAdministrationApplicationService = Depends(
+        get_user_administration_service,
+    ),
+) -> User:
+    """Restore an archived user account."""
+    try:
+        return service.restore(RestoreUserCommand(user_id=user_id), actor)
     except UserNotFoundApplicationError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
