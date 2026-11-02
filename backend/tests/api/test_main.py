@@ -16,33 +16,47 @@ def test_authorization_error_maps_to_forbidden_response() -> None:
     assert response.body == b'{"detail":"User is not authorized for this action"}'
 
 
-def test_all_business_routes_require_first_login_password_completion() -> None:
-    business_routes = [
-        route
+def test_all_business_routers_require_first_login_password_completion() -> None:
+    included_routers = [
+        route.include_context
         for route in app.routes
-        if isinstance(route, APIRoute)
-        and not route.path.startswith("/auth/")
-        and route.path != "/health"
+        if getattr(route, "include_context", None) is not None
+    ]
+    business_routers = [
+        context
+        for context in included_routers
+        if context.included_router.prefix != "/auth"
     ]
 
-    assert business_routes
-    for route in business_routes:
+    assert business_routers
+    for context in business_routers:
         assert any(
-            dependency.call is require_password_change_completed
-            for dependency in route.dependant.dependencies
-        ), route.path
+            dependency.dependency is require_password_change_completed
+            for dependency in context.dependencies
+        ), context.included_router.prefix
 
 
 def test_authentication_and_health_routes_are_not_gated() -> None:
-    exempt_routes = [
+    auth_routers = [
+        route.include_context
+        for route in app.routes
+        if getattr(route, "include_context", None) is not None
+        and route.include_context.included_router.prefix == "/auth"
+    ]
+    health_routes = [
         route
         for route in app.routes
-        if isinstance(route, APIRoute)
-        and (route.path.startswith("/auth/") or route.path == "/health")
+        if isinstance(route, APIRoute) and route.path == "/health"
     ]
 
-    assert exempt_routes
-    for route in exempt_routes:
+    assert auth_routers
+    assert health_routes
+    for context in auth_routers:
+        assert all(
+            dependency.dependency is not require_password_change_completed
+            for dependency in context.dependencies
+        )
+    for route in health_routes:
         assert all(
             dependency.call is not require_password_change_completed
             for dependency in route.dependant.dependencies
