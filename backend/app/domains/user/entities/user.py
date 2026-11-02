@@ -39,6 +39,11 @@ class User(Entity):
 
         self.is_active = True
 
+    def change_role(self, role: UserRole) -> None:
+        """Assign a role to the user."""
+
+        self.role = role
+
     def change_password(self, password_hash: str) -> None:
         """Replace the password and clear the first-login requirement."""
 
