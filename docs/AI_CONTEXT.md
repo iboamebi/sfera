@@ -582,7 +582,7 @@ Current active work is first-login authentication and user administration. Seque
 
 1. Frontend login/current-user integration, forced password-change screen, and protected route guard are implemented; local typecheck/build validation is the current step.
 2. Validate the user administration API list/create slice locally.
-3. Role change and activation/deactivation Application/API slices are implemented on the active branch; locally validate them, then implement archive/restore.
+3. Role change, activation/deactivation, archive and restore Application/API slices are implemented on the active branch; locally validate the user administration test slice and scoped lint/format checks.
 4. Implement the admin user management UI, including one-time display and copy of a temporary password.
 5. Inspect the actual local database row and migration state before changing the existing `alex` user's role to `admin`.
 6. Continue with Order → Verification navigation only after inspecting the current backend and frontend relationship contracts.
