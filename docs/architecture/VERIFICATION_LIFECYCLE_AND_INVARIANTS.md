@@ -65,12 +65,14 @@ instrument_id
 verification_type
 method_version
 created_at
+started_at
 ```
 
 Итоговые поля решения отсутствуют:
 
 ```text
 result = None
+started_at = None
 decision_at = None
 ```
 
@@ -101,7 +103,10 @@ decision_at = None
 
 ```text
 status = IN_PROGRESS
+started_at = фактическое время начала
 ```
+
+`started_at` фиксируется один раз при отдельном действии `StartVerification`. Оно не выводится из `created_at` и не изменяется повторным вызовом.
 
 Факт начала должен быть отражён временем выполнения.
 
@@ -113,6 +118,7 @@ status = IN_PROGRESS
 
 ```text
 status == IN_PROGRESS
+started_at is not None
 result is None
 decision_at is None
 ```
@@ -309,6 +315,7 @@ decision_at != None
 
 ```text
 created_at
+started_at
 operation_at
 measurement_at
 calculation_at

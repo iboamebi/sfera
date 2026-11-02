@@ -15,7 +15,11 @@ from app.application.verification.commands.create_verification import (
 from app.application.verification.commands.reject_verification import (
     RejectVerificationCommand,
 )
+from app.application.verification.commands.start_verification import (
+    StartVerificationCommand,
+)
 from app.application.verification.exceptions import (
+    VerificationCannotBeStartedApplicationError,
     VerificationInstrumentRequiredApplicationError,
     VerificationNotFoundApplicationError,
     VerificationOrderItemNotFoundApplicationError,
@@ -24,6 +28,9 @@ from app.domains.order.repositories.order_repository import OrderRepository
 from app.domains.user.entities.user import User
 from app.domains.user.value_objects.user_role import UserRole
 from app.domains.verification.entities.verification import Verification
+from app.domains.verification.exceptions import (
+    InvalidVerificationResultStateDomainError,
+)
 from app.domains.verification.repositories.verification_repository import (
     VerificationRepository,
 )
@@ -68,7 +75,7 @@ class VerificationApplicationService:
         command: CreateVerificationCommand,
         user: User,
     ) -> Verification:
-        """Create and start verification for a concrete instrument."""
+        """Register a verification for a concrete instrument."""
         require_role(user, UserRole.METROLOGIST, UserRole.ADMIN)
 
         with self._uow:
@@ -97,7 +104,6 @@ class VerificationApplicationService:
                 verification_type=command.verification_type,
                 methodology=command.methodology,
             )
-            verification.start()
             self._repository.save(verification)
 
             operation = AuditOperation(initiated_by=user.id)
@@ -142,6 +148,35 @@ class VerificationApplicationService:
                 )
             )
 
+        return verification
+
+    def start(self, command: StartVerificationCommand, user: User) -> Verification:
+        """Start execution of a previously registered verification."""
+        require_role(user, UserRole.METROLOGIST, UserRole.ADMIN)
+        with self._uow:
+            verification = self.get(command.verification_id)
+            old_status = verification.status.value
+            started_at = datetime.now(UTC)
+            try:
+                verification.start(started_at=started_at)
+            except InvalidVerificationResultStateDomainError:
+                raise VerificationCannotBeStartedApplicationError from None
+            self._repository.save(verification)
+            operation = AuditOperation(initiated_by=user.id)
+            self._audit_operation_repository.save(operation)
+            self._audit_repository.save(
+                AuditRecord(
+                    operation_id=operation.operation_id,
+                    actor_id=user.id,
+                    action="verification.started",
+                    entity_type="Verification",
+                    entity_id=verification.id,
+                    changes={
+                        "status": {"old": old_status, "new": verification.status.value},
+                        "started_at": {"old": None, "new": verification.started_at.isoformat()},
+                    },
+                )
+            )
         return verification
 
     def approve(

@@ -5,26 +5,52 @@ Verification business actions.
 from datetime import date
 from uuid import UUID
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 
 from app.api.dependencies.auth import get_current_user
 from app.api.security.csrf import require_csrf
 from app.application.verification.commands.approve_verification import (
     ApproveVerificationCommand,
 )
+from app.application.verification.commands.start_verification import (
+    StartVerificationCommand,
+)
 from app.application.verification.commands.reject_verification import (
     RejectVerificationCommand,
+)
+from app.application.verification.exceptions import (
+    VerificationCannotBeStartedApplicationError,
 )
 from app.application.verification.services.verification_application_service import (
     VerificationApplicationService,
 )
 from app.core.dependencies.services import get_verification_service
 from app.domains.user.entities.user import User
+from app.schemas.verification import VerificationRead
 
 router = APIRouter(
     prefix="/verifications",
     tags=["Verifications"],
 )
+
+
+@router.post(
+    "/{verification_id}/start",
+    response_model=VerificationRead,
+    dependencies=[Depends(get_current_user), Depends(require_csrf)],
+)
+def start_verification(
+    verification_id: UUID,
+    user: User = Depends(get_current_user),
+    service: VerificationApplicationService = Depends(get_verification_service),
+):
+    try:
+        return service.start(StartVerificationCommand(verification_id=verification_id), user)
+    except VerificationCannotBeStartedApplicationError:
+        raise HTTPException(
+            status_code=409,
+            detail="Verification cannot be started from its current state",
+        ) from None
 
 
 @router.post(

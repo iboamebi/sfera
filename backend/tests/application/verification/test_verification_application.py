@@ -13,7 +13,11 @@ from app.application.verification.commands.create_verification import (
 from app.application.verification.commands.reject_verification import (
     RejectVerificationCommand,
 )
+from app.application.verification.commands.start_verification import (
+    StartVerificationCommand,
+)
 from app.application.verification.exceptions import (
+    VerificationCannotBeStartedApplicationError,
     VerificationInstrumentRequiredApplicationError,
     VerificationNotFoundApplicationError,
     VerificationOrderItemNotFoundApplicationError,
@@ -181,7 +185,7 @@ def make_verification() -> Verification:
         created_at=datetime(2026, 9, 5, 10, 0, tzinfo=UTC),
         verification_type=VerificationType.PERIODIC,
     )
-    verification.start()
+    verification.start(started_at=datetime(2026, 9, 5, 11, 0, tzinfo=UTC))
     return verification
 
 
@@ -211,7 +215,8 @@ def test_create_verification_copies_instrument_from_order_item():
 
     assert verification.order_item_id == item.id
     assert verification.instrument_id == item.instrument_id
-    assert verification.status == VerificationStatus.IN_PROGRESS
+    assert verification.status == VerificationStatus.CREATED
+    assert verification.started_at is None
     assert verification.result is None
     assert verification.decision_at is None
     assert repository.get(verification.id) is verification
@@ -228,7 +233,7 @@ def test_create_verification_copies_instrument_from_order_item():
     assert record.entity_id == verification.id
     assert record.changes["status"] == {
         "old": None,
-        "new": VerificationStatus.IN_PROGRESS.value,
+        "new": VerificationStatus.CREATED.value,
     }
     assert record.changes["verification_type"] == {
         "old": None,
@@ -285,6 +290,73 @@ def test_create_verification_requires_metrologist_or_admin():
                 verification_type=VerificationType.PERIODIC,
             ),
             make_user(UserRole.OPERATOR),
+        )
+
+
+def test_start_verification_transitions_and_audits():
+    repository = FakeVerificationRepository()
+    verification = Verification.create(
+        id=uuid4(), order_item_id=uuid4(), instrument_id=uuid4(),
+        verification_date=date.today(),
+        created_at=datetime(2026, 9, 5, 10, 0, tzinfo=UTC),
+        verification_type=VerificationType.PERIODIC,
+    )
+    repository.save(verification)
+    audit_operations = FakeAuditOperationRepository()
+    audit_records = FakeAuditRepository()
+    service = VerificationApplicationService(
+        repository, FakeOrderRepository(), FakeUnitOfWork(),
+        audit_operations, audit_records,
+    )
+    result = service.start(
+        StartVerificationCommand(verification_id=verification.id),
+        make_user(UserRole.METROLOGIST),
+    )
+    assert result.status == VerificationStatus.IN_PROGRESS
+    assert result.started_at is not None and result.started_at.tzinfo is not None
+    assert len(audit_operations.items) == len(audit_records.items) == 1
+    record = audit_records.items[0]
+    assert record.action == "verification.started"
+    assert record.changes["status"] == {
+        "old": VerificationStatus.CREATED.value,
+        "new": VerificationStatus.IN_PROGRESS.value,
+    }
+    assert record.changes["started_at"]["old"] is None
+    assert record.changes["started_at"]["new"] == result.started_at.isoformat()
+
+
+def test_start_verification_rejects_invalid_state():
+    repository = FakeVerificationRepository()
+    verification = make_verification()
+    repository.save(verification)
+    with pytest.raises(VerificationCannotBeStartedApplicationError):
+        make_service(repository).start(
+            StartVerificationCommand(verification_id=verification.id),
+            make_user(UserRole.METROLOGIST),
+        )
+
+
+def test_start_verification_requires_metrologist_or_admin():
+    repository = FakeVerificationRepository()
+    verification = Verification.create(
+        id=uuid4(), order_item_id=uuid4(), instrument_id=uuid4(),
+        verification_date=date.today(),
+        created_at=datetime(2026, 9, 5, 10, 0, tzinfo=UTC),
+        verification_type=VerificationType.PERIODIC,
+    )
+    repository.save(verification)
+    with pytest.raises(AuthorizationError):
+        make_service(repository).start(
+            StartVerificationCommand(verification_id=verification.id),
+            make_user(UserRole.OPERATOR),
+        )
+
+
+def test_start_verification_raises_when_not_found():
+    with pytest.raises(VerificationNotFoundApplicationError):
+        make_service(FakeVerificationRepository()).start(
+            StartVerificationCommand(verification_id=uuid4()),
+            make_user(UserRole.METROLOGIST),
         )
 
 

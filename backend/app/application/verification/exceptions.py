@@ -8,3 +8,7 @@ class VerificationOrderItemNotFoundApplicationError(Exception):
 
 class VerificationInstrumentRequiredApplicationError(Exception):
     """Verification requires a concrete instrument."""
+
+
+class VerificationCannotBeStartedApplicationError(Exception):
+    """Verification cannot be started from its current state."""

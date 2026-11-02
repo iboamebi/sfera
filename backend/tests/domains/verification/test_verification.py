@@ -41,6 +41,7 @@ def test_create_verification_starts_in_created_state():
     assert verification.status == VerificationStatus.CREATED
     assert verification.verification_type == VerificationType.PERIODIC
     assert verification.result is None
+    assert verification.started_at is None
     assert verification.decision_at is None
     assert verification.valid_until is None
     assert verification.unsuitable_reason is None
@@ -49,16 +50,17 @@ def test_create_verification_starts_in_created_state():
 def test_start_moves_verification_to_in_progress():
     verification = create_verification()
 
-    verification.start()
+    verification.start(started_at=DECISION_AT)
 
     assert verification.status == VerificationStatus.IN_PROGRESS
+    assert verification.started_at == DECISION_AT
     assert verification.result is None
     assert verification.decision_at is None
 
 
 def test_mark_suitable_completes_verification():
     verification = create_verification()
-    verification.start()
+    verification.start(started_at=DECISION_AT)
 
     verification.mark_suitable(date(2030, 1, 1), decision_at=DECISION_AT)
 
@@ -71,7 +73,7 @@ def test_mark_suitable_completes_verification():
 
 def test_mark_unsuitable_completes_verification():
     verification = create_verification()
-    verification.start()
+    verification.start(started_at=DECISION_AT)
 
     verification.mark_unsuitable("Broken seal", decision_at=DECISION_AT)
 
@@ -84,7 +86,7 @@ def test_mark_unsuitable_completes_verification():
 
 def test_unsuitable_requires_reason():
     verification = create_verification()
-    verification.start()
+    verification.start(started_at=DECISION_AT)
 
     with pytest.raises(InvalidUnsuitableReasonDomainError):
         verification.mark_unsuitable("", decision_at=DECISION_AT)
@@ -92,7 +94,7 @@ def test_unsuitable_requires_reason():
 
 def test_suitable_requires_valid_until():
     verification = create_verification()
-    verification.start()
+    verification.start(started_at=DECISION_AT)
 
     with pytest.raises(InvalidSuitableValidUntilDomainError):
         verification.mark_suitable(None, decision_at=DECISION_AT)
@@ -107,7 +109,7 @@ def test_decision_requires_in_progress_state():
 
 def test_decided_verification_cannot_be_decided_again():
     verification = create_verification()
-    verification.start()
+    verification.start(started_at=DECISION_AT)
     verification.mark_suitable(date(2030, 1, 1), decision_at=DECISION_AT)
 
     with pytest.raises(InvalidVerificationResultStateDomainError):
@@ -116,7 +118,7 @@ def test_decided_verification_cannot_be_decided_again():
 
 def test_start_requires_created_state():
     verification = create_verification()
-    verification.start()
+    verification.start(started_at=DECISION_AT)
 
     with pytest.raises(InvalidVerificationResultStateDomainError):
-        verification.start()
+        verification.start(started_at=DECISION_AT)

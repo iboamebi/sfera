@@ -51,6 +51,10 @@ class Verification(BaseModel):
         nullable=False,
     )
 
+    started_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+
     decision_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True),
         nullable=True,

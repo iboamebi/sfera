@@ -3,6 +3,7 @@ from fastapi.routing import APIRoute
 from app.api.dependencies.auth import get_current_user
 from app.api.routers.verification_actions import (
     approve_verification,
+    start_verification,
     reject_verification,
     router,
 )
@@ -16,6 +17,12 @@ def get_route_dependencies(endpoint: object) -> list[object]:
         if isinstance(route, APIRoute) and route.endpoint is endpoint
     )
     return [dependency.call for dependency in route.dependant.dependencies]
+
+
+def test_start_verification_requires_authentication_and_csrf() -> None:
+    dependencies = get_route_dependencies(start_verification)
+    assert get_current_user in dependencies
+    assert require_csrf in dependencies
 
 
 def test_approve_verification_requires_authentication_and_csrf() -> None:

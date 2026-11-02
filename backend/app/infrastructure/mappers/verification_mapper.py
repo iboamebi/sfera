@@ -32,6 +32,7 @@ class VerificationMapper(
             instrument_id=model.instrument_id,
             verification_date=model.verification_date,
             created_at=model.created_at,
+            started_at=model.started_at,
             verification_type=VerificationType(model.verification_type),
             status=VerificationStatus(model.status),
             result=(
@@ -54,6 +55,7 @@ class VerificationMapper(
         model.instrument_id = entity.instrument_id
         model.verification_date = entity.verification_date
         model.created_at = entity.created_at
+        model.started_at = entity.started_at
         model.verification_type = entity.verification_type.value
         model.status = entity.status.value
         model.result = (

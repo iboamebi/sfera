@@ -1,10 +1,13 @@
-from datetime import date
+from datetime import date, datetime
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict
 
 from app.domains.verification.value_objects.verification_result import (
     VerificationResult,
+)
+from app.domains.verification.value_objects.verification_status import (
+    VerificationStatus,
 )
 from app.domains.verification.value_objects.verification_type import (
     VerificationType,
@@ -40,4 +43,9 @@ class VerificationRead(VerificationBase):
 
     id: UUID
     instrument_id: UUID | None = None
+    created_at: datetime
+    started_at: datetime | None = None
+    decision_at: datetime | None = None
+    status: VerificationStatus
+    verification_type: VerificationType
     archived: bool

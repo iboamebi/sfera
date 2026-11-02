@@ -97,6 +97,11 @@ def test_create_verification_returns_created_verification():
         "methodology": "MI 123",
         "id": str(verification.id),
         "instrument_id": str(verification.instrument_id),
+        "created_at": "2026-09-05T00:00:00Z",
+        "started_at": None,
+        "decision_at": None,
+        "status": "CREATED",
+        "verification_type": "PERIODIC",
         "archived": False,
     }
 

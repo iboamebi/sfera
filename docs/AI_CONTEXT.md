@@ -290,7 +290,15 @@ List/detail integration is implemented. The material list is linked to detail.
 
 ### Verification
 
-Detail read slice is complete:
+Backend lifecycle implementation separates registration and execution:
+
+- create persists a verification in `CREATED`;
+- explicit `StartVerification` moves it to `IN_PROGRESS`;
+- `started_at` records the actual start time and remains null before start;
+- create and start are separately audited in the same Unit of Work as their mutations;
+- API read contract exposes `status`, `created_at`, `started_at`, and `decision_at`.
+
+Frontend detail read slice is complete:
 
 ```text
 API DTO
@@ -530,7 +538,7 @@ docs/metrology/VERIFICATION_METHODS.md
 
 The current frontend phase has completed a broad sequence of read/list/detail slices.
 
-The backend DDD/Clean Architecture migration is complete. The Verification lifecycle slice is aligned with the current domain lifecycle:
+The backend DDD/Clean Architecture migration is complete. Verification registration and execution are distinct application use cases. The Verification lifecycle is:
 
 ```text
 CREATED → IN_PROGRESS → DECIDED

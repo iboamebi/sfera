@@ -24,6 +24,7 @@ class Verification(AggregateRoot):
     order_item_id: UUID
     verification_date: date
     created_at: datetime
+    started_at: datetime | None = None
     verification_type: VerificationType
     status: VerificationStatus = VerificationStatus.CREATED
     result: VerificationResult | None = None
@@ -60,12 +61,12 @@ class Verification(AggregateRoot):
             methodology=methodology,
         )
 
-    def start(self) -> None:
-        """Move the verification into active execution."""
-        if self.status != VerificationStatus.CREATED:
+    def start(self, *, started_at: datetime) -> None:
+        """Move the verification into active execution and record its start time."""
+        if self.status != VerificationStatus.CREATED or self.started_at is not None:
             raise InvalidVerificationResultStateDomainError
-
         self.status = VerificationStatus.IN_PROGRESS
+        self.started_at = started_at
 
     def mark_suitable(
         self,

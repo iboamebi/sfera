@@ -19,6 +19,7 @@ def test_verification_mapper_to_domain_preserves_instrument_id() -> None:
     """Map ORM verification to domain with instrument association."""
     created_at = datetime(2026, 9, 5, 10, 0, tzinfo=UTC)
     instrument_id = uuid4()
+    started_at = datetime(2026, 9, 5, 11, 0, tzinfo=UTC)
     decision_at = datetime(2026, 9, 5, 12, 0, tzinfo=UTC)
 
     model = VerificationModel(
@@ -27,6 +28,7 @@ def test_verification_mapper_to_domain_preserves_instrument_id() -> None:
         instrument_id=instrument_id,
         verification_date=date(2026, 9, 5),
         created_at=created_at,
+        started_at=started_at,
         verification_type=VerificationType.PRIMARY,
         status=VerificationStatus.DECIDED,
         decision_at=decision_at,
@@ -38,6 +40,7 @@ def test_verification_mapper_to_domain_preserves_instrument_id() -> None:
 
     assert entity.instrument_id == instrument_id
     assert entity.created_at == created_at
+    assert entity.started_at == started_at
     assert entity.verification_type == VerificationType.PRIMARY
     assert entity.status == VerificationStatus.DECIDED
     assert entity.result == VerificationResult.SUITABLE
@@ -57,6 +60,7 @@ def test_verification_mapper_to_model_preserves_instrument_id() -> None:
         instrument_id=instrument_id,
         verification_date=date(2026, 9, 5),
         created_at=created_at,
+        started_at=started_at,
         verification_type=VerificationType.PERIODIC,
         status=VerificationStatus.DECIDED,
         result=VerificationResult.SUITABLE,
@@ -78,6 +82,7 @@ def test_verification_mapper_to_model_preserves_instrument_id() -> None:
 
     assert model.instrument_id == instrument_id
     assert model.created_at == created_at
+    assert model.started_at == started_at
     assert model.verification_type == VerificationType.PERIODIC
     assert model.status == VerificationStatus.DECIDED
     assert model.result == VerificationResult.SUITABLE
