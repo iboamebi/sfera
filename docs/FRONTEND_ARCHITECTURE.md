@@ -121,6 +121,7 @@ App
 /instrument-types
 /instrument-types/:instrumentTypeId
 /warehouse-stocks/warehouse/:warehouseId
+/users
 ```
 
 `/login` является публичным. `/change-password` доступен только аутентифицированному пользователю. Остальные пользовательские маршруты защищены `RequireAuth`.
@@ -526,3 +527,23 @@ Production frontend использует Vite build и nginx. Постоянно
 * возвращаться к legacy CRUD architecture.
 
 Следующий шаг определяется фактическим пользовательским flow и существующим backend contract.
+
+
+## User Administration
+
+User administration UI and API integration are implemented on the active feature branch:
+
+- `GET /users/?include_archived=` loads users through a DTO mapper and React Query;
+- `POST /users/` creates a user and displays the temporary password from the creation response only;
+- role changes use `PATCH /users/{user_id}/role`;
+- activation/deactivation uses `PATCH /users/{user_id}/status`;
+- archive and restore use their dedicated POST endpoints;
+- the list can optionally include archived accounts.
+
+Route:
+
+```text
+/users
+```
+
+Backend Application authorization remains the security boundary. The page route guard only requires authentication and does not replace backend administrator authorization. Local typecheck/build validation is required after this implementation.
