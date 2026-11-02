@@ -66,6 +66,18 @@ class UserRepositorySQLAlchemy(UserRepository):
 
         return self._mapper.to_domain(model)
 
+    def get_all(
+        self,
+        include_archived: bool = False,
+    ) -> list[User]:
+        query = self._session.query(UserModel)
+
+        if not include_archived:
+            query = query.filter(UserModel.archived.is_(False))
+
+        models = query.order_by(UserModel.username).all()
+        return [self._mapper.to_domain(model) for model in models]
+
     def save(
         self,
         user: User,
