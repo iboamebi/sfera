@@ -11,14 +11,15 @@ Implemented:
 - password hashing through the application port and Argon2 infrastructure adapter;
 - authenticated session domain contract and persistence;
 - session token generation;
-- authentication application services;
-- login, current-user, and logout API endpoints;
+- authentication and password-change application services;
+- login, current-user, password-change, and logout API endpoints;
+- mandatory first-login password change state and server-side business-route gate;
 - server-managed HttpOnly session cookie;
 - CSRF protection for state-changing cookie-authenticated requests;
 - reusable API dependency for resolving the current authenticated user;
 - authentication + CSRF protection on current business mutation endpoints.
 
-Authorization (roles/permissions) is intentionally not implemented yet. It remains a separate stage.
+Authorization remains a separate concern and is implemented for concrete business use cases. See `AUTHORIZATION.md` for the role and use-case contract.
 
 ---
 
@@ -67,6 +68,9 @@ User
  ├── id
  ├── username
  ├── password_hash
+ ├── role
+ ├── is_active
+ ├── must_change_password
  ├── archived
  └── created_at
 ```
@@ -99,6 +103,7 @@ The authentication use cases are:
 AuthenticateUser
 CreateSession
 GetCurrentUser
+ChangePassword
 RevokeSession
 LogoutUser
 ```
@@ -116,6 +121,7 @@ The public authentication API is:
 ```text
 POST /auth/login
 GET  /auth/me
+POST /auth/change-password
 POST /auth/logout
 ```
 
@@ -123,7 +129,7 @@ POST /auth/logout
 
 Accepts credentials and establishes an authenticated session.
 
-Successful response returns the current authenticated user representation without exposing the password hash.
+Successful response returns the client-safe authenticated user representation, including `role` and `must_change_password`, without exposing the password hash. A user with `must_change_password = true` receives an authenticated session but cannot access business routes until the password is changed.
 
 Invalid credentials return `401 Unauthorized`.
 
@@ -131,7 +137,11 @@ Invalid credentials return `401 Unauthorized`.
 
 Returns the currently authenticated user.
 
-Unauthenticated requests return `401 Unauthorized`.
+Unauthenticated requests return `401 Unauthorized`. The response includes the current `role` and `must_change_password` state.
+
+### `POST /auth/change-password`
+
+Requires the authenticated session and CSRF validation. Accepts `current_password` and `new_password`. The Application service verifies the current password, hashes the replacement through the Argon2 password-hasher port, persists the new hash, and clears `must_change_password`. Invalid current passwords return `400 Bad Request`.
 
 ### `POST /auth/logout`
 
@@ -152,13 +162,24 @@ It must never expose:
 - session identifiers;
 - internal authentication metadata.
 
-A reusable API dependency resolves the current authenticated user for protected business routes.
+A reusable API dependency resolves the current authenticated user for protected business routes. The client-safe representation includes the user's role and first-login password-change state.
 
 ---
 
-## 8. Protected business mutations
+## 8. Protected business routes
 
-The current API security boundary protects state-changing business operations with both authentication and CSRF validation.
+Every business router is protected by the API authentication dependency and the first-login password gate. This includes read and write endpoints.
+
+A user with `must_change_password = true` can access only the authentication endpoints needed to complete the flow:
+
+- `POST /auth/login`;
+- `GET /auth/me`;
+- `POST /auth/change-password`;
+- `POST /auth/logout`.
+
+The health endpoint remains public.
+
+State-changing business operations retain their existing CSRF protection.
 
 Protected mutation features currently include:
 
@@ -177,9 +198,7 @@ InstrumentType
 Verification actions
 ```
 
-Read-only endpoints remain unchanged unless a separate business authorization requirement is introduced.
-
-The protection is applied at the API boundary; business rules remain in Application/Domain layers.
+The authentication and first-login gate is applied at the API boundary. Business authorization rules remain in Application use cases and are documented separately in `AUTHORIZATION.md`.
 
 ---
 
@@ -197,7 +216,7 @@ Authorization answers:
 What may the user do?
 ```
 
-Roles and permissions are intentionally not defined by the authentication foundation yet.
+Roles and permissions are not defined by this authentication contract. Their current business ownership and enforcement are documented in `AUTHORIZATION.md`.
 
 The next security stage is authorization at the Application/API boundary, without embedding permission checks throughout UI components or domain entities.
 
@@ -235,7 +254,7 @@ Authentication changes require at minimum:
 
 - Domain/Application tests for authentication behavior;
 - Infrastructure tests for password/session persistence where applicable;
-- API tests for login, current-user, logout, CSRF, and unauthorized access;
+- API tests for login, current-user, password change, logout, CSRF, first-login gating, and unauthorized access;
 - frontend typecheck/build for frontend changes;
 - Ruff validation for Python changes.
 
@@ -267,6 +286,8 @@ Password hashing/session infrastructure
 Application authentication use cases
     ↓
 API authentication endpoints
+    ↓
+First-login password-change gate
     ↓
 Authentication tests
     ↓
