@@ -175,7 +175,7 @@ Frontend отвечает только за отображение и orchestrat
 
 ### Verification
 
-Реализован detail read slice:
+Реализованы detail read slice и lifecycle actions:
 
 ```text
 API DTO
@@ -189,9 +189,21 @@ getVerification()
 useVerification()
   ↓
 VerificationPage
+  ├── CREATED → StartVerificationButton
+  └── IN_PROGRESS
+        ├── ApproveVerificationButton
+        └── RejectVerificationButton
   ↓
 /verifications/:verificationId
 ```
+
+Lifecycle actions use dedicated API functions and TanStack Query mutations:
+
+- start: `POST /verifications/{verification_id}/start`;
+- approve: `POST /verifications/{verification_id}/approve?valid_until=...`;
+- reject: `POST /verifications/{verification_id}/reject?reason=...`.
+
+After a successful mutation, the verification detail query is invalidated. Mutation pending and error states are displayed by the action UI. The page hides actions for archived records and only shows actions valid for the current lifecycle state.
 
 ### Diagnostic
 
@@ -437,7 +449,8 @@ Material
   └── detail               ✓
 
 Verification
-  └── detail               ✓
+  ├── detail               ✓
+  └── lifecycle actions    ✓
 
 Diagnostic
   └── detail               ✓
