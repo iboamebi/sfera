@@ -1,9 +1,15 @@
-from datetime import date
+from datetime import UTC, date, datetime
 from uuid import uuid4
 
 from app.domains.verification.entities.verification import Verification
 from app.domains.verification.value_objects.verification_result import (
     VerificationResult,
+)
+from app.domains.verification.value_objects.verification_status import (
+    VerificationStatus,
+)
+from app.domains.verification.value_objects.verification_type import (
+    VerificationType,
 )
 from app.infrastructure.verification.verification_repository import (
     VerificationRepositorySQLAlchemy,
@@ -52,6 +58,8 @@ def make_verification(
         order_item_id=uuid4(),
         instrument_id=instrument_id,
         verification_date=date(2026, 9, 5),
+        created_at=datetime(2026, 9, 5, tzinfo=UTC),
+        verification_type=VerificationType.PERIODIC,
         result=VerificationResult.SUITABLE,
         valid_until=date(2027, 9, 5),
         unsuitable_reason=None,
@@ -66,6 +74,9 @@ def test_get_maps_instrument_id() -> None:
         order_item_id=uuid4(),
         instrument_id=instrument_id,
         verification_date=date(2026, 9, 5),
+        created_at=datetime(2026, 9, 5, tzinfo=UTC),
+        status=VerificationStatus.CREATED,
+        verification_type=VerificationType.PERIODIC,
         result="SUITABLE",
         valid_until=date(2027, 9, 5),
         unsuitable_reason=None,
@@ -128,6 +139,9 @@ def test_save_updates_existing_model_instrument_id() -> None:
         order_item_id=uuid4(),
         instrument_id=None,
         verification_date=date(2026, 1, 1),
+        created_at=datetime(2026, 1, 1, tzinfo=UTC),
+        status=VerificationStatus.IN_PROGRESS,
+        verification_type=VerificationType.PERIODIC,
         result="UNSUITABLE",
         valid_until=None,
         unsuitable_reason="old reason",
