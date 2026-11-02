@@ -6,8 +6,10 @@ import pytest
 
 from app.application.auth.ports.password_hasher import PasswordHasher
 from app.application.authorization.authorization import AuthorizationError
+from app.application.user.commands.archive_user import ArchiveUserCommand
 from app.application.user.commands.change_user_role import ChangeUserRoleCommand
 from app.application.user.commands.create_user import CreateUserCommand
+from app.application.user.commands.restore_user import RestoreUserCommand
 from app.application.user.commands.set_user_active import SetUserActiveCommand
 from app.application.user.exceptions import (
     UserAlreadyExistsApplicationError,
@@ -227,6 +229,94 @@ def test_set_active_rejects_archived_user() -> None:
         )
 
     assert target.is_active is True
+    assert uow.committed is False
+    assert uow.rolled_back is True
+
+
+def test_archive_user_marks_account_archived_and_commits() -> None:
+    target = make_user("operator")
+    service, repository, uow = make_service([target])
+
+    updated = service.archive(
+        ArchiveUserCommand(user_id=target.id),
+        make_user("admin", UserRole.ADMIN),
+    )
+
+    assert updated.archived is True
+    assert repository.users == [updated]
+    assert uow.committed is True
+
+
+def test_archive_user_requires_admin_role() -> None:
+    target = make_user("operator")
+    service, _, uow = make_service([target])
+
+    with pytest.raises(AuthorizationError, match="not authorized"):
+        service.archive(
+            ArchiveUserCommand(user_id=target.id),
+            make_user("operator", UserRole.OPERATOR),
+        )
+
+    assert target.archived is False
+    assert uow.committed is False
+
+
+def test_archive_user_rejects_already_archived_account() -> None:
+    target = make_user("archived")
+    target.archive()
+    service, _, uow = make_service([target])
+
+    with pytest.raises(UserNotFoundApplicationError):
+        service.archive(
+            ArchiveUserCommand(user_id=target.id),
+            make_user("admin", UserRole.ADMIN),
+        )
+
+    assert uow.committed is False
+    assert uow.rolled_back is True
+
+
+def test_restore_user_unarchives_account_and_commits() -> None:
+    target = make_user("archived")
+    target.archive()
+    service, repository, uow = make_service([target])
+
+    updated = service.restore(
+        RestoreUserCommand(user_id=target.id),
+        make_user("admin", UserRole.ADMIN),
+    )
+
+    assert updated.archived is False
+    assert repository.users == [updated]
+    assert uow.committed is True
+
+
+def test_restore_user_requires_admin_role() -> None:
+    target = make_user("archived")
+    target.archive()
+    service, _, uow = make_service([target])
+
+    with pytest.raises(AuthorizationError, match="not authorized"):
+        service.restore(
+            RestoreUserCommand(user_id=target.id),
+            make_user("operator", UserRole.OPERATOR),
+        )
+
+    assert target.archived is True
+    assert uow.committed is False
+
+
+def test_restore_user_rejects_non_archived_account() -> None:
+    target = make_user("operator")
+    service, _, uow = make_service([target])
+
+    with pytest.raises(UserNotFoundApplicationError):
+        service.restore(
+            RestoreUserCommand(user_id=target.id),
+            make_user("admin", UserRole.ADMIN),
+        )
+
+    assert target.archived is False
     assert uow.committed is False
     assert uow.rolled_back is True
 
