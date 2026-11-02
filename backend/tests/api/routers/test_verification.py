@@ -50,8 +50,7 @@ def make_payload(order_item_id: str) -> dict[str, str]:
     return {
         "order_item_id": order_item_id,
         "verification_date": "2026-09-05",
-        "result": "SUITABLE",
-        "valid_until": "2027-09-05",
+        "verification_type": "PERIODIC",
         "methodology": "MI 123",
     }
 
