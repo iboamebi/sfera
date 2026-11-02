@@ -4,7 +4,7 @@ SQLAlchemy implementation of OrderReadRepository.
 
 from uuid import UUID
 
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import Session, joinedload, selectinload
 
 from app.domains.order.read_models.order_read_models import (
     OrderItemReadData,
@@ -58,6 +58,7 @@ class OrderReadRepositorySQLAlchemy(OrderReadRepository):
                         OrderItemOperation(operation)
                         for operation in item.requested_operations
                     },
+                    verification_ids=[verification.id for verification in item.verifications],
                 )
                 for item in order.order_items
             ],
@@ -70,6 +71,7 @@ class OrderReadRepositorySQLAlchemy(OrderReadRepository):
             .joinedload(OrderItem.instrument)
             .joinedload(Instrument.instrument_type),
             joinedload(Order.order_items).joinedload(OrderItem.instrument_type),
+            selectinload(Order.order_items).selectinload(OrderItem.verifications),
         )
 
     def get(self, order_id: UUID) -> OrderReadData | None:
