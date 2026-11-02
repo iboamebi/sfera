@@ -4,7 +4,7 @@ from datetime import UTC, datetime
 
 from fastapi import APIRouter, Cookie, Depends, HTTPException, Request, Response, status
 
-from app.api.dependencies.auth import get_current_user
+from app.api.dependencies.auth import get_current_user as get_authenticated_user
 from app.api.security.csrf import generate_csrf_token, require_csrf
 from app.application.auth.commands.authenticate_user import AuthenticateUserCommand
 from app.application.auth.commands.change_password import ChangePasswordCommand
@@ -114,7 +114,7 @@ def login(
 )
 def change_password(
     data: ChangePasswordRequest,
-    user: User = Depends(get_current_user),
+    user: User = Depends(get_authenticated_user),
     service: ChangePasswordApplicationService = Depends(get_change_password_service),
 ) -> None:
     """Change the current user's password and clear first-login state."""
