@@ -63,6 +63,9 @@ from app.application.warehouse.services.warehouse_application_service import (
 from app.application.workflow.services.workflow_application_service import (
     WorkflowApplicationService,
 )
+from app.application.user.services.user_administration_application_service import (
+    UserAdministrationApplicationService,
+)
 from app.core.dependencies.events import get_event_dispatcher
 from app.core.dependencies.repositories import (
     get_audit_operation_repository,
@@ -182,6 +185,15 @@ def get_current_user_service(
 ) -> CurrentUserApplicationService:
     """Provide current user application service."""
     return CurrentUserApplicationService(session_repository, user_repository)
+
+
+def get_user_administration_service(
+    repository: UserRepository = Depends(get_user_repository),
+    password_hasher: Argon2PasswordHasher = Depends(get_password_hasher),
+    uow: UnitOfWork = Depends(get_unit_of_work),
+) -> UserAdministrationApplicationService:
+    """Provide User administration application service."""
+    return UserAdministrationApplicationService(repository, password_hasher, uow)
 
 
 def get_order_service(
