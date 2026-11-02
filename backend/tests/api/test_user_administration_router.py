@@ -4,9 +4,11 @@ import pytest
 from fastapi import HTTPException
 
 from app.api.routers.users import (
+    archive_user,
     change_user_role,
     create_user,
     get_users,
+    restore_user,
     set_user_active,
 )
 from app.application.user.exceptions import (
@@ -28,6 +30,8 @@ class FakeUserAdministrationService:
         self.actor: User | None = None
         self.role_change_error: Exception | None = None
         self.status_change_error: Exception | None = None
+        self.archive_error: Exception | None = None
+        self.restore_error: Exception | None = None
 
     def get_all(
         self,
@@ -55,6 +59,22 @@ class FakeUserAdministrationService:
             target.activate()
         else:
             target.deactivate()
+        return target
+
+    def archive(self, command: object, actor: User) -> User:
+        self.actor = actor
+        if self.archive_error is not None:
+            raise self.archive_error
+        target = next(user for user in self.users if user.id == command.user_id)
+        target.archive()
+        return target
+
+    def restore(self, command: object, actor: User) -> User:
+        self.actor = actor
+        if self.restore_error is not None:
+            raise self.restore_error
+        target = next(user for user in self.users if user.id == command.user_id)
+        target.restore()
         return target
 
     def create(self, command: object, actor: User) -> tuple[User, str]:
@@ -169,6 +189,73 @@ def test_set_user_active_maps_missing_user_to_404() -> None:
             actor=make_user(),
             service=service,
         )
+
+    assert exc_info.value.status_code == 404
+    assert exc_info.value.detail == "User not found"
+
+
+def test_archive_user_returns_archived_account() -> None:
+    actor = make_user()
+    target = User(
+        id=uuid4(),
+        username="operator-1",
+        password_hash="$argon2id$hashed",
+        role=UserRole.OPERATOR,
+    )
+    service = FakeUserAdministrationService()
+    service.users = [target]
+
+    result = archive_user(
+        user_id=target.id,
+        actor=actor,
+        service=service,
+    )
+
+    assert result.id == target.id
+    assert result.archived is True
+    assert service.actor is actor
+
+
+def test_archive_user_maps_missing_user_to_404() -> None:
+    service = FakeUserAdministrationService()
+    service.archive_error = UserNotFoundApplicationError()
+
+    with pytest.raises(HTTPException) as exc_info:
+        archive_user(user_id=uuid4(), actor=make_user(), service=service)
+
+    assert exc_info.value.status_code == 404
+    assert exc_info.value.detail == "User not found"
+
+
+def test_restore_user_returns_restored_account() -> None:
+    actor = make_user()
+    target = User(
+        id=uuid4(),
+        username="operator-1",
+        password_hash="$argon2id$hashed",
+        role=UserRole.OPERATOR,
+        archived=True,
+    )
+    service = FakeUserAdministrationService()
+    service.users = [target]
+
+    result = restore_user(
+        user_id=target.id,
+        actor=actor,
+        service=service,
+    )
+
+    assert result.id == target.id
+    assert result.archived is False
+    assert service.actor is actor
+
+
+def test_restore_user_maps_missing_user_to_404() -> None:
+    service = FakeUserAdministrationService()
+    service.restore_error = UserNotFoundApplicationError()
+
+    with pytest.raises(HTTPException) as exc_info:
+        restore_user(user_id=uuid4(), actor=make_user(), service=service)
 
     assert exc_info.value.status_code == 404
     assert exc_info.value.detail == "User not found"
