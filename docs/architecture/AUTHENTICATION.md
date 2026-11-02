@@ -289,6 +289,6 @@ CSRF protection
 Protected business mutation boundary
 ```
 
-Business authorization is maintained as a separate contract in `AUTHORIZATION.md`. Frontend authentication and first-login route integration remain a separate implementation stage.
+Business authorization is maintained as a separate contract in `AUTHORIZATION.md`. Frontend authentication and first-login route integration are implemented; local typecheck/build validation remains pending.
 
 No step may bypass the architectural boundaries defined by the project Constitution.
