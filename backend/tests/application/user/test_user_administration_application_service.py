@@ -6,8 +6,12 @@ import pytest
 
 from app.application.auth.ports.password_hasher import PasswordHasher
 from app.application.authorization.authorization import AuthorizationError
+from app.application.user.commands.change_user_role import ChangeUserRoleCommand
 from app.application.user.commands.create_user import CreateUserCommand
-from app.application.user.exceptions import UserAlreadyExistsApplicationError
+from app.application.user.exceptions import (
+    UserAlreadyExistsApplicationError,
+    UserNotFoundApplicationError,
+)
 from app.application.user.services.user_administration_application_service import (
     UserAdministrationApplicationService,
 )
@@ -38,6 +42,10 @@ class FakeUserRepository(UserRepository):
         return [user for user in self.users if include_archived or not user.archived]
 
     def save(self, user: User) -> User:
+        for index, existing in enumerate(self.users):
+            if existing.id == user.id:
+                self.users[index] = user
+                return user
         self.users.append(user)
         return user
 
@@ -119,6 +127,47 @@ def test_admin_can_include_archived_users() -> None:
     )
 
     assert users == [archived]
+
+
+def test_change_role_updates_existing_user_and_commits() -> None:
+    target = make_user("operator")
+    service, repository, uow = make_service([target])
+
+    updated = service.change_role(
+        ChangeUserRoleCommand(user_id=target.id, role=UserRole.ADMIN),
+        make_user("admin", UserRole.ADMIN),
+    )
+
+    assert updated.role is UserRole.ADMIN
+    assert repository.users == [updated]
+    assert uow.committed is True
+
+
+def test_change_role_requires_admin_role() -> None:
+    target = make_user("operator")
+    service, repository, uow = make_service([target])
+
+    with pytest.raises(AuthorizationError, match="not authorized"):
+        service.change_role(
+            ChangeUserRoleCommand(user_id=target.id, role=UserRole.ADMIN),
+            make_user("operator", UserRole.OPERATOR),
+        )
+
+    assert target.role is UserRole.OPERATOR
+    assert uow.committed is False
+
+
+def test_change_role_raises_when_user_does_not_exist() -> None:
+    service, repository, uow = make_service([])
+
+    with pytest.raises(UserNotFoundApplicationError):
+        service.change_role(
+            ChangeUserRoleCommand(user_id=uuid4(), role=UserRole.ADMIN),
+            make_user("admin", UserRole.ADMIN),
+        )
+
+    assert repository.users == []
+    assert uow.committed is True
 
 
 def test_create_user_generates_temporary_password_and_requires_change() -> None:
