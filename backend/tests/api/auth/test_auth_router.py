@@ -29,8 +29,6 @@ class FakeAuthenticationService:
         return self.user
 
 
-
-
 class FakeChangePasswordService:
     def __init__(self, error: Exception | None = None) -> None:
         self.error = error
@@ -80,6 +78,7 @@ def test_login_sets_http_only_session_cookie() -> None:
         id=uuid4(),
         username="alice",
         password_hash="$argon2id$secret",
+        must_change_password=True,
     )
     authentication = FakeAuthenticationService(user=user)
     sessions = FakeSessionService()
@@ -97,7 +96,7 @@ def test_login_sets_http_only_session_cookie() -> None:
     assert result.id == user.id
     assert result.username == user.username
     assert result.role == user.role
-    assert result.must_change_password is False
+    assert result.must_change_password is True
     assert "password_hash" not in result.model_dump()
     assert "session_id" not in result.model_dump()
     assert uow.committed is True
@@ -126,7 +125,6 @@ def test_login_returns_generic_401_for_authentication_failure() -> None:
 
     assert exc_info.value.status_code == 401
     assert exc_info.value.detail == "Invalid username or password"
-
 
 
 def test_change_password_forwards_authenticated_user_and_passwords() -> None:
