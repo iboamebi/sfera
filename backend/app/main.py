@@ -1,7 +1,8 @@
-from fastapi import FastAPI, Request
+from fastapi import Depends, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+from app.api.dependencies.auth import require_password_change_completed
 from app.api.routers import instrument_type, organization, site
 from app.api.routers.auth import router as auth_router
 from app.api.routers.customer import router as customer_router
@@ -28,7 +29,10 @@ from app.application.verification.exceptions import (
 )
 from app.db import model_registry  # noqa: F401
 
-app = FastAPI(title="Sphere")
+app = FastAPI(
+    title="Sphere",
+    dependencies=[Depends(require_password_change_completed)],
+)
 
 
 @app.exception_handler(AuthorizationError)
