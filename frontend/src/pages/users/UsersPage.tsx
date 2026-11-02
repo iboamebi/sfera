@@ -95,7 +95,7 @@ export function UsersPage() {
             label="Имя пользователя"
             value={username}
             onChange={(event) => setUsername(event.target.value)}
-            inputProps={{ maxLength: 100 }}
+            slotProps={{ htmlInput: { maxLength: 100 } }}
             required
             fullWidth
           />
@@ -138,7 +138,7 @@ export function UsersPage() {
             </Stack>
           }
         >
-          <Typography fontWeight="bold">
+          <Typography sx={{ fontWeight: "bold" }}>
             Пользователь {createdUser.username} создан.
           </Typography>
           <Typography>
@@ -219,7 +219,12 @@ export function UsersPage() {
                   </TableCell>
                   <TableCell>{userStatus(user)}</TableCell>
                   <TableCell>
-                    <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
+                    <Stack
+                      direction="row"
+                      spacing={1}
+                      useFlexGap
+                      sx={{ flexWrap: "wrap" }}
+                    >
                       {!user.archived && (
                         <>
                           <Button
