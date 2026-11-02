@@ -32,6 +32,15 @@ class UserRepository(ABC):
         raise NotImplementedError
 
     @abstractmethod
+    def get_all(
+        self,
+        include_archived: bool = False,
+    ) -> list[User]:
+        """Get users, including inactive accounts and optionally archived users."""
+
+        raise NotImplementedError
+
+    @abstractmethod
     def save(
         self,
         user: User,
