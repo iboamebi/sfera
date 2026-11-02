@@ -1,4 +1,4 @@
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 from uuid import UUID, uuid4
 
 import pytest
@@ -178,7 +178,7 @@ def make_verification() -> Verification:
         order_item_id=uuid4(),
         instrument_id=uuid4(),
         verification_date=date.today(),
-        created_at=datetime(2026, 9, 5, 10, 0, tzinfo=timezone.utc),
+        created_at=datetime(2026, 9, 5, 10, 0, tzinfo=UTC),
         verification_type=VerificationType.PERIODIC,
     )
     verification.start()
@@ -188,9 +188,17 @@ def make_verification() -> Verification:
 def test_create_verification_copies_instrument_from_order_item():
     repository = FakeVerificationRepository()
     order_repository = FakeOrderRepository()
+    audit_operation_repository = FakeAuditOperationRepository()
+    audit_repository = FakeAuditRepository()
     order, item = make_order_with_item(instrument_id=uuid4())
     order_repository.save(order)
-    service = make_service(repository, order_repository)
+    service = VerificationApplicationService(
+        repository,
+        order_repository,
+        FakeUnitOfWork(),
+        audit_operation_repository,
+        audit_repository,
+    )
 
     verification = service.create(
         CreateVerificationCommand(
@@ -207,6 +215,25 @@ def test_create_verification_copies_instrument_from_order_item():
     assert verification.result is None
     assert verification.decision_at is None
     assert repository.get(verification.id) is verification
+    assert len(audit_operation_repository.items) == 1
+    assert len(audit_repository.items) == 1
+
+    operation = audit_operation_repository.items[0]
+    record = audit_repository.items[0]
+    assert record.operation_id == operation.operation_id
+    assert operation.initiated_by == record.actor_id
+    assert record.actor_id is not None
+    assert record.action == "verification.created"
+    assert record.entity_type == "Verification"
+    assert record.entity_id == verification.id
+    assert record.changes["status"] == {
+        "old": None,
+        "new": VerificationStatus.IN_PROGRESS.value,
+    }
+    assert record.changes["verification_type"] == {
+        "old": None,
+        "new": VerificationType.PERIODIC.value,
+    }
 
 
 def test_create_verification_requires_existing_order_item():
