@@ -120,7 +120,10 @@ class PriceListApplicationService:
                 command.currency,
             )
 
-        if "valid_from" in command.updated_fields or "valid_to" in command.updated_fields:
+        if (
+            "valid_from" in command.updated_fields
+            or "valid_to" in command.updated_fields
+        ):
             price_list.change_valid_period(
                 command.valid_from
                 if "valid_from" in command.updated_fields
