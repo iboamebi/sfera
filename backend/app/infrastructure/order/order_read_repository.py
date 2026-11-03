@@ -4,7 +4,7 @@ SQLAlchemy implementation of OrderReadRepository.
 
 from uuid import UUID
 
-from sqlalchemy.orm import Session, joinedload, selectinload
+from sqlalchemy.orm import Session, joinedload
 
 from app.domains.order.read_models.order_read_models import (
     OrderItemReadData,
@@ -45,20 +45,25 @@ class OrderReadRepositorySQLAlchemy(OrderReadRepository):
                     instrument_name=item.instrument.name if item.instrument else None,
                     instrument_type_name=(
                         item.instrument.instrument_type.name
-                        if item.instrument
-                        and item.instrument.instrument_type
+                        if item.instrument and item.instrument.instrument_type
                         else item.instrument_type.name
                         if item.instrument_type
                         else None
                     ),
-                    serial_number=item.instrument.serial_number if item.instrument else None,
-                    modification=item.instrument.modification if item.instrument else None,
+                    serial_number=item.instrument.serial_number
+                    if item.instrument
+                    else None,
+                    modification=item.instrument.modification
+                    if item.instrument
+                    else None,
                     comment=item.customer_comment,
                     requested_operations={
                         OrderItemOperation(operation)
                         for operation in item.requested_operations
                     },
-                    verification_ids=[verification.id for verification in item.verifications],
+                    verification_ids=[
+                        verification.id for verification in item.verifications
+                    ],
                 )
                 for item in order.order_items
             ],
