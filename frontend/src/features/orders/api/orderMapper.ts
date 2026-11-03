@@ -25,6 +25,7 @@ export function mapOrder(dto: OrderApiDto): OrderRead {
       modification: item.modification,
       comment: item.comment,
       requestedOperations: item.requested_operations,
+      verificationIds: item.verification_ids,
     })),
   };
 }
