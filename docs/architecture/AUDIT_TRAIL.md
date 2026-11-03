@@ -594,6 +594,41 @@ System/background actors must also be identifiable. Anonymous audit operations a
 
 ---
 
+### Initial Application Mutation Inventory
+
+A first code inspection found that persistent Audit Trail writes currently exist in
+`VerificationApplicationService` for these operations:
+
+- `create` → `verification.created`;
+- `start` → `verification.started`;
+- `approve` → `verification.approved`;
+- `reject` → `verification.rejected`.
+
+The following Application services expose mutation use cases but do not currently
+reference the Audit application contracts in the inspected service files:
+
+| Area | Observed mutation use cases |
+|---|---|
+| Order | create, add/update/delete item, assign item instrument, update, register |
+| Workflow | start, move to next stage, complete |
+| Repair | create, start, complete, cancel |
+| Diagnostic | create, complete, set recommendation |
+| Warehouse | create, add stock, reserve, release, create movement |
+| Customer | create, update, delete |
+| User administration | change role, set active, archive, restore, create |
+| Device | create, update, connect, disconnect |
+| Material | create, update, archive, restore |
+| Price list | create, update, activate, add/remove/update item |
+| Organization | create, update |
+| Instrument type | create, update, archive, restore |
+| Site | create |
+
+This is an initial technical inventory, not a decision that every listed operation
+must produce an audit record. Business significance, required change fields,
+reason requirements, and actor/operation context must be classified before
+implementing audit writes. Read-only operations and authentication/session
+lifecycle require a separate security-oriented review.
+
 ## 20. Open Design Questions
 
 The following remain deliberately open until the relevant current code is audited:
