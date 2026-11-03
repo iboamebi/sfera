@@ -124,6 +124,27 @@ export function OrderItems({ items, orderId, editable = false }: OrderItemsProps
               </Typography>
             </Stack>
 
+            {item.verificationIds.length > 0 && (
+              <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap" }}>
+                <Typography color="text.secondary" variant="body2">
+                  Поверки:
+                </Typography>
+                {item.verificationIds.map((verificationId, verificationIndex) => (
+                  <Button
+                    key={verificationId}
+                    size="small"
+                    variant="text"
+                    onClick={() => navigate(`/verifications/${verificationId}`)}
+                  >
+                    Поверка {verificationIndex + 1}
+                  </Button>
+                ))}
+              </Stack>
+            )}
+
+            <Stack spacing={0.25}>
+            </Stack>
+
             {editable && !item.instrumentId && assigningItemId === item.id && (
               <Stack spacing={1}>
                 <DeviceSelector
