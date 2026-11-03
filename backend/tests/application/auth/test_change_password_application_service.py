@@ -4,7 +4,7 @@ import pytest
 
 from app.application.auth.commands.change_password import ChangePasswordCommand
 from app.application.auth.exceptions import AuthenticationFailedApplicationError
-from app.application.auth.ports.password_hasher import PasswordHasher
+from app.shared.password_hasher import PasswordHasher
 from app.application.auth.services.change_password_application_service import (
     ChangePasswordApplicationService,
 )

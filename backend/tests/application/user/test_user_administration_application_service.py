@@ -4,7 +4,7 @@ from uuid import uuid4
 
 import pytest
 
-from app.application.auth.ports.password_hasher import PasswordHasher
+from app.shared.password_hasher import PasswordHasher
 from app.application.authorization.authorization import AuthorizationError
 from app.application.user.commands.archive_user import ArchiveUserCommand
 from app.application.user.commands.change_user_role import ChangeUserRoleCommand

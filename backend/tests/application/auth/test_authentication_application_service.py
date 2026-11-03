@@ -10,7 +10,7 @@ from app.application.auth.commands.authenticate_user import (
     AuthenticateUserCommand,
 )
 from app.application.auth.exceptions import AuthenticationFailedApplicationError
-from app.application.auth.ports.password_hasher import PasswordHasher
+from app.shared.password_hasher import PasswordHasher
 from app.application.auth.services.authentication_application_service import (
     AuthenticationApplicationService,
 )
