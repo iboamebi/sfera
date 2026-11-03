@@ -165,7 +165,6 @@ def test_update_can_clear_validity_date_explicitly() -> None:
     assert result.valid_to == valid_to
 
 
-
 def test_update_can_clear_description_explicitly() -> None:
     repository = FakePriceListRepository()
     service = PriceListApplicationService(repository)
