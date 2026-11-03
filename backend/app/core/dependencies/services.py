@@ -360,6 +360,15 @@ def get_repair_service(
 def get_diagnostic_service(
     repository: DiagnosticRepository = Depends(get_diagnostic_repository),
     uow: UnitOfWork = Depends(get_unit_of_work),
+    audit_operation_repository: AuditOperationRepository = Depends(
+        get_audit_operation_repository,
+    ),
+    audit_repository: AuditRepository = Depends(get_audit_repository),
 ) -> DiagnosticApplicationService:
     """Provide Diagnostic application service."""
-    return DiagnosticApplicationService(repository, uow)
+    return DiagnosticApplicationService(
+        repository,
+        uow,
+        audit_operation_repository,
+        audit_repository,
+    )
