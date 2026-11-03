@@ -192,7 +192,29 @@ The frontend route guard is not a security boundary. Backend business routers en
 
 ### Verification
 
-Реализованы detail read slice и lifecycle actions:
+Реализованы create, detail read slice и lifecycle actions.
+
+Создание поверки доступно из позиции заказа, если запрошена операция поверки, назначено конкретное СИ и для позиции ещё нет поверки:
+
+```text
+OrderItems
+  ↓
+CreateVerification form
+  ↓
+createVerification()
+  ↓
+POST /verifications
+  ↓
+useCreateVerification()
+  ↓
+invalidate order query
+  ↓
+/verifications/:verificationId
+```
+
+Форма передаёт дату, тип поверки (PRIMARY, PERIODIC, AFTER_REPAIR) и необязательную методику. Backend остаётся источником проверки полномочий и наличия назначенного СИ.
+
+Detail and lifecycle flow:
 
 ```text
 API DTO
