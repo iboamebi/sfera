@@ -44,24 +44,28 @@ class PriceList(AggregateRoot):
     def create(
         cls,
         *,
+        id: UUID,
         name: str,
         price_list_type: str,
         currency: str = "RUB",
         valid_from: date | None = None,
         valid_to: date | None = None,
         description: str | None = None,
+        is_active: bool = False,
     ) -> PriceList:
         """
         Create a new price list aggregate.
         """
 
         return cls(
+            id=id,
             name=name,
             price_list_type=price_list_type,
             currency=currency,
             valid_from=valid_from,
             valid_to=valid_to,
             description=description,
+            is_active=is_active,
         )
 
     def activate(self) -> None:
