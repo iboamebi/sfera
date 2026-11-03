@@ -10,6 +10,7 @@ export interface OrderItemApiDto {
   modification: string | null;
   comment: string | null;
   requested_operations: OrderItemOperation[];
+  verification_ids: string[];
 }
 
 export interface OrderApiDto {
