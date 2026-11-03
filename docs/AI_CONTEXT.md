@@ -484,7 +484,7 @@ Frontend user administration UI is implemented on the active branch:
 
 The existing `alex` account role was updated to ADMIN after inspecting its actual local database row.
 
-Order → Verification navigation is now being implemented on this branch. Backend read repository and API schema expose verification IDs; the remaining work is to complete read mapping, frontend DTO/model/UI, tests, documentation, and local validation.
+Order → Verification navigation is implemented on this branch. Backend read repository, read model, API schema/mapper, frontend DTO/model/mapper, and OrderItems links expose existing verifications for each order item. A focused backend mapper test was added. Local backend/frontend validation remains.
 
 Contract:
 
