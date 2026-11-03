@@ -3,7 +3,7 @@
 import secrets
 from uuid import uuid4
 
-from app.application.auth.ports.password_hasher import PasswordHasher
+from app.shared.password_hasher import PasswordHasher
 from app.application.authorization.authorization import require_role
 from app.application.user.commands.archive_user import ArchiveUserCommand
 from app.application.user.commands.change_user_role import ChangeUserRoleCommand

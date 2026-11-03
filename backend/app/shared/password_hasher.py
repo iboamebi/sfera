@@ -1,5 +1,5 @@
 """
-Password hashing port.
+Shared password hashing contract.
 """
 
 from abc import ABC, abstractmethod

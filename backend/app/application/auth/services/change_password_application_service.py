@@ -2,7 +2,7 @@
 
 from app.application.auth.commands.change_password import ChangePasswordCommand
 from app.application.auth.exceptions import AuthenticationFailedApplicationError
-from app.application.auth.ports.password_hasher import PasswordHasher
+from app.shared.password_hasher import PasswordHasher
 from app.domains.user.repositories.user_repository import UserRepository
 from app.shared.unit_of_work.unit_of_work import UnitOfWork
 

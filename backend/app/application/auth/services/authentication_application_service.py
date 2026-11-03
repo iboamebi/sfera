@@ -6,7 +6,7 @@ from app.application.auth.commands.authenticate_user import (
     AuthenticateUserCommand,
 )
 from app.application.auth.exceptions import AuthenticationFailedApplicationError
-from app.application.auth.ports.password_hasher import PasswordHasher
+from app.shared.password_hasher import PasswordHasher
 from app.domains.user.entities.user import User
 from app.domains.user.repositories.user_repository import UserRepository
 

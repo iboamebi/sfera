@@ -136,10 +136,7 @@ class FakeOrderRepository(OrderRepository):
         return any(
             order.id != exclude_order_id
             and order.status in CONFLICTING_INSTRUMENT_ORDER_STATUSES
-            and any(
-                item.instrument_id == instrument_id
-                for item in order.items
-            )
+            and any(item.instrument_id == instrument_id for item in order.items)
             for order in self._orders.values()
         )
 
@@ -325,7 +322,7 @@ def test_register_order_rejects_unauthorized_user():
 
 
 def test_add_order_item_rejects_unauthorized_user():
-    service, repository, customer_repository, _ = make_service()
+    service, repository, customer_repository, _, _, _ = make_service()
     customer_id = uuid4()
     customer_repository.save(make_customer(customer_id))
     order = service.create(
@@ -348,7 +345,7 @@ def test_add_order_item_rejects_unauthorized_user():
 
 
 def test_update_order_rejects_unauthorized_user():
-    service, repository, customer_repository, _ = make_service()
+    service, repository, customer_repository, _, _, _ = make_service()
     customer_id = uuid4()
     customer_repository.save(make_customer(customer_id))
     order = service.create(
@@ -380,7 +377,7 @@ def test_update_order_rejects_unauthorized_user():
 
 
 def test_update_order_details():
-    service, repository, customer_repository, _ = make_service()
+    service, repository, customer_repository, _, _, _ = make_service()
     customer_id = uuid4()
     customer_repository.save(make_customer(customer_id))
     order = service.create(
@@ -407,13 +404,11 @@ def test_update_order_details():
 
 
 def test_add_order_item_rejects_instrument_in_another_active_order():
-    service, repository, customer_repository, _ = make_service()
+    service, repository, customer_repository, _, _, _ = make_service()
     instrument_id = uuid4()
 
     existing_order = create_order(service, customer_repository, "10007")
-    existing_order.add_item(
-        OrderItem(id=uuid4(), instrument_id=instrument_id)
-    )
+    existing_order.add_item(OrderItem(id=uuid4(), instrument_id=instrument_id))
     existing_order.status = OrderStatus.REGISTERED
     repository.save(existing_order)
 
@@ -445,22 +440,17 @@ def test_add_order_item_creates_separate_items_for_group_quantity():
 
     assert len(order.items) == 3
     assert all(item.quantity == 1 for item in order.items)
-    assert all(
-        item.instrument_type_id == instrument_type_id
-        for item in order.items
-    )
+    assert all(item.instrument_type_id == instrument_type_id for item in order.items)
     assert all(item.instrument_id is None for item in order.items)
     assert len({item.id for item in order.items}) == 3
 
 
 def test_add_order_item_allows_instrument_after_order_completed():
-    service, repository, customer_repository, _ = make_service()
+    service, repository, customer_repository, _, _, _ = make_service()
     instrument_id = uuid4()
 
     completed_order = create_order(service, customer_repository, "10009")
-    completed_order.add_item(
-        OrderItem(id=uuid4(), instrument_id=instrument_id)
-    )
+    completed_order.add_item(OrderItem(id=uuid4(), instrument_id=instrument_id))
     completed_order.status = OrderStatus.COMPLETED
     repository.save(completed_order)
 
