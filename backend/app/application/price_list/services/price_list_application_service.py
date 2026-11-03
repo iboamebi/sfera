@@ -2,7 +2,7 @@
 # PriceList application service.
 # Coordinates PriceList use cases between API layer and domain layer.
 
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from app.application.price_list.commands.activate_price_list import (
     ActivatePriceListCommand,
@@ -80,12 +80,14 @@ class PriceListApplicationService:
         """
 
         price_list = PriceList.create(
+            id=uuid4(),
             name=command.name,
             price_list_type=command.price_list_type,
             currency=command.currency,
             valid_from=command.valid_from,
             valid_to=command.valid_to,
             description=command.description,
+            is_active=command.is_active,
         )
 
         return await self.repository.save(price_list)
@@ -162,6 +164,7 @@ class PriceListApplicationService:
             raise PriceListNotFoundApplicationError
 
         item = PriceListItem(
+            id=uuid4(),
             service_code=command.service_code,
             name=command.name,
             price=command.price,
