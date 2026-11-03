@@ -17,6 +17,11 @@ from app.domains.repair.repositories.repair_repository import (
 )
 from app.domains.user.entities.user import User
 from app.domains.user.value_objects.user_role import UserRole
+from app.shared.audit.models import AuditOperation, AuditRecord
+from app.shared.audit.repositories.audit_operation_repository import (
+    AuditOperationRepository,
+)
+from app.shared.audit.repositories.audit_repository import AuditRepository
 from app.shared.unit_of_work.unit_of_work import UnitOfWork
 
 
@@ -27,9 +32,13 @@ class RepairApplicationService:
         self,
         repository: RepairRepository,
         unit_of_work: UnitOfWork,
+        audit_operation_repository: AuditOperationRepository,
+        audit_repository: AuditRepository,
     ) -> None:
         self._repository = repository
         self._uow = unit_of_work
+        self._audit_operation_repository = audit_operation_repository
+        self._audit_repository = audit_repository
 
     def get(
         self,
@@ -109,12 +118,35 @@ class RepairApplicationService:
                 repair_id,
             )
 
+            old_status = repair.status.value
+            old_result = repair.result
             repair.complete(
                 result,
             )
 
             self._repository.save(
                 repair,
+            )
+            operation = AuditOperation(initiated_by=user.id)
+            self._audit_operation_repository.save(operation)
+            self._audit_repository.save(
+                AuditRecord(
+                    operation_id=operation.operation_id,
+                    actor_id=user.id,
+                    action="repair.completed",
+                    entity_type="repair",
+                    entity_id=repair.id,
+                    changes={
+                        "status": {
+                            "old": old_status,
+                            "new": repair.status.value,
+                        },
+                        "result": {
+                            "old": old_result,
+                            "new": repair.result,
+                        },
+                    },
+                )
             )
 
         return repair
