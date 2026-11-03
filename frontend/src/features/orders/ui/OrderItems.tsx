@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { Button, Checkbox, Chip, Divider, FormControlLabel, Stack, Typography } from "@mui/material";
+import { Alert, Button, Checkbox, Chip, Divider, FormControlLabel, MenuItem, Stack, TextField, Typography } from "@mui/material";
 import { useNavigate } from "react-router";
 
 import { useAssignOrderItemInstrument } from "../add-order-item/model/useAssignOrderItemInstrument";
@@ -8,6 +8,8 @@ import { useDeleteOrderItem } from "../add-order-item/model/useDeleteOrderItem";
 import { useUpdateOrderItem } from "../add-order-item/model/useUpdateOrderItem";
 import { DeviceSelector } from "../add-order-item/ui/DeviceSelector";
 import type { OrderItem, OrderItemOperation } from "../model/types";
+import { useCreateVerification } from "../../verifications/create-verification/model/useCreateVerification";
+import type { VerificationType } from "../../verifications/model/types";
 
 interface OrderItemsProps {
   items: OrderItem[];
@@ -26,15 +28,35 @@ const OPERATION_OPTIONS = Object.entries(OPERATION_LABELS) as Array<
   [OrderItemOperation, string]
 >;
 
+function getTodayDate(): string {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, "0");
+  const day = String(today.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
+const VERIFICATION_TYPE_LABELS: Record<VerificationType, string> = {
+  PRIMARY: "Первичная",
+  PERIODIC: "Периодическая",
+  AFTER_REPAIR: "После ремонта",
+};
+
 export function OrderItems({ items, orderId, editable = false }: OrderItemsProps) {
   const navigate = useNavigate();
   const updateMutation = useUpdateOrderItem(orderId);
   const assignInstrumentMutation = useAssignOrderItemInstrument(orderId);
   const deleteMutation = useDeleteOrderItem(orderId);
+  const createVerificationMutation = useCreateVerification(orderId);
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
   const [editedOperations, setEditedOperations] = useState<OrderItemOperation[]>([]);
   const [assigningItemId, setAssigningItemId] = useState<string | null>(null);
   const [selectedInstrumentId, setSelectedInstrumentId] = useState("");
+  const [creatingVerificationItemId, setCreatingVerificationItemId] = useState<string | null>(null);
+  const [verificationDate, setVerificationDate] = useState(getTodayDate);
+  const [verificationType, setVerificationType] = useState<VerificationType>("PRIMARY");
+  const [methodology, setMethodology] = useState("");
 
   const startEditing = (item: OrderItem) => {
     setEditingItemId(item.id);
@@ -141,6 +163,98 @@ export function OrderItems({ items, orderId, editable = false }: OrderItemsProps
                 ))}
               </Stack>
             )}
+
+            {item.requestedOperations.includes("verification") &&
+              item.instrumentId &&
+              item.verificationIds.length === 0 && (
+                <Stack spacing={1}>
+                  {creatingVerificationItemId === item.id ? (
+                    <>
+                      <TextField
+                        label="Дата поверки"
+                        type="date"
+                        size="small"
+                        value={verificationDate}
+                        onChange={(event) => setVerificationDate(event.target.value)}
+                        InputLabelProps={{ shrink: true }}
+                      />
+                      <TextField
+                        select
+                        label="Тип поверки"
+                        size="small"
+                        value={verificationType}
+                        onChange={(event) =>
+                          setVerificationType(event.target.value as VerificationType)
+                        }
+                      >
+                        {Object.entries(VERIFICATION_TYPE_LABELS).map(([value, label]) => (
+                          <MenuItem key={value} value={value}>
+                            {label}
+                          </MenuItem>
+                        ))}
+                      </TextField>
+                      <TextField
+                        label="Методика (необязательно)"
+                        size="small"
+                        value={methodology}
+                        onChange={(event) => setMethodology(event.target.value)}
+                      />
+                      {createVerificationMutation.error && (
+                        <Alert severity="error">
+                          {createVerificationMutation.error.message}
+                        </Alert>
+                      )}
+                      <Stack direction="row" spacing={1}>
+                        <Button
+                          size="small"
+                          variant="contained"
+                          disabled={
+                            createVerificationMutation.isPending || !verificationDate
+                          }
+                          onClick={() =>
+                            createVerificationMutation.mutate(
+                              {
+                                orderItemId: item.id,
+                                verificationDate,
+                                verificationType,
+                                methodology,
+                              },
+                              {
+                                onSuccess: (verification) =>
+                                  navigate(`/verifications/${verification.id}`),
+                              },
+                            )
+                          }
+                        >
+                          {createVerificationMutation.isPending
+                            ? "Создание..."
+                            : "Сохранить поверку"}
+                        </Button>
+                        <Button
+                          size="small"
+                          disabled={createVerificationMutation.isPending}
+                          onClick={() => setCreatingVerificationItemId(null)}
+                        >
+                          Отмена
+                        </Button>
+                      </Stack>
+                    </>
+                  ) : (
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      onClick={() => {
+                        setCreatingVerificationItemId(item.id);
+                        setVerificationDate(getTodayDate());
+                        setVerificationType("PRIMARY");
+                        setMethodology("");
+                      }}
+                    >
+                      Создать поверку
+                    </Button>
+                  )}
+                </Stack>
+              )}
 
 
             {editable && !item.instrumentId && assigningItemId === item.id && (
