@@ -71,7 +71,7 @@ class OrderReadRepositorySQLAlchemy(OrderReadRepository):
             .joinedload(OrderItem.instrument)
             .joinedload(Instrument.instrument_type),
             joinedload(Order.order_items).joinedload(OrderItem.instrument_type),
-            selectinload(Order.order_items).selectinload(OrderItem.verifications),
+            joinedload(Order.order_items).selectinload(OrderItem.verifications),
         )
 
     def get(self, order_id: UUID) -> OrderReadData | None:
