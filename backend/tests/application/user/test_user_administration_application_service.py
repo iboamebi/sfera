@@ -4,7 +4,6 @@ from uuid import uuid4
 
 import pytest
 
-from app.shared.password_hasher import PasswordHasher
 from app.application.authorization.authorization import AuthorizationError
 from app.application.user.commands.archive_user import ArchiveUserCommand
 from app.application.user.commands.change_user_role import ChangeUserRoleCommand
@@ -21,6 +20,7 @@ from app.application.user.services.user_administration_application_service impor
 from app.domains.user.entities.user import User
 from app.domains.user.repositories.user_repository import UserRepository
 from app.domains.user.value_objects.user_role import UserRole
+from app.shared.password_hasher import PasswordHasher
 from app.shared.unit_of_work.unit_of_work import UnitOfWork
 
 
@@ -306,7 +306,7 @@ def test_restore_user_requires_admin_role() -> None:
     assert uow.committed is False
 
 
-def test_restore_user_rejects_non_archived_account() -> None:
+def test_restore_user_rejects_non_archived_user() -> None:
     target = make_user("operator")
     service, _, uow = make_service([target])
 
