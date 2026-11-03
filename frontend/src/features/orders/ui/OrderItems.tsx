@@ -142,8 +142,6 @@ export function OrderItems({ items, orderId, editable = false }: OrderItemsProps
               </Stack>
             )}
 
-            <Stack spacing={0.25}>
-            </Stack>
 
             {editable && !item.instrumentId && assigningItemId === item.id && (
               <Stack spacing={1}>
