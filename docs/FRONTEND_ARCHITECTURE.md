@@ -173,6 +173,7 @@ The frontend route guard is not a security boundary. Backend business routers en
 * создание заказа;
 * просмотр заказа;
 * позиции заказа;
+* переходы от позиции заказа к связанным поверкам по verification IDs из order read contract;
 * регистрация заказа;
 * обновление cache после регистрации;
 * customer selection.
