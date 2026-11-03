@@ -306,7 +306,7 @@ def test_restore_user_requires_admin_role() -> None:
     assert uow.committed is False
 
 
-def test_restore_user_rejects_non_archived_user() -> None:
+def test_restore_user_rejects_non_archived_account() -> None:
     target = make_user("operator")
     service, _, uow = make_service([target])
 
