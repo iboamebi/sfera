@@ -10,12 +10,12 @@ from app.application.auth.commands.authenticate_user import (
     AuthenticateUserCommand,
 )
 from app.application.auth.exceptions import AuthenticationFailedApplicationError
-from app.shared.password_hasher import PasswordHasher
 from app.application.auth.services.authentication_application_service import (
     AuthenticationApplicationService,
 )
 from app.domains.user.entities.user import User
 from app.domains.user.repositories.user_repository import UserRepository
+from app.shared.password_hasher import PasswordHasher
 
 
 class FakePasswordHasher(PasswordHasher):
