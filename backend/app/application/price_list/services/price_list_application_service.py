@@ -133,7 +133,7 @@ class PriceListApplicationService:
                 else price_list.valid_to,
             )
 
-        if command.description is not None:
+        if "description" in command.updated_fields:
             price_list.change_description(
                 command.description,
             )
