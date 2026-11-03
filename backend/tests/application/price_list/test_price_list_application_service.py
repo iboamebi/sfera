@@ -1,4 +1,4 @@
-"""Tests for PriceList application service creation contracts."""
+"""Tests for PriceList application service contracts."""
 
 import asyncio
 from datetime import date
@@ -93,7 +93,6 @@ def test_add_item_generates_item_id() -> None:
     assert isinstance(result.items[0].id, UUID)
     assert result.items[0].price == Decimal("100.00")
     assert repository.items[price_list.id] is result
-
 
 
 def test_update_preserves_omitted_validity_date_and_updates_fields() -> None:
