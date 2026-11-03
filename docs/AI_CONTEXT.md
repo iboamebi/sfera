@@ -199,6 +199,8 @@ Audit Trail foundation and the first transactional integration slice are complet
 - dependency injection;
 - Verification create/start/approve/reject audit integration;
 - Order registration audit integration (`order.registered`) using the same operation id as `OrderRegistered`;
+- Repair completion audit integration (`repair.completed`) recording status/result changes;
+- Diagnostic completion audit integration (`diagnostic.completed`) recording conclusion changes;
 - shared SQLAlchemy session with the business mutation and `UnitOfWork`;
 - automated audit/verification tests;
 - PostgreSQL trigger enforcement preventing `UPDATE` and `DELETE` on `audit_records` through migration `9f2a6c4d8e10`;
@@ -713,3 +715,15 @@ After a pause:
 - Added focused Application tests for successful audit persistence and unauthorized access.
 - Remaining Repair operations (create/start/cancel) are not yet audited.
 - Local validation is pending for this slice.
+
+
+## Audit Trail — Diagnostic completion checkpoint
+
+- Added transactional audit persistence for `DiagnosticApplicationService.complete`.
+- Stable action: `diagnostic.completed`; entity type: `diagnostic`.
+- Captures conclusion old/new values; actor and initiator are the authenticated user.
+- Audit repositories are injected through the existing dependency provider and share the Unit of Work session boundary.
+- Added focused Application tests for successful audit persistence and unauthorized access.
+- Diagnostic creation and recommendation changes remain outside this slice pending separate business-significance review.
+- Repair completion audit was locally validated: 2 focused tests passed; Ruff check and format check passed.
+- Diagnostic completion local validation is pending.
