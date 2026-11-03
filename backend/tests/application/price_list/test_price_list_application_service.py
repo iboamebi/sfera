@@ -163,3 +163,30 @@ def test_update_can_clear_validity_date_explicitly() -> None:
 
     assert result.valid_from is None
     assert result.valid_to == valid_to
+
+
+
+def test_update_can_clear_description_explicitly() -> None:
+    repository = FakePriceListRepository()
+    service = PriceListApplicationService(repository)
+    price_list = asyncio.run(
+        service.create(
+            CreatePriceListCommand(
+                name="Standard",
+                price_list_type="GENERAL",
+                description="Legacy description",
+            )
+        )
+    )
+
+    result = asyncio.run(
+        service.update(
+            UpdatePriceListCommand(
+                price_list_id=price_list.id,
+                description=None,
+                updated_fields=frozenset({"description"}),
+            )
+        )
+    )
+
+    assert result.description is None
