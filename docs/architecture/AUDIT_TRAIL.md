@@ -693,3 +693,18 @@ The current branch contains the Audit application/persistence foundation, the fi
 ### Repair completion integration
 
 Repair completion now persists `repair.completed` in the same Unit of Work as the domain state change. The record captures the previous and new status, the previous and new result, and the authenticated technician/admin as both actor and operation initiator. Other Repair mutations remain outside this integration slice until separately classified and implemented.
+
+### Diagnostic Completion Integration
+
+Diagnostic completion now writes a persistent audit operation and record in the same Unit of Work as the conclusion update.
+
+Recorded fields:
+
+- action: `diagnostic.completed`;
+- entity type: `diagnostic`;
+- entity id: the completed diagnostic id;
+- changes: conclusion from its previous value to the new conclusion;
+- actor and operation initiator: the authenticated user.
+
+The integration deliberately covers completion only. Creating a diagnostic is an initial work-record operation; setting a recommendation remains a separate mutation and requires its own business significance/change-field review before audit integration.
+
