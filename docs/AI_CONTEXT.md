@@ -461,7 +461,7 @@ Local backend validation after that correction:
 - Ruff check passed;
 - formatting check passed.
 
-Frontend first-login integration and user administration UI are implemented on this branch. Local typecheck/build passed after the initial user administration UI implementation; the latest UI changes require a fresh local validation.
+Frontend first-login integration and user administration UI are implemented on this branch. The latest local `npm run typecheck` and `npm run build` passed after Order → Verification navigation was added; Vite emits a non-blocking large-chunk warning.
 
 User administration backend currently supports:
 - administrator-only user listing, including inactive accounts and optional archived accounts;
@@ -484,7 +484,7 @@ Frontend user administration UI is implemented on the active branch:
 
 The existing `alex` account role was updated to ADMIN after inspecting its actual local database row.
 
-Order → Verification navigation is implemented on this branch. Backend read repository, read model, API schema/mapper, frontend DTO/model/mapper, and OrderItems links expose existing verifications for each order item. A focused backend mapper test was added. Local backend/frontend validation remains.
+Order → Verification navigation is implemented and locally validated on this branch. Backend read repository, read model, API schema/mapper, frontend DTO/model/mapper, and OrderItems links expose existing verifications for each order item. Focused backend mapper test passed (1 passed); scoped Ruff check passed; scoped format check passed; frontend `npm run typecheck` and `npm run build` passed. Vite reports only the non-blocking large-chunk warning (>500 kB). Full backend suite was not run as part of this checkpoint.
 
 Contract:
 
