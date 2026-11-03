@@ -482,9 +482,9 @@ Frontend user administration UI is implemented on the active branch:
 - activate/deactivate non-archived accounts;
 - archive and restore accounts.
 
-Still not implemented:
-- setting the existing `alex` account to ADMIN after inspecting its actual database row;
-- Order → Verification navigation.
+The existing `alex` account role was updated to ADMIN after inspecting its actual local database row.
+
+Order → Verification navigation is now being implemented on this branch. Backend read repository and API schema expose verification IDs; the remaining work is to complete read mapping, frontend DTO/model/UI, tests, documentation, and local validation.
 
 Contract:
 
@@ -590,8 +590,8 @@ Current active work is first-login authentication and user administration. Seque
 2. Validate the user administration API list/create slice locally.
 3. Role change, activation/deactivation, archive and restore Application/API slices are implemented on the active branch; locally validate the user administration test slice and scoped lint/format checks.
 4. User administration frontend UI and API integration are implemented; run local typecheck/build and review the UI behavior.
-5. Inspect the actual local database row and migration state before changing the existing `alex` user's role to `admin`.
-6. Continue with Order → Verification navigation only after inspecting the current backend and frontend relationship contracts.
+5. The existing `alex` role update was completed locally after inspecting the actual database row.
+6. Complete Order → Verification navigation using the confirmed order-item/verification relationship, then run local backend and frontend validation.
 
 The metrology methodology consolidation direction below remains valid but is not the active implementation stage.
 
