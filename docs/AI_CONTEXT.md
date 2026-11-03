@@ -199,7 +199,9 @@ Audit Trail foundation and the first transactional integration slice are complet
 - dependency injection;
 - Verification approve/reject audit integration;
 - shared SQLAlchemy session with the business mutation and `UnitOfWork`;
-- automated audit/verification tests.
+- automated audit/verification tests;
+- PostgreSQL trigger enforcement preventing `UPDATE` and `DELETE` on `audit_records` through migration `9f2a6c4d8e10`;
+- functional database check: `INSERT` allowed, `UPDATE` and `DELETE` blocked with SQLSTATE `55000`.
 
 Current scope:
 
@@ -209,7 +211,7 @@ Persistence:                   COMPLETE
 Verification integration:      COMPLETE
 System-wide audit coverage:    OPEN
 Audit read/query:              OPEN
-DB append-only enforcement:    OPEN
+DB append-only enforcement:    COMPLETE
 ```
 
 ## Frontend Current State
