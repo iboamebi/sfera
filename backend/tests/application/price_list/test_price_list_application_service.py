@@ -1,6 +1,7 @@
 """Tests for PriceList application service creation contracts."""
 
 import asyncio
+from datetime import date
 from decimal import Decimal
 from uuid import UUID
 
@@ -9,6 +10,9 @@ from app.application.price_list.commands.add_price_list_item import (
 )
 from app.application.price_list.commands.create_price_list import (
     CreatePriceListCommand,
+)
+from app.application.price_list.commands.update_price_list import (
+    UpdatePriceListCommand,
 )
 from app.application.price_list.services.price_list_application_service import (
     PriceListApplicationService,
@@ -89,3 +93,74 @@ def test_add_item_generates_item_id() -> None:
     assert isinstance(result.items[0].id, UUID)
     assert result.items[0].price == Decimal("100.00")
     assert repository.items[price_list.id] is result
+
+
+
+def test_update_preserves_omitted_validity_date_and_updates_fields() -> None:
+    repository = FakePriceListRepository()
+    service = PriceListApplicationService(repository)
+    original_valid_from = date(2026, 1, 1)
+    original_valid_to = date(2026, 12, 31)
+    price_list = asyncio.run(
+        service.create(
+            CreatePriceListCommand(
+                name="Standard",
+                price_list_type="GENERAL",
+                currency="RUB",
+                valid_from=original_valid_from,
+                valid_to=original_valid_to,
+                is_active=True,
+            )
+        )
+    )
+
+    result = asyncio.run(
+        service.update(
+            UpdatePriceListCommand(
+                price_list_id=price_list.id,
+                name="Updated",
+                price_list_type="SPECIAL",
+                currency="EUR",
+                is_active=False,
+                valid_from=date(2026, 2, 1),
+                updated_fields=frozenset({"valid_from"}),
+            )
+        )
+    )
+
+    assert result.name == "Updated"
+    assert result.price_list_type == "SPECIAL"
+    assert result.currency == "EUR"
+    assert result.is_active is False
+    assert result.valid_from == date(2026, 2, 1)
+    assert result.valid_to == original_valid_to
+
+
+def test_update_can_clear_validity_date_explicitly() -> None:
+    repository = FakePriceListRepository()
+    service = PriceListApplicationService(repository)
+    valid_from = date(2026, 1, 1)
+    valid_to = date(2026, 12, 31)
+    price_list = asyncio.run(
+        service.create(
+            CreatePriceListCommand(
+                name="Standard",
+                price_list_type="GENERAL",
+                valid_from=valid_from,
+                valid_to=valid_to,
+            )
+        )
+    )
+
+    result = asyncio.run(
+        service.update(
+            UpdatePriceListCommand(
+                price_list_id=price_list.id,
+                valid_from=None,
+                updated_fields=frozenset({"valid_from"}),
+            )
+        )
+    )
+
+    assert result.valid_from is None
+    assert result.valid_to == valid_to
