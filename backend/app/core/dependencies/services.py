@@ -343,9 +343,18 @@ def get_price_list_service(
 def get_repair_service(
     repository: RepairRepository = Depends(get_repair_repository),
     uow: UnitOfWork = Depends(get_unit_of_work),
+    audit_operation_repository: AuditOperationRepository = Depends(
+        get_audit_operation_repository,
+    ),
+    audit_repository: AuditRepository = Depends(get_audit_repository),
 ) -> RepairApplicationService:
     """Provide Repair application service."""
-    return RepairApplicationService(repository, uow)
+    return RepairApplicationService(
+        repository,
+        uow,
+        audit_operation_repository,
+        audit_repository,
+    )
 
 
 def get_diagnostic_service(
