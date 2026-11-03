@@ -120,16 +120,25 @@ class PriceListApplicationService:
                 command.currency,
             )
 
-        if command.valid_from is not None or command.valid_to is not None:
+        if "valid_from" in command.updated_fields or "valid_to" in command.updated_fields:
             price_list.change_valid_period(
-                command.valid_from,
-                command.valid_to,
+                command.valid_from
+                if "valid_from" in command.updated_fields
+                else price_list.valid_from,
+                command.valid_to
+                if "valid_to" in command.updated_fields
+                else price_list.valid_to,
             )
 
         if command.description is not None:
             price_list.change_description(
                 command.description,
             )
+
+        if command.is_active is True and not price_list.is_active:
+            price_list.activate()
+        elif command.is_active is False and price_list.is_active:
+            price_list.deactivate()
 
         return await self.repository.save(price_list)
 
