@@ -2,7 +2,7 @@
 
 ## Status
 
-Architecture decision recorded. Audit foundation, persistence, and the first transactional Verification integration slice are complete.
+Architecture decision recorded. Audit foundation, persistence, the first transactional Verification integration slice, and PostgreSQL append-only enforcement are complete.
 
 ## Date
 
@@ -437,7 +437,7 @@ AuditRecord B
 
 For the current Verification scope, one new corrective/invalidation record refers to one prior audit record. A multi-record correction relation is outside the current scope and must be designed separately if required.
 
-Database-level protection against `UPDATE`/`DELETE` is required in production in addition to an append-only Repository contract.
+Database-level protection against `UPDATE`/`DELETE` is implemented by Alembic migration `9f2a6c4d8e10`. A PostgreSQL functional check confirmed that `INSERT` succeeds while `UPDATE` and `DELETE` are rejected by the trigger with SQLSTATE `55000`.
 
 ---
 
@@ -581,11 +581,10 @@ System/background actors must also be identifiable. Anonymous audit operations a
 - immutable Application `AuditOperation` and `AuditRecord` contracts;
 - Application `AuditRepository` persistence boundary;
 - SQLAlchemy `AuditRecordModel` persistence model;
-- explicit model registration in `app.db.model_registry`.
+- explicit model registration in `app.db.model_registry`;
+- PostgreSQL trigger enforcement preventing `UPDATE` and `DELETE` on `audit_records` (migration `9f2a6c4d8e10`, functionally verified against PostgreSQL).
 
 ### Not yet implemented
-
-- immutable database/application enforcement for audit records;
 - system-wide operation correlation generation/propagation through business use cases;
 - complete field-level change generation across all audit-worthy mutations;
 - audit read/query contract;
@@ -639,4 +638,4 @@ Approved decisions:
 19. Audit remains separate from Domain Event notification and business entity state.
 ```
 
-The current branch contains the Audit application/persistence foundation and the first transactional Verification integration slice. Full Audit Trail implementation remains incomplete until system-wide coverage, immutability enforcement, propagation, read/query capabilities and rollout requirements are resolved.
+The current branch contains the Audit application/persistence foundation, the first transactional Verification integration slice, and database-level append-only enforcement. Full Audit Trail implementation remains incomplete until system-wide coverage, operation propagation, read/query capabilities, system actor representation and rollout requirements are resolved.
