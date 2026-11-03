@@ -688,3 +688,8 @@ Approved decisions:
 ```
 
 The current branch contains the Audit application/persistence foundation, the first transactional Verification integration slice, and database-level append-only enforcement. Full Audit Trail implementation remains incomplete until system-wide coverage, operation propagation, read/query capabilities, system actor representation and rollout requirements are resolved.
+
+
+### Repair completion integration
+
+Repair completion now persists `repair.completed` in the same Unit of Work as the domain state change. The record captures the previous and new status, the previous and new result, and the authenticated technician/admin as both actor and operation initiator. Other Repair mutations remain outside this integration slice until separately classified and implemented.
