@@ -702,3 +702,14 @@ After a pause:
 5. audit backend/frontend state;
 6. select the next independent user scenario;
 7. work one file/small step at a time and validate before continuing.
+
+
+## Audit Trail — Repair completion checkpoint
+
+- Added transactional audit persistence for `RepairApplicationService.complete`.
+- Stable action: `repair.completed`; entity type: `repair`.
+- Captures status and result old/new values; actor and initiator are the authenticated user.
+- Audit repositories are injected through the existing dependency provider and share the Unit of Work session boundary.
+- Added focused Application tests for successful audit persistence and unauthorized access.
+- Remaining Repair operations (create/start/cancel) are not yet audited.
+- Local validation is pending for this slice.
