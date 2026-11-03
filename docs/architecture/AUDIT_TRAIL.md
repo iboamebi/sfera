@@ -594,6 +594,20 @@ System/background actors must also be identifiable. Anonymous audit operations a
 
 ---
 
+### First Persistent Order Integration
+
+Order registration now writes a persistent audit operation and record in the same Unit of Work as the order status transition. The audit record uses the existing operation context id, which also correlates the `OrderRegistered` domain event.
+
+Recorded fields:
+
+- action: `order.registered`;
+- entity type: `order`;
+- entity id: the registered order id;
+- changes: `status` from the prior value to `REGISTERED`;
+- actor and operation initiator: the authenticated user.
+
+The application test verifies that the audit record and domain-event operation correlation use the same operation id. This is the first additional persistent integration slice; other mutation areas remain open.
+
 ### Initial Application Mutation Inventory
 
 A first code inspection found that persistent Audit Trail writes currently exist in

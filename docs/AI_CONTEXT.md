@@ -197,7 +197,8 @@ Audit Trail foundation and the first transactional integration slice are complet
 - `audit_operations` and `audit_records` persistence models;
 - Alembic migrations;
 - dependency injection;
-- Verification approve/reject audit integration;
+- Verification create/start/approve/reject audit integration;
+- Order registration audit integration (`order.registered`) using the same operation id as `OrderRegistered`;
 - shared SQLAlchemy session with the business mutation and `UnitOfWork`;
 - automated audit/verification tests;
 - PostgreSQL trigger enforcement preventing `UPDATE` and `DELETE` on `audit_records` through migration `9f2a6c4d8e10`;
@@ -209,7 +210,7 @@ Current scope:
 Audit foundation:              COMPLETE
 Persistence:                   COMPLETE
 Verification integration:      COMPLETE
-System-wide audit coverage:    OPEN
+System-wide audit coverage:    IN PROGRESS
 Audit read/query:              OPEN
 DB append-only enforcement:    COMPLETE
 ```

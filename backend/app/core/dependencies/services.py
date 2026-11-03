@@ -200,6 +200,10 @@ def get_order_service(
     repository: OrderRepository = Depends(get_order_repository),
     customer_repository: CustomerRepository = Depends(get_customer_repository),
     uow: UnitOfWork = Depends(get_unit_of_work),
+    audit_operation_repository: AuditOperationRepository = Depends(
+        get_audit_operation_repository,
+    ),
+    audit_repository: AuditRepository = Depends(get_audit_repository),
     event_dispatcher: EventDispatcher = Depends(get_event_dispatcher),
 ) -> OrderApplicationService:
     """Provide Order application service."""
@@ -207,6 +211,8 @@ def get_order_service(
         repository,
         customer_repository,
         uow,
+        audit_operation_repository,
+        audit_repository,
         event_dispatcher,
     )
 

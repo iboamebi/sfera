@@ -28,6 +28,11 @@ from app.domains.order.repositories.order_repository import OrderRepository
 from app.domains.order.value_objects.order_number import OrderNumber
 from app.domains.user.entities.user import User
 from app.domains.user.value_objects.user_role import UserRole
+from app.shared.audit.models import AuditOperation, AuditRecord
+from app.shared.audit.repositories.audit_operation_repository import (
+    AuditOperationRepository,
+)
+from app.shared.audit.repositories.audit_repository import AuditRepository
 from app.shared.unit_of_work.unit_of_work import UnitOfWork
 
 
@@ -39,11 +44,15 @@ class OrderApplicationService:
         repository: OrderRepository,
         customer_repository: CustomerRepository,
         unit_of_work: UnitOfWork,
+        audit_operation_repository: AuditOperationRepository,
+        audit_repository: AuditRepository,
         event_dispatcher: object | None = None,
     ) -> None:
         self._repository = repository
         self._customer_repository = customer_repository
         self._uow = unit_of_work
+        self._audit_operation_repository = audit_operation_repository
+        self._audit_repository = audit_repository
         self._event_dispatcher = event_dispatcher
 
     def create(self, command: CreateOrderCommand, user: User) -> Order:
@@ -183,7 +192,29 @@ class OrderApplicationService:
         operation_context = OperationContext(operation_id=uuid4(), actor_id=user.id)
         with self._uow:
             order = self.get(command.order_id)
+            old_status = order.status.value
             order.register()
             self._uow.register_aggregate(order, operation_context.operation_id)
             self._repository.save(order)
+
+            operation = AuditOperation(
+                operation_id=operation_context.operation_id,
+                initiated_by=user.id,
+            )
+            self._audit_operation_repository.save(operation)
+            self._audit_repository.save(
+                AuditRecord(
+                    operation_id=operation_context.operation_id,
+                    actor_id=user.id,
+                    action="order.registered",
+                    entity_type="order",
+                    entity_id=order.id,
+                    changes={
+                        "status": {
+                            "old": old_status,
+                            "new": order.status.value,
+                        },
+                    },
+                )
+            )
         return order
