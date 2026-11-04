@@ -823,3 +823,49 @@ Current source inspected at HEAD `ddc341c`:
 2. Implement the existing Instrument → Site relationship end-to-end in the instrument card and relevant selection UI.
 3. Add Customer lists to Organization detail and Site management UI as separate focused frontend work.
 4. Validate against the local database and browser before production deployment.
+
+
+## Checkpoint 14 — Customer-owned Site, order-scoped readiness and verification queue
+
+Business decision confirmed by the user on 2026-11-04:
+
+- Site belongs to Customer, independently of the payer Organization.
+- A Customer may have multiple Sites.
+- A Site contains a controlled set of concrete instrument instances.
+- An Order may contain only a subset of instruments assigned to a Site, and may include instruments from multiple Sites.
+- Only instruments included in the current Order are within the service center's responsibility for that Order. Instruments assigned to the same Site but absent from the Order do not affect readiness or release for that Order.
+- Site readiness is calculated per (Order, Site) group from all OrderItems in that Order whose Instruments belong to that Site.
+- Different Site groups belonging to one Customer may become ready and be released independently.
+- Verification queue planning is distinct from Site/Order release grouping. Queue grouping may span orders and Sites but must not alter business ownership or release readiness.
+
+### Current source evidence at HEAD 0659ac4
+
+- Site Domain and ORM currently require organization_id; ORM has Organization.sites relationship.
+- Instrument.site_id already exists as a nullable FK to sites.id.
+- Device Domain, DeviceMapper, create command and API schemas do not carry site_id; the existing FK is not integrated through the active Device workflow.
+- OrderItem stores an optional instrument_id; its ORM relationship points to the concrete Instrument.
+- Verification is linked to OrderItem; its current aggregate represents one concrete verification, not a multi-instrument queue.
+- No dedicated verification queue entity/use case was found in the inspected backend tree.
+- Order.site_id exists as a separate optional operational reference; it does not replace the permanent Instrument.site_id association.
+
+### Consequences and implementation constraints
+
+- The current organization-owned Site model conflicts with the approved business model and must not be extended as-is.
+- Before changing the Site schema, inspect all Site references, existing data constraints, migrations and production database state. No production database rows or applied migration revision were inspected in this GitHub-only step.
+- Preserve the existing instruments.site_id FK as the basis for Instrument → Site; do not create a duplicate association table for the current one-Site-per-Instrument model.
+- Site readiness must be calculated from OrderItems scoped to the same Order and Site, not from every instrument assigned to the Site.
+- Verification queue design must remain a separate planning concern and must not be confused with the Verification aggregate or the release group.
+
+### Checkpoint 14 work log
+
+| Step | Completed result |
+|---|---|
+| 1 | Confirmed current branch HEAD 0659ac4 |
+| 2 | Re-read working protocol, AI context, architecture constitution, Site model and audit |
+| 3 | Read current Site, Instrument, Device, OrderItem and Verification Domain/ORM/API boundary files |
+| 4 | Confirmed current Site ownership and Device integration do not match the newly clarified business model |
+| 5 | Recorded order-scoped Site readiness and the separate verification queue requirement |
+
+### Next step
+
+Update the Site/Customer model and implementation plan before changing code. Then inspect the complete Site and Customer dependency graph, migration history and local production data requirements. Do not implement queue behavior until its planning rules are specified.
