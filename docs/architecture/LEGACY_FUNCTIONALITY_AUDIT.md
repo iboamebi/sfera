@@ -682,3 +682,99 @@ The highest-priority confirmed technical defects from the audit are now:
 6. Material SQLAlchemy list behavior differs from the active-only fake repository behavior.
 
 These are separate repair slices. Do not combine them into a broad refactor. The next task is to finish the remaining repository scan and then select one bounded defect for implementation with regression tests.
+
+
+## Checkpoint 12 — Frontend module coverage and audit consolidation
+
+The current frontend source tree was inspected at HEAD `6b8b247`.
+
+Feature folders exist for:
+- Auth;
+- Customers;
+- Devices;
+- Diagnostics;
+- InstrumentType;
+- Materials;
+- Orders;
+- Organizations;
+- PriceLists;
+- Repairs;
+- Users;
+- Verifications;
+- WarehouseStock.
+
+Page folders exist for:
+- Auth;
+- Customers;
+- Devices;
+- Diagnostics;
+- InstrumentTypes;
+- Materials;
+- Orders;
+- Organizations;
+- PriceLists;
+- Repairs;
+- Users;
+- Verifications;
+- Warehouses.
+
+No frontend feature/page was found for Site, Workflow, Document, Arshin or WarehouseMovement. The frontend tree has WarehouseStock but no corresponding WarehouseMovement feature. This is a source-tree inventory only; it does not establish that every existing page is complete or correctly integrated with its backend API.
+
+### Consolidated audit status
+
+The audit has compared the legacy revision `1dd08fc` with current source at successive documented checkpoints. The main confirmed findings are:
+
+**Business model / incomplete migration**
+- Customer's single required Organization is inherited from the original schema; the current approved 0..N association model is not integrated into Application/API/frontend.
+- Order.organization_id was added after the initial schema and is still copied from Customer, contrary to the current approved Order business contract.
+- CustomerOrganization association persistence and backfill exist but have no active Application/repository management flow.
+
+**Confirmed runtime / persistence defects**
+- Material, PriceList and Workflow write services lack a transaction commit boundary.
+- Warehouse create/add-stock/create-movement API calls omit the User argument required by current Application signatures.
+- Warehouse stock/movement and Workflow state-changing routes omit CSRF validation.
+- Warehouse stock operations do not follow the documented WarehouseMovement ledger invariant.
+- Material list repository returns archived materials while the test fake excludes them.
+
+**Confirmed missing documented business capabilities**
+- PriceList price lookup and Order price snapshot integration are absent relative to the domain design documents; verify that these requirements remain in the frozen baseline before implementation.
+- Arshin export workflow is not implemented beyond its ORM model.
+- Document workflow is not implemented beyond Document/DocumentTemplate ORM models.
+- Verification's full metrological execution data (method version, operations, measurements, calculations, characteristics and acceptance evaluation) is not implemented; current module documentation explicitly describes this as a staged limitation.
+
+**Potential defects / require explicit business rules**
+- PriceList missing-item behavior may return success or an unhandled 500 rather than 404.
+- DeviceMapper silently maps unknown stored status to AVAILABLE.
+- Repair lifecycle transitions have no explicit state guards.
+- Repair/Diagnostic do not validate OrderItem existence in Application before persistence.
+- Verification.instrument_id remains nullable for historical compatibility despite current creation requiring a concrete instrument.
+- Workflow transaction and CSRF issues are confirmed; its role policy and transition invariants require a separate business decision.
+
+**Not classified as lost functionality**
+- Generic CRUD `get_all`/`archive` methods without legacy API/UI callers.
+- Device status persistence, which was absent in the legacy mapper but is now persisted.
+- Site, which is a later-added entity rather than a removed legacy capability.
+- Empty Alembic merge revisions, which are graph-merge markers rather than application no-op stubs.
+- Repair/Diagnostic lifecycle actions that are present in both legacy and current API contracts.
+
+### Audit completion boundary
+
+This is a broad source-level audit, not a claim that every line of the repository or every production workflow has been runtime-tested. GitHub inspection cannot establish:
+- current production database row counts or actual applied migration revision;
+- whether historic records contain invalid enum values or missing foreign keys;
+- actual browser behavior for every frontend module;
+- external Arshin credentials, template files, service endpoints or acceptance workflow;
+- actual warehouse movement practices used by the business.
+
+These require local validation, database inspection and/or business confirmation. No destructive migration or production data change should be prepared from GitHub source alone.
+
+### Recommended remediation order
+
+1. Restore transaction boundaries for Material, PriceList and Workflow, with SQLAlchemy integration tests proving writes survive request session closure.
+2. Repair Warehouse API/Application user forwarding and add route invocation tests; add CSRF dependencies to Warehouse stock/movement and Workflow mutation routes.
+3. Align WarehouseMovement and WarehouseStock behavior with the documented movement-ledger invariant, after defining movement semantics and tests.
+4. Complete Customer 0..N Organization integration and remove the hidden Order→Organization dependency in a staged, data-preserving migration.
+5. Fix Material archived-list filtering and PriceList item not-found behavior.
+6. Continue business-domain design for PriceList-to-Order price snapshots, Document, Arshin and full Verification execution as separate approved slices.
+
+Each remediation item must have its own minimal change, focused tests, a separate commit and a local production-like validation checkpoint.
