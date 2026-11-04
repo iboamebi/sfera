@@ -937,3 +937,53 @@ Source inspected at branch HEAD `a376aac` after the Customer / Organization role
 ### Next step
 
 Inventory all remaining references to `Customer.organization_id`, `Organization.customers`, `Organization.sites`, `Site.organization_id`, `Order.organization_id` and `Order.site_id`, including reports, events, tests and frontend routes. Then inspect the local database's actual rows and applied migrations before drafting the data migration. No application code or database schema changed in this checkpoint.
+
+
+## Checkpoint 16 — Достоверность Customer / Organization данных и форма создания Customer
+
+Проверка выполнена на branch `feat/user-first-login-password`, исходный HEAD `5bf96eb3cc665bf64fad7cc17d8340bfc5ebe386`, 2026-11-04. Бизнес-уточнение пользователя: реальные юридические лица и их реквизиты вносились в Organization; записи Organization являются ценными исходными данными. Текущие связи Customer ↔ Organization создавались также для тестов, проверки сценариев и копирования, поэтому их наличие или отсутствие не подтверждает бизнес-отношение.
+
+### Фактические поля и UI
+
+- `Organization` ORM содержит name, short_name, INN, KPP, OGRN, address, phone, email, website, comment.
+- `Customer` ORM содержит legacy organization_id, name, contact_person, phone, email, comment, discount_percent. Юридических идентификаторов INN/KPP/OGRN в Customer нет.
+- `CustomerForm.tsx` требует organizationId, блокирует создание при пустом справочнике Organization и предлагает создать Organization прямо из формы Customer.
+- `CustomerForm.tsx` содержит собственные поля name, contactPerson, phone, email, comment, discountPercent.
+- `OrganizationForm.tsx` содержит юридические реквизиты и собственные phone/email. Пересечение phone/email — контактное пересечение, не дублирование INN/KPP/OGRN.
+- Текущий интерфейс смешивает создание клиентского контекста и юридического лица, чем поддерживает ошибочное представление об обязательной связи 1:1.
+
+### Локальная инвентаризация, предоставленная пользователем
+
+| Проверка | Результат |
+|---|---:|
+| alembic_version | `9f2a6c4d8e10` |
+| customers | 162 |
+| organizations | 162 |
+| customer_organizations | 16 |
+| sites | 0 |
+| instruments | 41, все без site_id |
+| orders | 27, все с organization_id, все без site_id |
+| Customer со старым organization_id | 162 |
+| Customer без новой связи | 146 |
+| Customer с одной новой связью | 16 |
+| Organization без новой связи с Customer | 150 |
+| Organization с одним Customer | 9 |
+| Organization с несколькими Customer | 3 |
+| Order, где organization_id совпадает с Customer.organization_id | 27 |
+| Order, где значения различаются | 0 |
+
+Все 16 строк customer_organizations совпадают со старым customers.organization_id. Это техническое соответствие полей, а не доказательство достоверности бизнес-отношений. Отсутствие связи у 146 Customer также не доказывает отсутствие Organization.
+
+### Обязательные ограничения перехода
+
+1. Сохранить все Organization и внесённые юридические реквизиты.
+2. Не использовать customers.organization_id и существующие customer_organizations как источник автоматического backfill.
+3. Не перепривязывать и не очищать Order.organization_id: 27 значений сохранить как исторические до отдельного решения о финансовой истории.
+4. Не переносить реквизиты Organization в Customer.
+5. Не считать телефон/email Customer юридическими реквизитами Organization.
+6. Исправить бизнес-контракт и интерфейс так, чтобы Customer мог существовать без Organization; отношения с юридическими лицами должны задаваться отдельно и осознанно.
+7. Перед изменением схемы повторно проверить актуальный Alembic graph и локальную БД; production database в этом аудите не проверялась.
+
+### Результат
+
+Выполнен только аудит и уточнение документации. Application code, frontend code и database schema не изменялись.
