@@ -1,9 +1,8 @@
 import {
   Button,
-  Card,
-  CardContent,
   Chip,
-  Stack,
+  TableCell,
+  TableRow,
   Typography,
 } from "@mui/material";
 import { Link } from "react-router";
@@ -42,49 +41,43 @@ function formatDate(value: string): string {
 
 export function OrderListItem({ order }: OrderListItemProps) {
   return (
-    <Card variant="outlined">
-      <CardContent>
-        <Stack
-          direction={{ xs: "column", sm: "row" }}
-          spacing={2}
+    <TableRow hover>
+      <TableCell sx={{ whiteSpace: "nowrap" }}>
+        <Typography
+          component={Link}
+          to={`/orders/${order.id}`}
           sx={{
-            alignItems: { xs: "stretch", sm: "center" },
-            justifyContent: "space-between",
+            color: "primary.main",
+            fontWeight: 600,
+            textDecoration: "none",
+            "&:hover": { textDecoration: "underline" },
           }}
         >
-          <Stack spacing={1} sx={{ minWidth: 0 }}>
-            <Typography variant="h6">
-              Заказ № {order.number}
-            </Typography>
-            <Typography color="text.secondary" variant="body2">
-              Клиент: {order.customerName}
-            </Typography>
-            <Typography color="text.secondary" variant="body2">
-              Создан: {formatDate(order.createdAt)}
-            </Typography>
-          </Stack>
-
-          <Stack
-            direction="row"
-            spacing={1}
-            sx={{ alignItems: "center", flexWrap: "wrap" }}
-          >
-            <Chip
-              size="small"
-              color={statusColors[order.status] ?? "default"}
-              label={statusLabels[order.status] ?? order.status}
-            />
-            <Button
-              component={Link}
-              to={`/orders/${order.id}`}
-              variant="outlined"
-              size="small"
-            >
-              Открыть / редактировать
-            </Button>
-          </Stack>
-        </Stack>
-      </CardContent>
-    </Card>
+          № {order.number}
+        </Typography>
+      </TableCell>
+      <TableCell sx={{ whiteSpace: "nowrap" }}>
+        {formatDate(order.createdAt)}
+      </TableCell>
+      <TableCell>{order.customerName}</TableCell>
+      <TableCell>
+        <Chip
+          size="small"
+          color={statusColors[order.status] ?? "default"}
+          label={statusLabels[order.status] ?? order.status}
+        />
+      </TableCell>
+      <TableCell align="right">
+        <Button
+          component={Link}
+          to={`/orders/${order.id}`}
+          variant="text"
+          size="small"
+          sx={{ whiteSpace: "nowrap" }}
+        >
+          Открыть
+        </Button>
+      </TableCell>
+    </TableRow>
   );
 }
