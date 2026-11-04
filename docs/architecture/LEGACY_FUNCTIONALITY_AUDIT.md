@@ -315,3 +315,38 @@ This strengthens the earlier classification:
 ### Next step
 
 Complete a repository-wide reference inventory for Customer/Organization/Order IDs and review relevant architecture/business docs against the current implementation. Then prepare the smallest safe transition sequence, with production database checks clearly separated from GitHub-only validation.
+
+
+## Checkpoint 7 — Order events and application wiring
+
+Current source and tests inspected at HEAD `72d7740`:
+
+- `Order.register()` emits `OrderRegistered`; the domain test confirms the event.
+- `SqlAlchemyUnitOfWork.commit()` commits the transaction, collects registered aggregate events and dispatches them through `EventDispatcher`; infrastructure tests confirm dispatch and operation correlation.
+- The Order Application service calls `register_aggregate()` for registration, so this event path is active.
+- `OrderCreated` is defined as a domain event but no current Order creation path emits it.
+- `OrderApplicationService` receives an `event_dispatcher` dependency but does not use it. Event dispatch is performed by the Unit of Work instead.
+- The current source tree contains no production event-handler/subscriber modules. The event dispatcher is exercised by a unit test with an inline lambda; the Device event types also exist, but no production subscriber was found in the inspected tree.
+
+**Classification:**
+- OrderRegistered event production and dispatch — **Migrated / active infrastructure**.
+- OrderCreated event — **Unused event type; potential unfinished scaffold**, not yet a confirmed missing business workflow.
+- Unused event_dispatcher dependency on OrderApplicationService — **redundant wiring / cleanup candidate**, not a business capability.
+- No production subscribers — **potential gap only** until business requirements establish which cross-module reactions must happen after registration or device connection.
+
+No event behavior was changed.
+
+### Checkpoint 7 work log
+
+| Step | Completed result |
+|---|---|
+| 1 | Inspected AggregateRoot event collection and DomainEvent metadata |
+| 2 | Inspected SQLAlchemy Unit of Work event dispatch after commit |
+| 3 | Verified OrderRegistered event creation and dispatch in domain/infrastructure tests |
+| 4 | Confirmed OrderCreated is not emitted by current Order creation flow |
+| 5 | Confirmed OrderApplicationService's event_dispatcher argument is unused |
+| 6 | Inspected current tree for production event subscribers; none found |
+
+### Next step
+
+Continue the audit beyond Customer/Order: compare Warehouse, Material and PriceList legacy workflows against current application/API/frontend. In parallel, retain the event findings as potential architecture cleanup until concrete business reactions are identified.
