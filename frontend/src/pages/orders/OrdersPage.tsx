@@ -17,12 +17,22 @@ import { Link } from "react-router";
 import { sortOrders } from "../../features/orders/model/orderSorting";
 import type {
   OrderSortCriterion,
+  OrderSortField,
 } from "../../features/orders/model/orderSorting";
 import { useOrders } from "../../features/orders/model/useOrders";
 import { OrderListEmpty } from "../../features/orders/ui/OrderListEmpty";
 import { OrderListError } from "../../features/orders/ui/OrderListError";
 import { OrderListItem } from "../../features/orders/ui/OrderListItem";
-import { OrderSortControls } from "../../features/orders/ui/OrderSortControls";
+
+const sortableColumns: Array<{
+  field: OrderSortField;
+  label: string;
+}> = [
+  { field: "number", label: "Заказ" },
+  { field: "createdAt", label: "Дата" },
+  { field: "customerName", label: "Клиент" },
+  { field: "status", label: "Статус" },
+];
 
 export function OrdersPage() {
   const { data: orders, isLoading, error } = useOrders();
@@ -46,6 +56,26 @@ export function OrdersPage() {
     () => sortOrders(filteredOrders, sortCriteria),
     [filteredOrders, sortCriteria],
   );
+
+  const handleSortClick = (field: OrderSortField) => {
+    setSortCriteria((current) => {
+      const existing = current.find((criterion) => criterion.field === field);
+
+      if (!existing) {
+        return [...current, { field, direction: "asc" }];
+      }
+
+      if (existing.direction === "asc") {
+        return current.map((criterion) =>
+          criterion.field === field
+            ? { ...criterion, direction: "desc" }
+            : criterion,
+        );
+      }
+
+      return current.filter((criterion) => criterion.field !== field);
+    });
+  };
 
   if (isLoading) {
     return <Typography>Загрузка заказов...</Typography>;
@@ -81,13 +111,6 @@ export function OrdersPage() {
         fullWidth
       />
 
-      <Paper variant="outlined" sx={{ p: 2 }}>
-        <OrderSortControls
-          criteria={sortCriteria}
-          onChange={setSortCriteria}
-        />
-      </Paper>
-
       {orders && orders.length === 0 && <OrderListEmpty />}
 
       {orders && orders.length > 0 && sortedOrders.length === 0 && (
@@ -101,18 +124,40 @@ export function OrdersPage() {
           <Table size="small" sx={{ minWidth: 760 }}>
             <TableHead>
               <TableRow>
-                <TableCell sx={{ fontWeight: 700, whiteSpace: "nowrap" }}>
-                  Заказ
-                </TableCell>
-                <TableCell sx={{ fontWeight: 700, whiteSpace: "nowrap" }}>
-                  Дата
-                </TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>
-                  Клиент
-                </TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>
-                  Статус
-                </TableCell>
+                {sortableColumns.map(({ field, label }) => {
+                  const criterion = sortCriteria.find(
+                    (item) => item.field === field,
+                  );
+                  const priority = sortCriteria.findIndex(
+                    (item) => item.field === field,
+                  );
+
+                  return (
+                    <TableCell
+                      key={field}
+                      sx={{ fontWeight: 700, whiteSpace: "nowrap" }}
+                    >
+                      <Button
+                        size="small"
+                        color="inherit"
+                        onClick={() => handleSortClick(field)}
+                        aria-label={`Сортировать по полю «${label}»`}
+                        sx={{
+                          minWidth: 0,
+                          px: 0.5,
+                          fontWeight: 700,
+                          textTransform: "none",
+                        }}
+                      >
+                        {label}
+                        {criterion &&
+                          ` ${criterion.direction === "asc" ? "↑" : "↓"}`}
+                        {criterion && sortCriteria.length > 1 &&
+                          ` ${priority + 1}`}
+                      </Button>
+                    </TableCell>
+                  );
+                })}
                 <TableCell align="right" sx={{ fontWeight: 700 }}>
                   Действие
                 </TableCell>
