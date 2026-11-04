@@ -176,7 +176,7 @@ export function OrderItems({ items, orderId, editable = false }: OrderItemsProps
                         size="small"
                         value={verificationDate}
                         onChange={(event) => setVerificationDate(event.target.value)}
-                        InputLabelProps={{ shrink: true }}
+                        slotProps={{ inputLabel: { shrink: true } }}
                       />
                       <TextField
                         select
