@@ -870,3 +870,70 @@ Business decision confirmed by the user on 2026-11-04:
 ### Next step
 
 Update the Site/Customer model and implementation plan before changing code. Then inspect the complete Site and Customer dependency graph, migration history and local production data requirements. Do not implement queue behavior until its planning rules are specified.
+
+
+
+## Checkpoint 15 — Current Customer / Organization / Site dependency graph
+
+Source inspected at branch HEAD `a376aac` after the Customer / Organization role clarification.
+
+### Confirmed current implementation
+
+**Customer ↔ Organization**
+- Customer Domain, CreateCustomerCommand, API schema and ORM still require one `organization_id`.
+- CustomerApplicationService creates Customer from that single Organization ID.
+- CustomerMapper reads/writes only `Customer.organization_id`.
+- The `customer_organizations` ORM association table and relationship exist and are backfilled by migration `1d3e5f7a9b20`, but Customer Domain/Application/Repository/API do not use that association.
+- Organization ORM still has the legacy one-to-many `customers` relationship with `cascade="all, delete-orphan"`; it coexists with the unused many-to-many association.
+- Customer frontend form requires selecting an Organization and prevents creation when no Organization exists.
+
+**Site ownership**
+- Site Domain, CreateSiteCommand, API schema, ORM and mapper all require `organization_id`.
+- SiteApplicationService and SiteRepository expose `get_by_organization_id`; the Site API route is `/sites/organization/{organization_id}`.
+- Organization ORM has `sites` relationship.
+- These are active code paths, not just legacy database columns, and conflict with the approved Customer-owned Site model.
+
+**Instrument ownership / Site association**
+- Instrument ORM has nullable `site_id` and relationship to Site.
+- Device Domain, Application commands, mapper, API schemas and frontend do not expose `site_id`.
+- Instrument has no direct `customer_id` in the inspected ORM model. For an instrument assigned to a Site, Customer ownership can be reached only after Site ownership is corrected. Ownership of an instrument without a Site is not represented by the inspected Device/Instrument contract and requires a deliberate model decision; do not add a second ownership link without checking the intended invariant.
+
+**Order**
+- Order Domain and ORM still require `organization_id`.
+- OrderApplicationService fetches Customer and copies `customer.organization_id` into every new Order.
+- Order Mapper persists and restores this required field.
+- The Order create API/frontend correctly ask only for Customer; the payer Organization is hidden internal behavior, not a user-selected transaction choice.
+- Order has a separate optional `site_id`, while OrderItems reference concrete Instruments optionally. The Order-level Site reference must not be confused with the permanent Instrument-to-Site association.
+
+### Migration and data constraints
+
+- Migration `f1a2b3c4d5e6` creates `sites.organization_id` as NOT NULL with an FK to Organization.
+- Migration `1d3e5f7a9b20` creates and backfills `customer_organizations` from `customers.organization_id`, adds required `orders.organization_id` populated from Customer, and adds nullable `orders.site_id` and `instruments.site_id`.
+- The existing migration does not establish a Customer owner for each Site or for instruments that have no Site.
+- A safe migration cannot assume that one Organization maps to exactly one Customer. If multiple Customers reference the same Organization, deriving Site.customer_id from Site.organization_id is ambiguous.
+- No production database rows, actual applied Alembic revision or production foreign-key state were inspected. A data-preserving migration plan must wait for local database inventory and mapping analysis.
+
+### Implementation boundary
+
+1. Do not remove legacy columns or change nullability until current code references and local/production data have been inventoried.
+2. Integrate the existing Customer ↔ Organization association through Domain/Application/Repository/Infrastructure/API before removing the legacy single-Organization path.
+3. Move Site ownership to Customer across all active layers and replace organization-scoped Site queries with Customer-scoped queries.
+4. Decide how Customer ownership is represented for Instruments that are not assigned to a Site before changing persistence.
+5. Remove the hidden Order → Organization dependency only after preserving existing Order organization values and all historical references.
+6. Keep Order.site_id distinct from Instrument.site_id.
+7. Treat Order/Site readiness and cross-Site verification queue planning as separate future capabilities; neither is implemented by the current code inspected here.
+
+### Checkpoint 15 work log
+
+| Step | Completed result |
+|---|---|
+| 1 | Verified branch HEAD `a376aac` |
+| 2 | Read current Customer, Organization, Site, Device/Instrument and Order Domain/Application/Infrastructure/API/ORM code |
+| 3 | Read the relevant Site and Customer/Organization migrations |
+| 4 | Read the Customer and Device frontend contracts and Customer creation form |
+| 5 | Confirmed the Customer/Organization association is only partially integrated and Site ownership remains Organization-based |
+| 6 | Identified missing explicit ownership for Instruments without a Site and the ambiguity of deriving Site ownership from Organization alone |
+
+### Next step
+
+Inventory all remaining references to `Customer.organization_id`, `Organization.customers`, `Organization.sites`, `Site.organization_id`, `Order.organization_id` and `Order.site_id`, including reports, events, tests and frontend routes. Then inspect the local database's actual rows and applied migrations before drafting the data migration. No application code or database schema changed in this checkpoint.
