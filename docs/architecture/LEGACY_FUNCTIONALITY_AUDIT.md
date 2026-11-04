@@ -778,3 +778,48 @@ These require local validation, database inspection and/or business confirmation
 6. Continue business-domain design for PriceList-to-Order price snapshots, Document, Arshin and full Verification execution as separate approved slices.
 
 Each remediation item must have its own minimal change, focused tests, a separate commit and a local production-like validation checkpoint.
+
+
+## Checkpoint 13 — Site ↔ Instrument integration
+
+Current source inspected at HEAD `ddc341c`:
+
+- `sites.organization_id` is required in the ORM and Site Domain model.
+- `instruments.site_id` already exists as a nullable database column, added by migration `1d3e5f7a9b20`.
+- Instrument ORM declares the Site relationship (`Instrument.site` / `Site.instruments`).
+- The relationship is not carried through the active Device Domain/Application/API contract:
+  - Device Domain entity has no `site_id`;
+  - DeviceMapper neither reads nor writes `Instrument.site_id`;
+  - Device create/update commands and API schemas do not accept `site_id`;
+  - DeviceRead does not return `site_id`;
+  - frontend device DTO, mapper, create form and card omit Site.
+- Site has backend list/get/list-by-organization/create endpoints and Application/repository support.
+- No frontend Site feature or page exists in the current tree.
+
+**Classification:** Site persistence and the nullable Instrument FK exist, but the required business workflow for assigning and viewing the Site of a concrete measuring instrument is **confirmed incomplete**. The absence from the UI is explained by the missing Domain-to-frontend integration, not by a missing database relationship.
+
+### Required implementation boundary
+
+- Keep the existing `instruments.site_id` FK; do not create another association table.
+- Preserve nullable Site assignment because an instrument may arrive before its operating location is known.
+- Surface Site through Device Domain, mapper, Application commands, API schemas and the instrument-card UI.
+- Provide the necessary Site selection data from the existing organization-owned Site records.
+- Do not infer that Order.site_id replaces Instrument.site_id. They represent different contexts: the instrument's operating location and the optional operational context of an Order.
+- Do not add Site movement history until the business process and required history semantics are separately established.
+
+### Checkpoint 13 work log
+
+| Step | Completed result |
+|---|---|
+| 1 | Rechecked branch HEAD and the approved Customer / Organization / Site model |
+| 2 | Read Site Domain, Application, repository, mapper, ORM, schemas and router |
+| 3 | Read Instrument ORM, Device Domain, mapper, repository, commands and API |
+| 4 | Read frontend Device DTO, mapper, create form, card and page |
+| 5 | Confirmed the database FK exists while the Device workflow omits it end-to-end |
+
+### Next implementation sequence
+
+1. Complete Customer ↔ Organization 0..N behavior and remove the implicit Order → Organization dependency while preserving legacy values.
+2. Implement the existing Instrument → Site relationship end-to-end in the instrument card and relevant selection UI.
+3. Add Customer lists to Organization detail and Site management UI as separate focused frontend work.
+4. Validate against the local database and browser before production deployment.
