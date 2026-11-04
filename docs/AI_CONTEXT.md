@@ -727,3 +727,17 @@ After a pause:
 - Diagnostic creation and recommendation changes remain outside this slice pending separate business-significance review.
 - Repair completion audit was locally validated: 2 focused tests passed; Ruff check and format check passed.
 - Diagnostic completion local validation is pending.
+
+
+## Business model checkpoint — Customer / Site / Order grouping (2026-11-04)
+
+- Confirmed: Site belongs to Customer, not to payer Organization.
+- Customer may own multiple Sites; each Site groups concrete instrument instances.
+- One Order may include a subset of a Site's instruments and instruments from multiple Sites.
+- Readiness/release is evaluated per Site within the specific Order using only that Order's OrderItems. Instruments assigned to the Site but absent from the Order are outside this Order's scope and do not block release.
+- Different Site groups in one Order may be released independently when their included instruments are ready.
+- Verification queue is a separate production-planning concept. It may group work across orders/Sites, but it does not change ownership, Order membership, Verification facts or Site release readiness.
+- Current code mismatch: Site requires organization_id; Instrument.site_id exists but is absent from Device Domain/mapper/commands/API; Verification is linked to OrderItem; no dedicated verification queue use case/entity was found.
+- Updated business model: docs/architecture/CUSTOMER_ORGANIZATION_SITE_MODEL.md.
+- Detailed source audit: Checkpoint 14 in docs/architecture/LEGACY_FUNCTIONALITY_AUDIT.md.
+- No application code or database schema changed in this checkpoint.
