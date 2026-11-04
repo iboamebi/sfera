@@ -225,3 +225,35 @@ No database data was queried during this GitHub-only audit. The number of existi
 ### Next step
 
 Finish the Customer / Organization / Order dependency audit by inspecting all current references to the organization identifiers, frontend customer detail/edit flows, and database migration ancestry. Then define a safe staged transition that preserves historical values and keeps Site semantics intact. No schema or application code changes are authorized by this audit checkpoint alone.
+
+
+## Checkpoint 4 — Customer / Organization frontend flows
+
+Current frontend source inspected at HEAD `609593c`:
+
+- Customer list loads and displays customer contact details.
+- Customer detail displays name, contact person, phone, email, comment, discount and archive state; it does not display any related Organization.
+- Customer create form exposes one required Organization selector.
+- Customer create schema requires a UUID `organizationId`.
+- Create submission is disabled when the Organization list is empty.
+- The frontend Customer DTO and mapper expose one `organization_id`, not a collection.
+- No Customer edit page or Customer update form appears in the inspected customer page/feature paths.
+- Organization detail displays legal/contact fields but does not show associated Customers or Sites.
+- Order creation frontend remains Customer-oriented; payer Organization is not requested by the Order form.
+
+**Classification:** the current UI concretely enforces the one-organization-only model and prevents Customer creation without an Organization. It does not expose the approved 0..N relationship or display the associations. This is consistent with the backend contract mismatch; no separate legacy frontend comparison was possible at the pre-frontend revision inspected.
+
+### Checkpoint 4 work log
+
+| Step | Completed result |
+|---|---|
+| 1 | Inspected Customer list and detail pages |
+| 2 | Inspected Customer API DTO, mapper, queries and create schema |
+| 3 | Confirmed Customer form requires one Organization and blocks submit when none exist |
+| 4 | Confirmed Customer detail does not display related Organizations |
+| 5 | Inspected Organization detail; it does not display associated Customers/Sites |
+| 6 | Confirmed Order create UI remains Customer-oriented |
+
+### Next step
+
+Complete the backend reference search and migration ancestry review, then consolidate the safe Customer–Organization–Order transition plan. Keep implementation changes separate from the audit.
