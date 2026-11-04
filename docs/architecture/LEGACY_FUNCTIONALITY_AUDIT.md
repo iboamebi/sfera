@@ -830,6 +830,7 @@ Current source inspected at HEAD `ddc341c`:
 Business decision confirmed by the user on 2026-11-04:
 
 - Site belongs to Customer, independently of the payer Organization.
+- When a Customer has one legal entity, that Organization may simultaneously act as the customer-facing contracting party and payer; when there are multiple legal entities, Customer is the shared client identity and each Organization is a separate legal entity that may act as contracting party and/or payer for a transaction. Customer and Organization remain distinct model entities.
 - A Customer may have multiple Sites.
 - A Site contains a controlled set of concrete instrument instances.
 - An Order may contain only a subset of instruments assigned to a Site, and may include instruments from multiple Sites.
