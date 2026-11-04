@@ -439,3 +439,91 @@ Current domain `change_item_price()` and `change_item_description()` raise plain
 ### Next step
 
 Continue with Instrument / Device / Site and Verification lifecycle comparison. Before any Warehouse code fix, define the smallest coherent change for user forwarding and add route invocation tests. Treat stock ledger behavior and PriceList-to-Order calculation as separate business slices; do not mix them into the Customer/Organization migration.
+
+
+## Checkpoint 9 — Device / InstrumentType / Site / Verification
+
+**Compared revisions:** legacy parent `1dd08fc` and current branch at HEAD `8639210`; current instrument and verification architecture documents were reviewed.
+
+### Device / Instrument
+
+Legacy Device behavior:
+- API exposed connect/disconnect only.
+- Domain state changed between AVAILABLE, IN_WORK and COMPLETED.
+- Legacy DeviceMapper always reconstructed status as AVAILABLE and did not persist status changes into the Instrument ORM. This was a real persistence gap in the legacy implementation.
+
+Current behavior:
+- Device is explicitly the card of one concrete measuring instrument; `InstrumentType` is a separate entity.
+- Current Device API adds list/get/create/update and retains connect/disconnect.
+- Current Device Application service validates InstrumentType existence on create and uses a Unit of Work for writes.
+- Current ORM `Instrument.device_status`, mapper and repository persist the status; this closes the legacy status-persistence gap.
+- Current DeviceMapper maps stored status to the enum, but catches an unknown status and silently substitutes `AVAILABLE`.
+
+**Classification:**
+- Device status persistence — **Migrated/fixed**; not a current in-memory stub.
+- Device card create/list/update — **Expanded current capability**.
+- Unknown persisted status silently becoming AVAILABLE — **Potential data-integrity defect**. It masks unexpected database values and can make an instrument appear available. No evidence yet that such values exist in production.
+- Hardware/device connectivity is not established by these code paths: connect/disconnect update the domain status only. The current architecture document defines Device as the instrument card, so do not infer a missing physical hardware integration from these names.
+
+### InstrumentType
+
+Current InstrumentType has a distinct ORM, Domain entity, repository, Application service and API for create/list/get/update/archive/restore. Device creation validates that the referenced type exists.
+
+This separation matches `docs/architecture/INSTRUMENT_CARD.md`: type-level properties remain on InstrumentType; instance name, modification and serial number remain on Device/Instrument. No confirmed migration loss was identified in this preliminary comparison. The current API's write endpoints authenticate/CSRF-protect requests; Application service itself does not enforce a role, which is a separate authorization-policy review item.
+
+### Site
+
+Site is not present in the inspected legacy module tree and was added later. Current Site:
+- is owned by one Organization;
+- supports get/list/list-by-organization/create;
+- is independently mapped and persisted;
+- is optionally linked to Order and Instrument.
+
+The Site API passes the authenticated User into the Application service for create. This matches the current Customer/Organization/Site architecture decision. Site is a new model in the inspected history, not a migrated legacy Device feature.
+
+### Verification — lifecycle migration
+
+Legacy Verification behavior at parent revision:
+- API exposed get-by-id and approve/reject actions.
+- Application service exposed get/approve/reject.
+- Domain represented the verification mainly by date, result, valid-until and unsuitable reason.
+- There was no legacy create/start lifecycle in the inspected Verification Application/API.
+
+Current Verification behavior:
+- adds create in CREATED state and explicit start to IN_PROGRESS;
+- preserves approve/reject as domain-specific final decisions, now only allowed from IN_PROGRESS;
+- requires a real OrderItem and concrete Instrument at creation;
+- persists verification type, created/start/decision timestamps and methodology string;
+- writes audit records for create/start/approve/reject;
+- tests cover role authorization, missing OrderItem/instrument, lifecycle transitions and audit records.
+
+**Classification:** current lifecycle is **expanded and refined**, not a loss of legacy approve/reject behavior.
+
+### Verification — full metrological process remains unimplemented
+
+The approved architecture documents `VERIFICATION_DOMAIN_MODEL.md` and `VERIFICATION_AGGREGATE_MODEL.md` describe the intended subject process: method/version, conditions, operations, measurement points, actual measurements, calculations, metrological characteristics, acceptance evaluation and a decision grounded in those facts.
+
+Current code stores a nullable `methodology` string and lifecycle/result fields; it does not yet store the execution facts, measurements, calculations or method version. The current `docs/modules/verification.md` explicitly acknowledges that methodology is currently a string and does not claim a universal method engine exists.
+
+**Classification:** **Confirmed gap against the approved target domain model**, but not a regression introduced by the recent CRUD migration. It is a deliberately staged, unfinished domain capability. Do not solve it by adding generic measurement fields or a universal formula engine; follow the methodology-specific design.
+
+### Verification persistence caveat
+
+Current Application creation requires a concrete instrument, but the Verification ORM `instrument_id` remains nullable and the API read schema exposes it as optional. This is looser than the current creation invariant and the domain meaning of a verification of a concrete instrument. It may be retained for historical rows; production data and migration history must be checked before tightening the database constraint.
+
+### Checkpoint 9 work log
+
+| Step | Completed result |
+|---|---|
+| 1 | Compared legacy/current Device routers, services, entities, mapper and Instrument ORM |
+| 2 | Confirmed legacy DeviceMapper did not persist/read status; current mapper/repository do |
+| 3 | Identified current unknown-status fallback to AVAILABLE |
+| 4 | Reviewed InstrumentType separation and current use cases |
+| 5 | Reviewed Site API/Application/ORM and its optional Order/Instrument links |
+| 6 | Compared legacy/current Verification API, Application, Domain, ORM, mapper and tests |
+| 7 | Compared current Verification implementation with approved target aggregate/domain documents |
+| 8 | Recorded nullable Verification.instrument_id as a historical-data-dependent contract mismatch |
+
+### Next step
+
+Continue the broad stub audit across Arshin/document workflows, repair/diagnostic validation and remaining integration boundaries. After that, consolidate the audit into a prioritized remediation plan. Keep all confirmed defects documented separately from business-model capabilities that require staged domain design.
