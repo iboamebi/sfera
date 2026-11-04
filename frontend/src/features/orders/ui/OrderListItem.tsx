@@ -1,5 +1,4 @@
 import {
-  Button,
   Chip,
   TableCell,
   TableRow,
@@ -66,17 +65,6 @@ export function OrderListItem({ order }: OrderListItemProps) {
           color={statusColors[order.status] ?? "default"}
           label={statusLabels[order.status] ?? order.status}
         />
-      </TableCell>
-      <TableCell align="right">
-        <Button
-          component={Link}
-          to={`/orders/${order.id}`}
-          variant="text"
-          size="small"
-          sx={{ whiteSpace: "nowrap" }}
-        >
-          Открыть
-        </Button>
       </TableCell>
     </TableRow>
   );
