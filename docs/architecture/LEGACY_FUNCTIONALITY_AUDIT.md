@@ -592,3 +592,93 @@ The module document describes validation, export-file generation, export history
 ### Next step
 
 Complete a final cross-module search for placeholder code, incomplete route-to-service calls, missing CSRF/role enforcement and persistence transaction gaps. Then consolidate confirmed defects and unfinished business capabilities into a prioritized remediation roadmap. Do not begin implementation of Arshin, Document, Workflow or full metrological execution as part of this audit.
+
+
+## Checkpoint 11 — Cross-module transaction and CSRF audit
+
+Current source was checked at HEAD `10e5087`. The following files establish the transaction contract:
+- `backend/app/db/database.py`: `SessionLocal` uses `autocommit=False`; `get_db()` closes the session without committing.
+- `backend/app/core/dependencies/database.py`: `get_session()` also closes the session without committing.
+- `backend/app/infrastructure/*/*repository.py`: repository write methods generally call `flush()`, which does not commit the transaction.
+- `backend/app/core/dependencies/uow.py`: the explicit SQLAlchemy UnitOfWork commits on successful context exit.
+
+A cross-check of Application services with persistence writes found three write services without a UnitOfWork or explicit commit:
+
+### Material
+
+- MaterialApplicationService has no UnitOfWork dependency.
+- create/update/archive/restore call MaterialRepository.save().
+- MaterialRepositorySQLAlchemy.save() only flushes.
+- The repository is created with the request-scoped `get_session()`, which closes without committing.
+
+**Classification:** **Confirmed transaction-boundary defect.** Material mutations can be returned by the API after flush but are rolled back when the uncommitted session is closed. Existing Application tests use an in-memory fake repository and do not exercise SQLAlchemy transaction commit.
+
+### PriceList
+
+- PriceListApplicationService has no UnitOfWork dependency or explicit commit.
+- create/update/activate/add_item/remove_item/update_item call PriceListRepository.save().
+- PriceListRepositorySQLAlchemy.save() only flushes.
+- The repository is created with request-scoped `get_session()`, which closes without committing.
+- Current PriceList tests use a fake repository and do not exercise database transaction persistence.
+
+**Classification:** **Confirmed transaction-boundary defect** for PriceList and PriceListItem mutations.
+
+### Workflow
+
+- WorkflowApplicationService has no UnitOfWork dependency or explicit commit.
+- start/move_next/complete call WorkflowInstanceRepository.save_instance().
+- WorkflowInstanceRepositorySQLAlchemy.save_instance() only flushes.
+- The repository is created with request-scoped `get_session()`, which closes without committing.
+- Current Workflow Application tests use fake repositories and do not exercise database transaction persistence.
+
+**Classification:** **Confirmed transaction-boundary defect** for WorkflowInstance writes.
+
+### Transaction boundary cross-check
+
+The following write services do have a UnitOfWork or explicit commit path in the inspected source: Customer, Organization, Order, Device, InstrumentType, Site, Verification, Repair, Diagnostic and Warehouse. This is a source-level wiring check, not a production database test.
+
+### CSRF protection gaps
+
+The authentication architecture states that state-changing cookie-authenticated requests require CSRF validation. Current write routes were checked:
+
+- `POST /warehouse-stocks/` has no endpoint-level `require_csrf`.
+- `POST /warehouse-movements/` has no endpoint-level `require_csrf`.
+- Workflow `POST /start`, `POST /move-next`, and `POST /complete` have no endpoint-level `require_csrf`.
+
+The global `require_password_change_completed` dependency authenticates the user but does not validate CSRF. Therefore these state-changing routes do not satisfy the documented CSRF contract.
+
+The Workflow routes also do not pass a User into Application and WorkflowApplicationService has no role authorization. `AUTHORIZATION.md` does not currently define a Workflow role contract, so role policy should be designed separately; CSRF protection is already a documented requirement.
+
+### Tests that failed to expose the transaction defects
+
+- Material Application tests use `FakeMaterialRepository`.
+- PriceList Application tests use `FakePriceListRepository`.
+- Workflow Application tests use fake repositories.
+- No corresponding SQLAlchemy integration test was found in the inspected paths to assert that a write survives session closure and a fresh session read.
+
+This is a systemic testing gap: Application unit tests verify in-memory behavior but do not prove persistence integration.
+
+### Checkpoint 11 work log
+
+| Step | Completed result |
+|---|---|
+| 1 | Verified SessionLocal transaction configuration and request session teardown |
+| 2 | Cross-checked Application write services against UnitOfWork/commit usage |
+| 3 | Confirmed Material write path has no commit |
+| 4 | Confirmed PriceList write path has no commit |
+| 5 | Confirmed WorkflowInstance write path has no commit |
+| 6 | Confirmed existing tests use fake repositories for these modules |
+| 7 | Checked mutation routers against the documented CSRF contract; found Warehouse stock/movement and Workflow gaps |
+
+### Remediation priority update
+
+The highest-priority confirmed technical defects from the audit are now:
+
+1. Material, PriceList and Workflow writes have no transaction commit boundary.
+2. Warehouse create/add-stock/create-movement API adapters omit the required User argument after Application authorization was introduced.
+3. Warehouse stock/movement and Workflow mutation routes omit CSRF validation.
+4. Warehouse stock changes bypass the documented WarehouseMovement ledger invariant.
+5. Customer/Organization/Order still implement the obsolete single-organization/direct-order-organization model.
+6. Material SQLAlchemy list behavior differs from the active-only fake repository behavior.
+
+These are separate repair slices. Do not combine them into a broad refactor. The next task is to finish the remaining repository scan and then select one bounded defect for implementation with regression tests.
