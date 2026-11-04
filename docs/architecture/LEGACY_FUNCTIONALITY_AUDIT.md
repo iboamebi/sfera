@@ -165,3 +165,63 @@ Current Order Domain entity and ORM model require `organization_id`. Current Ord
 ### Next step
 
 Inspect Organization ownership and the full dependency graph for `orders.organization_id`, `customers.organization_id`, and `customer_organizations`, including Site, production movements, repositories, tests, and frontend detail/edit flows. Do not change schema until the data and FK impact is understood.
+
+
+## Checkpoint 3 — Organization / Site / Order dependency graph
+
+Current source inspection at HEAD `59b5f5d`:
+
+### Organization relationships
+
+- Organization ORM retains the legacy one-to-many `customers` relationship through `Customer.organization_id`.
+- Organization ORM also has a `customer_organizations` relationship.
+- Organization Domain entity and mapper contain legal/business details only; they do not expose Customer associations.
+- Organization Application service supports organization get/list/create/update, but no Customer–Organization association management.
+- The repository tree contains the ORM association model and migration, but no dedicated CustomerOrganization Domain, Application, repository port, or Infrastructure repository.
+
+**Finding:** association persistence exists, but association management is not implemented as an application use case. This confirms the incomplete integration identified in checkpoint 2.
+
+### Site relationships
+
+- Site ORM requires `organization_id`; Site Domain entity and mapper preserve that relationship.
+- Site Application service supports get, list, list by organization, and create.
+- Order ORM has optional `site_id`; Instrument ORM also has optional `site_id`.
+- The approved model keeps Site distinct from Customer and payer Organization. Site ownership must not be repurposed as invoice payer selection.
+
+**Finding:** Site is a separate organization-owned entity and has its own application flow. No Site behavior is changed by this audit.
+
+### Order and production dependencies
+
+- Order ORM currently requires both `customer_id` and `organization_id`; `site_id` is nullable.
+- Order Domain and OrderMapper carry all three identifiers.
+- Order Application create currently derives `organization_id` from Customer; the current public create schema accepts only Customer, number and order details.
+- ProductionMovement references Order by `order_id`; it does not directly reference Organization or Customer in the inspected model.
+- Order repository and mapper persist the organization and site identifiers as part of the aggregate.
+
+**Finding:** the hidden Organization dependency is present across Order Domain, ORM, mapper, repository and Application create. The inspected production movement model depends on Order identity, so removing Order.organization_id does not imply changing ProductionMovement's direct FK. Full runtime/query and reporting dependencies still need review.
+
+### Data migration implications
+
+Migration `1d3e5f7a9b20` performs a one-time copy:
+- Customer's existing Organization is copied into `customer_organizations`.
+- The same Customer Organization is copied into `orders.organization_id`.
+- Order's Organization FK is then made non-null.
+
+The migration does not remove `customers.organization_id`; the current ORM still requires it. Therefore the join table is currently a parallel association representation, not the active source of truth.
+
+No database data was queried during this GitHub-only audit. The number of existing rows, nullability in production, and whether any later records diverge between the legacy FK and association table remain unknown.
+
+### Checkpoint 3 work log
+
+| Step | Completed result |
+|---|---|
+| 1 | Inspected Organization ORM, Domain mapper, Application service and repository |
+| 2 | Confirmed CustomerOrganization has persistence model/migration but no dedicated application/repository flow |
+| 3 | Inspected Site ORM, Domain, mapper and Application service |
+| 4 | Inspected Order ORM, Domain, mapper, repository and create flow |
+| 5 | Inspected ProductionMovement relationship; it references Order directly |
+| 6 | Recorded migration effects and explicitly marked production row state as unknown |
+
+### Next step
+
+Finish the Customer / Organization / Order dependency audit by inspecting all current references to the organization identifiers, frontend customer detail/edit flows, and database migration ancestry. Then define a safe staged transition that preserves historical values and keeps Site semantics intact. No schema or application code changes are authorized by this audit checkpoint alone.
