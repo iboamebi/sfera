@@ -1,316 +1,109 @@
-# Customer Service Design
+# Customer Application Design
 
-## Этап
+## Назначение
 
-Application Service Layer v1.0
+Customer — заказчик/контактная сущность сервисного центра. Клиент может существовать без юридического лица и может быть связан с несколькими Organization.
 
-## Модуль
+Документ описывает текущую целевую модель Customer в архитектуре DDD + Clean Architecture. Он заменяет ранний проектный эскиз CustomerService, в котором ошибочно предполагались обязательная Organization и legacy CRUD.
 
-Customer
+## Бизнес-сценарии
 
----
+1. Создать Customer без Organization.
+2. Создать Customer с одной или несколькими заранее заведёнными Organization.
+3. Просмотреть Customer и связанные Organization.
+4. Добавить или убрать связь с Organization, не создавая нового Customer.
+5. Изменить контактные данные Customer.
+6. Архивировать Customer без физического удаления.
+7. Использовать Customer при создании Order независимо от наличия Organization.
 
-# Назначение
+Organization хранит юридические реквизиты. Выбор Organization-плательщика происходит при выставлении Invoice, не при создании Customer или Order.
 
-`CustomerService` отвечает за сценарии работы с заказчиками.
-
-Модуль не работает напрямую с SQLAlchemy.
-
-Ответственность:
-
-- управление жизненным циклом клиента;
-- бизнес-проверки;
-- вызов Repository;
-- подготовка данных для API.
-
----
-
-# Архитектура
+## Архитектура
 
 ```text
-CustomerRouter
-        |
-        v
-CustomerService
-        |
-        v
-CustomerRepository
-        |
-        v
-CustomerCRUD
-        |
-        v
+Customer Router
+      ↓
+Customer Application Service
+      ↓
+Customer Domain
+      ↓
+Customer Repository Interface
+      ↑
+Customer SQLAlchemy Repository
+      ↓
 PostgreSQL
 ```
 
----
+Application Service может использовать Organization Repository Interface для проверки существования организаций. SQLAlchemy и ORM остаются только в Infrastructure.
 
-# Структура проекта
+Legacy CRUD и старые CustomerService abstractions не возвращаются.
 
-```text
-app/
-├── application/
-│   └── customer/
-│       ├── service.py
-│       ├── commands/
-│       │   ├── create_customer.py
-│       │   ├── update_customer.py
-│       │   └── archive_customer.py
-│       └── queries/
-│           └── get_customer.py
-│
-├── domain/
-│   └── customer/
-│       ├── entity.py
-│       ├── exceptions.py
-│       └── events.py
-│
-├── infrastructure/
-│   └── customer/
-│       └── customer_repository.py
-│
-└── api/
-    └── routers/
-        └── customer.py
-```
+## Domain contract
 
----
+Customer:
+- `id`;
+- `name`;
+- `contact_person?`;
+- `phone?`;
+- `email?`;
+- `comment?`;
+- `discount_percent`;
+- `organization_ids: list[UUID]`;
+- `archived`.
 
-# Команды
+`organization_ids` отражает связи через `customer_organizations`, а не старую колонку `customers.organization_id`.
 
-## CreateCustomerCommand
+## Application commands
 
-Назначение:
+### CreateCustomerCommand
 
-Создание нового клиента.
+- `name`;
+- `organization_ids` — optional, default empty;
+- contact fields;
+- `discount_percent`.
 
-Поля:
+### UpdateCustomerCommand
 
-```python
-name: str
-organization_id: UUID
-contact_person: str | None
-phone: str | None
-email: str | None
-discount_percent: Decimal
-```
+- `customer_id`;
+- optional changed customer fields;
+- `organization_ids` — optional; если передано, заменяет набор связей целиком.
 
----
+Перед сохранением Application проверяет, что все переданные Organization существуют. Повторяющиеся идентификаторы не должны создавать дубли связей.
 
-## UpdateCustomerCommand
+### DeleteCustomerCommand
 
-Назначение:
+Архивирует Customer. Физическое удаление запрещено.
 
-Изменение информации о клиенте.
+## Persistence
 
-Поля:
+- `customer_organizations` — фактическая таблица связей Customer ↔ Organization.
+- Старые `customers.organization_id` и `orders.organization_id` остаются только как nullable legacy persistence fields на переходном этапе.
+- Customer Repository читает и сохраняет association rows.
+- Существующие связи, ранее перенесённые миграцией в `customer_organizations`, сохраняются.
 
-```python
-customer_id: UUID
-name: str
-contact_person: str | None
-phone: str | None
-email: str | None
-discount_percent: Decimal
-```
+## API contract
 
----
+Customer response возвращает список связанных Organization identifiers. Управление набором связей выполняется через Customer create/update use cases; API не обращается к Repository или ORM напрямую.
 
-## ArchiveCustomerCommand
+## UI behavior
 
-Назначение:
+- При нуле организаций Customer создаётся без выбора Organization.
+- При одной организации интерфейс может показать её как единственную связанную.
+- При нескольких организациях пользователь выбирает нужные из списка.
+- Создание Organization из формы Customer остаётся доступным, но не обязательным.
+- Карточка Customer показывает связанные Organization.
 
-Архивирование клиента.
+## Validation
 
-Поля:
+Покрываются:
+- создание без Organization;
+- создание с несколькими Organization;
+- проверка существования каждой Organization;
+- обновление списка связей;
+- отсутствие дубликатов;
+- чтение и сохранение связей Infrastructure;
+- API contract;
+- отсутствие Organization у нового Order;
+- сохранение исторических legacy organization identifiers.
 
-```python
-customer_id: UUID
-```
-
----
-
-# Интерфейс CustomerService
-
-```python
-class CustomerService:
-
-    def create(self, command):
-        ...
-
-    def update(self, command):
-        ...
-
-    def archive(self, command):
-        ...
-
-    def get(self, customer_id):
-        ...
-
-    def get_all(self):
-        ...
-```
-
----
-
-# Бизнес-правила
-
-## Создание клиента
-
-Проверки:
-
-- имя обязательно;
-- организация должна существовать;
-- запрещено создание клиента с одинаковым названием в одной организации.
-
----
-
-## Изменение клиента
-
-Проверки:
-
-- клиент существует;
-- клиент не архивирован.
-
----
-
-## Архивация клиента
-
-Правила:
-
-- физическое удаление запрещено;
-- используется поле `archived`;
-- архивированный клиент недоступен для новых заказов.
-
----
-
-# Domain Events
-
-Используются события:
-
-```text
-CustomerCreated
-CustomerUpdated
-CustomerArchived
-```
-
----
-
-# Исключения домена
-
-Файл:
-
-```text
-app/domain/customer/exceptions.py
-```
-
-Исключения:
-
-```python
-CustomerNotFound
-CustomerAlreadyExists
-CustomerArchived
-OrganizationNotFound
-```
-
----
-
-# Контракт Repository
-
-```python
-class CustomerRepository:
-
-    def get(self, customer_id):
-        ...
-
-    def get_all(self):
-        ...
-
-    def save(self, customer):
-        ...
-
-    def exists_by_name(self, organization_id, name):
-        ...
-
-    def archive(self, customer):
-        ...
-```
-
----
-
-# Изменения API
-
-До рефакторинга:
-
-```text
-Router
-  |
-  v
-CRUD
-```
-
-После рефакторинга:
-
-```text
-Router
-  |
-  v
-CustomerService
-  |
-  v
-CustomerRepository
-  |
-  v
-CustomerCRUD
-```
-
----
-
-# Unit of Work
-
-Все операции изменения данных должны выполняться в рамках одной транзакции.
-
-Пример:
-
-```text
-CustomerService
-        |
-        v
-UnitOfWork
-        |
-        +--> CustomerRepository
-        |
-        +--> OrganizationRepository
-```
-
----
-
-# Покрытие тестами
-
-Создать:
-
-```text
-tests/application/customer/test_customer_service.py
-```
-
-Минимальный набор тестов:
-
-- создание клиента;
-- отказ при создании дубликата;
-- изменение клиента;
-- архивирование клиента;
-- получение клиента;
-- получение списка клиентов.
-
----
-
-# Критерий завершения
-
-Модуль Customer считается полностью переведённым на Application Service Layer при выполнении условий:
-
-- Router не обращается к CRUD напрямую;
-- вся бизнес-логика находится в CustomerService;
-- Repository используется только как слой доступа к данным;
-- CRUD содержит только операции работы с БД;
-- сервис покрыт модульными тестами;
-- все REST API проходят проверку в Swagger.
+Этот модуль считается полностью перенесённым только после реализации и проверки бизнес-сценариев, а не только наличия Domain/Application/Repository/API слоёв.
