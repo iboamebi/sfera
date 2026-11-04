@@ -527,3 +527,68 @@ Current Application creation requires a concrete instrument, but the Verificatio
 ### Next step
 
 Continue the broad stub audit across Arshin/document workflows, repair/diagnostic validation and remaining integration boundaries. After that, consolidate the audit into a prioritized remediation plan. Keep all confirmed defects documented separately from business-model capabilities that require staged domain design.
+
+
+## Checkpoint 10 — Repair / Diagnostic / Workflow / Document / Arshin
+
+Current and legacy code plus current module documentation were inspected at HEAD `27185eb`.
+
+### Repair and Diagnostic — core scenarios remain
+
+Legacy and current API/Application contracts preserve the inspected business operations:
+- Repair: get, create, start, complete, cancel.
+- Diagnostic: get, create, update conclusion, set recommendation (current API names the conclusion action as completion).
+
+Current code adds Application role checks and audit recording for Repair completion and Diagnostic completion. Existing current Application tests cover completion audit and unauthorized users. The earlier conclusion that these lifecycle operations were migrated remains valid.
+
+### Repair and Diagnostic — missing relationship validation
+
+Both current Application services create an aggregate using `order_item_id` without first checking that the OrderItem exists. Neither service depends on an OrderRepository. The database FK will reject an invalid ID at flush time, but the API does not translate that persistence failure into a domain/application 404 or 422.
+
+This behavior also existed in the inspected legacy Application services, so it is **not a migration regression**. It is a **confirmed validation gap** relative to a clean application contract. Current tests construct arbitrary UUIDs for OrderItem and use fake repositories, so they do not exercise the database FK boundary.
+
+### Repair lifecycle invariants
+
+Current Repair Domain methods `start()`, `complete()` and `cancel()` directly assign status without checking the previous state. For example, the entity itself does not prevent completing a NEW repair or starting a completed/cancelled repair. The current Repair module document lists the lifecycle methods and statuses but does not provide a complete transition matrix.
+
+**Classification:** missing transition guards are a **potential domain invariant gap**, not yet a confirmed business-rule violation. The permitted transitions must be agreed from actual repair workflow requirements before adding guards. Do not invent a state machine from status names alone.
+
+### Workflow — current orchestration is separate but lightly guarded
+
+Current Workflow Application service starts, advances and completes WorkflowInstance records through domain service and repositories. It is a newer workflow mechanism and is not present in the inspected legacy revision, so it is not a migrated legacy CRUD capability.
+
+Current Workflow API write endpoints do not declare endpoint-level `get_current_user` or CSRF dependencies, and the Application service does not accept a User or enforce a role. The global `require_password_change_completed` dependency authenticates the session but does not provide role authorization or CSRF protection. This is a **confirmed security-contract gap** for state-changing Workflow endpoints, subject to checking any additional outer middleware not represented in the inspected FastAPI setup.
+
+Workflow Application service also does not use an explicit UnitOfWork; repository save behavior and session dependency lifecycle need a separate transaction-boundary review before declaring persistence incomplete.
+
+### Document — model-only persistence placeholder
+
+Current source tree contains ORM models `Document` and `DocumentTemplate`, but no Document Domain, Application service, repository port/adapter, API router or file-storage adapter. The model stores optional `file_path`; no binary storage behavior or document generation workflow exists in the current application tree.
+
+`docs/modules/document.md` explicitly records this as the confirmed current state and marks generation, attachment, storage abstraction, history and legal document reproduction as future design candidates.
+
+**Classification:** model-only placeholder, **not a forgotten completed workflow** based on the inspected history. It is an intentionally incomplete module whose scope requires a separate document-domain design.
+
+### Arshin — persistence model only
+
+Current source tree contains `ArshinExport` ORM model and the Arshin module document, but no Arshin Domain, Application, repository, API router, XLSM template adapter or external integration implementation.
+
+The module document describes validation, export-file generation, export history and controlled repeat-export behavior. None of these use cases is implemented in the current application tree.
+
+**Classification:** **confirmed unimplemented module relative to its module design**, not a regression shown to have occurred during DDD migration. It must be treated as a separate business implementation stage, especially because it transfers legally significant verification results. Do not infer that the existence of the ORM table means export works.
+
+### Checkpoint 10 work log
+
+| Step | Completed result |
+|---|---|
+| 1 | Compared legacy/current Repair and Diagnostic routes and Application services |
+| 2 | Inspected current Repair/Diagnostic entities, repositories and Application tests |
+| 3 | Confirmed missing OrderItem existence checks in both services |
+| 4 | Identified unguarded Repair lifecycle methods as a transition-rule question |
+| 5 | Inspected Workflow API/Application and global FastAPI authentication dependency |
+| 6 | Confirmed Document currently has ORM models only, matching its factual-state document |
+| 7 | Confirmed Arshin currently has an ORM model only; no application/API/infrastructure workflow found |
+
+### Next step
+
+Complete a final cross-module search for placeholder code, incomplete route-to-service calls, missing CSRF/role enforcement and persistence transaction gaps. Then consolidate confirmed defects and unfinished business capabilities into a prioritized remediation roadmap. Do not begin implementation of Arshin, Document, Workflow or full metrological execution as part of this audit.
