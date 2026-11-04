@@ -257,3 +257,32 @@ Current frontend source inspected at HEAD `609593c`:
 ### Next step
 
 Complete the backend reference search and migration ancestry review, then consolidate the safe Customer–Organization–Order transition plan. Keep implementation changes separate from the audit.
+
+
+## Checkpoint 5 — Alembic ancestry and migration semantics
+
+Current migration source inspected at HEAD `e608f29`:
+
+- Site persistence is introduced by `f1a2b3c4d5e6`, with required `sites.organization_id`.
+- `0c9e8a7b6d5f` follows the Site migration and only adjusts timestamp defaults.
+- `1d3e5f7a9b20` follows `0c9e8a7b6d5f`; it creates/backfills Customer–Organization links and adds/backfills the required Order Organization FK and optional Site links.
+- `a7c9e2f4b610` is an explicit merge of `1d3e5f7a9b20` and `8d4f6a1b2c30`.
+
+Several Alembic merge revisions contain empty `upgrade()`/`downgrade()` bodies. In the inspected files these are merge-only revisions whose purpose is to join migration graph heads, not runtime business operations. Their `pass` bodies must not be classified as forgotten application stubs.
+
+The Customer migration `2b6f5480aadf` was also inspected; despite its filename, its upgrade body drops `verification_methods` and adds a customer-name index. It does not create the Customer table. The actual historical Customer table creation is earlier in the schema history and must be traced from the initial schema migration if column-level origin becomes relevant.
+
+**Data limitation:** GitHub source reveals the intended migration statements, but does not reveal the current production row counts, actual applied Alembic revision, or whether production data has diverged. Those facts require local/database inspection before a destructive or nullability-changing migration.
+
+### Checkpoint 5 work log
+
+| Step | Completed result |
+|---|---|
+| 1 | Traced Site migration ancestry through `f1a2b3c4d5e6` and `0c9e8a7b6d5f` |
+| 2 | Confirmed Customer/Order association migration `1d3e5f7a9b20` and merge revision `a7c9e2f4b610` |
+| 3 | Distinguished intentional Alembic merge markers from application no-op stubs |
+| 4 | Inspected `2b6f5480aadf` and recorded that its filename does not describe its actual operations |
+
+### Next step
+
+Inspect the original schema migration for Customer, Organization, Order, Site and their constraints; inspect the remaining application references and test coverage. Then publish a consolidated migration plan with explicit production checks required before implementation.
