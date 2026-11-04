@@ -121,7 +121,7 @@ export function OrdersPage() {
 
       {sortedOrders.length > 0 && (
         <TableContainer component={Paper} variant="outlined">
-          <Table size="small" sx={{ minWidth: 760 }}>
+          <Table size="small" sx={{ minWidth: 650 }}>
             <TableHead>
               <TableRow>
                 {sortableColumns.map(({ field, label }) => {
@@ -156,11 +156,7 @@ export function OrdersPage() {
                           ` ${priority + 1}`}
                       </Button>
                     </TableCell>
-                  );
                 })}
-                <TableCell align="right" sx={{ fontWeight: 700 }}>
-                  Действие
-                </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
