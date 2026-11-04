@@ -732,6 +732,7 @@ After a pause:
 ## Business model checkpoint — Customer / Site / Order grouping (2026-11-04)
 
 - Confirmed: Site belongs to Customer, not to payer Organization.
+- If the Customer has one legal entity, its Organization may also act as the customer-facing contracting party; with multiple legal entities, Customer is the shared client identity and Organizations are separate legal entities selectable per transaction. Customer and Organization remain distinct data-model entities.
 - Customer may own multiple Sites; each Site groups concrete instrument instances.
 - One Order may include a subset of a Site's instruments and instruments from multiple Sites.
 - Readiness/release is evaluated per Site within the specific Order using only that Order's OrderItems. Instruments assigned to the Site but absent from the Order are outside this Order's scope and do not block release.
