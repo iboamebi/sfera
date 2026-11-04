@@ -350,3 +350,92 @@ No event behavior was changed.
 ### Next step
 
 Continue the audit beyond Customer/Order: compare Warehouse, Material and PriceList legacy workflows against current application/API/frontend. In parallel, retain the event findings as potential architecture cleanup until concrete business reactions are identified.
+
+
+## Checkpoint 8 — Warehouse, Material and PriceList workflows
+
+**Compared revisions:** legacy parent `1dd08fc` and current branch at HEAD `62b8381`; module design docs were also read.
+
+### Warehouse — confirmed API/Application contract break
+
+Legacy WarehouseApplicationService methods accepted only their command. The current service changed all write methods to require an authenticated `User` and enforce ADMIN/WAREHOUSE roles.
+
+The current routers were not updated to pass that user:
+- `create_warehouse` calls `service.create(command)`, while current signature is `create(command, user)`.
+- `add_stock` calls `service.add_stock(command)`, while current signature is `add_stock(command, user)`.
+- `create_movement` calls `service.create_movement(command)`, while current signature is `create_movement(command, user)`.
+
+The app's global `require_password_change_completed` dependency authenticates the user, but does not pass the User object into endpoint functions or enforce the WAREHOUSE role. Therefore these three write routes reach a Python call with a missing required positional argument. The existing warehouse auth test only inspects authentication/CSRF dependencies on create; it does not invoke the endpoint or verify the Application service call. No Warehouse Application service test module exists in the current test tree.
+
+**Classification:** **Confirmed API/Application integration defect** for warehouse creation, stock addition and movement creation. This is a current regression caused by adding Application-layer role checks without updating the API adapters. It is not merely an authorization policy question.
+
+### Warehouse — documented stock-ledger invariant is not implemented
+
+`docs/modules/warehouse.md` states: all changes to stock must happen through `WarehouseMovement`; direct quantity changes are forbidden; movements are the source of stock history.
+
+Current code does not enforce that invariant:
+- `add_stock()` creates or saves a WarehouseStock quantity directly and does not create a movement.
+- `reserve()` and `release()` directly modify reserved quantity and save stock, without a movement record.
+- `create_movement()` only saves a WarehouseMovement record; it does not update WarehouseStock.
+- Movement types include RECEIPT, ISSUE, RESERVATION, RELEASE and ADJUSTMENT, but the movement service does not apply the corresponding stock effects.
+- No Application-level tests for these Warehouse write workflows were found in the current test tree.
+
+The legacy implementation already had these separate operations and the same lack of coupling, so this is **not proven to be a DDD migration regression**. It is a **confirmed gap between the documented business invariant and both inspected implementations**. Whether the original behavior was an intentional temporary stub or an accepted but incomplete first version requires product confirmation; the documentation makes the target invariant explicit.
+
+### Warehouse — route coverage
+
+Legacy and current routers both expose warehouse creation, stock addition, stock read, and movement creation. The current implementation adds the stock read endpoint's richer read model. Neither inspected version exposes reserve/release as API routes despite corresponding Application commands and methods.
+
+**Classification:** reserve/release are internal Application use cases but not exposed HTTP workflows in either inspected revision; do not call this a migration loss without evidence of another caller.
+
+### Material — CRUD migration and archive visibility
+
+Legacy API exposed list/get/create/update/delete. Current API exposes list/get/create/update/archive/restore. The current service adds role checks and replaces physical delete with archive/restore, so the business capability is **replaced/refined**, not lost.
+
+A repository/test-double mismatch was found:
+- Current MaterialApplicationService tests use a FakeMaterialRepository whose `get_all()` excludes archived materials by default.
+- Current SQLAlchemy MaterialRepository.get_all() queries all rows without filtering `archived`.
+- The API list endpoint calls this repository method directly through the service.
+
+Therefore the production list can include archived materials even though the Application test double models the default list as active-only. This is a **confirmed persistence adapter inconsistency**; it is not a legacy CRUD loss.
+
+### PriceList — core management behavior
+
+Legacy and current implementations both expose list/get/create/update PriceList and add/update/remove PriceListItem. Current model adds `price_list_type`, `currency`, `valid_from`, `valid_to`, stronger domain validation, and explicit active/deactivate behavior. The old and current PriceList Application service both include get-active and item operations.
+
+Current API does not expose a dedicated `GET active` endpoint or a query to find a price by service code. Current Order Application/Domain/OrderItem code inspected has no PriceList dependency, service-code price lookup, or persisted order-line price snapshot.
+
+The domain design `docs/domain/price-list.md` explicitly describes:
+- `GetPriceByServiceCode` query;
+- lookup of a price from an active PriceList;
+- Order Application integration;
+- calculation of an amount for an OrderItem.
+
+The module document `docs/modules/price_list.md` also states that only an active PriceList is used for calculations and that the applied price must remain unchanged through the order lifecycle.
+
+**Classification:** PriceList administration and item CRUD are migrated/extended. **Price calculation and Order price snapshot integration are missing relative to the documented domain design**, pending verification that the relevant document remains an approved baseline requirement and has not been superseded. No implementation is started.
+
+### PriceList item error handling — potential defect
+
+Current PriceList domain `remove_item()` silently filters the list and does not raise when the item ID does not exist. The current API expects `PriceListItemNotFoundApplicationError` for missing items, but the service does not check existence before calling the domain method. Thus deleting a nonexistent item may return success instead of 404.
+
+Current domain `change_item_price()` and `change_item_description()` raise plain `ValueError` for missing items, while the current API catches only `PriceListItemNotFoundApplicationError`. This may result in an unhandled 500 instead of 404. Legacy API caught `ValueError` for these cases.
+
+**Classification:** likely current API error-contract regression; verify with direct service/API tests before changing.
+
+### Checkpoint 8 work log
+
+| Step | Completed result |
+|---|---|
+| 1 | Compared legacy/current Warehouse service signatures and all three write routers |
+| 2 | Read global authentication dependency and current Warehouse tests |
+| 3 | Compared Warehouse service behavior with the stock-ledger invariant in `docs/modules/warehouse.md` |
+| 4 | Compared Material legacy/current API and service behavior |
+| 5 | Compared Material SQLAlchemy repository with its test fake; found archived-list mismatch |
+| 6 | Compared PriceList legacy/current API/service/domain and current PriceList design documents |
+| 7 | Compared Order Application/OrderItem against documented price calculation and immutable price snapshot requirements |
+| 8 | Identified potential PriceList missing-item error mapping regression |
+
+### Next step
+
+Continue with Instrument / Device / Site and Verification lifecycle comparison. Before any Warehouse code fix, define the smallest coherent change for user forwarding and add route invocation tests. Treat stock ledger behavior and PriceList-to-Order calculation as separate business slices; do not mix them into the Customer/Organization migration.
