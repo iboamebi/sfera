@@ -156,6 +156,7 @@ export function OrdersPage() {
                           ` ${priority + 1}`}
                       </Button>
                     </TableCell>
+                  );
                 })}
               </TableRow>
             </TableHead>
