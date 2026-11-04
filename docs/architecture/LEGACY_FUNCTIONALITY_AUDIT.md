@@ -286,3 +286,32 @@ The Customer migration `2b6f5480aadf` was also inspected; despite its filename, 
 ### Next step
 
 Inspect the original schema migration for Customer, Organization, Order, Site and their constraints; inspect the remaining application references and test coverage. Then publish a consolidated migration plan with explicit production checks required before implementation.
+
+
+## Checkpoint 6 — Original database schema
+
+The initial schema migration `72485e49cfd8_initial_schema.py` was inspected.
+
+- Initial `customers` table already had a required `organization_id` FK to `organizations`.
+- Initial `orders` table had a required `customer_id` FK to `customers`; it did not contain `organization_id`.
+- Initial schema therefore confirms that Customer's one-Organization limitation existed from the first database schema, while Order's direct Organization dependency was introduced later by migration `1d3e5f7a9b20`.
+- The initial schema also establishes Organization as a separate table and Order as directly owned by Customer.
+
+This strengthens the earlier classification:
+- Customer 0..N Organization is a later-approved business model change that requires an explicit migration from the original 1:1-ish required FK model.
+- Order.organization_id is a later-added persistence dependency and is not part of the original Order ownership contract.
+
+**No production database state was inspected.** The initial schema is historical evidence only and cannot establish the current production data state.
+
+### Checkpoint 6 work log
+
+| Step | Completed result |
+|---|---|
+| 1 | Inspected the initial schema migration `72485e49cfd8` |
+| 2 | Confirmed original Customer had required Organization FK |
+| 3 | Confirmed original Order had Customer FK but no Organization FK |
+| 4 | Established chronology: Order Organization FK was added later in `1d3e5f7a9b20` |
+
+### Next step
+
+Complete a repository-wide reference inventory for Customer/Organization/Order IDs and review relevant architecture/business docs against the current implementation. Then prepare the smallest safe transition sequence, with production database checks clearly separated from GitHub-only validation.
