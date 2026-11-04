@@ -3,6 +3,12 @@ import {
   Button,
   Paper,
   Stack,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
   TextField,
   Typography,
 } from "@mui/material";
@@ -90,11 +96,36 @@ export function OrdersPage() {
         </Typography>
       )}
 
-      <Stack spacing={1.5}>
-        {sortedOrders.map((order) => (
-          <OrderListItem key={order.id} order={order} />
-        ))}
-      </Stack>
+      {sortedOrders.length > 0 && (
+        <TableContainer component={Paper} variant="outlined">
+          <Table size="small" sx={{ minWidth: 760 }}>
+            <TableHead>
+              <TableRow>
+                <TableCell sx={{ fontWeight: 700, whiteSpace: "nowrap" }}>
+                  Заказ
+                </TableCell>
+                <TableCell sx={{ fontWeight: 700, whiteSpace: "nowrap" }}>
+                  Дата
+                </TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>
+                  Клиент
+                </TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>
+                  Статус
+                </TableCell>
+                <TableCell align="right" sx={{ fontWeight: 700 }}>
+                  Действие
+                </TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {sortedOrders.map((order) => (
+                <OrderListItem key={order.id} order={order} />
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
     </Stack>
   );
 }
