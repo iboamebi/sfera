@@ -987,3 +987,34 @@ Inventory all remaining references to `Customer.organization_id`, `Organization.
 ### Результат
 
 Выполнен только аудит и уточнение документации. Application code, frontend code и database schema не изменялись.
+
+
+## Checkpoint 17 — Customer без обязательной Organization
+
+Источник: branch `feat/user-first-login-password`, HEAD `1f0dab697b19e4fd3b1656d07c60799a720b7023`, локальная валидация 2026-11-05.
+
+### Решение
+
+- Customer имеет кардинальность Customer → Organization **0..N**.
+- Customer может быть физическим лицом и существовать без Organization.
+- Organization не создаётся автоматически при создании Customer.
+- Customer и Organization остаются самостоятельными сущностями.
+- Order больше не получает Organization скрыто из Customer при создании.
+- Исторические значения Order.organization_id сохраняются; колонка стала nullable.
+- Customer.organization_id сохранён как переходное legacy-поле, стал nullable и исключён из Domain/Application/API business contract.
+- Управление связью через `customer_organizations` остаётся отдельным следующим этапом; существующие связи не считаются автоматически достоверными.
+
+### Выполненная реализация
+
+Изменены Customer Domain/Application/API/ORM/mapper и frontend Customer creation flow. Изменены Order Domain/Application/mapper/ORM так, чтобы новый Order не требовал Organization. Добавлена Alembic revision `9f2a6c4d8e11`, делающая Customer и Order Organization nullable без удаления существующих значений.
+
+### Локальная проверка
+
+- Backend: `pytest -q` → **273 passed, 21 warnings**.
+- Frontend: `npm run typecheck` → успешно.
+- Frontend: `npm run build` → успешно.
+- Оставшиеся предупреждения pytest относятся к существующим deprecation warning для `utcnow()` и Starlette/httpx; они не связаны с изменением Customer/Organization.
+
+### Следующий этап
+
+Интегрировать существующую `customer_organizations` как реальную связь 0..N через Domain/Application/Repository/Infrastructure/API и отдельный UI управления организациями Customer. Не восстанавливать связи автоматически из legacy `customers.organization_id`.
