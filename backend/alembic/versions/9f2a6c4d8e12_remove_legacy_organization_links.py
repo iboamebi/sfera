@@ -28,7 +28,7 @@ def upgrade() -> None:
     op.drop_column("customers", "organization_id")
 
     op.drop_constraint(
-        "orders_organization_id_fkey",
+        "fk_orders_organization_id_organizations",
         "orders",
         type_="foreignkey",
     )
@@ -42,7 +42,7 @@ def downgrade() -> None:
         sa.Column("organization_id", sa.UUID(), nullable=True),
     )
     op.create_foreign_key(
-        "orders_organization_id_fkey",
+        "fk_orders_organization_id_organizations",
         "orders",
         "organizations",
         ["organization_id"],
