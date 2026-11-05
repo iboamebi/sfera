@@ -767,3 +767,18 @@ Current source inspected at HEAD `a376aac`; detailed findings are in Checkpoint 
 - The migration aborts when Site rows exist, because Organization → Customer cannot be inferred safely. Last supplied database inventory reported 0 Sites.
 - `Order.site_id` and `Instrument.site_id` remain nullable and unchanged.
 - Backend Site API, Application, Repository and Mapper tests were updated for Customer ownership.
+
+
+## Customer / Organization / Site Model Checkpoint — 2026-11-05
+
+Business decisions:
+- Customer is an independent customer context and does not own or contain a list of Organizations.
+- Organization is an independent legal-entity record. Its legal requisites must be preserved.
+- No permanent Customer–Organization association is maintained. Existing `customer_organizations` rows are not trusted business relationships and are not migrated.
+- During order work, the operator will be able to select the relevant Organization and Site context. The interface assists with search and selection; it must not infer or create permanent Customer–Organization links. Exact order-context persistence and Organization cardinality are a separate implementation decision.
+- Site belongs to Customer. A Customer may have multiple Sites.
+- Instrument belongs directly to Customer; `site_id` is optional. If assigned, Site and Instrument must belong to the same Customer. Direct `Instrument.customer_id` ownership and its validation are a subsequent implementation stage.
+- Site is a location/grouping and instrument-discovery aid, not a required production step. An Instrument without Site remains usable in orders and all production operations.
+- Order belongs to Customer. Site selection in order workflows is used to find and select instruments; it does not change an Instrument's permanent Site assignment.
+
+Implementation stage 1 is the removal of the obsolete Customer–Organization association from ORM, DI, Application, API and migrations while preserving Organization records and requisites. Follow-up stages cover Instrument ownership, order context, Site-based instrument discovery and controlled Site reassignment history.

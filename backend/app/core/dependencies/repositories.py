@@ -7,9 +7,6 @@ from sqlalchemy.orm import Session
 
 from app.core.dependencies.database import get_session
 from app.domains.auth.repositories.session_repository import SessionRepository
-from app.domains.customer.repositories.customer_organization_repository import (
-    CustomerOrganizationRepository,
-)
 from app.domains.customer.repositories.customer_repository import (
     CustomerRepository,
 )
@@ -67,9 +64,6 @@ from app.infrastructure.audit.audit_operation_repository import (
 from app.infrastructure.audit.audit_repository import AuditRepositorySQLAlchemy
 from app.infrastructure.auth.session_repository import (
     SessionRepositorySQLAlchemy,
-)
-from app.infrastructure.customer.customer_organization_repository import (
-    CustomerOrganizationRepositorySQLAlchemy,
 )
 from app.infrastructure.customer.customer_repository import (
     CustomerRepositorySQLAlchemy,
@@ -206,12 +200,6 @@ def get_customer_repository(
     return CustomerRepositorySQLAlchemy(session)
 
 
-def get_customer_organization_repository(
-    session: Session = Depends(get_session),
-) -> CustomerOrganizationRepository:
-    """Provide Customer ↔ Organization association repository."""
-
-    return CustomerOrganizationRepositorySQLAlchemy(session)
 
 
 def get_device_repository(

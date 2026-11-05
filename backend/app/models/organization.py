@@ -60,7 +60,3 @@ class Organization(BaseModel):
         Text,
         nullable=True,
     )
-    customer_organizations = relationship(
-        "CustomerOrganization",
-        back_populates="organization",
-    )

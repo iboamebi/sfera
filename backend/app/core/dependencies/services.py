@@ -21,9 +21,6 @@ from app.application.auth.services.session_application_service import (
 from app.application.customer.services.customer_application_service import (
     CustomerApplicationService,
 )
-from app.application.customer.services.customer_organization_application_service import (
-    CustomerOrganizationApplicationService,
-)
 from app.application.device.services.device_application_service import (
     DeviceApplicationService,
 )
@@ -73,7 +70,6 @@ from app.core.dependencies.events import get_event_dispatcher
 from app.core.dependencies.repositories import (
     get_audit_operation_repository,
     get_audit_repository,
-    get_customer_organization_repository,
     get_customer_repository,
     get_device_repository,
     get_diagnostic_repository,
@@ -97,9 +93,6 @@ from app.core.dependencies.repositories import (
 )
 from app.core.dependencies.uow import get_unit_of_work
 from app.domains.auth.repositories.session_repository import SessionRepository
-from app.domains.customer.repositories.customer_organization_repository import (
-    CustomerOrganizationRepository,
-)
 from app.domains.customer.repositories.customer_repository import CustomerRepository
 from app.domains.device.repositories.device_repository import DeviceRepository
 from app.domains.diagnostic.repositories.diagnostic_repository import (
@@ -278,25 +271,6 @@ def get_customer_service(
 ) -> CustomerApplicationService:
     """Provide Customer application service."""
     return CustomerApplicationService(repository, uow)
-
-
-def get_customer_organization_service(
-    customer_repository: CustomerRepository = Depends(get_customer_repository),
-    organization_repository: OrganizationRepository = Depends(
-        get_organization_repository,
-    ),
-    association_repository: CustomerOrganizationRepository = Depends(
-        get_customer_organization_repository,
-    ),
-    uow: UnitOfWork = Depends(get_unit_of_work),
-) -> CustomerOrganizationApplicationService:
-    """Provide Customer ↔ Organization association service."""
-    return CustomerOrganizationApplicationService(
-        customer_repository,
-        organization_repository,
-        association_repository,
-        uow,
-    )
 
 
 def get_material_service(

@@ -110,3 +110,11 @@ def test_delete_customer_passes_authenticated_user_to_application_service() -> N
 
     assert result is None
     assert service.received_user is user
+
+
+def test_customer_router_does_not_expose_organization_link_endpoints() -> None:
+    assert not any(
+        isinstance(route, APIRoute)
+        and "/organizations" in route.path
+        for route in router.routes
+    )

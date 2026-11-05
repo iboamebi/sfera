@@ -41,12 +41,6 @@ class Customer(BaseModel):
         nullable=False,
     )
 
-    customer_organizations = relationship(
-        "CustomerOrganization",
-        back_populates="customer",
-        cascade="all, delete-orphan",
-    )
-
     orders = relationship(
         "Order",
         back_populates="customer",
