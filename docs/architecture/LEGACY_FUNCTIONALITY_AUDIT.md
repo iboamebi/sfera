@@ -1018,3 +1018,23 @@ Inventory all remaining references to `Customer.organization_id`, `Organization.
 ### Следующий этап
 
 Интегрировать существующую `customer_organizations` как реальную связь 0..N через Domain/Application/Repository/Infrastructure/API и отдельный UI управления организациями Customer. Не восстанавливать связи автоматически из legacy `customers.organization_id`.
+
+
+## Checkpoint 18 — Customer ↔ Organization association becomes operational
+
+2026-11-05.
+
+The existing `customer_organizations` table is now exposed through the application layer as the explicit Customer ↔ Organization association. Customer creation remains independent of Organization.
+
+Implemented:
+- domain repository interface for Customer ↔ Organization links;
+- Infrastructure repository backed by `customer_organizations`;
+- Application service for listing, linking and unlinking organizations;
+- authenticated/CSRF-protected mutation endpoints;
+- read endpoint returning the linked Organization records;
+- no new backfill from legacy `customers.organization_id`;
+- existing historical `orders.organization_id` remains untouched.
+
+The association is managed separately from Customer creation. This preserves the agreed 0..N cardinality and allows a Customer to exist with zero organizations.
+
+The next UI stage should expose these associations on the Customer card without reintroducing Organization as a required field in the Customer creation form.
