@@ -8,9 +8,9 @@ from app.shared.base.entity import Entity
 
 @dataclass(eq=False, kw_only=True)
 class Site(Entity):
-    """Organization site domain entity."""
+    """Customer site domain entity."""
 
-    organization_id: UUID
+    customer_id: UUID
     name: str
     address: str
     archived: bool = False
