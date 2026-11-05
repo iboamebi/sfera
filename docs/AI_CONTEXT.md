@@ -738,7 +738,7 @@ After a pause:
 - Readiness/release is evaluated per Site within the specific Order using only that Order's OrderItems. Instruments assigned to the Site but absent from the Order are outside this Order's scope and do not block release.
 - Different Site groups in one Order may be released independently when their included instruments are ready.
 - Verification queue is a separate production-planning concept. It may group work across orders/Sites, but it does not change ownership, Order membership, Verification facts or Site release readiness.
-- Instrument.site_id exists in ORM as an optional Site link; its integration into the instrument/device application workflow remains a separate gap. Verification is linked to OrderItem; no dedicated verification queue use case/entity was found.
+- Current code mismatch: Site requires organization_id; Instrument.site_id exists but is absent from Device Domain/mapper/commands/API; Verification is linked to OrderItem; no dedicated verification queue use case/entity was found.
 - Updated business model: docs/architecture/CUSTOMER_ORGANIZATION_SITE_MODEL.md.
 - Detailed source audit: Checkpoint 14 in docs/architecture/LEGACY_FUNCTIONALITY_AUDIT.md.
 - No application code or database schema changed in this checkpoint.
@@ -750,10 +750,20 @@ After a pause:
 Current source inspected at HEAD `a376aac`; detailed findings are in Checkpoint 15 of `docs/architecture/LEGACY_FUNCTIONALITY_AUDIT.md`.
 
 - Customer still requires one Organization through Domain, Application, ORM, API and frontend. The `customer_organizations` table/ORM relationship exists and is backfilled, but the active Customer workflow does not use it.
-- Site ownership transition is implemented in backend code: Site now belongs to Customer through Domain, command, Application, repository, mapper, ORM and API. Frontend Site management does not exist.
-- Alembic revision `9f2a6c4d8e13` replaces `sites.organization_id` with required `sites.customer_id`; migration refuses to proceed if Site rows exist because Organization → Customer ownership cannot be inferred safely.
+- Site is still Organization-owned through Domain, command, Application, repository, mapper, ORM and API; frontend Site management does not exist.
 - Instrument ORM has nullable `site_id`, but Device Domain/mapper/commands/API/frontend omit it. Instrument has no direct `customer_id` in the inspected ORM model, so ownership of instruments without a Site is not represented.
 - Order still requires `organization_id`; OrderApplicationService copies it from Customer. Order also has optional `site_id`, distinct from Instrument.site_id.
 - The existing migrations do not safely establish Customer ownership for Sites. Deriving Customer from Site.organization_id is ambiguous if multiple Customers share one Organization.
 - No local/production database inventory or applied migration revision has been inspected. Do not write a destructive or data migration before this inventory.
 - Next: complete reference inventory, then inspect local database rows/revision and define a data-preserving transition. No code/schema change in this checkpoint.
+
+
+## Site ownership transition checkpoint — 2026-11-05
+
+- Site now belongs to Customer through Domain, command, Application, repository, mapper, ORM and API.
+- The Site list endpoint by owner is now `GET /sites/customer/{customer_id}`; create/read schemas expose `customer_id`.
+- Customer has the inverse ORM `sites` relationship; Organization no longer has a Site relationship.
+- Alembic revision `9f2a6c4d8e13` replaces `sites.organization_id` with required `sites.customer_id`.
+- The migration aborts when Site rows exist, because Organization → Customer cannot be inferred safely. Last supplied database inventory reported 0 Sites.
+- `Order.site_id` and `Instrument.site_id` remain nullable and unchanged.
+- Backend Site API, Application, Repository and Mapper tests were updated for Customer ownership.
