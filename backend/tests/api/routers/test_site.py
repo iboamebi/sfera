@@ -5,7 +5,7 @@ from fastapi import HTTPException
 
 from app.api.routers.site import (
     create_site,
-    get_organization_sites,
+    get_customer_sites,
     get_site,
     get_sites,
 )
@@ -17,7 +17,7 @@ def make_site() -> Site:
     """Build a Site entity for API router tests."""
     return Site(
         id=uuid4(),
-        organization_id=uuid4(),
+        customer_id=uuid4(),
         name="Main site",
         address="Main street, 1",
         archived=False,
@@ -29,14 +29,14 @@ def test_create_site_returns_api_contract() -> None:
 
     class FakeSiteService:
         def create(self, command: object, user: object) -> Site:
-            assert command.organization_id == site.organization_id
+            assert command.customer_id == site.customer_id
             assert command.name == site.name
             assert command.address == site.address
             return site
 
     result = create_site(
         data=SiteCreate(
-            organization_id=site.organization_id,
+            customer_id=site.customer_id,
             name=site.name,
             address=site.address,
         ),
@@ -45,7 +45,7 @@ def test_create_site_returns_api_contract() -> None:
     )
 
     assert result.id == site.id
-    assert result.organization_id == site.organization_id
+    assert result.customer_id == site.customer_id
     assert result.name == site.name
     assert result.address == site.address
     assert result.archived is False
@@ -65,7 +65,7 @@ def test_get_site_returns_api_contract() -> None:
     )
 
     assert result.id == site.id
-    assert result.organization_id == site.organization_id
+    assert result.customer_id == site.customer_id
     assert result.name == site.name
     assert result.address == site.address
 
@@ -99,20 +99,20 @@ def test_get_sites_returns_sites() -> None:
     assert len(result) == 2
 
 
-def test_get_organization_sites_returns_sites() -> None:
-    organization_id = uuid4()
+def test_get_customer_sites_returns_sites() -> None:
+    customer_id = uuid4()
     sites = [make_site(), make_site()]
 
     class FakeSiteService:
-        def get_by_organization_id(
+        def get_by_customer_id(
             self,
-            requested_organization_id: object,
+            requested_customer_id: object,
         ) -> list[Site]:
-            assert requested_organization_id == organization_id
+            assert requested_customer_id == customer_id
             return sites
 
-    result = get_organization_sites(
-        organization_id=organization_id,
+    result = get_customer_sites(
+        customer_id=customer_id,
         service=FakeSiteService(),
     )
 
@@ -126,7 +126,7 @@ def test_site_read_schema_maps_domain_entity() -> None:
     result = SiteRead.model_validate(site, from_attributes=True)
 
     assert result.id == site.id
-    assert result.organization_id == site.organization_id
+    assert result.customer_id == site.customer_id
     assert result.name == site.name
     assert result.address == site.address
     assert result.archived is False
