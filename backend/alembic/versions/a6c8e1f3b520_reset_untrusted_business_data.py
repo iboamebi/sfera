@@ -43,7 +43,6 @@ def upgrade() -> None:
     # trigger remains installed and enabled throughout.
     op.execute("TRUNCATE TABLE audit_records")
     op.execute("DELETE FROM audit_operations")
-    op.execute("DELETE FROM audit_logs")
 
     # Production and document records.
     op.execute("DELETE FROM arshin_exports")
