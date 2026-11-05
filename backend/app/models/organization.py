@@ -64,7 +64,4 @@ class Organization(BaseModel):
         "CustomerOrganization",
         back_populates="organization",
     )
-    sites = relationship(
-        "Site",
-        back_populates="organization",
-    )
+
