@@ -12,7 +12,6 @@ def test_register_emits_order_registered_event():
         id=uuid4(),
         number=OrderNumber("ORD-001"),
         customer_id=uuid4(),
-        organization_id=uuid4(),
         received_at=None,
     )
 
