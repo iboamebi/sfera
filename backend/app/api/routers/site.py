@@ -35,16 +35,16 @@ def get_sites(
 
 
 @router.get(
-    "/organization/{organization_id}",
+    "/customer/{customer_id}",
     response_model=list[SiteRead],
 )
-def get_organization_sites(
-    organization_id: UUID,
+def get_customer_sites(
+    customer_id: UUID,
     service: SiteApplicationService = Depends(
         get_site_service,
     ),
 ):
-    return service.get_by_organization_id(organization_id)
+    return service.get_by_customer_id(customer_id)
 
 
 @router.get(
