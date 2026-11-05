@@ -19,6 +19,20 @@ branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 
 
+def _delete_if_table_exists(table_name: str) -> None:
+    """Delete rows only when an optional legacy table exists in this database."""
+    bind = op.get_bind()
+    if sa.inspect(bind).has_table(table_name):
+        op.execute(sa.text(f'DELETE FROM "{table_name}"'))
+
+
+def _truncate_if_table_exists(table_name: str) -> None:
+    """Truncate rows only when an optional table exists in this database."""
+    bind = op.get_bind()
+    if sa.inspect(bind).has_table(table_name):
+        op.execute(sa.text(f'TRUNCATE TABLE "{table_name}"'))
+
+
 def upgrade() -> None:
     """Remove all existing business/master data except legal entities and RBAC."""
     bind = op.get_bind()
@@ -36,45 +50,54 @@ def upgrade() -> None:
         )
 
     # Invalidate every existing browser session, including alex's.
-    op.execute("DELETE FROM auth_sessions")
+    _delete_if_table_exists("auth_sessions")
 
     # This is a one-time pre-operational reset. TRUNCATE removes the untrusted
     # rows without invoking row-level UPDATE/DELETE triggers; the append-only
     # trigger remains installed and enabled throughout.
-    op.execute("TRUNCATE TABLE audit_records")
-    op.execute("DELETE FROM audit_operations")
+    _truncate_if_table_exists("audit_records")
+    _delete_if_table_exists("audit_operations")
 
     # Production and document records.
-    op.execute("DELETE FROM arshin_exports")
-    op.execute("DELETE FROM verifications")
-    op.execute("DELETE FROM diagnostics")
-    op.execute("DELETE FROM repairs")
-    op.execute("DELETE FROM workflow_instances")
-    op.execute("DELETE FROM documents")
-    op.execute("DELETE FROM instrument_labels")
-    op.execute("DELETE FROM warehouse_movements")
-    op.execute("DELETE FROM warehouse_stocks")
-    op.execute("DELETE FROM production_movements")
+    for table_name in (
+        "arshin_exports",
+        "verifications",
+        "diagnostics",
+        "repairs",
+        "workflow_instances",
+        "documents",
+        "instrument_labels",
+        "warehouse_movements",
+        "warehouse_stocks",
+        "production_movements",
+    ):
+        _delete_if_table_exists(table_name)
 
     # Customer, order, instrument and site records.
-    op.execute("DELETE FROM order_items")
-    op.execute("DELETE FROM orders")
-    op.execute("DELETE FROM instruments")
-    op.execute("DELETE FROM sites")
-    op.execute("DELETE FROM customers")
+    for table_name in (
+        "order_items",
+        "orders",
+        "instruments",
+        "sites",
+        "customers",
+    ):
+        _delete_if_table_exists(table_name)
 
     # Business reference/master data is also reset. It can be repopulated
     # deliberately after the clean baseline is established.
-    op.execute("DELETE FROM price_list_items")
-    op.execute("DELETE FROM workflow_stages")
-    op.execute("DELETE FROM workflows")
-    op.execute("DELETE FROM materials")
-    op.execute("DELETE FROM warehouses")
-    op.execute("DELETE FROM price_lists")
-    op.execute("DELETE FROM document_templates")
-    op.execute("DELETE FROM instrument_types")
-    op.execute("DELETE FROM methodologies")
-    op.execute("DELETE FROM verification_methods")
+    for table_name in (
+        "price_list_items",
+        "workflow_stages",
+        "workflows",
+        "materials",
+        "warehouses",
+        "price_lists",
+        "document_templates",
+        "instrument_types",
+        "methodologies",
+        "verification_methods",
+    ):
+        _delete_if_table_exists(table_name)
 
     # Keep the existing alex account and its RBAC assignments unchanged.
     op.execute(
@@ -82,7 +105,6 @@ def upgrade() -> None:
         "WHERE user_id <> (SELECT id FROM users WHERE username = 'alex')"
     )
     op.execute("DELETE FROM users WHERE username <> 'alex'")
-
 
 def downgrade() -> None:
     """The deleted business data cannot be reconstructed by a schema downgrade."""
