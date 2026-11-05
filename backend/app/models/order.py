@@ -35,11 +35,6 @@ class Order(BaseModel):
         nullable=False,
     )
 
-    organization_id: Mapped[uuid.UUID | None] = mapped_column(
-        ForeignKey("organizations.id"),
-        nullable=True,
-    )
-
     site_id: Mapped[uuid.UUID | None] = mapped_column(
         ForeignKey("sites.id"),
         nullable=True,
@@ -73,11 +68,6 @@ class Order(BaseModel):
 
     customer = relationship(
         "Customer",
-        back_populates="orders",
-    )
-
-    organization = relationship(
-        "Organization",
         back_populates="orders",
     )
 
