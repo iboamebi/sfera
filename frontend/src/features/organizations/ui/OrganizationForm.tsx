@@ -6,14 +6,19 @@ import {
   createOrganizationSchema,
   type CreateOrganizationSchema,
 } from "../model/schema";
+import type { CreateOrganizationForm } from "../model/types";
 
 interface OrganizationFormProps {
   onSubmit: (data: CreateOrganizationSchema) => void;
+  initialValues?: CreateOrganizationForm;
+  submitLabel?: string;
   isPending?: boolean;
 }
 
 export function OrganizationForm({
   onSubmit,
+  initialValues,
+  submitLabel = "Создать организацию",
   isPending = false,
 }: OrganizationFormProps) {
   const {
@@ -22,6 +27,18 @@ export function OrganizationForm({
     formState: { errors },
   } = useForm<CreateOrganizationSchema>({
     resolver: zodResolver(createOrganizationSchema),
+    defaultValues: initialValues ?? {
+      name: "",
+      shortName: "",
+      inn: "",
+      kpp: "",
+      ogrn: "",
+      address: "",
+      phone: "",
+      email: "",
+      website: "",
+      comment: "",
+    },
   });
 
   return (
@@ -111,7 +128,7 @@ export function OrganizationForm({
         />
 
         <Button type="submit" variant="contained" disabled={isPending}>
-          {isPending ? "Создание..." : "Создать организацию"}
+          {isPending ? "Сохранение..." : submitLabel}
         </Button>
       </Stack>
     </form>
