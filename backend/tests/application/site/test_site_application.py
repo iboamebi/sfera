@@ -51,14 +51,14 @@ class FakeSiteRepository(SiteRepository):
     def get_all(self) -> list[Site]:
         return list(self._sites.values())
 
-    def get_by_organization_id(
+    def get_by_customer_id(
         self,
-        organization_id: UUID,
+        customer_id: UUID,
     ) -> list[Site]:
         return [
             site
             for site in self._sites.values()
-            if site.organization_id == organization_id
+            if site.customer_id == customer_id
         ]
 
     def save(self, site: Site) -> Site:
@@ -81,11 +81,11 @@ def test_create_site():
     repository = FakeSiteRepository()
     uow = FakeUnitOfWork()
     service = SiteApplicationService(repository, uow)
-    organization_id = uuid4()
+    customer_id = uuid4()
 
     site = service.create(
         CreateSiteCommand(
-            organization_id=organization_id,
+            customer_id=customer_id,
             name="Main site",
             address="Main street, 1",
         ),
@@ -93,7 +93,7 @@ def test_create_site():
     )
 
     assert site.id is not None
-    assert site.organization_id == organization_id
+    assert site.customer_id == customer_id
     assert site.name == "Main site"
     assert site.address == "Main street, 1"
     assert site.archived is False
@@ -110,7 +110,7 @@ def test_create_site_rejects_unauthorized_user():
     with pytest.raises(AuthorizationError, match="not authorized"):
         service.create(
             CreateSiteCommand(
-                organization_id=uuid4(),
+                customer_id=uuid4(),
                 name="Protected site",
                 address="Protected address",
             ),
@@ -127,7 +127,7 @@ def test_get_site():
     service = SiteApplicationService(repository, FakeUnitOfWork())
     site = Site(
         id=uuid4(),
-        organization_id=uuid4(),
+        customer_id=uuid4(),
         name="Main site",
         address="Main street, 1",
     )
@@ -143,13 +143,13 @@ def test_get_all_sites():
     service = SiteApplicationService(repository, FakeUnitOfWork())
     first = Site(
         id=uuid4(),
-        organization_id=uuid4(),
+        customer_id=uuid4(),
         name="First site",
         address="First address",
     )
     second = Site(
         id=uuid4(),
-        organization_id=uuid4(),
+        customer_id=uuid4(),
         name="Second site",
         address="Second address",
     )
@@ -161,25 +161,25 @@ def test_get_all_sites():
     assert result == [first, second]
 
 
-def test_get_sites_by_organization_id():
+def test_get_sites_by_customer_id():
     repository = FakeSiteRepository()
     service = SiteApplicationService(repository, FakeUnitOfWork())
-    organization_id = uuid4()
+    customer_id = uuid4()
     matching = Site(
         id=uuid4(),
-        organization_id=organization_id,
+        customer_id=customer_id,
         name="Matching site",
         address="Matching address",
     )
     other = Site(
         id=uuid4(),
-        organization_id=uuid4(),
+        customer_id=uuid4(),
         name="Other site",
         address="Other address",
     )
     repository.save(matching)
     repository.save(other)
 
-    result = service.get_by_organization_id(organization_id)
+    result = service.get_by_customer_id(customer_id)
 
     assert result == [matching]
