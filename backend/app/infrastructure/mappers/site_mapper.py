@@ -23,7 +23,7 @@ class SiteMapper(
 
         return Site(
             id=model.id,
-            organization_id=model.organization_id,
+            customer_id=model.customer_id,
             name=model.name,
             address=model.address,
             archived=model.archived,
@@ -36,7 +36,7 @@ class SiteMapper(
     ) -> SiteModel:
         """Convert domain entity to ORM model."""
 
-        model.organization_id = entity.organization_id
+        model.customer_id = entity.customer_id
         model.name = entity.name
         model.address = entity.address
         model.archived = entity.archived
