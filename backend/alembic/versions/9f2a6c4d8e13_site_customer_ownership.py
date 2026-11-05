@@ -20,9 +20,13 @@ depends_on: str | Sequence[str] | None = None
 
 def _ensure_sites_empty() -> None:
     """Reject an unsafe ownership migration when Site rows already exist."""
-    site_count = op.get_bind().execute(
-        sa.text("SELECT count(*) FROM sites"),
-    ).scalar_one()
+    site_count = (
+        op.get_bind()
+        .execute(
+            sa.text("SELECT count(*) FROM sites"),
+        )
+        .scalar_one()
+    )
 
     if site_count:
         raise RuntimeError(
