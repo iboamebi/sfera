@@ -10,6 +10,7 @@ import { MaterialsPage } from "../pages/materials/MaterialsPage";
 import { MaterialPage } from "../pages/materials/MaterialPage";
 import { OrganizationsPage } from "../pages/organizations/OrganizationsPage";
 import { OrganizationPage } from "../pages/organizations/OrganizationPage";
+import { CreateOrganizationPage } from "../pages/organizations/CreateOrganizationPage";
 import { VerificationPage } from "../pages/verifications/VerificationPage";
 import { DiagnosticPage } from "../pages/diagnostics/DiagnosticPage";
 import { RepairPage } from "../pages/repairs/RepairPage";
@@ -64,6 +65,10 @@ export const router = createBrowserRouter([
   {
     path: "/organizations",
     element: <RequireAuth><OrganizationsPage /></RequireAuth>,
+  },
+  {
+    path: "/organizations/new",
+    element: <RequireAuth><CreateOrganizationPage /></RequireAuth>,
   },
   {
     path: "/organizations/:organizationId",
