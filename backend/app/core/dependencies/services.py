@@ -190,7 +190,7 @@ def get_current_user_service(
     session_repository: SessionRepository = Depends(get_session_repository),
     user_repository: UserRepository = Depends(get_user_repository),
 ) -> CurrentUserApplicationService:
-    """Provide current user application service."""
+    """Provide CurrentUser application service."""
     return CurrentUserApplicationService(session_repository, user_repository)
 
 
@@ -278,6 +278,25 @@ def get_customer_service(
 ) -> CustomerApplicationService:
     """Provide Customer application service."""
     return CustomerApplicationService(repository, uow)
+
+
+def get_customer_organization_service(
+    customer_repository: CustomerRepository = Depends(get_customer_repository),
+    organization_repository: OrganizationRepository = Depends(
+        get_organization_repository,
+    ),
+    association_repository: CustomerOrganizationRepository = Depends(
+        get_customer_organization_repository,
+    ),
+    uow: UnitOfWork = Depends(get_unit_of_work),
+) -> CustomerOrganizationApplicationService:
+    """Provide Customer ↔ Organization association service."""
+    return CustomerOrganizationApplicationService(
+        customer_repository,
+        organization_repository,
+        association_repository,
+        uow,
+    )
 
 
 def get_material_service(
