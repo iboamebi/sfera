@@ -60,23 +60,10 @@ class Organization(BaseModel):
         Text,
         nullable=True,
     )
-
-    customers = relationship(
-        "Customer",
-        back_populates="organization",
-        cascade="all, delete-orphan",
-    )
-
     customer_organizations = relationship(
         "CustomerOrganization",
         back_populates="organization",
     )
-
-    orders = relationship(
-        "Order",
-        back_populates="organization",
-    )
-
     sites = relationship(
         "Site",
         back_populates="organization",
