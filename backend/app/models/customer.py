@@ -1,6 +1,6 @@
 import uuid
 
-from sqlalchemy import ForeignKey, Numeric, String, Text
+from sqlalchemy import Numeric, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base_model import BaseModel
@@ -10,11 +10,6 @@ class Customer(BaseModel):
     """ORM model for a customer contact."""
 
     __tablename__ = "customers"
-
-    organization_id: Mapped[uuid.UUID | None] = mapped_column(
-        ForeignKey("organizations.id"),
-        nullable=True,
-    )
 
     name: Mapped[str] = mapped_column(
         String(255),
@@ -46,11 +41,6 @@ class Customer(BaseModel):
         Numeric(5, 2),
         default=0,
         nullable=False,
-    )
-
-    organization = relationship(
-        "Organization",
-        back_populates="customers",
     )
 
     customer_organizations = relationship(
