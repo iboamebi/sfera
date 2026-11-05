@@ -307,4 +307,3 @@ def test_get_all_excludes_archived_customers():
 
     assert customers == [active]
     assert archived not in customers
-}
