@@ -38,17 +38,10 @@ def upgrade() -> None:
     # Invalidate every existing browser session, including alex's.
     op.execute("DELETE FROM auth_sessions")
 
-    # This is a one-time pre-operational reset. No valid verification/audit
-    # history exists yet; preserve the append-only trigger after clearing it.
-    op.execute(
-        "ALTER TABLE audit_records "
-        "DISABLE TRIGGER trg_audit_records_immutable"
-    )
-    op.execute("DELETE FROM audit_records")
-    op.execute(
-        "ALTER TABLE audit_records "
-        "ENABLE TRIGGER trg_audit_records_immutable"
-    )
+    # This is a one-time pre-operational reset. TRUNCATE removes the untrusted
+    # rows without invoking row-level UPDATE/DELETE triggers; the append-only
+    # trigger remains installed and enabled throughout.
+    op.execute("TRUNCATE TABLE audit_records")
     op.execute("DELETE FROM audit_operations")
     op.execute("DELETE FROM audit_logs")
 

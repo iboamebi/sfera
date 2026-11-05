@@ -714,4 +714,4 @@ The integration deliberately covers completion only. Creating a diagnostic is an
 
 The user explicitly confirmed that no valid Verification history has yet been created and approved clearing the existing pre-operational business data. Alembic revision `a6c8e1f3b520` therefore removes the existing untrusted Verification and audit rows as part of a one-time clean-slate initialization, while preserving Organizations and the `alex` admin account.
 
-This is not a change to the normal audit policy. The migration disables the PostgreSQL immutability trigger only for the audit-row deletion and re-enables it in the same transaction. After this one-time reset, Audit Trail remains append-only and Verification history must not be physically deleted.
+This is not a change to the normal audit policy. The migration uses PostgreSQL `TRUNCATE` for the audit table; its row-level UPDATE/DELETE immutability trigger remains installed and enabled. This is a privileged, one-time initialization operation only. After this reset, Audit Trail remains append-only and Verification history must not be physically deleted.
