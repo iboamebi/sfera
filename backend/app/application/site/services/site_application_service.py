@@ -37,13 +37,13 @@ class SiteApplicationService:
 
         return self._repository.get_all()
 
-    def get_by_organization_id(
+    def get_by_customer_id(
         self,
-        organization_id: UUID,
+        customer_id: UUID,
     ) -> list[Site]:
-        """Get sites belonging to an organization."""
+        """Get sites belonging to a customer."""
 
-        return self._repository.get_by_organization_id(organization_id)
+        return self._repository.get_by_customer_id(customer_id)
 
     def create(
         self,
@@ -57,7 +57,7 @@ class SiteApplicationService:
         with self._uow:
             site = Site(
                 id=uuid4(),
-                organization_id=command.organization_id,
+                customer_id=command.customer_id,
                 name=command.name,
                 address=command.address,
             )
