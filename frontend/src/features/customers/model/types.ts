@@ -10,7 +10,6 @@ export interface CustomerRead {
 }
 
 export interface CreateCustomerForm {
-  organizationId: string;
   name: string;
   contactPerson?: string;
   phone?: string;
