@@ -114,7 +114,7 @@ SiteOrderReadiness = readiness of all OrderItems
 ## 6. Сохранение данных при переходе
 
 1. Наличие customer_organizations и заполненного customers.organization_id само по себе не подтверждает бизнес-отношение Customer ↔ Organization. Существующие связи не считать проверенными и не использовать как основание для автоматического восстановления отношений.
-2. customers.organization_id становится nullable на переходном этапе и перестаёт быть частью Domain/Application/API business contract.
+2. customers.organization_id и orders.organization_id перестают быть частью Domain/Application/API business contract.
 3. Связи Customer ↔ Organization становятся доступными через Application, Repository и API.
 4. Legacy-поля customers.organization_id и orders.organization_id удаляются после проверки зависимостей: они не являются частью бизнес-контракта.
 5. Новые заказы не копируют Organization из Customer и не получают жёсткую связь с Organization.
@@ -155,9 +155,10 @@ SiteOrderReadiness = readiness of all OrderItems
 До отдельного подтверждения пользователем конкретных отношений:
 - сохранять все записи Organization и их реквизиты;
 - не выполнять backfill customer_organizations из customers.organization_id;
-- не удалять и не перепривязывать исторические Order.organization_id;
 - не трактовать текущие связи как доказательство принадлежности Customer к Organization;
 - проектировать Customer как самостоятельную клиентскую сущность, допускающую отсутствие Organization.
+
+После подтверждения перехода legacy-поля customers.organization_id и orders.organization_id удаляются; их тестовые значения не переносятся в новый бизнес-контракт.
 
 ## 7. Что не входит в этот контракт
 
