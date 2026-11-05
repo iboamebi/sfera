@@ -201,7 +201,6 @@ def get_customer_repository(
 
 
 
-
 def get_device_repository(
     session: Session = Depends(get_session),
 ) -> DeviceRepository:

@@ -131,5 +131,3 @@ def update_customer(
     )
 
     return service.update(command, user)
-
-
