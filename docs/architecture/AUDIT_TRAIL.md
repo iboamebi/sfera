@@ -708,3 +708,10 @@ Recorded fields:
 
 The integration deliberately covers completion only. Creating a diagnostic is an initial work-record operation; setting a recommendation remains a separate mutation and requires its own business significance/change-field review before audit integration.
 
+
+
+## One-time pre-operational data reset — 2026-11-05
+
+The user explicitly confirmed that no valid Verification history has yet been created and approved clearing the existing pre-operational business data. Alembic revision `a6c8e1f3b520` therefore removes the existing untrusted Verification and audit rows as part of a one-time clean-slate initialization, while preserving Organizations and the `alex` admin account.
+
+This is not a change to the normal audit policy. The migration disables the PostgreSQL immutability trigger only for the audit-row deletion and re-enables it in the same transaction. After this one-time reset, Audit Trail remains append-only and Verification history must not be physically deleted.

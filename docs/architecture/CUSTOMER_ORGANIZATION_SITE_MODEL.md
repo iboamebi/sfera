@@ -139,3 +139,15 @@ Order     → Organization не является постоянной прина
 5. Реализовать контролируемое изменение Instrument–Site с основанием и историей.
 
 Каждый этап проверяется и фиксируется отдельно.
+
+
+## 7. Clean-slate data reset — 2026-11-05
+
+The user approved a one-time reset of the current untrusted business data before operational use.
+
+- Preserve every `organizations` row and all legal requisites unchanged.
+- Preserve the existing `alex` account with `admin` role; preserve its password and account settings.
+- Remove current Customer, Site, Instrument, Order, production, verification, repair, diagnostic, document, warehouse, price-list and reference/master-data rows. Future records will be entered by an operator or imported from XLS.
+- Do not infer or reconstruct ownership, Customer–Organization links, Site assignments or instrument relations from the discarded data.
+- This is a data reset, not a cancellation of the business model above. The agreed Customer / Site / Instrument rules remain the target for future data entry and implementation.
+- See Alembic revision `a6c8e1f3b520` and the 2026-11-05 checkpoint in `docs/AI_CONTEXT.md` for the exact preservation boundary.
