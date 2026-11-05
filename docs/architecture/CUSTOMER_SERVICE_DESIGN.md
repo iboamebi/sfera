@@ -1,46 +1,23 @@
 # Customer Application Design
 
-## Назначение
+## Статус
 
-Customer — заказчик/контактная сущность сервисного центра. Клиент может существовать без юридического лица и может быть связан с несколькими Organization.
+Этот документ заменяет ранний эскиз CustomerService. Описанная ниже бизнес-модель является актуальной и согласована с `docs/architecture/CUSTOMER_ORGANIZATION_SITE_MODEL.md`.
 
-Документ описывает текущую целевую модель Customer в архитектуре DDD + Clean Architecture. Он заменяет ранний проектный эскиз CustomerService, в котором ошибочно предполагались обязательная Organization и legacy CRUD.
+Customer и Organization — независимые сущности. Постоянная связь Customer–Organization не создаётся. Полный предметный контракт, правила Site/Instrument и этапы внедрения определены в документе модели.
 
-## Бизнес-сценарии
+## Customer
 
-1. Создать Customer без Organization.
-2. Создать Customer с одной или несколькими заранее заведёнными Organization.
-3. Просмотреть Customer и связанные Organization.
-4. Добавить или убрать связь с Organization, не создавая нового Customer.
-5. Изменить контактные данные Customer.
-6. Архивировать Customer без физического удаления.
-7. Использовать Customer при создании Order независимо от наличия Organization.
+Customer — устойчивый клиентский контекст / заказчик сервисного центра.
 
-Organization хранит юридические реквизиты. Выбор Organization-плательщика происходит при выставлении Invoice, не при создании Customer или Order.
+- Customer может быть физическим лицом и существовать без Organization.
+- Customer содержит собственные имя, контакты и общую информацию.
+- Создание и редактирование Customer не требуют выбора Organization.
+- Customer может иметь несколько Site.
+- Заказ и принадлежность приборов относятся к Customer.
 
-## Архитектура
+Текущий Domain contract:
 
-```text
-Customer Router
-      ↓
-Customer Application Service
-      ↓
-Customer Domain
-      ↓
-Customer Repository Interface
-      ↑
-Customer SQLAlchemy Repository
-      ↓
-PostgreSQL
-```
-
-Application Service может использовать Organization Repository Interface для проверки существования организаций. SQLAlchemy и ORM остаются только в Infrastructure.
-
-Legacy CRUD и старые CustomerService abstractions не возвращаются.
-
-## Domain contract
-
-Customer:
 - `id`;
 - `name`;
 - `contact_person?`;
@@ -48,62 +25,76 @@ Customer:
 - `email?`;
 - `comment?`;
 - `discount_percent`;
-- `organization_ids: list[UUID]`;
 - `archived`.
 
-`organization_ids` отражает связи через `customer_organizations`, а не старую колонку `customers.organization_id`.
+В Customer не должно быть `organization_ids`, `organization_id` или иных постоянных ссылок на Organization.
 
-## Application commands
+## Organization
 
-### CreateCustomerCommand
+Organization — самостоятельная юридическая сущность с реквизитами.
 
-- `name`;
-- `organization_ids` — optional, default empty;
-- contact fields;
-- `discount_percent`.
+- Все существующие Organization и их реквизиты сохраняются независимо от Customer.
+- Organization не является дочерней записью Customer.
+- Выбор Organization выполняется отдельно в документальном/финансовом контексте конкретного заказа.
+- Не выводить связь по совпадению названий, ИНН или истории.
 
-### UpdateCustomerCommand
+Выбор Organization для счёта и хранение соответствующего контекста заказа — отдельный этап. Invoice и финансовый модуль не входят в текущий Customer use case.
 
-- `customer_id`;
-- optional changed customer fields;
-- `organization_ids` — optional; если передано, заменяет набор связей целиком.
+## Site и Instrument
 
-Перед сохранением Application проверяет, что все переданные Organization существуют. Повторяющиеся идентификаторы не должны создавать дубли связей.
+- Site принадлежит одному Customer и представляет адрес / проектный узел.
+- Customer может иметь ноль, один или несколько Site.
+- Instrument принадлежит Customer напрямую.
+- `Instrument.site_id` необязателен.
+- Если Site указан, его `customer_id` должен совпадать с `Instrument.customer_id`.
+- Закреплённый по проектной документации прибор нельзя произвольно переносить на другой Site.
+- Изменение закрепления требует документированного основания и отдельного сценария с историей.
 
-### DeleteCustomerCommand
+Операции поверки, ремонта и диагностики не должны требовать наличия Site.
 
-Архивирует Customer. Физическое удаление запрещено.
+## Order
 
-## Persistence
+- Order принадлежит одному Customer.
+- Создание Order не требует Organization.
+- Organization выбирается отдельно для документального/финансового контекста.
+- Приборы добавляются в Order как конкретные OrderItems.
+- Site используется для поиска/фильтрации приборов Customer, но выбор Site в заказе не меняет постоянный `Instrument.site_id`.
+- В заказ можно включать приборы из нескольких Site и приборы без Site.
+- Готовность Site для выдачи, если она будет реализована, рассчитывается только по приборам этого Site, включённым в конкретный Order.
 
-- `customer_organizations` — фактическая таблица связей Customer ↔ Organization.
-- Старые `customers.organization_id` и `orders.organization_id` остаются только как nullable legacy persistence fields на переходном этапе.
-- Customer Repository читает и сохраняет association rows.
-- Существующие связи, ранее перенесённые миграцией в `customer_organizations`, сохраняются.
+## Архитектура
 
-## API contract
+Сценарии реализуются через существующие DDD/Clean Architecture границы:
 
-Customer response возвращает список связанных Organization identifiers. Управление набором связей выполняется через Customer create/update use cases; API не обращается к Repository или ORM напрямую.
+```text
+API
+  ↓
+Application Service
+  ↓
+Domain
+  ↓
+Repository Interface
+  ↑
+Infrastructure Repository
+  ↓
+Database
+```
 
-## UI behavior
-
-- При нуле организаций Customer создаётся без выбора Organization.
-- При одной организации интерфейс может показать её как единственную связанную.
-- При нескольких организациях пользователь выбирает нужные из списка.
-- Создание Organization из формы Customer остаётся доступным, но не обязательным.
-- Карточка Customer показывает связанные Organization.
+API не обращается к Repository или ORM напрямую. Application использует Repository Interfaces. SQLAlchemy остаётся в Infrastructure.
 
 ## Validation
 
-Покрываются:
-- создание без Organization;
-- создание с несколькими Organization;
-- проверка существования каждой Organization;
-- обновление списка связей;
-- отсутствие дубликатов;
-- чтение и сохранение связей Infrastructure;
-- API contract;
-- отсутствие Organization у нового Order;
-- сохранение исторических legacy organization identifiers.
+Проверять как минимум:
 
-Этот модуль считается полностью перенесённым только после реализации и проверки бизнес-сценариев, а не только наличия Domain/Application/Repository/API слоёв.
+- Customer создаётся без Organization;
+- Customer можно редактировать без выбора Organization;
+- Organization и её реквизиты не зависят от Customer;
+- Site принадлежит Customer;
+- Instrument принадлежит Customer независимо от Site;
+- при указанном Site Customer у Site и Instrument совпадает;
+- отсутствие Site не блокирует создание или обработку прибора;
+- Order создаётся без Organization;
+- Order может содержать приборы из разных Site и без Site;
+- выбор Site для поиска не меняет постоянное закрепление прибора.
+
+Этапы реализации и статус миграции ведутся в `CUSTOMER_ORGANIZATION_SITE_MODEL.md` и `MIGRATION_MATRIX.md`.
