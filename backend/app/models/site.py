@@ -7,12 +7,12 @@ from app.models.base_model import BaseModel
 
 
 class Site(BaseModel):
-    """ORM model for an organization's service or operating site."""
+    """ORM model for a customer's service or operating site."""
 
     __tablename__ = "sites"
 
-    organization_id: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey("organizations.id"),
+    customer_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("customers.id"),
         nullable=False,
     )
 
@@ -26,8 +26,8 @@ class Site(BaseModel):
         nullable=False,
     )
 
-    organization = relationship(
-        "Organization",
+    customer = relationship(
+        "Customer",
         back_populates="sites",
     )
 
