@@ -14,7 +14,6 @@ class Customer(Entity):
     Customer domain entity.
     """
 
-    organization_id: UUID
     name: str
     contact_person: str | None = None
     phone: str | None = None

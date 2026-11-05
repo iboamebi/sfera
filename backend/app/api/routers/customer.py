@@ -79,7 +79,6 @@ def create_customer(
     ),
 ):
     command = CreateCustomerCommand(
-        organization_id=data.organization_id,
         name=data.name,
         contact_person=data.contact_person,
         phone=data.phone,

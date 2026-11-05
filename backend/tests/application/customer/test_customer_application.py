@@ -90,8 +90,6 @@ def test_create_customer():
         FakeUnitOfWork(),
     )
 
-    organization_id = uuid4()
-
     customer = service.create(
         CreateCustomerCommand(
             organization_id=organization_id,
@@ -106,7 +104,6 @@ def test_create_customer():
     )
 
     assert customer.id is not None
-    assert customer.organization_id == organization_id
     assert customer.name == "Sfera Test Customer"
     assert customer.contact_person == "Test Person"
     assert customer.phone == "+7 900 000-00-00"
@@ -134,7 +131,6 @@ def test_create_customer_rejects_unauthorized_user():
     with pytest.raises(AuthorizationError, match="not authorized"):
         service.create(
             CreateCustomerCommand(
-                organization_id=uuid4(),
                 name="Unauthorized Customer",
             ),
             user,

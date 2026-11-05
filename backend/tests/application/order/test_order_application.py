@@ -158,7 +158,6 @@ def make_customer(customer_id: UUID) -> Customer:
     """Create a customer with a deterministic organization context."""
     return Customer(
         id=customer_id,
-        organization_id=uuid4(),
         name="Test customer",
     )
 
@@ -239,7 +238,6 @@ def test_create_register_order_flow():
     assert order.id is not None
     assert order.number.value == "10001"
     assert order.customer_id == customer_id
-    assert order.organization_id == customer_repository.get(customer_id).organization_id
     assert order.received_at is not None
     assert order.planned_issue_at == planned_issue_at
     assert order.comment == comment

@@ -35,9 +35,9 @@ class Order(BaseModel):
         nullable=False,
     )
 
-    organization_id: Mapped[uuid.UUID] = mapped_column(
+    organization_id: Mapped[uuid.UUID | None] = mapped_column(
         ForeignKey("organizations.id"),
-        nullable=False,
+        nullable=True,
     )
 
     site_id: Mapped[uuid.UUID | None] = mapped_column(

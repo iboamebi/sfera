@@ -11,9 +11,9 @@ class Customer(BaseModel):
 
     __tablename__ = "customers"
 
-    organization_id: Mapped[uuid.UUID] = mapped_column(
+    organization_id: Mapped[uuid.UUID | None] = mapped_column(
         ForeignKey("organizations.id"),
-        nullable=False,
+        nullable=True,
     )
 
     name: Mapped[str] = mapped_column(

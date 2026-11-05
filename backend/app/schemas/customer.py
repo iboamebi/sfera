@@ -4,7 +4,6 @@ from pydantic import BaseModel, ConfigDict, EmailStr
 
 
 class CustomerBase(BaseModel):
-    organization_id: UUID
     name: str
     contact_person: str | None = None
     phone: str | None = None
@@ -18,7 +17,6 @@ class CustomerCreate(CustomerBase):
 
 
 class CustomerUpdate(BaseModel):
-    organization_id: UUID | None = None
     name: str | None = None
     contact_person: str | None = None
     phone: str | None = None

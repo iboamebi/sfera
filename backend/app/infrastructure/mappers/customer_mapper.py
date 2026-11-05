@@ -23,7 +23,6 @@ class CustomerMapper(
 
         return Customer(
             id=model.id,
-            organization_id=model.organization_id,
             name=model.name,
             contact_person=model.contact_person,
             phone=model.phone,
@@ -40,7 +39,6 @@ class CustomerMapper(
     ) -> CustomerModel:
         """Convert domain entity to ORM model."""
 
-        model.organization_id = entity.organization_id
         model.name = entity.name
         model.contact_person = entity.contact_person
         model.phone = entity.phone

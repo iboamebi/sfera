@@ -1,7 +1,6 @@
 import { z } from "zod";
 
 export const createCustomerSchema = z.object({
-  organizationId: z.string().uuid(),
   name: z.string().trim().min(1),
   contactPerson: z.string().trim().optional(),
   phone: z.string().trim().optional(),

@@ -70,7 +70,6 @@ class CustomerApplicationService:
         with self._uow:
             customer = Customer(
                 id=uuid4(),
-                organization_id=command.organization_id,
                 name=command.name,
                 contact_person=command.contact_person,
                 phone=command.phone,
