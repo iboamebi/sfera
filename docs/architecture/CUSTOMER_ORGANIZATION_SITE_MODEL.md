@@ -116,11 +116,11 @@ SiteOrderReadiness = readiness of all OrderItems
 1. Наличие customer_organizations и заполненного customers.organization_id само по себе не подтверждает бизнес-отношение Customer ↔ Organization. Существующие связи не считать проверенными и не использовать как основание для автоматического восстановления отношений.
 2. customers.organization_id становится nullable на переходном этапе и перестаёт быть частью Domain/Application/API business contract.
 3. Связи Customer ↔ Organization становятся доступными через Application, Repository и API.
-4. orders.organization_id сохраняет исторические значения, становится nullable и исключается из Domain/Application business contract.
-5. Новые заказы не копируют Organization из Customer.
+4. Legacy-поля customers.organization_id и orders.organization_id удаляются после проверки зависимостей: они не являются частью бизнес-контракта.
+5. Новые заказы не копируют Organization из Customer и не получают жёсткую связь с Organization.
 6. Текущая связь sites.organization_id не соответствует утверждённой модели. Перед изменением схемы требуется проверить данные, внешние ключи, API и frontend-зависимости; миграция должна сохранить возможность определить Customer для существующих Site.
 7. Существующий nullable instruments.site_id используется как основа связи прибора с узлом; дублирующая таблица связей не создаётся без изменения бизнес-кардинальности.
-8. Физическое удаление legacy-колонок выполняется отдельным этапом после проверки зависимостей и данных.
+8. Legacy-поля Customer/Order удалены отдельным переходным этапом после проверки зависимостей; существующие тестовые значения этих полей не сохраняются как бизнес-данные.
 
 
 ### Уточнение о фактическом наполнении данных (2026-11-04)
