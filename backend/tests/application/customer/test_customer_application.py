@@ -92,7 +92,6 @@ def test_create_customer():
 
     customer = service.create(
         CreateCustomerCommand(
-            organization_id=organization_id,
             name="Sfera Test Customer",
             contact_person="Test Person",
             phone="+7 900 000-00-00",
@@ -148,7 +147,6 @@ def test_update_customer():
 
     customer = service.create(
         CreateCustomerCommand(
-            organization_id=uuid4(),
             name="Original Customer",
         ),
         make_operator(),
@@ -186,7 +184,6 @@ def test_update_customer_rejects_unauthorized_user():
 
     customer = service.create(
         CreateCustomerCommand(
-            organization_id=uuid4(),
             name="Original Customer",
         ),
         make_operator(),
@@ -223,7 +220,6 @@ def test_delete_customer():
 
     customer = service.create(
         CreateCustomerCommand(
-            organization_id=uuid4(),
             name="Customer to Delete",
         ),
         make_operator(),
@@ -256,7 +252,6 @@ def test_delete_customer_rejects_unauthorized_user():
 
     customer = service.create(
         CreateCustomerCommand(
-            organization_id=uuid4(),
             name="Customer to Protect",
         ),
         make_operator(),
@@ -290,14 +285,12 @@ def test_get_all_excludes_archived_customers():
 
     active = service.create(
         CreateCustomerCommand(
-            organization_id=uuid4(),
             name="Active Customer",
         ),
         make_operator(),
     )
     archived = service.create(
         CreateCustomerCommand(
-            organization_id=uuid4(),
             name="Archived Customer",
         ),
         make_operator(),
@@ -314,3 +307,4 @@ def test_get_all_excludes_archived_customers():
 
     assert customers == [active]
     assert archived not in customers
+}
