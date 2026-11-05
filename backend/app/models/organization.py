@@ -64,4 +64,3 @@ class Organization(BaseModel):
         "CustomerOrganization",
         back_populates="organization",
     )
-
