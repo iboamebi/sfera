@@ -118,9 +118,19 @@ SiteOrderReadiness = readiness of all OrderItems
 3. Связи Customer ↔ Organization становятся доступными через Application, Repository и API.
 4. Legacy-поля customers.organization_id и orders.organization_id удаляются после проверки зависимостей: они не являются частью бизнес-контракта.
 5. Новые заказы не копируют Organization из Customer и не получают жёсткую связь с Organization.
-6. Текущая связь sites.organization_id не соответствует утверждённой модели. Перед изменением схемы требуется проверить данные, внешние ключи, API и frontend-зависимости; миграция должна сохранить возможность определить Customer для существующих Site.
+6. Site принадлежит Customer. Связь sites.organization_id заменяется обязательной sites.customer_id. Автоматическое определение Customer по Organization запрещено: одна Organization может быть связана с несколькими Customer.
 7. Существующий nullable instruments.site_id используется как основа связи прибора с узлом; дублирующая таблица связей не создаётся без изменения бизнес-кардинальности.
 8. Legacy-поля Customer/Order удалены отдельным переходным этапом после проверки зависимостей; существующие тестовые значения этих полей не сохраняются как бизнес-данные.
+
+### Реализация Site → Customer (2026-11-05)
+
+- ORM и Domain Site используют обязательный customer_id.
+- Customer содержит обратную ORM-связь sites; Organization больше не владеет Site.
+- Site Repository и Application Service выбирают узлы по customer_id.
+- API создания и чтения Site использует customer_id; список узлов Customer доступен через `/sites/customer/{customer_id}`.
+- Order.site_id и Instrument.site_id остаются отдельными nullable-связями с Site.
+- Миграция `9f2a6c4d8e13` заменяет sites.organization_id на sites.customer_id. Она намеренно останавливается, если в sites уже есть записи: автоматическое сопоставление Organization → Customer неоднозначно и может привести к ошибочному владельцу.
+- На момент последней предоставленной инвентаризации Sites было 0. Наличие Site в других базах/окружениях этой инвентаризацией не подтверждено.
 
 
 ### Уточнение о фактическом наполнении данных (2026-11-04)
