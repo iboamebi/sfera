@@ -67,6 +67,7 @@ export function UpdateOrderForm({
         type="submit"
         variant="contained"
         disabled={isPending}
+        sx={{ alignSelf: "flex-start" }}
       >
         {isPending ? "Сохранение..." : "Сохранить"}
       </Button>
