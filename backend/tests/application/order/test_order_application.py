@@ -487,3 +487,36 @@ def test_add_order_item_allows_instrument_after_order_completed():
 
     assert len(order.items) == 1
     assert order.items[0].instrument_id == instrument_id
+
+
+
+def test_assign_order_item_rejects_instrument_from_another_customer():
+    customer_id = uuid4()
+    other_customer_id = uuid4()
+    instrument_id = uuid4()
+    device = Device(
+        id=instrument_id,
+        instrument_type_id=uuid4(),
+        customer_id=other_customer_id,
+        serial_number=__import__("app.domains.device.value_objects.serial_number", fromlist=["SerialNumber"]).SerialNumber("SN-001"),
+    )
+    service, repository, customer_repository, _, _, _ = make_service(device)
+    customer_repository.save(make_customer(customer_id))
+    order = service.create(
+        CreateOrderCommand(customer_id=customer_id, number="10012"),
+        make_operator(),
+    )
+    service.add_item(AddOrderItemCommand(order_id=order.id), make_operator())
+    item_id = order.items[0].id
+
+    with pytest.raises(InstrumentCustomerMismatchApplicationError):
+        service.assign_item_instrument(
+            AssignOrderItemInstrumentCommand(
+                order_id=order.id,
+                item_id=item_id,
+                instrument_id=instrument_id,
+            ),
+            make_operator(),
+        )
+
+    assert repository.get(order.id).items[0].instrument_id is None
