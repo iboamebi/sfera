@@ -59,7 +59,7 @@ def upgrade() -> None:
     )
 
     op.drop_constraint(
-        "instruments_site_id_fkey",
+        "fk_instruments_site_id_sites",
         "instruments",
         type_="foreignkey",
     )
@@ -92,7 +92,7 @@ def downgrade() -> None:
     op.drop_column("instruments", "customer_id")
 
     op.create_foreign_key(
-        "instruments_site_id_fkey",
+        "fk_instruments_site_id_sites",
         "instruments",
         "sites",
         ["site_id"],
