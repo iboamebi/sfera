@@ -327,10 +327,11 @@ def get_organization_service(
 
 def get_site_service(
     repository: SiteRepository = Depends(get_site_repository),
+    customer_repository: CustomerRepository = Depends(get_customer_repository),
     uow: UnitOfWork = Depends(get_unit_of_work),
 ) -> SiteApplicationService:
     """Provide Site application service."""
-    return SiteApplicationService(repository, uow)
+    return SiteApplicationService(repository, customer_repository, uow)
 
 
 def get_workflow_service(
