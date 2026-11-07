@@ -24,6 +24,7 @@ def test_device_name_can_be_changed() -> None:
     device = Device(
         id=uuid4(),
         instrument_type_id=uuid4(),
+        customer_id=uuid4(),
         serial_number=SerialNumber("SN-001"),
         name="Старое имя",
     )
