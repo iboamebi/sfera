@@ -199,6 +199,7 @@ def get_user_administration_service(
 def get_order_service(
     repository: OrderRepository = Depends(get_order_repository),
     customer_repository: CustomerRepository = Depends(get_customer_repository),
+    device_repository: DeviceRepository = Depends(get_device_repository),
     uow: UnitOfWork = Depends(get_unit_of_work),
     audit_operation_repository: AuditOperationRepository = Depends(
         get_audit_operation_repository,
@@ -210,6 +211,7 @@ def get_order_service(
     return OrderApplicationService(
         repository,
         customer_repository,
+        device_repository,
         uow,
         audit_operation_repository,
         audit_repository,
