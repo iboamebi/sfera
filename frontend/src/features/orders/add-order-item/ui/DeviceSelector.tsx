@@ -5,6 +5,7 @@ import { useDevices } from "../../../devices/model/useDevices";
 
 interface DeviceSelectorProps {
   value: string;
+  customerId: string;
   onChange: (deviceId: string) => void;
   onCreateDevice?: () => void;
   instrumentTypeId?: string | null;
@@ -12,14 +13,20 @@ interface DeviceSelectorProps {
 
 export function DeviceSelector({
   value,
+  customerId,
   onChange,
   onCreateDevice,
   instrumentTypeId,
 }: DeviceSelectorProps) {
   const { data: devices = [], isLoading, error } = useDevices();
+  const customerDevices = devices.filter(
+    (device) => device.customerId === customerId,
+  );
   const availableDevices = instrumentTypeId
-    ? devices.filter((device) => device.instrumentTypeId === instrumentTypeId)
-    : devices;
+    ? customerDevices.filter(
+        (device) => device.instrumentTypeId === instrumentTypeId,
+      )
+    : customerDevices;
   const selectedDevice =
     availableDevices.find((device) => device.id === value) ?? null;
 
