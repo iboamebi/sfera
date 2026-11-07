@@ -32,6 +32,7 @@ const OPERATION_OPTIONS: Array<{
 
 interface AddOrderItemButtonProps {
   orderId: string;
+  customerId: string;
 }
 
 function getErrorMessage(error: unknown): string {
@@ -49,7 +50,10 @@ function getErrorMessage(error: unknown): string {
   return "Не удалось добавить позицию";
 }
 
-export function AddOrderItemButton({ orderId }: AddOrderItemButtonProps) {
+export function AddOrderItemButton({
+  orderId,
+  customerId,
+}: AddOrderItemButtonProps) {
   const [deviceId, setDeviceId] = useState("");
   const [instrumentTypeId, setInstrumentTypeId] = useState("");
   const [quantity, setQuantity] = useState(1);
@@ -108,13 +112,19 @@ export function AddOrderItemButton({ orderId }: AddOrderItemButtonProps) {
     name: string;
     serialNumber: string;
   }) => {
-    createDeviceMutation.mutate(data, {
-      onSuccess: (device) => {
-        setDeviceId(device.id);
-        setInstrumentTypeId(device.instrumentTypeId);
-        setIsCreateDeviceOpen(false);
+    createDeviceMutation.mutate(
+      {
+        ...data,
+        customerId,
       },
-    });
+      {
+        onSuccess: (device) => {
+          setDeviceId(device.id);
+          setInstrumentTypeId(device.instrumentTypeId);
+          setIsCreateDeviceOpen(false);
+        },
+      },
+    );
   };
 
   const handleCreateInstrumentType = (data: { name: string }) => {
@@ -176,7 +186,9 @@ export function AddOrderItemButton({ orderId }: AddOrderItemButtonProps) {
             label="Количество"
             type="number"
             value={quantity}
-            onChange={(event) => setQuantity(Math.max(1, Number(event.target.value)))}
+            onChange={(event) =>
+              setQuantity(Math.max(1, Number(event.target.value)))
+            }
             slotProps={{ htmlInput: { min: 1, step: 1 } }}
             required
             sx={{ width: 140 }}
@@ -187,6 +199,7 @@ export function AddOrderItemButton({ orderId }: AddOrderItemButtonProps) {
       <Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
         <DeviceSelector
           value={deviceId}
+          customerId={customerId}
           onChange={setDeviceId}
           onCreateDevice={() => setIsCreateDeviceOpen(true)}
         />
