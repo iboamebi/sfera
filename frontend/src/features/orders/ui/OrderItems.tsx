@@ -14,6 +14,7 @@ import type { VerificationType } from "../../verifications/model/types";
 interface OrderItemsProps {
   items: OrderItem[];
   orderId: string;
+  customerId: string;
   editable?: boolean;
 }
 
@@ -43,7 +44,12 @@ const VERIFICATION_TYPE_LABELS: Record<VerificationType, string> = {
   AFTER_REPAIR: "После ремонта",
 };
 
-export function OrderItems({ items, orderId, editable = false }: OrderItemsProps) {
+export function OrderItems({
+  items,
+  orderId,
+  customerId,
+  editable = false,
+}: OrderItemsProps) {
   const navigate = useNavigate();
   const updateMutation = useUpdateOrderItem(orderId);
   const assignInstrumentMutation = useAssignOrderItemInstrument(orderId);
@@ -256,11 +262,11 @@ export function OrderItems({ items, orderId, editable = false }: OrderItemsProps
                 </Stack>
               )}
 
-
             {editable && !item.instrumentId && assigningItemId === item.id && (
               <Stack spacing={1}>
                 <DeviceSelector
                   value={selectedInstrumentId}
+                  customerId={customerId}
                   instrumentTypeId={item.instrumentTypeId}
                   onChange={setSelectedInstrumentId}
                 />
