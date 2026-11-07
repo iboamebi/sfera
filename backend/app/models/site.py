@@ -1,6 +1,6 @@
 import uuid
 
-from sqlalchemy import ForeignKey, String, Text
+from sqlalchemy import ForeignKey, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base_model import BaseModel
@@ -10,6 +10,10 @@ class Site(BaseModel):
     """ORM model for a customer's service or operating site."""
 
     __tablename__ = "sites"
+
+    __table_args__ = (
+        UniqueConstraint("id", "customer_id", name="uq_sites_id_customer_id"),
+    )
 
     customer_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("customers.id"),
