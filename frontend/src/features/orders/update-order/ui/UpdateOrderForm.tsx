@@ -49,7 +49,7 @@ export function UpdateOrderForm({
       onSubmit={handleSubmit(onSubmit)}
     >
       <TextField
-        label="Планируемая дата выдачи"
+        label="Планируемая выдача"
         type="datetime-local"
         {...register("plannedIssueAt")}
         error={Boolean(errors.plannedIssueAt)}
