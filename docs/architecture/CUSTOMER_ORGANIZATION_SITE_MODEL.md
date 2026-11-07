@@ -133,7 +133,7 @@ Order     → Organization не является постоянной прина
 ## 6. Этапы реализации
 
 1. Удалить устаревшую Customer–Organization association, сохранив Organization и реквизиты.
-2. Добавить прямое владение Instrument через Customer и проверку согласованности Instrument/Site/Customer.
+2. Добавить прямое владение Instrument через Customer и проверку согласованности Instrument/Site/Customer. Реализовано в backend.
 3. Удалить устаревшую связь Order–Site после проверки зависимостей; Site для OrderItem получать через Instrument.
 4. Реализовать выбор Organization и поиск Site/Instrument в интерфейсе заказа с подходящим контрактом хранения order context.
 5. Реализовать контролируемое изменение Instrument–Site с основанием и историей.
