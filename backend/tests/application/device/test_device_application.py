@@ -270,3 +270,117 @@ def test_device_connect_disconnect_flow():
     assert disconnected_device.status == DeviceStatus.COMPLETED
     assert uow.committed
     assert not uow.rolled_back
+
+
+
+def test_device_create_fails_when_customer_not_found():
+    instrument_type = InstrumentType(id=uuid4(), name="Pressure gauge")
+    repository = FakeDeviceRepository(
+        Device(
+            id=uuid4(),
+            instrument_type_id=instrument_type.id,
+            customer_id=uuid4(),
+            serial_number=SerialNumber("SN-001"),
+        ),
+    )
+    instrument_type_repository = FakeInstrumentTypeRepository(instrument_type)
+    customer_repository = FakeCustomerRepository(Customer(id=uuid4(), name="Other"))
+    site_repository = FakeSiteRepository()
+    uow = FakeUnitOfWork()
+    service = DeviceApplicationService(
+        repository,
+        instrument_type_repository,
+        customer_repository,
+        site_repository,
+        uow,
+    )
+
+    with pytest.raises(CustomerNotFoundApplicationError):
+        service.create(
+            CreateDeviceCommand(
+                instrument_type_id=instrument_type.id,
+                customer_id=uuid4(),
+                name="ВКТ-7",
+                serial_number="SN-002",
+            ),
+        )
+
+    assert not uow.committed
+    assert uow.rolled_back
+
+
+def test_device_create_fails_when_site_not_found():
+    customer = Customer(id=uuid4(), name="Test customer")
+    instrument_type = InstrumentType(id=uuid4(), name="Pressure gauge")
+    repository = FakeDeviceRepository(
+        Device(
+            id=uuid4(),
+            instrument_type_id=instrument_type.id,
+            customer_id=customer.id,
+            serial_number=SerialNumber("SN-001"),
+        ),
+    )
+    uow = FakeUnitOfWork()
+    service = DeviceApplicationService(
+        repository,
+        FakeInstrumentTypeRepository(instrument_type),
+        FakeCustomerRepository(customer),
+        FakeSiteRepository(),
+        uow,
+    )
+
+    with pytest.raises(SiteNotFoundApplicationError):
+        service.create(
+            CreateDeviceCommand(
+                instrument_type_id=instrument_type.id,
+                customer_id=customer.id,
+                site_id=uuid4(),
+                name="ВКТ-7",
+                serial_number="SN-002",
+            ),
+        )
+
+    assert not uow.committed
+    assert uow.rolled_back
+
+
+def test_device_create_fails_when_site_belongs_to_another_customer():
+    customer = Customer(id=uuid4(), name="Test customer")
+    other_customer_id = uuid4()
+    site = Site(
+        id=uuid4(),
+        customer_id=other_customer_id,
+        name="Other site",
+        address="Other address",
+    )
+    instrument_type = InstrumentType(id=uuid4(), name="Pressure gauge")
+    repository = FakeDeviceRepository(
+        Device(
+            id=uuid4(),
+            instrument_type_id=instrument_type.id,
+            customer_id=customer.id,
+            serial_number=SerialNumber("SN-001"),
+        ),
+    )
+    uow = FakeUnitOfWork()
+    service = DeviceApplicationService(
+        repository,
+        FakeInstrumentTypeRepository(instrument_type),
+        FakeCustomerRepository(customer),
+        FakeSiteRepository(site),
+        uow,
+    )
+
+    with pytest.raises(SiteCustomerMismatchApplicationError):
+        service.create(
+            CreateDeviceCommand(
+                instrument_type_id=instrument_type.id,
+                customer_id=customer.id,
+                site_id=site.id,
+                name="ВКТ-7",
+                serial_number="SN-002",
+            ),
+        )
+
+    assert not uow.committed
+    assert uow.rolled_back
