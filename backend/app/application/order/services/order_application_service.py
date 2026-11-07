@@ -19,9 +19,11 @@ from app.application.order.commands.update_order import UpdateOrderCommand
 from app.application.order.commands.update_order_item import UpdateOrderItemCommand
 from app.application.order.exceptions import (
     InstrumentAlreadyInActiveOrderApplicationError,
+    InstrumentCustomerMismatchApplicationError,
     OrderNotFoundApplicationError,
 )
 from app.domains.customer.repositories.customer_repository import CustomerRepository
+from app.domains.device.repositories.device_repository import DeviceRepository
 from app.domains.order.entities.order import Order
 from app.domains.order.entities.order_item import OrderItem
 from app.domains.order.repositories.order_repository import OrderRepository
@@ -43,6 +45,7 @@ class OrderApplicationService:
         self,
         repository: OrderRepository,
         customer_repository: CustomerRepository,
+        device_repository: DeviceRepository,
         unit_of_work: UnitOfWork,
         audit_operation_repository: AuditOperationRepository,
         audit_repository: AuditRepository,
@@ -50,6 +53,7 @@ class OrderApplicationService:
     ) -> None:
         self._repository = repository
         self._customer_repository = customer_repository
+        self._device_repository = device_repository
         self._uow = unit_of_work
         self._audit_operation_repository = audit_operation_repository
         self._audit_repository = audit_repository
@@ -144,6 +148,12 @@ class OrderApplicationService:
 
         with self._uow:
             order = self.get(command.order_id)
+            instrument = self._device_repository.get(command.instrument_id)
+
+            if instrument is None or instrument.customer_id != order.customer_id:
+                raise InstrumentCustomerMismatchApplicationError(
+                    "СИ не принадлежит заказчику заказа"
+                )
 
             if self._repository.has_conflicting_order_for_instrument(
                 command.instrument_id,
