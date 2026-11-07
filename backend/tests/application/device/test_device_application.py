@@ -6,16 +6,23 @@ from app.application.device.commands.connect_device import ConnectDeviceCommand
 from app.application.device.commands.create_device import CreateDeviceCommand
 from app.application.device.commands.disconnect_device import DisconnectDeviceCommand
 from app.application.device.exceptions import (
+    CustomerNotFoundApplicationError,
     InstrumentTypeNotFoundApplicationError,
+    SiteCustomerMismatchApplicationError,
+    SiteNotFoundApplicationError,
 )
 from app.application.device.services.device_application_service import (
     DeviceApplicationService,
 )
+from app.domains.customer.entities.customer import Customer
+from app.domains.customer.repositories.customer_repository import CustomerRepository
 from app.domains.device.entities.device import Device
 from app.domains.device.repositories.device_repository import DeviceRepository
 from app.domains.device.value_objects.device_status import DeviceStatus
 from app.domains.device.value_objects.serial_number import SerialNumber
 from app.domains.instrument_type.entities.instrument_type import InstrumentType
+from app.domains.site.entities.site import Site
+from app.domains.site.repositories.site_repository import SiteRepository
 from app.domains.instrument_type.repositories.instrument_type_repository import (
     InstrumentTypeRepository,
 )
@@ -74,6 +81,49 @@ class FakeInstrumentTypeRepository(InstrumentTypeRepository):
         self.instrument_type = instrument_type
 
 
+
+
+class FakeCustomerRepository(CustomerRepository):
+    def __init__(self, customer: Customer):
+        self.customer = customer
+
+    def get(self, customer_id, include_archived=False):
+        if customer_id == self.customer.id and (include_archived or not self.customer.archived):
+            return self.customer
+        return None
+
+    def get_all(self, include_archived=False):
+        if include_archived or not self.customer.archived:
+            return [self.customer]
+        return []
+
+    def save(self, customer):
+        self.customer = customer
+        return customer
+
+
+class FakeSiteRepository(SiteRepository):
+    def __init__(self, site: Site | None = None):
+        self.site = site
+
+    def get(self, site_id):
+        if self.site is not None and site_id == self.site.id:
+            return self.site
+        return None
+
+    def get_all(self):
+        return [self.site] if self.site is not None else []
+
+    def get_by_customer_id(self, customer_id):
+        if self.site is not None and self.site.customer_id == customer_id:
+            return [self.site]
+        return []
+
+    def save(self, site):
+        self.site = site
+        return site
+
+
 class FakeUnitOfWork(UnitOfWork):
     def __init__(self):
         self.committed = False
@@ -105,19 +155,26 @@ def test_device_create():
         Device(
             id=uuid4(),
             instrument_type_id=instrument_type.id,
+            customer_id=uuid4(),
             serial_number=SerialNumber("SN-001"),
         ),
     )
+    customer = Customer(id=uuid4(), name="Test customer")
+    customer_repository = FakeCustomerRepository(customer)
+    site_repository = FakeSiteRepository()
     uow = FakeUnitOfWork()
     service = DeviceApplicationService(
         repository,
         instrument_type_repository,
+        customer_repository,
+        site_repository,
         uow,
     )
 
     device = service.create(
         CreateDeviceCommand(
             instrument_type_id=instrument_type.id,
+            customer_id=customer.id,
             name="ВКТ-7",
             serial_number="SN-002",
         ),
@@ -146,10 +203,15 @@ def test_device_create_fails_when_instrument_type_not_found():
             serial_number=SerialNumber("SN-001"),
         ),
     )
+    customer = Customer(id=uuid4(), name="Test customer")
+    customer_repository = FakeCustomerRepository(customer)
+    site_repository = FakeSiteRepository()
     uow = FakeUnitOfWork()
     service = DeviceApplicationService(
         repository,
         instrument_type_repository,
+        customer_repository,
+        site_repository,
         uow,
     )
 
@@ -157,6 +219,7 @@ def test_device_create_fails_when_instrument_type_not_found():
         service.create(
             CreateDeviceCommand(
                 instrument_type_id=uuid4(),
+                customer_id=customer.id,
                 name="ВКТ-7",
                 serial_number="SN-002",
             ),
@@ -170,6 +233,7 @@ def test_device_connect_disconnect_flow():
     device = Device(
         id=uuid4(),
         instrument_type_id=uuid4(),
+        customer_id=uuid4(),
         serial_number=SerialNumber("SN-001"),
     )
 
@@ -181,9 +245,15 @@ def test_device_connect_disconnect_flow():
         ),
     )
     uow = FakeUnitOfWork()
+    customer_repository = FakeCustomerRepository(
+        Customer(id=device.customer_id, name="Test customer")
+    )
+    site_repository = FakeSiteRepository()
     service = DeviceApplicationService(
         repository,
         instrument_type_repository,
+        customer_repository,
+        site_repository,
         uow,
     )
 
