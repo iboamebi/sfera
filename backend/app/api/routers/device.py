@@ -20,6 +20,9 @@ from app.application.device.exceptions import (
     DeviceNotFoundApplicationError,
     DeviceNotInWorkApplicationError,
     InstrumentTypeNotFoundApplicationError,
+    CustomerNotFoundApplicationError,
+    SiteNotFoundApplicationError,
+    SiteCustomerMismatchApplicationError,
 )
 from app.application.device.services.device_application_service import (
     DeviceApplicationService,
@@ -74,6 +77,12 @@ def create_device(
         return service.create(command)
     except InstrumentTypeNotFoundApplicationError:
         raise HTTPException(status_code=404, detail="Instrument type not found") from None
+    except CustomerNotFoundApplicationError:
+        raise HTTPException(status_code=404, detail="Customer not found") from None
+    except SiteNotFoundApplicationError:
+        raise HTTPException(status_code=404, detail="Site not found") from None
+    except SiteCustomerMismatchApplicationError:
+        raise HTTPException(status_code=409, detail="Site does not belong to customer") from None
 
 
 @router.put(
