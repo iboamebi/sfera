@@ -23,7 +23,6 @@ class OrderMapper(BaseMapper[Order, OrderModel]):
             number=OrderNumber(model.number),
             customer_id=model.customer_id,
             received_at=model.received_at,
-            site_id=model.site_id,
             planned_issue_at=model.planned_issue_at,
             issued_at=model.issued_at,
             comment=model.comment,
@@ -52,7 +51,6 @@ class OrderMapper(BaseMapper[Order, OrderModel]):
     ) -> OrderModel:
         model.number = entity.number.value
         model.customer_id = entity.customer_id
-        model.site_id = entity.site_id
         model.received_at = entity.received_at
         model.planned_issue_at = entity.planned_issue_at
         model.issued_at = entity.issued_at
