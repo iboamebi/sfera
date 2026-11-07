@@ -9,3 +9,7 @@ class OrderNotFoundApplicationError(Exception):
 
 class InstrumentAlreadyInActiveOrderApplicationError(Exception):
     """Instrument already belongs to another active order."""
+
+
+class InstrumentCustomerMismatchApplicationError(Exception):
+    """Instrument does not belong to the order customer."""
