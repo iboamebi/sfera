@@ -9,6 +9,7 @@ import pytest
 
 from app.application.authorization.authorization import AuthorizationError
 from app.application.order.commands.add_order_item import AddOrderItemCommand
+from app.application.order.commands.assign_order_item_instrument import AssignOrderItemInstrumentCommand
 from app.application.order.commands.create_order import CreateOrderCommand
 from app.application.order.commands.register_order import RegisterOrderCommand
 from app.application.order.commands.update_order import UpdateOrderCommand
