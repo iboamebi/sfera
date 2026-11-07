@@ -899,3 +899,17 @@ Local typecheck/build and browser review are still required before considering t
 - Navigation behavior is unchanged.
 - Commit: `f26987b851be1f16883dcca2a352f23baf72a3f4`.
 - Local typecheck/build and browser confirmation of the visual emphasis are pending.
+
+## Order items table layout checkpoint — 2026-11-07
+
+- Refactored `frontend/src/features/orders/ui/OrderItems.tsx` from vertically stacked position blocks into a horizontally structured MUI table.
+- Columns: position number, Instrument name, Instrument type, model, serial number, requested operations, and right-aligned actions.
+- Instrument name remains a primary-colored link to the same Instrument edit route with return-to-Order navigation.
+- Existing verification links are displayed beneath the Instrument name.
+- Actions are grouped in the rightmost column; assignment, Verification creation, and operation editing forms expand beneath their corresponding table row.
+- Existing mutation hooks, handlers, visibility conditions, payloads, and navigation targets were preserved; no backend/API/domain changes.
+- The table has a minimum width and horizontal scrolling through MUI TableContainer for narrower viewports.
+- Implementation commits:
+  - `3676dfab7c61c4286f174bb681ec3ad58a6a2fb4` — table layout;
+  - `79b5ff3f84fafd3045d38207b6f8e5078af6f1c3` — stable React fragment key.
+- Local typecheck/build and browser review of table layout and expanded actions are pending.
