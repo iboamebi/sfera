@@ -939,3 +939,12 @@ Local typecheck/build and browser review are still required before considering t
 - Added a focused API router test asserting that update returns the read model.
 - Corrected the Order page helper text to mention only the planned issue date; comment editing remains inline in OrderDetails.
 - Backend test and local frontend/browser validation are pending.
+
+
+## Order parameter save visibility checkpoint — 2026-11-07
+
+- In `frontend/src/features/orders/update-order/ui/UpdateOrderForm.tsx`, the planned-issue-date form now renders its Save button only while React Hook Form reports `isDirty`.
+- The form resets its baseline values when the Order's `plannedIssueAt` changes after a successful reload, so the Save button disappears after saving and also disappears if the user restores the original date.
+- No API, backend, or business behavior changed.
+- Implementation commit: `ad428dedf1b059e8fb92cd09037365e34d59268f`.
+- Local typecheck/build and browser confirmation are pending.
