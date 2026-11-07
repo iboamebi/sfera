@@ -227,7 +227,7 @@ export function OrderItems({
                           ))}
                         </Stack>
                         {item.comment && (
-                          <Typography color="text.secondary" variant="caption" display="block" sx={{ mt: 0.5 }}>
+                          <Typography color="text.secondary" variant="caption" sx={{ display: "block", mt: 0.5 }}>
                             {item.comment}
                           </Typography>
                         )}
@@ -236,9 +236,11 @@ export function OrderItems({
                         <Stack
                           direction="row"
                           spacing={0.5}
-                          justifyContent="flex-end"
-                          alignItems="center"
-                          sx={{ flexWrap: "wrap" }}
+                          sx={{
+                            flexWrap: "wrap",
+                            justifyContent: "flex-end",
+                            alignItems: "center",
+                          }}
                         >
                           {item.requestedOperations.includes("verification") &&
                             item.instrumentId &&
