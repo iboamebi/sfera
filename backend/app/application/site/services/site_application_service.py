@@ -6,6 +6,8 @@ from uuid import UUID, uuid4
 
 from app.application.authorization.authorization import require_role
 from app.application.site.commands.create_site import CreateSiteCommand
+from app.application.site.exceptions import CustomerNotFoundApplicationError
+from app.domains.customer.repositories.customer_repository import CustomerRepository
 from app.domains.site.entities.site import Site
 from app.domains.site.repositories.site_repository import SiteRepository
 from app.domains.user.entities.user import User
@@ -19,9 +21,11 @@ class SiteApplicationService:
     def __init__(
         self,
         repository: SiteRepository,
+        customer_repository: CustomerRepository,
         uow: UnitOfWork,
     ) -> None:
         self._repository = repository
+        self._customer_repository = customer_repository
         self._uow = uow
 
     def get(
@@ -55,6 +59,11 @@ class SiteApplicationService:
         require_role(user, UserRole.OPERATOR, UserRole.ADMIN)
 
         with self._uow:
+            customer = self._customer_repository.get(command.customer_id)
+
+            if customer is None:
+                raise CustomerNotFoundApplicationError
+
             site = Site(
                 id=uuid4(),
                 customer_id=command.customer_id,
