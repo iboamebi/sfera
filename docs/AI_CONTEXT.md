@@ -819,3 +819,15 @@ Next local validation:
 - confirm an Instrument owned by another Customer is absent.
 
 Do not repeat the already successful create/add/register scenario unless a regression occurs.
+
+
+Follow-up browser validation reported by the user on 2026-11-07:
+- returning from the previous page works;
+- reopening the same registered Order shows its OrderItem;
+- the associated Instrument is displayed;
+- the actions "Создать поверку" and "Редактировать карту СИ" are available;
+- the Instrument card opens successfully.
+
+This confirms persistence/readback of the registered OrderItem and Instrument after navigation, plus access to the Instrument card. It does not confirm the behavior of the DeviceSelector for instruments belonging to another Customer.
+
+Next useful browser scenario: exercise "Создать поверку" for the registered OrderItem and verify that the created Verification is linked to that OrderItem. Do not repeat order creation/registration or Instrument card access checks.
