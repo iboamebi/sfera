@@ -145,11 +145,16 @@ export function OrderDetails({ order }: OrderDetailsProps) {
                     </TableCell>
                     <TableCell>{formatDate(order.updatedAt)}</TableCell>
                   </TableRow>
+                  <TableRow>
+                    <TableCell sx={{ color: "text.secondary" }}>
+                      Выдан
+                    </TableCell>
+                    <TableCell>{formatDate(order.issuedAt)}</TableCell>
+                  </TableRow>
                 </TableBody>
               </Table>
             </TableContainer>
             <UpdateOrder order={order} />
-            <DetailRow label="Выдан" value={formatDate(order.issuedAt)} />
           </Stack>
 
           <Divider />
