@@ -831,3 +831,33 @@ Follow-up browser validation reported by the user on 2026-11-07:
 This confirms persistence/readback of the registered OrderItem and Instrument after navigation, plus access to the Instrument card. It does not confirm the behavior of the DeviceSelector for instruments belonging to another Customer.
 
 Next useful browser scenario: exercise "Создать поверку" for the registered OrderItem and verify that the created Verification is linked to that OrderItem. Do not repeat order creation/registration or Instrument card access checks.
+
+
+## Verification creation UI review — 2026-11-07
+
+User browser observations:
+- Create Verification exposes verification type, free-text Methodology field, and "Сохранить поверку".
+- Methodology field does not search or offer choices.
+- User found multiple visible actions named "Зарегистрировать" and "Сохранить" and could not distinguish their purpose; exact screen placement needs a screenshot before changing labels/actions.
+
+Source audit:
+- OrderItems currently offers PRIMARY / PERIODIC / AFTER_REPAIR as three VerificationType values.
+- `VerificationType` is a Domain value object with those three enum values.
+- Create flow posts `order_item_id`, `verification_date`, `verification_type`, and optional free-text `methodology`.
+- Successful create navigates to `/verifications/{id}`.
+- The Verification detail page currently exposes the lifecycle action for CREATED as "Start verification" (English in source), and approve/reject actions for IN_PROGRESS. It does not expose a separate verification-registration command.
+- Runtime Method / MethodVersion catalogue and search endpoint/UI are not present in the inspected frontend slice. `docs/metrology/VERIFICATION_METHODS.md` is a working analytical registry, not a runtime lookup API.
+
+Regulatory terminology review:
+- From 2025-03-01, current wording of Article 13(1) of Federal Law 102-FZ classifies verification before commissioning as primary and verification during operation, including after repair, as periodic.
+- Minpromtorg recommendations dated 2025-03-31 clarify that post-repair verification during operation is periodic; where an existing method describes a primary-verification volume after repair, that volume may still be required, while the legal classification is periodic.
+- Therefore AFTER_REPAIR should not be treated as a third peer legal verification type by default. It is better modeled as the reason/occasion (after repair) alongside the legal type (primary/periodic), with the method defining the required scope. Do not remove or migrate the enum until compatibility and historical-data implications are audited.
+
+References reviewed:
+- Federal Law 102-FZ Article 13: https://www.consultant.ru/document/cons_doc_LAW_77904/3bfb763ea01f7fc945dd7b589037fea5b6c90643/
+- Minpromtorg letter/recommendations 31.03.2025 No. АГ-35953/10: https://base.garant.ru/411846506/
+
+Open next steps:
+- Clarify with a screenshot which exact page contains the "Зарегистрировать" and "Сохранить" buttons, then align labels with Order vs Verification lifecycle actions.
+- Decide the domain split between legal verification type (PRIMARY/PERIODIC) and occasion/reason (e.g. AFTER_REPAIR), then audit API/DB/history compatibility before implementation.
+- Define runtime Method/MethodVersion lookup contract before adding a searchable method selector; do not mistake the Markdown registry for a runtime catalogue.
