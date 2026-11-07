@@ -948,3 +948,13 @@ Local typecheck/build and browser review are still required before considering t
 - No API, backend, or business behavior changed.
 - Implementation commit: `ad428dedf1b059e8fb92cd09037365e34d59268f`.
 - Local typecheck/build and browser confirmation are pending.
+
+
+## Order planned issue date editor placement checkpoint — 2026-11-07
+
+- Removed the separate `Параметры заказа` card from `OrderPage`.
+- Moved the existing planned-issue-date editor into the Order details card, in the same metadata section as the other order dates.
+- The date picker label is now `Планируемая выдача`; its Save button remains conditional on form dirtiness and disappears when the value returns to its saved baseline.
+- The existing update mutation, comment-preservation behavior, and API contract are unchanged.
+- Implementation commits: `4b9512b`, `cb19fa6`, `1ee86bf`, `0da8dd0`.
+- Local typecheck/build and browser review are pending.
