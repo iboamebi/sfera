@@ -7,6 +7,7 @@ import { CustomersPage } from "../pages/customers/CustomersPage";
 import { CustomerPage } from "../pages/customers/CustomerPage";
 import { CreateCustomerPage } from "../pages/customers/CreateCustomerPage";
 import { CreateSitePage } from "../pages/customers/CreateSitePage";
+import { CreateDevicePage } from "../pages/customers/CreateDevicePage";
 import { MaterialsPage } from "../pages/materials/MaterialsPage";
 import { MaterialPage } from "../pages/materials/MaterialPage";
 import { OrganizationsPage } from "../pages/organizations/OrganizationsPage";
@@ -66,6 +67,10 @@ export const router = createBrowserRouter([
   {
     path: "/customers/:customerId/sites/new",
     element: <RequireAuth><CreateSitePage /></RequireAuth>,
+  },
+  {
+    path: "/customers/:customerId/devices/new",
+    element: <RequireAuth><CreateDevicePage /></RequireAuth>,
   },
   {
     path: "/organizations",
