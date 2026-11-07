@@ -14,11 +14,14 @@ from app.application.order.commands.register_order import RegisterOrderCommand
 from app.application.order.commands.update_order import UpdateOrderCommand
 from app.application.order.exceptions import (
     InstrumentAlreadyInActiveOrderApplicationError,
+    InstrumentCustomerMismatchApplicationError,
 )
 from app.application.order.services.order_application_service import (
     OrderApplicationService,
 )
 from app.domains.customer.entities.customer import Customer
+from app.domains.device.entities.device import Device
+from app.domains.device.repositories.device_repository import DeviceRepository
 from app.domains.customer.repositories.customer_repository import CustomerRepository
 from app.domains.order.entities.order import Order
 from app.domains.order.entities.order_item import OrderItem
@@ -105,6 +108,24 @@ class FakeCustomerRepository(CustomerRepository):
         return customer
 
 
+
+
+class FakeDeviceRepository(DeviceRepository):
+    def __init__(self, device: Device | None = None) -> None:
+        self.device = device
+
+    def get(self, device_id: UUID) -> Device | None:
+        if self.device is not None and self.device.id == device_id:
+            return self.device
+        return None
+
+    def list(self) -> list[Device]:
+        return [self.device] if self.device is not None else []
+
+    def save(self, device: Device) -> None:
+        self.device = device
+
+
 class FakeOrderRepository(OrderRepository):
     """Fake order repository for application-service tests."""
 
@@ -162,7 +183,7 @@ def make_customer(customer_id: UUID) -> Customer:
     )
 
 
-def make_service() -> tuple[
+def make_service(device: Device | None = None) -> tuple[
     OrderApplicationService,
     FakeOrderRepository,
     FakeCustomerRepository,
@@ -176,9 +197,11 @@ def make_service() -> tuple[
     uow = FakeUnitOfWork()
     audit_operation_repository = FakeAuditOperationRepository()
     audit_repository = FakeAuditRepository()
+    device_repository = FakeDeviceRepository(device)
     service = OrderApplicationService(
         repository,
         customer_repository,
+        device_repository,
         uow,
         audit_operation_repository,
         audit_repository,
