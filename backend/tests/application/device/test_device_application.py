@@ -200,6 +200,7 @@ def test_device_create_fails_when_instrument_type_not_found():
         Device(
             id=uuid4(),
             instrument_type_id=uuid4(),
+            customer_id=uuid4(),
             serial_number=SerialNumber("SN-001"),
         ),
     )
