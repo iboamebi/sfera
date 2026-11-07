@@ -1,4 +1,10 @@
-import { Button, Stack, Typography } from "@mui/material";
+import {
+  Button,
+  Card,
+  CardContent,
+  Stack,
+  Typography,
+} from "@mui/material";
 import { useNavigate, useParams } from "react-router";
 
 import { UpdateOrder } from "../../features/orders/update-order/ui/UpdateOrder";
@@ -25,7 +31,7 @@ export function OrderPage() {
   }
 
   return (
-    <Stack spacing={2}>
+    <Stack spacing={3}>
       <Button
         variant="outlined"
         onClick={() => navigate("/orders")}
@@ -33,9 +39,32 @@ export function OrderPage() {
       >
         Назад
       </Button>
+
       <OrderDetails order={data} />
-      <OrderActions order={data} />
-      <UpdateOrder order={data} />
+
+      <Card variant="outlined">
+        <CardContent>
+          <Stack spacing={1.5}>
+            <Typography variant="h6">Регистрация заказа</Typography>
+            <Typography color="text.secondary" variant="body2">
+              Отдельное действие: переводит заказ в зарегистрированное состояние.
+            </Typography>
+            <OrderActions order={data} />
+          </Stack>
+        </CardContent>
+      </Card>
+
+      <Card variant="outlined">
+        <CardContent>
+          <Stack spacing={2}>
+            <Typography variant="h6">Параметры заказа</Typography>
+            <Typography color="text.secondary" variant="body2">
+              Здесь можно изменить планируемую дату выдачи и комментарий.
+            </Typography>
+            <UpdateOrder order={data} />
+          </Stack>
+        </CardContent>
+      </Card>
     </Stack>
   );
 }
