@@ -42,17 +42,19 @@ export function OrderPage() {
 
       <OrderDetails order={data} />
 
-      <Card variant="outlined">
-        <CardContent>
-          <Stack spacing={1.5}>
-            <Typography variant="h6">Регистрация заказа</Typography>
-            <Typography color="text.secondary" variant="body2">
-              Отдельное действие: переводит заказ в зарегистрированное состояние.
-            </Typography>
-            <OrderActions order={data} />
-          </Stack>
-        </CardContent>
-      </Card>
+      {data.status === "NEW" && (
+        <Card variant="outlined">
+          <CardContent>
+            <Stack spacing={1.5}>
+              <Typography variant="h6">Регистрация заказа</Typography>
+              <Typography color="text.secondary" variant="body2">
+                Отдельное действие: переводит заказ в зарегистрированное состояние.
+              </Typography>
+              <OrderActions order={data} />
+            </Stack>
+          </CardContent>
+        </Card>
+      )}
 
       <Card variant="outlined">
         <CardContent>
