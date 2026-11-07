@@ -1,6 +1,6 @@
 import uuid
 
-from sqlalchemy import ForeignKey, String, Text
+from sqlalchemy import ForeignKey, ForeignKeyConstraint, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base_model import BaseModel
@@ -11,13 +11,25 @@ class Instrument(BaseModel):
 
     __tablename__ = "instruments"
 
+
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["site_id", "customer_id"],
+            ["sites.id", "sites.customer_id"],
+        ),
+    )
+
     instrument_type_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("instrument_types.id"),
         nullable=False,
     )
 
+    customer_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("customers.id"),
+        nullable=False,
+    )
+
     site_id: Mapped[uuid.UUID | None] = mapped_column(
-        ForeignKey("sites.id"),
         nullable=True,
     )
 
