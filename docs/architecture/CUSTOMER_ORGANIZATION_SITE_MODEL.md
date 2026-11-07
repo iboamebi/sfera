@@ -87,6 +87,7 @@ Instrument — конкретный экземпляр средства изме
 Order     → Customer   required
 OrderItem → Instrument конкретный прибор в заказе
 Order     → Organization не является постоянной принадлежностью Customer
+Order     → Site        не является постоянной привязкой; Site определяется через выбранные Instrument
 ```
 
 При создании и редактировании заказа оператор должен иметь возможность:
@@ -134,7 +135,7 @@ Order     → Organization не является постоянной прина
 
 1. Удалить устаревшую Customer–Organization association, сохранив Organization и реквизиты.
 2. Добавить прямое владение Instrument через Customer и проверку согласованности Instrument/Site/Customer. Реализовано в backend.
-3. Удалить устаревшую связь Order–Site после проверки зависимостей; Site для OrderItem получать через Instrument.
+3. Удалить устаревшую связь Order–Site после проверки зависимостей; Site для OrderItem получать через Instrument. Реализовано в backend.
 4. Реализовать выбор Organization и поиск Site/Instrument в интерфейсе заказа с подходящим контрактом хранения order context.
 5. Реализовать контролируемое изменение Instrument–Site с основанием и историей.
 
