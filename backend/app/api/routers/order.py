@@ -249,9 +249,10 @@ def update_order(
     data: OrderUpdate,
     user: User = Depends(get_current_user),
     service: OrderApplicationService = Depends(get_order_service),
+    read_service: OrderReadService = Depends(get_order_read_service),
 ):
     try:
-        return service.update(
+        service.update(
             UpdateOrderCommand(
                 order_id=order_id,
                 planned_issue_at=data.planned_issue_at,
@@ -259,6 +260,10 @@ def update_order(
             ),
             user,
         )
+        order = read_service.get(order_id)
+        if order is None:
+            raise HTTPException(status_code=500, detail="Updated order could not be loaded")
+        return order
     except OrderNotFoundApplicationError:
         raise HTTPException(status_code=404, detail="Order not found") from None
 
