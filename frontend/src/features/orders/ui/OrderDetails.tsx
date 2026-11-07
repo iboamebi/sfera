@@ -6,13 +6,17 @@ import {
   Chip,
   Divider,
   Stack,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableRow,
   TextField,
   Typography,
 } from "@mui/material";
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 
-import { useCustomer } from "../../customers/model/useCustomer";
 import { AddOrderItemButton } from "../add-order-item/ui/AddOrderItemButton";
 import type { OrderRead } from "../model/types";
 import { UpdateOrder } from "../update-order/ui/UpdateOrder";
@@ -66,7 +70,6 @@ function DetailRow({ label, value }: { label: string; value: string }) {
 }
 
 export function OrderDetails({ order }: OrderDetailsProps) {
-  const { data: customer } = useCustomer(order.customerId);
   const queryClient = useQueryClient();
   const [isCommentEditing, setIsCommentEditing] = useState(false);
   const [commentDraft, setCommentDraft] = useState(order.comment ?? "");
@@ -106,7 +109,12 @@ export function OrderDetails({ order }: OrderDetailsProps) {
             spacing={2}
             sx={{ alignItems: "flex-start", justifyContent: "space-between" }}
           >
-            <Typography variant="h5">Заказ № {order.number}</Typography>
+            <Stack spacing={0.5}>
+              <Typography variant="h5">Заказ № {order.number}</Typography>
+              <Typography color="text.secondary" variant="body1">
+                {order.customerName}
+              </Typography>
+            </Stack>
             <Chip
               color={statusColors[order.status] ?? "default"}
               label={statusLabels[order.status] ?? order.status}
@@ -116,10 +124,30 @@ export function OrderDetails({ order }: OrderDetailsProps) {
           <Divider />
 
           <Stack spacing={2}>
-            <DetailRow label="Клиент" value={customer?.name ?? "—"} />
-            <DetailRow label="Создан" value={formatDate(order.createdAt)} />
-            <DetailRow label="Изменён" value={formatDate(order.updatedAt)} />
-            <DetailRow label="Получен" value={formatDate(order.receivedAt)} />
+            <TableContainer>
+              <Table size="small" aria-label="Даты заказа">
+                <TableBody>
+                  <TableRow>
+                    <TableCell sx={{ color: "text.secondary", width: "40%" }}>
+                      Создан
+                    </TableCell>
+                    <TableCell>{formatDate(order.createdAt)}</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell sx={{ color: "text.secondary" }}>
+                      Получен
+                    </TableCell>
+                    <TableCell>{formatDate(order.receivedAt)}</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell sx={{ color: "text.secondary" }}>
+                      Изменён
+                    </TableCell>
+                    <TableCell>{formatDate(order.updatedAt)}</TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </TableContainer>
             <UpdateOrder order={order} />
             <DetailRow label="Выдан" value={formatDate(order.issuedAt)} />
           </Stack>
