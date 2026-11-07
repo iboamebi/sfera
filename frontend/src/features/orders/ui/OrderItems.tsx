@@ -157,9 +157,9 @@ export function OrderItems({
               <TableRow>
                 <TableCell width={52}>№</TableCell>
                 <TableCell>Наименование СИ</TableCell>
-                <TableCell>Тип СИ</TableCell>
                 <TableCell>Модель</TableCell>
                 <TableCell>Заводской номер</TableCell>
+                <TableCell>Тип СИ</TableCell>
                 <TableCell>Операции</TableCell>
                 <TableCell align="right" width={250}>Действия</TableCell>
               </TableRow>
@@ -213,9 +213,9 @@ export function OrderItems({
                           </Stack>
                         )}
                       </TableCell>
-                      <TableCell>{item.instrumentTypeName ?? "—"}</TableCell>
                       <TableCell>{item.modification ?? "—"}</TableCell>
                       <TableCell>{item.serialNumber ?? "—"}</TableCell>
+                      <TableCell>{item.instrumentTypeName ?? "—"}</TableCell>
                       <TableCell sx={{ minWidth: 150 }}>
                         <Stack direction="row" spacing={0.5} sx={{ flexWrap: "wrap" }}>
                           {item.requestedOperations.map((operation) => (
