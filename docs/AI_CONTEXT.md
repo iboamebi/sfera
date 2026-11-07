@@ -890,3 +890,12 @@ Local typecheck/build and browser review are still required before considering t
 - No navigation target, mutation, or business behavior was otherwise changed.
 - Commit: `3744a18a1fae9709f776c68590cd315388c7534f`.
 - Local typecheck/build and browser verification are pending.
+
+
+## Instrument card link visual emphasis — 2026-11-07
+
+- User confirmed the previous local typecheck, build, and browser checks passed: the Instrument name opens the card in edit mode, return navigation goes back to the same Order, and the separate edit button is absent.
+- Updated the inline Instrument link in `frontend/src/features/orders/ui/OrderItems.tsx` to use the theme's `primary` color and semibold text, retaining hover underline. This follows the visual link treatment used for Order numbers in `OrderListItem`.
+- Navigation behavior is unchanged.
+- Commit: `f26987b851be1f16883dcca2a352f23baf72a3f4`.
+- Local typecheck/build and browser confirmation of the visual emphasis are pending.
