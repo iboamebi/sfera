@@ -58,13 +58,22 @@ export function CustomerPage() {
           }}
         >
           <Typography variant="h6">Объекты</Typography>
-          <Button
-            component={Link}
-            to={`/customers/${data.id}/sites/new`}
-            variant="contained"
-          >
-            Добавить объект
-          </Button>
+          <Stack direction="row" spacing={1}>
+            <Button
+              component={Link}
+              to={`/customers/${data.id}/devices/new`}
+              variant="contained"
+            >
+              Добавить СИ
+            </Button>
+            <Button
+              component={Link}
+              to={`/customers/${data.id}/sites/new`}
+              variant="outlined"
+            >
+              Добавить объект
+            </Button>
+          </Stack>
         </Stack>
 
         {sitesLoading && <Typography>Загрузка объектов...</Typography>}
