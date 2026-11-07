@@ -794,3 +794,28 @@ Implementation stage 1 is the removal of the obsolete Customer–Organization as
 - The one-time migration uses PostgreSQL `TRUNCATE` for the pre-operational, untrusted audit rows; the row-level append-only trigger remains installed and enabled. This privileged migration-only reset does not change the normal Audit Trail rule. The user confirmed that no valid Verification history has yet been created.
 - This reset does not reverse the agreed future Customer / Site / Instrument business model. It only removes existing records; future relationships will be entered by an operator or imported from XLS.
 - The migration is intentionally irreversible. A database backup is required before applying it; restoring deleted rows requires restoring that backup, not Alembic downgrade.
+
+
+## Order → Instrument creation and registration checkpoint — 2026-11-07
+
+Frontend changes on `feat/user-first-login-password`:
+
+- Device API/model contract carries required `customerId` and optional `siteId`.
+- Device creation from the Order item form passes the Order's `customerId`.
+- The Order item DeviceSelector filters instruments to the current Order's Customer, then optionally by InstrumentType.
+- A newly created Device is selected in the Order item form after the create API call succeeds.
+- Device creation API errors are now displayed inside the inline creation form instead of leaving the form open without feedback.
+- Error-state UI change commit: `ad92bdb712850c9c54d39858b21d6a516665240c`.
+
+User confirmed production browser smoke test on 2026-11-07:
+- created an Instrument from the Order form;
+- created and added the OrderItem;
+- successfully registered the Order.
+
+This confirms the inline Instrument creation → OrderItem addition → Order registration path. It does not yet confirm the selector's existing-instrument filtering behavior across two different Customers.
+
+Next local validation:
+- open an Order for a Customer with at least one existing Instrument and confirm that Instrument appears in the selector;
+- confirm an Instrument owned by another Customer is absent.
+
+Do not repeat the already successful create/add/register scenario unless a regression occurs.
