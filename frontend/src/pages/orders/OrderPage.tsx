@@ -7,7 +7,6 @@ import {
 } from "@mui/material";
 import { useNavigate, useParams } from "react-router";
 
-import { UpdateOrder } from "../../features/orders/update-order/ui/UpdateOrder";
 import { useOrder } from "../../features/orders/model/useOrder";
 import { OrderActions } from "../../features/orders/ui/OrderActions";
 import { OrderDetails } from "../../features/orders/ui/OrderDetails";
@@ -55,18 +54,6 @@ export function OrderPage() {
           </CardContent>
         </Card>
       )}
-
-      <Card variant="outlined">
-        <CardContent>
-          <Stack spacing={2}>
-            <Typography variant="h6">Параметры заказа</Typography>
-            <Typography color="text.secondary" variant="body2">
-              Здесь можно изменить планируемую дату выдачи.
-            </Typography>
-            <UpdateOrder order={data} />
-          </Stack>
-        </CardContent>
-      </Card>
     </Stack>
   );
 }
