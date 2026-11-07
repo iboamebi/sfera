@@ -107,9 +107,15 @@ export function OrderDetails({ order }: OrderDetailsProps) {
             <OrderItems
               items={order.items}
               orderId={order.id}
+              customerId={order.customerId}
               editable={isEditable}
             />
-            {isEditable && <AddOrderItemButton orderId={order.id} />}
+            {isEditable && (
+              <AddOrderItemButton
+                orderId={order.id}
+                customerId={order.customerId}
+              />
+            )}
           </Stack>
         </Stack>
       </CardContent>
