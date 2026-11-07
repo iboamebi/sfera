@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { Alert, Button, Checkbox, Chip, Divider, FormControlLabel, MenuItem, Stack, TextField, Typography } from "@mui/material";
+import { Alert, Button, Checkbox, Chip, Divider, FormControlLabel, Link, MenuItem, Stack, TextField, Typography } from "@mui/material";
 import { useNavigate } from "react-router";
 
 import { useAssignOrderItemInstrument } from "../add-order-item/model/useAssignOrderItemInstrument";
@@ -91,13 +91,6 @@ export function OrderItems({
     deleteMutation.mutate(itemId);
   };
 
-  const openDeviceCard = (instrumentId: string | null) => {
-    if (!instrumentId) {
-      return;
-    }
-    navigate(`/devices/${instrumentId}?edit=1&returnToOrder=${orderId}`);
-  };
-
   const startAssigningInstrument = (item: OrderItem) => {
     setAssigningItemId(item.id);
     setSelectedInstrumentId("");
@@ -139,7 +132,24 @@ export function OrderItems({
 
             <Stack spacing={0.25}>
               <Typography color="text.secondary" variant="body2">
-                Наименование СИ: {item.instrumentName ?? "—"}
+                Наименование СИ:{" "}
+                {item.instrumentId ? (
+                  <Link
+                    component="button"
+                    type="button"
+                    color="inherit"
+                    underline="hover"
+                    onClick={() =>
+                      navigate(
+                        `/devices/${item.instrumentId}?edit=1&returnToOrder=${orderId}`,
+                      )
+                    }
+                  >
+                    {item.instrumentName ?? "—"}
+                  </Link>
+                ) : (
+                  item.instrumentName ?? "—"
+                )}
               </Typography>
               <Typography color="text.secondary" variant="body2">
                 Тип СИ: {item.instrumentTypeName ?? "—"}
@@ -289,18 +299,6 @@ export function OrderItems({
                     Отмена
                   </Button>
                 </Stack>
-              </Stack>
-            )}
-
-            {item.instrumentId && (
-              <Stack direction="row">
-                <Button
-                  size="small"
-                  variant="outlined"
-                  onClick={() => openDeviceCard(item.instrumentId)}
-                >
-                  Редактировать карту СИ
-                </Button>
               </Stack>
             )}
 
