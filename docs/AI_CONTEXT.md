@@ -913,3 +913,12 @@ Local typecheck/build and browser review are still required before considering t
   - `3676dfab7c61c4286f174bb681ec3ad58a6a2fb4` — table layout;
   - `79b5ff3f84fafd3045d38207b6f8e5078af6f1c3` — stable React fragment key.
 - Local typecheck/build and browser review of table layout and expanded actions are pending.
+
+
+## Order registration and parameter controls checkpoint — 2026-11-07
+
+- The Order page now shows the separate registration card only while Order.status === NEW. After successful registration, the updated order cache causes the card to disappear; the status chip in OrderDetails remains the visible registration/status indicator.
+- The planned issue date/comment form remains available as a separate section; its Save button is aligned to the left rather than stretching across the page.
+- The Register button is also aligned to the left while the order is still NEW.
+- No order lifecycle, update, registration mutation, or API behavior was changed.
+- Local typecheck/build and browser verification are pending.
