@@ -958,3 +958,14 @@ Local typecheck/build and browser review are still required before considering t
 - The existing update mutation, comment-preservation behavior, and API contract are unchanged.
 - Implementation commits: `4b9512b`, `cb19fa6`, `1ee86bf`, `0da8dd0`.
 - Local typecheck/build and browser review are pending.
+
+
+## Order header and date metadata checkpoint — 2026-11-07
+
+- Moved the customer name into the Order card header beneath the order number; the separate Customer row was removed.
+- Replaced the separate Created, Received, and Updated metadata rows with a compact two-column date table.
+- Kept the planned issue date editor and issued date display in the existing details section.
+- Used the existing `OrderRead.customerName` field; removed the now-unnecessary customer detail query from OrderDetails.
+- No API, backend, or business behavior changed.
+- Implementation commit: `3f33f7116f6d2844ea93aa4b8b294e50bbb88fb6`.
+- Local frontend typecheck, build, and browser review are pending.
