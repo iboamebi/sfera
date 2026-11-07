@@ -35,7 +35,7 @@ interface AddOrderItemButtonProps {
   customerId: string;
 }
 
-function getErrorMessage(error: unknown): string {
+function getErrorMessage(error: unknown, fallback: string): string {
   if (isAxiosError(error)) {
     const detail = error.response?.data?.detail;
     if (typeof detail === "string" && detail.trim()) {
@@ -47,7 +47,7 @@ function getErrorMessage(error: unknown): string {
     return error.message;
   }
 
-  return "Не удалось добавить позицию";
+  return fallback;
 }
 
 export function AddOrderItemButton({
@@ -148,12 +148,22 @@ export function AddOrderItemButton({
 
   if (isCreateDeviceOpen) {
     return (
-      <CreateDeviceForm
-        instrumentTypeId={instrumentTypeId}
-        isPending={createDeviceMutation.isPending}
-        onSubmit={handleCreateDevice}
-        onCreateInstrumentType={() => setIsCreateInstrumentTypeOpen(true)}
-      />
+      <Stack spacing={2}>
+        <CreateDeviceForm
+          instrumentTypeId={instrumentTypeId}
+          isPending={createDeviceMutation.isPending}
+          onSubmit={handleCreateDevice}
+          onCreateInstrumentType={() => setIsCreateInstrumentTypeOpen(true)}
+        />
+        {createDeviceMutation.isError && (
+          <Typography color="error" variant="body2">
+            {getErrorMessage(
+              createDeviceMutation.error,
+              "Не удалось создать СИ",
+            )}
+          </Typography>
+        )}
+      </Stack>
     );
   }
 
@@ -233,7 +243,10 @@ export function AddOrderItemButton({
 
       {addOrderItemMutation.isError && (
         <Typography color="error" variant="body2">
-          {getErrorMessage(addOrderItemMutation.error)}
+          {getErrorMessage(
+            addOrderItemMutation.error,
+            "Не удалось добавить позицию",
+          )}
         </Typography>
       )}
     </Stack>
