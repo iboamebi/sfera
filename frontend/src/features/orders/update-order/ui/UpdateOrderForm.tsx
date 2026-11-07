@@ -1,4 +1,5 @@
 import { Button, Stack, TextField } from "@mui/material";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -22,7 +23,8 @@ export function UpdateOrderForm({
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    reset,
+    formState: { errors, isDirty },
   } = useForm<UpdateOrderSchema>({
     resolver: zodResolver(updateOrderSchema),
     defaultValues: {
@@ -31,6 +33,14 @@ export function UpdateOrderForm({
         : "",
     },
   });
+
+  useEffect(() => {
+    reset({
+      plannedIssueAt: order.plannedIssueAt
+        ? order.plannedIssueAt.slice(0, 16)
+        : "",
+    });
+  }, [order.plannedIssueAt, reset]);
 
   return (
     <Stack
@@ -52,14 +62,16 @@ export function UpdateOrderForm({
         }}
       />
 
-      <Button
-        type="submit"
-        variant="contained"
-        disabled={isPending}
-        sx={{ alignSelf: "flex-start" }}
-      >
-        {isPending ? "Сохранение..." : "Сохранить"}
-      </Button>
+      {isDirty && (
+        <Button
+          type="submit"
+          variant="contained"
+          disabled={isPending}
+          sx={{ alignSelf: "flex-start" }}
+        >
+          {isPending ? "Сохранение..." : "Сохранить"}
+        </Button>
+      )}
     </Stack>
   );
 }
