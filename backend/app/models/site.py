@@ -35,11 +35,6 @@ class Site(BaseModel):
         back_populates="sites",
     )
 
-    orders = relationship(
-        "Order",
-        back_populates="site",
-    )
-
     instruments = relationship(
         "Instrument",
         back_populates="site",
