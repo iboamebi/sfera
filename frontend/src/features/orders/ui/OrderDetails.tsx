@@ -15,6 +15,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useCustomer } from "../../customers/model/useCustomer";
 import { AddOrderItemButton } from "../add-order-item/ui/AddOrderItemButton";
 import type { OrderRead } from "../model/types";
+import { UpdateOrder } from "../update-order/ui/UpdateOrder";
 import { useUpdateOrder } from "../update-order/model/useUpdateOrder";
 import { OrderItems } from "./OrderItems";
 
@@ -119,10 +120,12 @@ export function OrderDetails({ order }: OrderDetailsProps) {
             <DetailRow label="Создан" value={formatDate(order.createdAt)} />
             <DetailRow label="Изменён" value={formatDate(order.updatedAt)} />
             <DetailRow label="Получен" value={formatDate(order.receivedAt)} />
-            <DetailRow
-              label="Планируемая выдача"
-              value={formatDate(order.plannedIssueAt)}
-            />
+            <Stack spacing={1}>
+              <Typography color="text.secondary" variant="body2">
+                Планируемая выдача
+              </Typography>
+              <UpdateOrder order={order} />
+            </Stack>
             <DetailRow label="Выдан" value={formatDate(order.issuedAt)} />
           </Stack>
 
