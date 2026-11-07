@@ -22,6 +22,7 @@ from app.application.order.services.order_application_service import (
 from app.domains.customer.entities.customer import Customer
 from app.domains.device.entities.device import Device
 from app.domains.device.repositories.device_repository import DeviceRepository
+from app.domains.device.value_objects.serial_number import SerialNumber
 from app.domains.customer.repositories.customer_repository import CustomerRepository
 from app.domains.order.entities.order import Order
 from app.domains.order.entities.order_item import OrderItem
@@ -498,7 +499,7 @@ def test_assign_order_item_rejects_instrument_from_another_customer():
         id=instrument_id,
         instrument_type_id=uuid4(),
         customer_id=other_customer_id,
-        serial_number=__import__("app.domains.device.value_objects.serial_number", fromlist=["SerialNumber"]).SerialNumber("SN-001"),
+        serial_number=SerialNumber("SN-001"),
     )
     service, repository, customer_repository, _, _, _ = make_service(device)
     customer_repository.save(make_customer(customer_id))
