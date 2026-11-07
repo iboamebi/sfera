@@ -922,3 +922,13 @@ Local typecheck/build and browser review are still required before considering t
 - The Register button is also aligned to the left while the order is still NEW.
 - No order lifecycle, update, registration mutation, or API behavior was changed.
 - Local typecheck/build and browser verification are pending.
+
+## Order comment inline editing checkpoint — 2026-11-07
+
+- The Order card now displays the comment in read-only mode with a compact "Редактировать" action.
+- Editing opens an inline multiline field with "Сохранить" and "Отмена"; successful save closes the editor and invalidates the Order detail query.
+- The "Параметры заказа" form now contains only the planned issue date.
+- Updating the planned issue date explicitly resubmits the current comment to preserve it because the existing backend update command accepts both fields as nullable values and does not distinguish omitted fields from explicit null.
+- Comment editing reuses the existing Order PATCH API and `useUpdateOrder` mutation; no backend contract or persistence behavior was changed.
+- The existing order update timestamp remains the only displayed timestamp. Per-comment author/time/reason metadata remains a deferred enhancement.
+- Local frontend typecheck, build, and browser verification are pending.
