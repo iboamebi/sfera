@@ -880,3 +880,13 @@ Minimal frontend change in `frontend/src/pages/orders/OrderPage.tsx`:
 Commit: `6a007025bf6ae5e597c73b1f2e14ca40fdc0a4e1`.
 
 Local typecheck/build and browser review are still required before considering this layout adjustment complete.
+
+## Order item Instrument card navigation checkpoint — 2026-11-07
+
+- In `frontend/src/features/orders/ui/OrderItems.tsx`, the Instrument name is now an inline link when `instrumentId` exists.
+- The link opens the same edit route as the former "Редактировать карту СИ" button: `/devices/{instrumentId}?edit=1&returnToOrder={orderId}`.
+- The separate "Редактировать карту СИ" button was removed.
+- When no Instrument is assigned, the displayed name remains non-clickable; the existing "Назначить СИ" action remains available.
+- No navigation target, mutation, or business behavior was otherwise changed.
+- Commit: `3744a18a1fae9709f776c68590cd315388c7534f`.
+- Local typecheck/build and browser verification are pending.
