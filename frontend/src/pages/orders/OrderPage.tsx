@@ -61,7 +61,7 @@ export function OrderPage() {
           <Stack spacing={2}>
             <Typography variant="h6">Параметры заказа</Typography>
             <Typography color="text.secondary" variant="body2">
-              Здесь можно изменить планируемую дату выдачи и комментарий.
+              Здесь можно изменить планируемую дату выдачи.
             </Typography>
             <UpdateOrder order={data} />
           </Stack>
