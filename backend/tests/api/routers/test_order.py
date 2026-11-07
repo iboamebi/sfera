@@ -206,6 +206,7 @@ def test_register_order_returns_read_model() -> None:
     assert result.created_at == now
     assert result.updated_at == now
 
+
 def test_update_order_returns_read_model() -> None:
     order_id = uuid4()
     customer_id = uuid4()
