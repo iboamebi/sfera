@@ -969,3 +969,10 @@ Local typecheck/build and browser review are still required before considering t
 - No API, backend, or business behavior changed.
 - Implementation commit: `3f33f7116f6d2844ea93aa4b8b294e50bbb88fb6`.
 - Local frontend typecheck, build, and browser review are pending.
+
+## Order issued date table checkpoint — 2026-11-07
+
+- Moved the existing `Выдан` date row into the same compact two-column metadata table as `Создан`, `Получен`, and `Изменён`.
+- The displayed value still comes from `OrderRead.issuedAt`; no date formatting, lifecycle, API, or business behavior changed.
+- Implementation commit: `82203d4cacb39c28d73f434e5afc7fe393e19556`.
+- Local frontend typecheck, build, and browser review are pending.
