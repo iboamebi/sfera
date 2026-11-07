@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { Fragment, useState } from "react";
 
 import {
   Alert,
@@ -172,8 +172,8 @@ export function OrderItems({
                   creatingVerificationItemId === item.id;
 
                 return (
-                  <>
-                    <TableRow key={item.id} hover>
+                  <Fragment key={item.id}>
+                    <TableRow hover>
                       <TableCell>{index + 1}</TableCell>
                       <TableCell sx={{ minWidth: 190 }}>
                         {item.instrumentId ? (
@@ -437,7 +437,7 @@ export function OrderItems({
                         </TableCell>
                       </TableRow>
                     )}
-                  </>
+                  </Fragment>
                 );
               })}
             </TableBody>
