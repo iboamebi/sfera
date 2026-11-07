@@ -137,8 +137,12 @@ export function OrderItems({
                   <Link
                     component="button"
                     type="button"
-                    color="inherit"
+                    color="primary"
                     underline="hover"
+                    sx={{
+                      fontWeight: 600,
+                      verticalAlign: "baseline",
+                    }}
                     onClick={() =>
                       navigate(
                         `/devices/${item.instrumentId}?edit=1&returnToOrder=${orderId}`,
