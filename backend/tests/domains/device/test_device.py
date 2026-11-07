@@ -10,6 +10,7 @@ def test_device_name_is_part_of_instrument_card() -> None:
     device = Device(
         id=uuid4(),
         instrument_type_id=uuid4(),
+        customer_id=uuid4(),
         serial_number=SerialNumber("SN-001"),
         name="ВКТ-7",
     )
