@@ -29,7 +29,6 @@ export function UpdateOrderForm({
       plannedIssueAt: order.plannedIssueAt
         ? order.plannedIssueAt.slice(0, 16)
         : "",
-      comment: order.comment ?? "",
     },
   });
 
@@ -51,16 +50,6 @@ export function UpdateOrderForm({
             shrink: true,
           },
         }}
-      />
-
-      <TextField
-        label="Комментарий"
-        multiline
-        minRows={3}
-        {...register("comment")}
-        error={Boolean(errors.comment)}
-        helperText={errors.comment?.message}
-        disabled={isPending}
       />
 
       <Button
