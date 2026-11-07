@@ -9,6 +9,7 @@ from app.api.routers.site import (
     get_site,
     get_sites,
 )
+from app.application.site.exceptions import CustomerNotFoundApplicationError
 from app.domains.site.entities.site import Site
 from app.schemas.site import SiteCreate, SiteRead
 
@@ -49,6 +50,26 @@ def test_create_site_returns_api_contract() -> None:
     assert result.name == site.name
     assert result.address == site.address
     assert result.archived is False
+
+
+def test_create_site_returns_404_for_unknown_customer() -> None:
+    class FakeSiteService:
+        def create(self, command: object, user: object) -> Site:
+            raise CustomerNotFoundApplicationError
+
+    with pytest.raises(HTTPException) as exc_info:
+        create_site(
+            data=SiteCreate(
+                customer_id=uuid4(),
+                name="Unknown customer site",
+                address="Unknown address",
+            ),
+            user=object(),
+            service=FakeSiteService(),
+        )
+
+    assert exc_info.value.status_code == 404
+    assert exc_info.value.detail == "Customer not found"
 
 
 def test_get_site_returns_api_contract() -> None:
