@@ -932,3 +932,10 @@ Local typecheck/build and browser review are still required before considering t
 - Comment editing reuses the existing Order PATCH API and `useUpdateOrder` mutation; no backend contract or persistence behavior was changed.
 - The existing order update timestamp remains the only displayed timestamp. Per-comment author/time/reason metadata remains a deferred enhancement.
 - Local frontend typecheck, build, and browser verification are pending.
+
+## Order comment save API correction — 2026-11-07
+
+- Fixed `PATCH /orders/{order_id}`: after `OrderApplicationService.update`, the API now reloads and returns the `OrderRead` read model through `OrderReadService`, consistent with other Order mutation endpoints. Previously it returned the domain `Order` directly despite declaring `response_model=OrderRead`, which could fail response validation (e.g. missing `customer_name`).
+- Added a focused API router test asserting that update returns the read model.
+- Corrected the Order page helper text to mention only the planned issue date; comment editing remains inline in OrderDetails.
+- Backend test and local frontend/browser validation are pending.
