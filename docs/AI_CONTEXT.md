@@ -1028,3 +1028,15 @@ GitHub commits for logout UI stage:
 Local validation for this stage is pending: frontend typecheck, build, and production deployment. Do not start the next independent feature until the user reports the local result.
 
 Next independent feature requested: administrator-assisted password recovery. Current backend has create-user temporary password and mandatory first-login password change, but no reset-existing-user use case. Existing `SessionRepository.revoke_all_for_user(user_id)` is available and should be used when implementing an administrator reset so old sessions are invalidated. Read current implementations and tests before changing contracts.
+
+
+## Administrator password reset checkpoint — 2026-11-08
+
+- Local validation for the logout UI stage was reported as **All Passed**.
+- Current backend code confirmed that account creation already uses `secrets.token_urlsafe(18)`, Argon2 hashing, and a one-time `temporary_password` response; the existing `SessionRepository.revoke_all_for_user(user_id)` is the session invalidation contract.
+- Added administrator-only reset of an existing active, non-archived user through `POST /users/{user_id}/reset-password`.
+- Reset generates a new temporary password, stores only its Argon2 hash, sets `must_change_password = true`, and revokes all target-user sessions in the same Unit of Work. The temporary plaintext is returned only once.
+- Added Application and API tests for authorization, inactive/missing users, password state, session revocation, and client-safe response.
+- Frontend adds a per-user **Сбросить пароль** action; the returned temporary password is shown in the existing one-time credential notice.
+- The password-copy handler now tries the selected-text fallback first because the browser clipboard action was previously reported to copy an unexpected value. Local browser verification is required to confirm the copy behavior.
+- No migration is required.
