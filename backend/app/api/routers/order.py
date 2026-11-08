@@ -24,7 +24,9 @@ from app.application.order.exceptions import (
     OrderNotFoundApplicationError,
 )
 from app.application.order.queries.order_read_service import OrderReadService
-from app.application.order.services.order_application_service import OrderApplicationService
+from app.application.order.services.order_application_service import (
+    OrderApplicationService,
+)
 from app.core.dependencies.services import get_order_read_service, get_order_service
 from app.domains.order.exceptions.order_exception import OrderException
 from app.domains.order.value_objects.order_item_operation import OrderItemOperation
