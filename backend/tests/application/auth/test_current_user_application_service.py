@@ -108,6 +108,33 @@ def test_get_rejects_missing_session() -> None:
         )
 
 
+def test_get_rejects_inactive_user() -> None:
+    user = User(
+        id=uuid4(),
+        username="alice",
+        password_hash="hash",
+        is_active=False,
+    )
+    session = Session(
+        id=uuid4(),
+        user_id=user.id,
+        session_id="session-1",
+        expires_at=datetime(2026, 8, 19, 20, tzinfo=UTC),
+    )
+    service = CurrentUserApplicationService(
+        FakeSessionRepository(session),
+        FakeUserRepository(user),
+    )
+
+    with pytest.raises(AuthenticationFailedApplicationError):
+        service.get(
+            GetCurrentUserCommand(
+                session_id="session-1",
+                now=datetime(2026, 8, 18, 20, tzinfo=UTC),
+            ),
+        )
+
+
 def test_get_rejects_archived_user() -> None:
     user = User(
         id=uuid4(),
