@@ -1090,3 +1090,11 @@ Administrator-assisted password recovery has now been implemented; see the check
 - The branch contains 22 style-fix commits after `4b7cdbd465064ba4f8d8ecd9590d3f1d750e8642`. Local Ruff validation is still required; do not consider lint clean until `ruff check .` passes.
 - Repository-wide `ruff format --check .` previously reported 24 files needing formatting. The exact file list is still needed before deciding whether those formatting changes are related to the current feature or constitute a separate cleanup.
 - Backend pytest previously passed (294 tests); rerun it only if the final Ruff edits are found to affect runtime behavior.
+
+## Ruff lint follow-up — 2026-11-08 (continued)
+
+- The latest local run narrowed Ruff lint from 31 findings to 10: import ordering in six Alembic migrations, two undefined `Union` annotations, and one overlong condition in the user-administration Application service.
+- Corrected the Alembic import grouping, changed the remaining `Union` annotation to the equivalent `|` form, and wrapped the active-administrator condition.
+- No migration revision/dependency metadata, migration operations, or business behavior changed.
+- Local `ruff check .` must be rerun after pulling these commits.
+- The latest format check lists 20 files requiring Ruff formatting. This remains separate from lint; inspect/format only after confirming the current lint result.
