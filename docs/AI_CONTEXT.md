@@ -1070,3 +1070,12 @@ Administrator-assisted password recovery has now been implemented; see the check
 - Commits: `0d69e77333efaf73acbdce68bb0de91b70488eec`, `445cc81be90f8fae6f3e314123d6a26c2c504b9c`, `c136b003a3db5c8ffdec109d0804ee9ab2e8b37f`, `913eece3392038fcfc379495fb93c27caaeea8e6`, `a105b0700397c2292cb1f2c7e717c05e98b38f51`.
 - User's latest local run also reported 26 files not matching Ruff formatting. Do not mass-format unrelated files blindly; collect the exact file list and compare against the feature diff before deciding whether a separate repository-wide formatting cleanup is appropriate.
 - Next local validation: `ruff check .`; then identify the 26 formatting paths with `ruff format --check .` output. Backend pytest already passed (294 tests).
+
+
+## Ruff lint follow-up — 2026-11-08
+
+- After the previous migration cleanup, the user's next `ruff check .` run exposed remaining style-only findings in adjacent Alembic migrations and the existing Device/Order API routers.
+- Normalized import grouping/order, replaced legacy `typing.Union` annotations with `|`, and wrapped two overlong Device-router exception lines.
+- No migration revision IDs, `down_revision` values, migration operations, API routes, request/response contracts, or runtime behavior were changed.
+- Local `ruff check .` must be rerun after synchronizing these changes.
+- The user's `ruff format --check .` still reports 24 files requiring formatting. Do not mass-format them without reviewing the exact file list and separating unrelated formatting debt from the current feature.
