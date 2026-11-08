@@ -230,6 +230,7 @@ def test_set_active_deactivates_existing_user_and_commits() -> None:
 
     assert updated.is_active is False
     assert repository.users == [updated]
+    assert service._session_repository.revoked_user_ids == [target.id]
     assert uow.committed is True
 
 
@@ -289,6 +290,7 @@ def test_archive_user_marks_account_archived_and_commits() -> None:
 
     assert updated.archived is True
     assert repository.users == [updated]
+    assert service._session_repository.revoked_user_ids == [target.id]
     assert uow.committed is True
 
 
