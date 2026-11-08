@@ -11,6 +11,7 @@ from app.application.user.commands.create_user import CreateUserCommand
 from app.application.user.commands.restore_user import RestoreUserCommand
 from app.application.user.commands.set_user_active import SetUserActiveCommand
 from app.application.user.exceptions import (
+    LastActiveAdministratorApplicationError,
     UserAlreadyExistsApplicationError,
     UserNotFoundApplicationError,
 )
@@ -43,6 +44,9 @@ class FakeUserRepository(UserRepository):
 
     def get_all(self, include_archived: bool = False) -> list[User]:
         return [user for user in self.users if include_archived or not user.archived]
+
+    def get_all_for_update(self) -> list[User]:
+        return list(self.users)
 
     def save(self, user: User) -> User:
         for index, existing in enumerate(self.users):
@@ -364,4 +368,81 @@ def test_create_user_rejects_existing_username_even_if_archived() -> None:
         )
 
     assert repository.users == [existing]
+    assert uow.committed is False
+
+
+
+def test_archive_rejects_last_active_administrator() -> None:
+    admin = make_user("admin", UserRole.ADMIN)
+    service, _, uow = make_service([admin])
+
+    with pytest.raises(LastActiveAdministratorApplicationError):
+        service.archive(
+            ArchiveUserCommand(user_id=admin.id),
+            admin,
+        )
+
+    assert admin.archived is False
+    assert uow.committed is False
+    assert uow.rolled_back is True
+
+
+def test_deactivate_rejects_last_active_administrator() -> None:
+    admin = make_user("admin", UserRole.ADMIN)
+    service, _, uow = make_service([admin])
+
+    with pytest.raises(LastActiveAdministratorApplicationError):
+        service.set_active(
+            SetUserActiveCommand(user_id=admin.id, is_active=False),
+            admin,
+        )
+
+    assert admin.is_active is True
+    assert uow.committed is False
+    assert uow.rolled_back is True
+
+
+def test_demote_rejects_last_active_administrator() -> None:
+    admin = make_user("admin", UserRole.ADMIN)
+    service, _, uow = make_service([admin])
+
+    with pytest.raises(LastActiveAdministratorApplicationError):
+        service.change_role(
+            ChangeUserRoleCommand(user_id=admin.id, role=UserRole.OPERATOR),
+            admin,
+        )
+
+    assert admin.role is UserRole.ADMIN
+    assert uow.committed is False
+    assert uow.rolled_back is True
+
+
+def test_admin_lifecycle_change_is_allowed_when_another_active_admin_exists() -> None:
+    admin = make_user("admin", UserRole.ADMIN)
+    second_admin = make_user("second-admin", UserRole.ADMIN)
+    service, _, uow = make_service([admin, second_admin])
+
+    updated = service.archive(
+        ArchiveUserCommand(user_id=admin.id),
+        second_admin,
+    )
+
+    assert updated.archived is True
+    assert second_admin.is_active is True
+    assert uow.committed is True
+
+
+def test_inactive_administrator_does_not_count_as_available_admin() -> None:
+    admin = make_user("admin", UserRole.ADMIN)
+    inactive_admin = make_user("inactive-admin", UserRole.ADMIN)
+    inactive_admin.deactivate()
+    service, _, uow = make_service([admin, inactive_admin])
+
+    with pytest.raises(LastActiveAdministratorApplicationError):
+        service.archive(
+            ArchiveUserCommand(user_id=admin.id),
+            admin,
+        )
+
+    assert admin.archived is False
     assert uow.committed is False
