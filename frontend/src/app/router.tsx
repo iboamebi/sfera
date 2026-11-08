@@ -130,6 +130,6 @@ export const router = createBrowserRouter([
   },
   {
     path: "/users",
-    element: <RequireAuth><UsersPage /></RequireAuth>,
+    element: <RequireAuth adminOnly><UsersPage /></RequireAuth>,
   },
 ]);
