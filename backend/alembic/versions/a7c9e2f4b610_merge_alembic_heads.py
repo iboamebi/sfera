@@ -14,7 +14,7 @@ down_revision: tuple[str, str] = (
     "8d4f6a1b2c30",
 )
 branch_labels: str | tuple[str, ...] | None = None
-depends_on: str | Sequence[str] | None = None
+depends_on: str | tuple[str, ...] | None = None
 
 
 def upgrade() -> None:
