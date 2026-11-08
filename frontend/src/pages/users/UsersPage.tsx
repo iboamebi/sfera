@@ -100,6 +100,7 @@ export function UsersPage() {
 
   const mutationError =
     administration.create.isError ||
+    administration.resetPassword.isError ||
     administration.changeRole.isError ||
     administration.changeStatus.isError ||
     administration.archive.isError ||
@@ -108,6 +109,12 @@ export function UsersPage() {
   const handleCopyPassword = async () => {
     if (!createdUser) return;
 
+    // Copy the exact value shown in the one-time password notice first.
+    if (copyTextFallback(createdUser.temporaryPassword)) {
+      setCopyStatus("success");
+      return;
+    }
+
     try {
       if (!navigator.clipboard?.writeText) {
         throw new Error("Clipboard API is unavailable");
@@ -115,9 +122,7 @@ export function UsersPage() {
       await navigator.clipboard.writeText(createdUser.temporaryPassword);
       setCopyStatus("success");
     } catch {
-      setCopyStatus(
-        copyTextFallback(createdUser.temporaryPassword) ? "success" : "error",
-      );
+      setCopyStatus("error");
     }
   };
 
@@ -176,7 +181,7 @@ export function UsersPage() {
           }
         >
           <Typography sx={{ fontWeight: "bold" }}>
-            Пользователь {createdUser.username} создан.
+            Временный пароль для пользователя {createdUser.username}.
           </Typography>
           <Typography>
             Временный пароль (показывается только в этом сообщении):
@@ -276,6 +281,29 @@ export function UsersPage() {
                       useFlexGap
                       sx={{ flexWrap: "wrap" }}
                     >
+                      {!user.archived && user.isActive && (
+                        <Button
+                          size="small"
+                          color="warning"
+                          disabled={administration.resetPassword.isPending}
+                          onClick={() => {
+                            if (
+                              window.confirm(
+                                `Сбросить пароль пользователя ${user.username}? Все его активные сеансы будут завершены.`,
+                              )
+                            ) {
+                              administration.resetPassword.mutate(user.id, {
+                                onSuccess: (result) => {
+                                  setCreatedUser(result);
+                                  setCopyStatus("idle");
+                                },
+                              });
+                            }
+                          }}
+                        >
+                          Сбросить пароль
+                        </Button>
+                      )}
                       {!user.archived && (
                         <>
                           <Button
