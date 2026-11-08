@@ -32,7 +32,18 @@ class FakeUserRepository(UserRepository):
         self.users = users
 
     def get_by_id(self, user_id, include_archived: bool = False) -> User | None:
-        return next((user for user in self.users if user.id == user_id), None)
+        return next(
+            (
+                user
+                for user in self.users
+                if user.id == user_id
+                and (
+                    include_archived
+                    or (not user.archived and user.is_active)
+                )
+            ),
+            None,
+        )
 
     def get_by_username(
         self,
@@ -479,7 +490,7 @@ def test_reset_password_generates_temporary_password_and_revokes_sessions() -> N
     assert updated is target
     assert updated.must_change_password is True
     assert updated.password_hash == f"argon2-hash:{temporary_password}"
-    assert temporary_password not in updated.password_hash
+    assert updated.password_hash.startswith("argon2-hash:")
     assert repository.users == [updated]
     assert service._session_repository.revoked_user_ids == [target.id]
     assert uow.committed is True
