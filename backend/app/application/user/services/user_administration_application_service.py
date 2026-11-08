@@ -9,12 +9,14 @@ from app.application.user.commands.archive_user import ArchiveUserCommand
 from app.application.user.commands.change_user_role import ChangeUserRoleCommand
 from app.application.user.commands.create_user import CreateUserCommand
 from app.application.user.commands.restore_user import RestoreUserCommand
+from app.application.user.commands.reset_user_password import ResetUserPasswordCommand
 from app.application.user.commands.set_user_active import SetUserActiveCommand
 from app.application.user.exceptions import (
     LastActiveAdministratorApplicationError,
     UserAlreadyExistsApplicationError,
     UserNotFoundApplicationError,
 )
+from app.domains.auth.repositories.session_repository import SessionRepository
 from app.domains.user.entities.user import User
 from app.domains.user.repositories.user_repository import UserRepository
 from app.domains.user.value_objects.user_role import UserRole
@@ -29,10 +31,12 @@ class UserAdministrationApplicationService:
         repository: UserRepository,
         password_hasher: PasswordHasher,
         uow: UnitOfWork,
+        session_repository: SessionRepository,
     ) -> None:
         self._repository = repository
         self._password_hasher = password_hasher
         self._uow = uow
+        self._session_repository = session_repository
 
     def get_all(self, user: User, include_archived: bool = False) -> list[User]:
         """List users for an administrator."""
@@ -145,6 +149,26 @@ class UserAdministrationApplicationService:
 
             user.restore()
             return self._repository.save(user)
+
+    def reset_password(
+        self,
+        command: ResetUserPasswordCommand,
+        actor: User,
+    ) -> tuple[User, str]:
+        """Issue a one-time temporary password and revoke existing sessions."""
+        require_role(actor, UserRole.ADMIN)
+
+        temporary_password = secrets.token_urlsafe(18)
+        with self._uow:
+            user = self._repository.get_by_id(command.user_id)
+            if user is None:
+                raise UserNotFoundApplicationError
+
+            user.reset_password(self._password_hasher.hash(temporary_password))
+            updated_user = self._repository.save(user)
+            self._session_repository.revoke_all_for_user(user.id)
+
+        return updated_user, temporary_password
 
     def create(self, command: CreateUserCommand, actor: User) -> tuple[User, str]:
         """Create an account and return its temporary password exactly once."""
