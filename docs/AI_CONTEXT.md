@@ -1079,3 +1079,14 @@ Administrator-assisted password recovery has now been implemented; see the check
 - No migration revision IDs, `down_revision` values, migration operations, API routes, request/response contracts, or runtime behavior were changed.
 - Local `ruff check .` must be rerun after synchronizing these changes.
 - The user's `ruff format --check .` still reports 24 files requiring formatting. Do not mass-format them without reviewing the exact file list and separating unrelated formatting debt from the current feature.
+
+
+## Ruff cleanup continuation — 2026-11-08
+
+- The next local `ruff check .` run reported 31 findings across Alembic migration metadata, existing Application services, API routers, ORM/domain imports, and tests.
+- Corrected the two undefined annotation names left by the previous cleanup (`Union` / `Sequence`), normalized migration import groups and tuple metadata annotations, and addressed remaining import-order, unused-import, and line-length findings.
+- User-administration service changes are formatting-only; last-active-administrator conditions and password-reset behavior are unchanged.
+- Device/Order application, authentication services, Customer/Organization models, and tests received import/format-only edits; no business logic or API contracts changed.
+- The branch contains 22 style-fix commits after `4b7cdbd465064ba4f8d8ecd9590d3f1d750e8642`. Local Ruff validation is still required; do not consider lint clean until `ruff check .` passes.
+- Repository-wide `ruff format --check .` previously reported 24 files needing formatting. The exact file list is still needed before deciding whether those formatting changes are related to the current feature or constitute a separate cleanup.
+- Backend pytest previously passed (294 tests); rerun it only if the final Ruff edits are found to affect runtime behavior.
