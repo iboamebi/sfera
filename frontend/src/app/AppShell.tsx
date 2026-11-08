@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { AppBar, Box, Button, Stack, Toolbar, Typography } from "@mui/material";
 import { Link, useLocation } from "react-router";
 
@@ -5,7 +6,7 @@ import type { AuthenticatedUser } from "../features/auth/model/types";
 
 interface AppShellProps {
   user: AuthenticatedUser;
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
 const navigation = [
