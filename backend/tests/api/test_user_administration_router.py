@@ -347,7 +347,7 @@ def test_last_active_administrator_conflict_maps_to_409(
     assert exc_info.value.status_code == 409
     assert exc_info.value.detail == "At least one active administrator must remain"
 
-def test_reset_user_password_returns_one_time_password_and_safe_account_state() -> None:
+def test_reset_user_password_returns_one_time_password() -> None:
     actor = make_user()
     target = User(
         id=uuid4(),
