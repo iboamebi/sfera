@@ -145,9 +145,11 @@ Requires the authenticated session and CSRF validation. Accepts `current_passwor
 
 ### `POST /auth/logout`
 
-Invalidates the current authenticated session.
+Invalidates the current authenticated session and clears the session and CSRF cookies.
 
-The endpoint is idempotent from the client perspective and is protected by CSRF validation.
+The endpoint is idempotent from the client perspective and is protected by CSRF validation when an authenticated session is present.
+
+The frontend exposes a **Выйти** action in the authenticated application header. After the server confirms logout, it clears the React Query cache and navigates to `/login`. If the request fails, the user remains signed in and receives an error message.
 
 ---
 
@@ -243,6 +245,8 @@ The frontend uses the server-managed HttpOnly session cookie and sends credentia
 
 The password-change screen submits the current and new passwords to `POST /auth/change-password`. After success, the current-user query is invalidated and the user is redirected to the orders page.
 
+The authenticated application header shows the current username and provides a logout action. A successful logout clears the client query cache before navigating to the login screen.
+
 Frontend route guards provide navigation behavior only. The backend business-route gate remains the security boundary.
 
 ---
@@ -289,6 +293,6 @@ CSRF protection
 Protected business mutation boundary
 ```
 
-Business authorization is maintained as a separate contract in `AUTHORIZATION.md`. Frontend authentication and first-login route integration are implemented; local typecheck/build validation remains pending.
+Business authorization is maintained as a separate contract in `AUTHORIZATION.md`. Frontend authentication, first-login password-change, and logout integration are implemented; local typecheck/build validation remains pending.
 
 No step may bypass the architectural boundaries defined by the project Constitution.
