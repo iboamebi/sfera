@@ -71,7 +71,11 @@ class UserAdministrationApplicationService:
                 active_admins = [
                     item
                     for item in users
-                    if item.role is UserRole.ADMIN and item.is_active and not item.archived
+                    if (
+                        item.role is UserRole.ADMIN
+                        and item.is_active
+                        and not item.archived
+                    )
                 ]
                 if len(active_admins) <= 1:
                     raise LastActiveAdministratorApplicationError
@@ -93,9 +97,9 @@ class UserAdministrationApplicationService:
             else:
                 users = self._repository.get_all_for_update()
                 user = next(
-                (item for item in users if item.id == command.user_id),
-                None,
-            )
+                    (item for item in users if item.id == command.user_id),
+                    None,
+                )
             if user is None or user.archived:
                 raise UserNotFoundApplicationError
 
@@ -126,8 +130,13 @@ class UserAdministrationApplicationService:
 
             if user.role is UserRole.ADMIN and user.is_active:
                 active_admins = [
-                    item for item in users
-                    if item.role is UserRole.ADMIN and item.is_active and not item.archived
+                    item
+                    for item in users
+                    if (
+                        item.role is UserRole.ADMIN
+                        and item.is_active
+                        and not item.archived
+                    )
                 ]
                 if len(active_admins) <= 1:
                     raise LastActiveAdministratorApplicationError
