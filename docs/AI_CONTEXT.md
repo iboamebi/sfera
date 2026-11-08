@@ -993,3 +993,13 @@ Local typecheck/build and browser review are still required before considering t
   - `d1d4f7e49b0fd88de49203c8e8ed051d4e00208f` — admin-only Users route;
   - `98d17e3959e26b4a5bd654ff2aff7f937058b15f` — explicit ReactNode type.
 - Local frontend typecheck, build, and browser review are required before considering this navigation stage complete.
+
+
+## Last active administrator protection checkpoint — 2026-11-08
+
+- Confirmed the user-administration backend previously allowed the last active administrator to be archived, deactivated, or demoted.
+- Added an Application error for attempts that would leave zero active, non-archived administrators; the API maps it to HTTP 409.
+- Added a UserRepository operation that loads all user rows with deterministic ordering and `SELECT FOR UPDATE`; the existing Unit of Work holds these locks through the state change and commit, serializing concurrent administrator lifecycle operations.
+- Applied the guard to archive, deactivation, and role demotion. Inactive and archived administrators do not count as available administrators; promoting, activating, restoring, and non-admin lifecycle changes retain their existing behavior.
+- Added Application regression tests for all three blocked operations, allowed archive when a second active administrator exists, and exclusion of inactive administrators; added API 409 mapping tests.
+- Backend and frontend local validation have not yet been run for this checkpoint.
