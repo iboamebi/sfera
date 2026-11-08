@@ -110,7 +110,11 @@ class UserAdministrationApplicationService:
                     active_admins = [
                         item
                         for item in users
-                        if item.role is UserRole.ADMIN and item.is_active and not item.archived
+                        if (
+                            item.role is UserRole.ADMIN
+                            and item.is_active
+                            and not item.archived
+                        )
                     ]
                     if len(active_admins) <= 1:
                         raise LastActiveAdministratorApplicationError
