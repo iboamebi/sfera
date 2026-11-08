@@ -12,6 +12,7 @@ from app.api.routers.users import (
     set_user_active,
 )
 from app.application.user.exceptions import (
+    LastActiveAdministratorApplicationError,
     UserAlreadyExistsApplicationError,
     UserNotFoundApplicationError,
 )
@@ -292,3 +293,46 @@ def test_create_user_maps_duplicate_username_to_conflict() -> None:
 
     assert exc_info.value.status_code == 409
     assert exc_info.value.detail == "Username already exists"
+
+
+
+@pytest.mark.parametrize(
+    ("operation", "error_attribute"),
+    [
+        ("role", "role_change_error"),
+        ("status", "status_change_error"),
+        ("archive", "archive_error"),
+    ],
+)
+def test_last_active_administrator_conflict_maps_to_409(
+    operation: str,
+    error_attribute: str,
+) -> None:
+    service = FakeUserAdministrationService()
+    setattr(service, error_attribute, LastActiveAdministratorApplicationError())
+    target_id = uuid4()
+
+    with pytest.raises(HTTPException) as exc_info:
+        if operation == "role":
+            change_user_role(
+                user_id=target_id,
+                data=UserRoleUpdate(role=UserRole.OPERATOR),
+                actor=make_user(),
+                service=service,
+            )
+        elif operation == "status":
+            set_user_active(
+                user_id=target_id,
+                data=UserActiveUpdate(is_active=False),
+                actor=make_user(),
+                service=service,
+            )
+        else:
+            archive_user(
+                user_id=target_id,
+                actor=make_user(),
+                service=service,
+            )
+
+    assert exc_info.value.status_code == 409
+    assert exc_info.value.detail == "At least one active administrator must remain"
