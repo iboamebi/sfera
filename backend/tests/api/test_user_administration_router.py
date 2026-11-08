@@ -8,8 +8,8 @@ from app.api.routers.users import (
     change_user_role,
     create_user,
     get_users,
-    restore_user,
     reset_user_password,
+    restore_user,
     set_user_active,
 )
 from app.application.user.exceptions import (
