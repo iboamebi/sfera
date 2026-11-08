@@ -1165,3 +1165,13 @@ Administrator-assisted password recovery has now been implemented; see the check
   - one-time temporary password display;
   - copying the exact displayed temporary password.
 - Remaining browser validation: confirm the target user's previous session is invalidated, then authenticate with the temporary password, confirm redirect/gating to `/change-password`, set a new password, and verify normal access afterward. Use a non-critical test account, not `alex`.
+
+## Password reset end-to-end validation — 2026-11-08
+
+- User completed the remaining browser validation of the administrator password-reset flow; all checks passed.
+- The target user's previously authenticated session became invalid after the administrator reset the password.
+- Authentication with the one-time temporary password succeeded.
+- The first-login gate required the user to open `/change-password` and set a new password.
+- After changing the password, the user could access the application normally.
+- Combined with the preceding deployment checkpoint, the complete password-reset flow is validated: reset action and confirmation, one-time password display and exact copying, session revocation, temporary-password login, mandatory password change, and normal post-change access.
+- No additional code changes were required after browser validation.
