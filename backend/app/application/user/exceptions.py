@@ -7,3 +7,7 @@ class UserAlreadyExistsApplicationError(Exception):
 
 class UserNotFoundApplicationError(Exception):
     """Raised when the requested user account does not exist."""
+
+
+class LastActiveAdministratorApplicationError(Exception):
+    """Raised when an operation would remove the last active administrator."""
