@@ -1185,3 +1185,11 @@ Administrator-assisted password recovery has now been implemented; see the check
 - Local validation reported by the user: backend pytest **296 passed, 21 warnings**; `ruff check .` **All checks passed**.
 - The scoped format check identified one touched test file. Applied Ruff's formatting-only changes to that file; no test behavior changed. Local `ruff format --check` for the six touched files must be rerun after synchronizing this final formatting commit.
 - Implementation commits: `9f10cf6`, `f0c3200`, `f9a267d`, `81621b5`, `919b634`, `cceb197`; formatting commit: `66dd729`.
+
+## Session revocation on account reactivation — 2026-11-08
+
+- Follow-up audit identified a compatibility edge for accounts deactivated or archived before the session-revocation change: their historical session rows could still be unrevoked in the database.
+- To prevent those legacy sessions from becoming valid again, activation and archive restoration now also revoke all sessions for the user. Session invalidation therefore occurs on both sides of the account availability transition: deactivate/archive and activate/restore.
+- Added regression assertions for session revocation during activation and restoration.
+- Commits: `af94232` (Application behavior), `b87b90d` (regression tests).
+- Local backend pytest, Ruff lint, and scoped format validation are pending for these follow-up changes.
