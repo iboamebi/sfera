@@ -1151,3 +1151,17 @@ Administrator-assisted password recovery has now been implemented; see the check
 - Vite production build transformed 1306 modules and completed successfully.
 - Vite emitted the existing non-blocking warning that the main minified chunk exceeds 500 kB; no build or type errors occurred.
 - Next: deploy the validated frontend with the existing production deployment script, then browser-verify administrator password reset and exact temporary-password copying.
+
+
+## Password reset frontend deployment — 2026-11-08
+
+- User synchronized the feature branch with `develop`; the fast-forward pull completed successfully.
+- Production frontend deployment completed successfully through `frontend/scripts/deploy-production.sh`.
+- Deployment output confirms frontend typecheck, production build, copy to `/var/www/sfera`, ownership correction, and directory/file permission correction all completed.
+- Vite transformed 1306 modules. The only build warning is the existing non-blocking chunk-size warning (>500 kB).
+- Browser validation by the user passed for the administrator password-reset interface:
+  - reset action visibility for an active, non-archived target user;
+  - confirmation prompt;
+  - one-time temporary password display;
+  - copying the exact displayed temporary password.
+- Remaining browser validation: confirm the target user's previous session is invalidated, then authenticate with the temporary password, confirm redirect/gating to `/change-password`, set a new password, and verify normal access afterward. Use a non-critical test account, not `alex`.
