@@ -121,8 +121,7 @@ class UserAdministrationApplicationService:
                 user.deactivate()
 
             updated_user = self._repository.save(user)
-            if not command.is_active:
-                self._session_repository.revoke_all_for_user(user.id)
+            self._session_repository.revoke_all_for_user(user.id)
             return updated_user
 
     def archive(self, command: ArchiveUserCommand, actor: User) -> User:
@@ -166,7 +165,9 @@ class UserAdministrationApplicationService:
                 raise UserNotFoundApplicationError
 
             user.restore()
-            return self._repository.save(user)
+            updated_user = self._repository.save(user)
+            self._session_repository.revoke_all_for_user(user.id)
+            return updated_user
 
     def reset_password(
         self,
