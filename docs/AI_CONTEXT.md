@@ -1003,3 +1003,28 @@ Local typecheck/build and browser review are still required before considering t
 - Applied the guard to archive, deactivation, and role demotion. Inactive and archived administrators do not count as available administrators; promoting, activating, restoring, and non-admin lifecycle changes retain their existing behavior.
 - Added Application regression tests for all three blocked operations, allowed archive when a second active administrator exists, and exclusion of inactive administrators; added API 409 mapping tests.
 - Backend and frontend local validation have not yet been run for this checkpoint.
+
+
+## User Authentication UI Checkpoint — 2026-11-08
+
+Current branch: `feat/user-first-login-password`.
+
+Verified from current source:
+
+- Backend already exposes `POST /auth/logout`, revokes the current server-side session, and clears the authentication and CSRF cookies.
+- Frontend previously displayed the username in `AppShell` but had no logout action.
+- Added frontend logout API adapter and React Query mutation.
+- Added **Выйти** action to the authenticated application header. On confirmed server logout, the frontend clears the query cache and navigates to `/login`; on failure, the user remains on the page and sees an error.
+- Updated `docs/architecture/AUTHENTICATION.md` with the frontend logout flow.
+- Last-active-administrator protection was already present in Application service and frontend UI before this checkpoint. Backend guards cover archive, deactivate, and demote; service tests cover the last-admin rejection and allow changes when another active admin exists. Do not duplicate this protection without finding a concrete gap.
+
+GitHub commits for logout UI stage:
+
+- `3a9b3747de80b2475e0391fcd65a4564652bb81c` — frontend logout API.
+- `1db474cfba6662bfa0aa8c5834456ce55647fafa` — logout mutation.
+- `788c87201bbf823e4c9339cb45a3e30ed27dd8b9` — logout action in AppShell.
+- `d065655b5c33500007c71e38e87571ae8d041f4f` — authentication documentation.
+
+Local validation for this stage is pending: frontend typecheck, build, and production deployment. Do not start the next independent feature until the user reports the local result.
+
+Next independent feature requested: administrator-assisted password recovery. Current backend has create-user temporary password and mandatory first-login password change, but no reset-existing-user use case. Existing `SessionRepository.revoke_all_for_user(user_id)` is available and should be used when implementing an administrator reset so old sessions are invalidated. Read current implementations and tests before changing contracts.
