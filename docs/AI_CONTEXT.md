@@ -1098,3 +1098,10 @@ Administrator-assisted password recovery has now been implemented; see the check
 - No migration revision/dependency metadata, migration operations, or business behavior changed.
 - Local `ruff check .` must be rerun after pulling these commits.
 - The latest format check lists 20 files requiring Ruff formatting. This remains separate from lint; inspect/format only after confirming the current lint result.
+
+## Ruff import-grouping correction — 2026-11-08
+
+- The user's follow-up lint run narrowed the remaining findings to seven `I001` import-grouping errors in Alembic migrations.
+- Inspected the actual backend Ruff configuration: import sorting (`I`) is enabled. The migration directory's `alembic` module is classified separately from third-party SQLAlchemy imports, so the required ordering includes a blank line before `from alembic import op`.
+- Applied that grouping to the affected migrations and removed the extra blank line before the revision metadata comment in the single-import migration.
+- Migration revision IDs, dependency values, and operations are unchanged. A fresh local `ruff check .` is still required; no lint pass is claimed yet.
