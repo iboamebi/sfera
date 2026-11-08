@@ -41,6 +41,12 @@ class UserRepository(ABC):
         raise NotImplementedError
 
     @abstractmethod
+    def get_all_for_update(self) -> list[User]:
+        """Get and lock all users for a serialized administration change."""
+
+        raise NotImplementedError
+
+    @abstractmethod
     def save(
         self,
         user: User,
