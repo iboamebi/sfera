@@ -51,6 +51,9 @@ class FakeUserRepository(UserRepository):
             return []
         return [self.user]
 
+    def get_all_for_update(self) -> list[User]:
+        return [self.user] if self.user is not None else []
+
     def save(self, user: User) -> User:
         self.saved = True
         self.user = user
