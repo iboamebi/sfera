@@ -1193,3 +1193,11 @@ Administrator-assisted password recovery has now been implemented; see the check
 - Added regression assertions for session revocation during activation and restoration.
 - Commits: `af94232` (Application behavior), `b87b90d` (regression tests).
 - Local backend pytest, Ruff lint, and scoped format validation are pending for these follow-up changes.
+
+## Follow-up validation and auth-guard audit — 2026-11-08
+
+- User local validation after the account reactivation/restoration session-revocation changes: backend pytest **296 passed, 21 warnings**; `ruff check .` passed; scoped `ruff format --check` passed for both changed files.
+- The 21 warnings are existing dependency/deprecation warnings: Starlette `httpx` TestClient deprecation and `datetime.utcnow()` deprecations in price-list tests/domain code; no failures.
+- Reviewed `backend/app/main.py`: `require_password_change_completed` is applied as a router-level dependency to all business and user-administration routers. The auth router remains outside that guard so login, `/auth/me`, password change, and logout remain available. This confirms first-login password enforcement is server-side, not only frontend navigation.
+- Reviewed user lifecycle/domain, API router, repository, auth/current-user, session repository, and password-change service paths. Active/inactive and archived account checks are enforced in authentication/current-user resolution; all user administration mutations require the administrator application-service role check and CSRF protection at API level.
+- Current audit finding closed: session revocation is performed on deactivate, activate, archive, restore, and password reset. No further change made in this pass.
