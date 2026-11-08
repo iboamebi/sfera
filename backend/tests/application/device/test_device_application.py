@@ -21,11 +21,11 @@ from app.domains.device.repositories.device_repository import DeviceRepository
 from app.domains.device.value_objects.device_status import DeviceStatus
 from app.domains.device.value_objects.serial_number import SerialNumber
 from app.domains.instrument_type.entities.instrument_type import InstrumentType
-from app.domains.site.entities.site import Site
-from app.domains.site.repositories.site_repository import SiteRepository
 from app.domains.instrument_type.repositories.instrument_type_repository import (
     InstrumentTypeRepository,
 )
+from app.domains.site.entities.site import Site
+from app.domains.site.repositories.site_repository import SiteRepository
 from app.shared.unit_of_work.unit_of_work import UnitOfWork
 
 
@@ -88,7 +88,9 @@ class FakeCustomerRepository(CustomerRepository):
         self.customer = customer
 
     def get(self, customer_id, include_archived=False):
-        if customer_id == self.customer.id and (include_archived or not self.customer.archived):
+        if customer_id == self.customer.id and (
+            include_archived or not self.customer.archived
+        ):
             return self.customer
         return None
 
