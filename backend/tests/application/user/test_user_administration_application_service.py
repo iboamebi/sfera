@@ -39,10 +39,7 @@ class FakeUserRepository(UserRepository):
                 user
                 for user in self.users
                 if user.id == user_id
-                and (
-                    include_archived
-                    or (not user.archived and user.is_active)
-                )
+                and (include_archived or (not user.archived and user.is_active))
             ),
             None,
         )
@@ -414,7 +411,6 @@ def test_create_user_rejects_existing_username_even_if_archived() -> None:
     assert uow.committed is False
 
 
-
 def test_archive_rejects_last_active_administrator() -> None:
     admin = make_user("admin", UserRole.ADMIN)
     service, _, uow = make_service([admin])
@@ -489,7 +485,6 @@ def test_inactive_administrator_does_not_count_as_available_admin() -> None:
 
     assert admin.archived is False
     assert uow.committed is False
-
 
 
 def test_reset_password_generates_temporary_password_and_revokes_sessions() -> None:
