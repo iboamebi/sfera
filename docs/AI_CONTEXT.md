@@ -1201,3 +1201,10 @@ Administrator-assisted password recovery has now been implemented; see the check
 - Reviewed `backend/app/main.py`: `require_password_change_completed` is applied as a router-level dependency to all business and user-administration routers. The auth router remains outside that guard so login, `/auth/me`, password change, and logout remain available. This confirms first-login password enforcement is server-side, not only frontend navigation.
 - Reviewed user lifecycle/domain, API router, repository, auth/current-user, session repository, and password-change service paths. Active/inactive and archived account checks are enforced in authentication/current-user resolution; all user administration mutations require the administrator application-service role check and CSRF protection at API level.
 - Current audit finding closed: session revocation is performed on deactivate, activate, archive, restore, and password reset. No further change made in this pass.
+
+## User administration frontend review — 2026-11-08
+
+- Reviewed the current user administration API client, mutation hooks, `UsersPage`, authentication provider/route guard, and password-change page on `feat/user-first-login-password`.
+- Confirmed the UI prevents role changes to archived accounts, disables actions that would remove the last active administrator, confirms archive/password-reset actions, and displays the one-time temporary password with the corrected exact-value copy implementation.
+- Frontend route guard redirects users with `must_change_password` to `/change-password`; backend router-level guard independently enforces the same restriction.
+- No additional frontend code changes were warranted in this audit pass.
