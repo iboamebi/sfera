@@ -12,6 +12,7 @@ from app.application.user.commands.create_user import CreateUserCommand
 from app.application.user.commands.restore_user import RestoreUserCommand
 from app.application.user.commands.set_user_active import SetUserActiveCommand
 from app.application.user.exceptions import (
+    LastActiveAdministratorApplicationError,
     UserAlreadyExistsApplicationError,
     UserNotFoundApplicationError,
 )
@@ -69,6 +70,11 @@ def change_user_role(
             ChangeUserRoleCommand(user_id=user_id, role=data.role),
             actor,
         )
+    except LastActiveAdministratorApplicationError:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="At least one active administrator must remain",
+        ) from None
     except UserNotFoundApplicationError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
