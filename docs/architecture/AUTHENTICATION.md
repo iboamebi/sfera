@@ -12,7 +12,7 @@ Implemented:
 - authenticated session domain contract and persistence;
 - session token generation;
 - authentication and password-change application services;
-- login, current-user, password-change, and logout API endpoints;
+- login, current-user, password-change, logout, and administrator password-reset API endpoints;
 - mandatory first-login password change state and server-side business-route gate;
 - server-managed HttpOnly session cookie;
 - CSRF protection for state-changing cookie-authenticated requests;
@@ -106,6 +106,7 @@ GetCurrentUser
 ChangePassword
 RevokeSession
 LogoutUser
+ResetUserPassword (administrator-only)
 ```
 
 Application services/use cases operate through repository abstractions and do not manipulate SQLAlchemy sessions directly.
@@ -142,6 +143,10 @@ Unauthenticated requests return `401 Unauthorized`. The response includes the cu
 ### `POST /auth/change-password`
 
 Requires the authenticated session and CSRF validation. Accepts `current_password` and `new_password`. The Application service verifies the current password, hashes the replacement through the Argon2 password-hasher port, persists the new hash, and clears `must_change_password`. Invalid current passwords return `400 Bad Request`.
+
+### Administrator password reset
+
+`POST /users/{user_id}/reset-password` is an administrator-only, CSRF-protected operation. The Application service generates a cryptographically secure temporary password, stores only its Argon2 hash, sets `must_change_password = true`, and revokes all existing sessions for the target user in the same Unit of Work. The plaintext temporary password is returned only in this response and must not be logged or persisted. Only active, non-archived accounts can be reset; inactive or archived accounts must first be restored/activated by an administrator.
 
 ### `POST /auth/logout`
 
@@ -257,7 +262,7 @@ Authentication changes require at minimum:
 
 - Domain/Application tests for authentication behavior;
 - Infrastructure tests for password/session persistence where applicable;
-- API tests for login, current-user, password change, logout, CSRF, first-login gating, and unauthorized access;
+- API tests for login, current-user, password change, logout, administrator password reset, CSRF, first-login gating, and unauthorized access;
 - frontend typecheck/build for frontend changes;
 - Ruff validation for Python changes.
 
