@@ -1141,3 +1141,13 @@ Administrator-assisted password recovery has now been implemented; see the check
 - No repository-wide or unrelated formatting changes were made. The 15 files are deferred as a separate cleanup task.
 - Ruff lint is locally validated clean. Ruff formatting check remains non-clean due to the 15 pre-existing files; this is explicitly not a regression from the current branch changes.
 - Next: continue with frontend local typecheck/build, then deployment and browser verification of administrator password reset, especially exact password copying and forced first-login password change.
+
+
+## Frontend validation checkpoint — 2026-11-08
+
+- User ran frontend validation after synchronizing the current branch:
+  - `npm run typecheck` — passed;
+  - `npm run build` — passed.
+- Vite production build transformed 1306 modules and completed successfully.
+- Vite emitted the existing non-blocking warning that the main minified chunk exceeds 500 kB; no build or type errors occurred.
+- Next: deploy the validated frontend with the existing production deployment script, then browser-verify administrator password reset and exact temporary-password copying.
