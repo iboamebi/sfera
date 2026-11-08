@@ -27,6 +27,14 @@ export async function createUser(
   return mapCreatedUser(response.data);
 }
 
+export async function resetUserPassword(userId: string): Promise<UserCreated> {
+  const response = await http.post<UserCreatedApiDto>(
+    `/users/${userId}/reset-password`,
+  );
+
+  return mapCreatedUser(response.data);
+}
+
 export async function changeUserRole(
   userId: string,
   role: UserRole,
