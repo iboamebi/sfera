@@ -43,3 +43,8 @@ class UserCreated(UserRead):
     """New account response containing its one-time temporary password."""
 
     temporary_password: str
+
+class UserPasswordReset(UserRead):
+    """Account state and one-time temporary password returned after reset."""
+
+    temporary_password: str
