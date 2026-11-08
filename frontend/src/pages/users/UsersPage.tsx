@@ -76,6 +76,10 @@ export function UsersPage() {
 
   const { data: users, isLoading, isError } = useUsers(includeArchived);
   const administration = useUserAdministration();
+  const activeAdminCount =
+    users?.filter(
+      (user) => user.role === "admin" && user.isActive && !user.archived,
+    ).length ?? 0;
 
   const handleCreate = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -241,7 +245,11 @@ export function UsersPage() {
                 <TableRow key={user.id}>
                   <TableCell>{user.username}</TableCell>
                   <TableCell sx={{ minWidth: 190 }}>
-                    <FormControl size="small" fullWidth disabled={user.archived || administration.changeRole.isPending}>
+                    <FormControl size="small" fullWidth disabled={
+                        user.archived ||
+                        (user.role === "admin" && user.isActive && activeAdminCount <= 1) ||
+                        administration.changeRole.isPending
+                      }>
                       <Select
                         aria-label={`Роль пользователя ${user.username}`}
                         value={user.role}
@@ -272,7 +280,10 @@ export function UsersPage() {
                         <>
                           <Button
                             size="small"
-                            disabled={administration.changeStatus.isPending}
+                            disabled={
+                              administration.changeStatus.isPending ||
+                              (user.role === "admin" && user.isActive && activeAdminCount <= 1)
+                            }
                             onClick={() =>
                               administration.changeStatus.mutate({
                                 userId: user.id,
@@ -285,7 +296,10 @@ export function UsersPage() {
                           <Button
                             size="small"
                             color="warning"
-                            disabled={administration.archive.isPending}
+                            disabled={
+                              administration.archive.isPending ||
+                              (user.role === "admin" && user.isActive && activeAdminCount <= 1)
+                            }
                             onClick={() => {
                               if (window.confirm(`Архивировать пользователя ${user.username}?`)) {
                                 administration.archive.mutate(user.id);
@@ -296,6 +310,14 @@ export function UsersPage() {
                           </Button>
                         </>
                       )}
+                      {user.role === "admin" &&
+                        user.isActive &&
+                        !user.archived &&
+                        activeAdminCount <= 1 && (
+                          <Typography variant="caption" color="text.secondary">
+                            Последний активный администратор
+                          </Typography>
+                        )}
                       {user.archived && (
                         <Button
                           size="small"
