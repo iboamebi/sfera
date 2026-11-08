@@ -19,6 +19,7 @@ from app.domains.auth.repositories.session_repository import SessionRepository
 from app.domains.user.entities.user import User
 from app.domains.user.repositories.user_repository import UserRepository
 from app.domains.user.value_objects.user_role import UserRole
+from app.shared.password_hasher import PasswordHasher
 from app.shared.unit_of_work.unit_of_work import UnitOfWork
 
 
