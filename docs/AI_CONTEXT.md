@@ -1040,3 +1040,11 @@ Administrator-assisted password recovery has now been implemented; see the check
 - Frontend adds a per-user **Сбросить пароль** action; the returned temporary password is shown in the existing one-time credential notice.
 - The password-copy handler now tries the selected-text fallback first because the browser clipboard action was previously reported to copy an unexpected value. Local browser verification is required to confirm the copy behavior.
 - No migration is required.
+
+
+## Backend test-fixture correction — 2026-11-08
+
+- User ran the backend suite after the administrator password-reset implementation: **283 passed, 11 failed**.
+- The 10 authentication Application failures were caused by three test-only `FakeUserRepository` classes not implementing the current abstract `get_all_for_update()` repository contract. Added the method to those fakes; production repository code was not changed.
+- The remaining order API test directly invoked `update_order()` without supplying its `read_service` dependency, so FastAPI's `Depends` marker was treated as the service object. Updated the test to pass a small fake read service, matching the direct-call pattern already used by the register-order test.
+- These are test fixture corrections only. Local backend test/lint validation is pending.
