@@ -1122,3 +1122,12 @@ Administrator-assisted password recovery has now been implemented; see the check
 - Only whitespace/comment grouping changed; migration metadata and operations are untouched.
 - Commits: `ccb571c3d8aded1b02ef37d80b8d2e558229da16`, `daa054698fd489e393ff9632ea25640743d37727`.
 - Local `ruff check .` must be rerun. No clean result is claimed.
+
+
+## Ruff Alembic comment-spacing correction — 2026-11-08
+
+- The user's latest local Ruff output explicitly showed the required layout: one blank line after `from alembic import op` and before the Alembic revision-identifiers comment.
+- Restored that blank line in migrations `8d4f6a1b2c30` and `f3a8c1d9e720`. This supersedes the immediately preceding checkpoint's statement that the blank line should be removed.
+- Only whitespace changed; migration identifiers, dependencies, and operations are unchanged.
+- Commits: `68529487eafec27e594a767c1e7da1a342923deb`, `2d6a30400d80f5c1357c2f668ac626e8d6d8cd49`.
+- Local `ruff check .` must be rerun after pulling. No lint pass is claimed yet.
