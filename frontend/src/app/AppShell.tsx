@@ -1,7 +1,8 @@
 import type { ReactNode } from "react";
-import { AppBar, Box, Button, Stack, Toolbar, Typography } from "@mui/material";
-import { Link, useLocation } from "react-router";
+import { Alert, AppBar, Box, Button, Stack, Toolbar, Typography } from "@mui/material";
+import { Link, useLocation, useNavigate } from "react-router";
 
+import { useLogout } from "../features/auth/model/useLogout";
 import type { AuthenticatedUser } from "../features/auth/model/types";
 
 interface AppShellProps {
@@ -19,6 +20,14 @@ const navigation = [
 
 export function AppShell({ user, children }: AppShellProps) {
   const location = useLocation();
+  const navigate = useNavigate();
+  const logout = useLogout();
+
+  const handleLogout = () => {
+    logout.mutate(undefined, {
+      onSuccess: () => navigate("/login", { replace: true }),
+    });
+  };
 
   return (
     <Box sx={{ minHeight: "100vh" }}>
@@ -71,11 +80,27 @@ export function AppShell({ user, children }: AppShellProps) {
             )}
           </Stack>
 
-          <Typography variant="body2" sx={{ whiteSpace: "nowrap" }}>
-            {user.username}
-          </Typography>
+          <Stack direction="row" spacing={1} alignItems="center">
+            <Typography variant="body2" sx={{ whiteSpace: "nowrap" }}>
+              {user.username}
+            </Typography>
+            <Button
+              color="inherit"
+              size="small"
+              disabled={logout.isPending}
+              onClick={handleLogout}
+            >
+              {logout.isPending ? "Выход..." : "Выйти"}
+            </Button>
+          </Stack>
         </Toolbar>
       </AppBar>
+
+      {logout.isError && (
+        <Alert severity="error" sx={{ borderRadius: 0 }}>
+          Не удалось завершить сеанс. Проверьте соединение и повторите попытку.
+        </Alert>
+      )}
 
       <Box
         component="main"
