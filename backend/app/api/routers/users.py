@@ -10,6 +10,7 @@ from app.application.user.commands.archive_user import ArchiveUserCommand
 from app.application.user.commands.change_user_role import ChangeUserRoleCommand
 from app.application.user.commands.create_user import CreateUserCommand
 from app.application.user.commands.restore_user import RestoreUserCommand
+from app.application.user.commands.reset_user_password import ResetUserPasswordCommand
 from app.application.user.commands.set_user_active import SetUserActiveCommand
 from app.application.user.exceptions import (
     LastActiveAdministratorApplicationError,
@@ -26,6 +27,7 @@ from app.schemas.user import (
     UserActiveUpdate,
     UserCreate,
     UserCreated,
+    UserPasswordReset,
     UserRead,
     UserRoleUpdate,
 )
@@ -160,6 +162,41 @@ def restore_user(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="User not found",
         ) from None
+
+
+@router.post(
+    "/{user_id}/reset-password",
+    response_model=UserPasswordReset,
+    dependencies=[Depends(require_csrf)],
+)
+def reset_user_password(
+    user_id: UUID,
+    actor: User = Depends(get_current_user),
+    service: UserAdministrationApplicationService = Depends(
+        get_user_administration_service,
+    ),
+) -> UserPasswordReset:
+    """Reset a user's password and return its temporary value once."""
+    try:
+        user, temporary_password = service.reset_password(
+            ResetUserPasswordCommand(user_id=user_id),
+            actor,
+        )
+    except UserNotFoundApplicationError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found",
+        ) from None
+
+    return UserPasswordReset(
+        id=user.id,
+        username=user.username,
+        role=user.role,
+        is_active=user.is_active,
+        archived=user.archived,
+        must_change_password=user.must_change_password,
+        temporary_password=temporary_password,
+    )
 
 
 @router.post(
