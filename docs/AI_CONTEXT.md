@@ -1048,3 +1048,15 @@ Administrator-assisted password recovery has now been implemented; see the check
 - The 10 authentication Application failures were caused by three test-only `FakeUserRepository` classes not implementing the current abstract `get_all_for_update()` repository contract. Added the method to those fakes; production repository code was not changed.
 - The remaining order API test directly invoked `update_order()` without supplying its `read_service` dependency, so FastAPI's `Depends` marker was treated as the service object. Updated the test to pass a small fake read service, matching the direct-call pattern already used by the register-order test.
 - These are test fixture corrections only. Local backend test/lint validation is pending.
+
+
+## Backend validation and Alembic lint cleanup — 2026-11-08
+
+- User reran the complete backend suite after the test-fixture corrections: **294 passed**.
+- Ruff identified pre-existing lint violations in three Alembic migration files: unused imports, import ordering, collections.abc usage, and Union annotations.
+- Updated only migration metadata/import formatting; migration revision identifiers, dependency graph, and upgrade/downgrade operations are unchanged.
+- Commits:
+  - `a1c4ea1908c28cf258f1258537bb278d4780dd14`
+  - `322fd19243328fe9da97056ba77a142c56e9066b`
+  - `e823dc9b3fc47603da6c9061388672701ebf97d8`
+- Local `ruff check .` and `ruff format --check .` must be rerun after synchronizing these changes. Backend pytest is already green; do not repeat it unless a later change affects runtime behavior.
