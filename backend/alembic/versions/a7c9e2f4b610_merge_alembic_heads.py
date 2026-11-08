@@ -6,8 +6,6 @@ Create Date: 2026-09-22
 
 """
 
-from collections.abc import Sequence
-
 
 # revision identifiers, used by Alembic.
 revision: str = "a7c9e2f4b610"
@@ -15,7 +13,7 @@ down_revision: tuple[str, str] = (
     "1d3e5f7a9b20",
     "8d4f6a1b2c30",
 )
-branch_labels: str | Sequence[str] | None = None
+branch_labels: str | tuple[str, ...] | None = None
 depends_on: str | Sequence[str] | None = None
 
 
