@@ -5,6 +5,7 @@ import {
   changeUserRole,
   createUser,
   restoreUser,
+  resetUserPassword,
   setUserActive,
 } from "../api/userAdministration";
 import type { UserRole } from "./types";
@@ -18,6 +19,11 @@ export function useUserAdministration() {
   const create = useMutation({
     mutationFn: ({ username, role }: { username: string; role: UserRole }) =>
       createUser(username, role),
+    onSuccess: refreshUsers,
+  });
+
+  const resetPassword = useMutation({
+    mutationFn: resetUserPassword,
     onSuccess: refreshUsers,
   });
 
@@ -43,5 +49,5 @@ export function useUserAdministration() {
     onSuccess: refreshUsers,
   });
 
-  return { create, changeRole, changeStatus, archive, restore };
+  return { create, resetPassword, changeRole, changeStatus, archive, restore };
 }
