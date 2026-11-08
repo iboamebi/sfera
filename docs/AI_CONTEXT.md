@@ -1175,3 +1175,13 @@ Administrator-assisted password recovery has now been implemented; see the check
 - After changing the password, the user could access the application normally.
 - Combined with the preceding deployment checkpoint, the complete password-reset flow is validated: reset action and confirmation, one-time password display and exact copying, session revocation, temporary-password login, mandatory password change, and normal post-change access.
 - No additional code changes were required after browser validation.
+
+## User session lifecycle security checkpoint — 2026-11-08
+
+- User-administration audit found that deactivation and archive blocked existing sessions through account lookup, but did not revoke the persisted session records. Restoring/reactivating an account could therefore make an old session usable again.
+- Deactivation and archive now revoke all sessions for the affected user in the same Unit of Work as the account-state update. Reactivation/restoration does not revive those sessions; the user must authenticate again.
+- Authentication and current-user resolution now explicitly reject inactive users as well as missing or archived users, rather than relying solely on repository filtering.
+- Added regression tests for session revocation on deactivation/archive and rejection of inactive accounts during authentication/current-user resolution.
+- Local validation reported by the user: backend pytest **296 passed, 21 warnings**; `ruff check .` **All checks passed**.
+- The scoped format check identified one touched test file. Applied Ruff's formatting-only changes to that file; no test behavior changed. Local `ruff format --check` for the six touched files must be rerun after synchronizing this final formatting commit.
+- Implementation commits: `9f10cf6`, `f0c3200`, `f9a267d`, `81621b5`, `919b634`, `cceb197`; formatting commit: `66dd729`.
