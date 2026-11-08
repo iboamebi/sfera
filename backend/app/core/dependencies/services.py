@@ -191,9 +191,15 @@ def get_user_administration_service(
     repository: UserRepository = Depends(get_user_repository),
     password_hasher: Argon2PasswordHasher = Depends(get_password_hasher),
     uow: UnitOfWork = Depends(get_unit_of_work),
+    session_repository: SessionRepository = Depends(get_session_repository),
 ) -> UserAdministrationApplicationService:
     """Provide User administration application service."""
-    return UserAdministrationApplicationService(repository, password_hasher, uow)
+    return UserAdministrationApplicationService(
+        repository,
+        password_hasher,
+        uow,
+        session_repository,
+    )
 
 
 def get_order_service(
