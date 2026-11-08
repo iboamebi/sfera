@@ -1027,7 +1027,7 @@ GitHub commits for logout UI stage:
 
 Local validation for this stage is pending: frontend typecheck, build, and production deployment. Do not start the next independent feature until the user reports the local result.
 
-Next independent feature requested: administrator-assisted password recovery. Current backend has create-user temporary password and mandatory first-login password change, but no reset-existing-user use case. Existing `SessionRepository.revoke_all_for_user(user_id)` is available and should be used when implementing an administrator reset so old sessions are invalidated. Read current implementations and tests before changing contracts.
+Administrator-assisted password recovery has now been implemented; see the checkpoint below. Do not repeat the implementation. The next step is local backend/frontend validation followed by browser verification of password reset and password copying.
 
 
 ## Administrator password reset checkpoint — 2026-11-08
