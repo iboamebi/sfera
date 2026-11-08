@@ -9,8 +9,8 @@ from app.api.security.csrf import require_csrf
 from app.application.user.commands.archive_user import ArchiveUserCommand
 from app.application.user.commands.change_user_role import ChangeUserRoleCommand
 from app.application.user.commands.create_user import CreateUserCommand
-from app.application.user.commands.restore_user import RestoreUserCommand
 from app.application.user.commands.reset_user_password import ResetUserPasswordCommand
+from app.application.user.commands.restore_user import RestoreUserCommand
 from app.application.user.commands.set_user_active import SetUserActiveCommand
 from app.application.user.exceptions import (
     LastActiveAdministratorApplicationError,
