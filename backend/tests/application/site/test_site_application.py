@@ -9,11 +9,11 @@ import pytest
 from app.application.authorization.authorization import AuthorizationError
 from app.application.site.commands.create_site import CreateSiteCommand
 from app.application.site.exceptions import CustomerNotFoundApplicationError
-from app.domains.customer.entities.customer import Customer
-from app.domains.customer.repositories.customer_repository import CustomerRepository
 from app.application.site.services.site_application_service import (
     SiteApplicationService,
 )
+from app.domains.customer.entities.customer import Customer
+from app.domains.customer.repositories.customer_repository import CustomerRepository
 from app.domains.site.entities.site import Site
 from app.domains.site.repositories.site_repository import SiteRepository
 from app.domains.user.entities.user import User
