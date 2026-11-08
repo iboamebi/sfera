@@ -130,6 +130,27 @@ def test_authenticate_user_rejects_missing_user():
         )
 
 
+def test_authenticate_user_rejects_inactive_user():
+    user = User(
+        id=uuid4(),
+        username="admin",
+        password_hash="stored-hash",
+        is_active=False,
+    )
+    service = AuthenticationApplicationService(
+        FakeUserRepository(user),
+        FakePasswordHasher("secret"),
+    )
+
+    with pytest.raises(AuthenticationFailedApplicationError):
+        service.authenticate(
+            AuthenticateUserCommand(
+                username="admin",
+                password="secret",
+            )
+        )
+
+
 def test_authenticate_user_rejects_archived_user():
     user = User(
         id=uuid4(),
