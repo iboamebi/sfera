@@ -1131,3 +1131,13 @@ Administrator-assisted password recovery has now been implemented; see the check
 - Only whitespace changed; migration identifiers, dependencies, and operations are unchanged.
 - Commits: `68529487eafec27e594a767c1e7da1a342923deb`, `2d6a30400d80f5c1357c2f668ac626e8d6d8cd49`.
 - Local `ruff check .` must be rerun after pulling. No lint pass is claimed yet.
+
+
+## Ruff validation checkpoint — 2026-11-08
+
+- User confirmed the full backend `ruff check .` run passes with **All checks passed**.
+- The subsequent `ruff format --check .` reports 15 files requiring formatting (507 files already formatted).
+- Compared the reported paths against the feature branch diff from baseline commit `4b7cdbd465064ba4f8d8ecd9590d3f1d750e8642`. All 15 formatter findings are pre-existing formatting debt; none of the reported formatting hunks was introduced by the current user-administration/password-reset work.
+- No repository-wide or unrelated formatting changes were made. The 15 files are deferred as a separate cleanup task.
+- Ruff lint is locally validated clean. Ruff formatting check remains non-clean due to the 15 pre-existing files; this is explicitly not a regression from the current branch changes.
+- Next: continue with frontend local typecheck/build, then deployment and browser verification of administrator password reset, especially exact password copying and forced first-login password change.
