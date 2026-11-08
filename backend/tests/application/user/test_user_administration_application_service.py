@@ -489,6 +489,7 @@ def test_inactive_administrator_does_not_count_as_available_admin() -> None:
     assert uow.committed is False
 
 
+
 def test_reset_password_generates_temporary_password_and_revokes_sessions() -> None:
     target = make_user("operator")
     service, repository, uow = make_service([target])
