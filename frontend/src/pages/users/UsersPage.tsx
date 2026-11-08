@@ -40,6 +40,26 @@ const roleLabels: Record<UserRole, string> = {
   warehouse: "Склад",
 };
 
+function copyTextFallback(value: string): boolean {
+  const textarea = document.createElement("textarea");
+  textarea.value = value;
+  textarea.setAttribute("readonly", "");
+  textarea.style.position = "fixed";
+  textarea.style.opacity = "0";
+  document.body.appendChild(textarea);
+  textarea.select();
+  textarea.setSelectionRange(0, textarea.value.length);
+
+  let copied = false;
+  try {
+    copied = document.execCommand("copy");
+  } finally {
+    textarea.remove();
+  }
+
+  return copied;
+}
+
 function userStatus(user: UserRead): string {
   if (user.archived) return "В архиве";
   if (!user.isActive) return "Неактивен";
@@ -51,7 +71,7 @@ export function UsersPage() {
   const [includeArchived, setIncludeArchived] = useState(false);
   const [username, setUsername] = useState("");
   const [role, setRole] = useState<UserRole>("operator");
-  const [createdUser, setCreatedUser] = useState<UserCreated | null>(null);
+  const [createdUser, setCreatedUser] = useState<UserCreated | null>(null);\n  const [copyStatus, setCopyStatus] = useState<"idle" | "success" | "error">("idle");
 
   const { data: users, isLoading, isError } = useUsers(includeArchived);
   const administration = useUserAdministration();
@@ -81,7 +101,18 @@ export function UsersPage() {
 
   const handleCopyPassword = async () => {
     if (!createdUser) return;
-    await navigator.clipboard.writeText(createdUser.temporaryPassword);
+
+    try {
+      if (!navigator.clipboard?.writeText) {
+        throw new Error("Clipboard API is unavailable");
+      }
+      await navigator.clipboard.writeText(createdUser.temporaryPassword);
+      setCopyStatus("success");
+    } catch {
+      setCopyStatus(
+        copyTextFallback(createdUser.temporaryPassword) ? "success" : "error",
+      );
+    }
   };
 
   return (
@@ -132,7 +163,7 @@ export function UsersPage() {
               <Button color="inherit" onClick={handleCopyPassword}>
                 Копировать пароль
               </Button>
-              <Button color="inherit" onClick={() => setCreatedUser(null)}>
+              <Button color="inherit" onClick={() => { setCreatedUser(null); setCopyStatus("idle"); }}>
                 Скрыть
               </Button>
             </Stack>
@@ -150,6 +181,16 @@ export function UsersPage() {
           <Typography>
             При первом входе пользователь должен сменить пароль.
           </Typography>
+          {copyStatus === "success" && (
+            <Typography role="status" color="success.dark">
+              Пароль скопирован в буфер обмена.
+            </Typography>
+          )}
+          {copyStatus === "error" && (
+            <Typography role="alert" color="error">
+              Не удалось скопировать пароль. Выделите его и скопируйте вручную.
+            </Typography>
+          )}
         </Alert>
       )}
 
