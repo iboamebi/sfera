@@ -11,6 +11,7 @@ from app.application.user.commands.create_user import CreateUserCommand
 from app.application.user.commands.restore_user import RestoreUserCommand
 from app.application.user.commands.set_user_active import SetUserActiveCommand
 from app.application.user.exceptions import (
+    LastActiveAdministratorApplicationError,
     UserAlreadyExistsApplicationError,
     UserNotFoundApplicationError,
 )
@@ -43,12 +44,29 @@ class UserAdministrationApplicationService:
         require_role(actor, UserRole.ADMIN)
 
         with self._uow:
-            user = self._repository.get_by_id(
-                command.user_id,
-                include_archived=True,
-            )
+            if command.role is not UserRole.ADMIN:
+                users = self._repository.get_all_for_update()
+                user = next((item for item in users if item.id == command.user_id), None)
+            else:
+                user = self._repository.get_by_id(
+                    command.user_id,
+                    include_archived=True,
+                )
             if user is None:
                 raise UserNotFoundApplicationError
+
+            if (
+                command.role is not UserRole.ADMIN
+                and user.role is UserRole.ADMIN
+                and user.is_active
+                and not user.archived
+            ):
+                active_admins = [
+                    item for item in users
+                    if item.role is UserRole.ADMIN and item.is_active and not item.archived
+                ]
+                if len(active_admins) <= 1:
+                    raise LastActiveAdministratorApplicationError
 
             user.change_role(command.role)
             return self._repository.save(user)
@@ -58,16 +76,28 @@ class UserAdministrationApplicationService:
         require_role(actor, UserRole.ADMIN)
 
         with self._uow:
-            user = self._repository.get_by_id(
-                command.user_id,
-                include_archived=True,
-            )
+            if command.is_active:
+                user = self._repository.get_by_id(
+                    command.user_id,
+                    include_archived=True,
+                )
+                users = []
+            else:
+                users = self._repository.get_all_for_update()
+                user = next((item for item in users if item.id == command.user_id), None)
             if user is None or user.archived:
                 raise UserNotFoundApplicationError
 
             if command.is_active:
                 user.activate()
             else:
+                if user.role is UserRole.ADMIN and user.is_active:
+                    active_admins = [
+                        item for item in users
+                        if item.role is UserRole.ADMIN and item.is_active and not item.archived
+                    ]
+                    if len(active_admins) <= 1:
+                        raise LastActiveAdministratorApplicationError
                 user.deactivate()
 
             return self._repository.save(user)
@@ -77,12 +107,18 @@ class UserAdministrationApplicationService:
         require_role(actor, UserRole.ADMIN)
 
         with self._uow:
-            user = self._repository.get_by_id(
-                command.user_id,
-                include_archived=True,
-            )
+            users = self._repository.get_all_for_update()
+            user = next((item for item in users if item.id == command.user_id), None)
             if user is None or user.archived:
                 raise UserNotFoundApplicationError
+
+            if user.role is UserRole.ADMIN and user.is_active:
+                active_admins = [
+                    item for item in users
+                    if item.role is UserRole.ADMIN and item.is_active and not item.archived
+                ]
+                if len(active_admins) <= 1:
+                    raise LastActiveAdministratorApplicationError
 
             user.archive()
             return self._repository.save(user)
