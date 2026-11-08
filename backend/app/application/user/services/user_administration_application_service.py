@@ -158,12 +158,12 @@ class UserAdministrationApplicationService:
         """Issue a one-time temporary password and revoke existing sessions."""
         require_role(actor, UserRole.ADMIN)
 
-        temporary_password = secrets.token_urlsafe(18)
         with self._uow:
             user = self._repository.get_by_id(command.user_id)
             if user is None:
                 raise UserNotFoundApplicationError
 
+            temporary_password = secrets.token_urlsafe(18)
             user.reset_password(self._password_hasher.hash(temporary_password))
             updated_user = self._repository.save(user)
             self._session_repository.revoke_all_for_user(user.id)
