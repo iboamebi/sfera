@@ -9,6 +9,7 @@ from app.application.user.commands.archive_user import ArchiveUserCommand
 from app.application.user.commands.change_user_role import ChangeUserRoleCommand
 from app.application.user.commands.create_user import CreateUserCommand
 from app.application.user.commands.restore_user import RestoreUserCommand
+from app.application.user.commands.reset_user_password import ResetUserPasswordCommand
 from app.application.user.commands.set_user_active import SetUserActiveCommand
 from app.application.user.exceptions import (
     LastActiveAdministratorApplicationError,
@@ -18,6 +19,7 @@ from app.application.user.exceptions import (
 from app.application.user.services.user_administration_application_service import (
     UserAdministrationApplicationService,
 )
+from app.domains.auth.repositories.session_repository import SessionRepository
 from app.domains.user.entities.user import User
 from app.domains.user.repositories.user_repository import UserRepository
 from app.domains.user.value_objects.user_role import UserRole
@@ -55,6 +57,23 @@ class FakeUserRepository(UserRepository):
                 return user
         self.users.append(user)
         return user
+
+
+class FakeSessionRepository(SessionRepository):
+    def __init__(self) -> None:
+        self.revoked_user_ids = []
+
+    def save(self, session):
+        return session
+
+    def get_active(self, session_id, now):
+        return None
+
+    def revoke(self, session_id):
+        pass
+
+    def revoke_all_for_user(self, user_id) -> None:
+        self.revoked_user_ids.append(user_id)
 
 
 class FakePasswordHasher(PasswordHasher):
@@ -98,6 +117,7 @@ def make_service(
         repository,
         FakePasswordHasher(),
         uow,
+        FakeSessionRepository(),
     )
     return service, repository, uow
 
@@ -446,3 +466,52 @@ def test_inactive_administrator_does_not_count_as_available_admin() -> None:
 
     assert admin.archived is False
     assert uow.committed is False
+
+def test_reset_password_generates_temporary_password_and_revokes_sessions() -> None:
+    target = make_user("operator")
+    service, repository, uow = make_service([target])
+
+    updated, temporary_password = service.reset_password(
+        ResetUserPasswordCommand(user_id=target.id),
+        make_user("admin", UserRole.ADMIN),
+    )
+
+    assert updated is target
+    assert updated.must_change_password is True
+    assert updated.password_hash == f"argon2-hash:{temporary_password}"
+    assert temporary_password not in updated.password_hash
+    assert repository.users == [updated]
+    assert service._session_repository.revoked_user_ids == [target.id]
+    assert uow.committed is True
+
+
+def test_reset_password_requires_admin_role() -> None:
+    target = make_user("operator")
+    service, _, uow = make_service([target])
+
+    with pytest.raises(AuthorizationError, match="not authorized"):
+        service.reset_password(
+            ResetUserPasswordCommand(user_id=target.id),
+            make_user("operator", UserRole.OPERATOR),
+        )
+
+    assert target.password_hash == "hash"
+    assert service._session_repository.revoked_user_ids == []
+    assert uow.committed is False
+
+
+def test_reset_password_rejects_missing_or_inactive_user() -> None:
+    target = make_user("operator")
+    target.deactivate()
+    service, _, uow = make_service([target])
+
+    with pytest.raises(UserNotFoundApplicationError):
+        service.reset_password(
+            ResetUserPasswordCommand(user_id=target.id),
+            make_user("admin", UserRole.ADMIN),
+        )
+
+    assert target.password_hash == "hash"
+    assert service._session_repository.revoked_user_ids == []
+    assert uow.committed is False
+    assert uow.rolled_back is True
