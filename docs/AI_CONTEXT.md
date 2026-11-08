@@ -1105,3 +1105,11 @@ Administrator-assisted password recovery has now been implemented; see the check
 - Inspected the actual backend Ruff configuration: import sorting (`I`) is enabled. The migration directory's `alembic` module is classified separately from third-party SQLAlchemy imports, so the required ordering includes a blank line before `from alembic import op`.
 - Applied that grouping to the affected migrations and removed the extra blank line before the revision metadata comment in the single-import migration.
 - Migration revision IDs, dependency values, and operations are unchanged. A fresh local `ruff check .` is still required; no lint pass is claimed yet.
+
+
+## Ruff import-order final correction — 2026-11-08
+
+- The user's latest local `ruff check .` run narrowed the remaining findings to two `I001` errors in migrations `8d4f6a1b2c30` and `f3a8c1d9e720`.
+- Read both current files from the feature branch and applied Ruff's exact ordering: standard-library imports, SQLAlchemy imports (including `sqlalchemy.dialects`), then a separate `alembic` import group.
+- Only import ordering changed; migration identifiers, dependencies, and operations remain unchanged.
+- Local `ruff check .` must be rerun after pulling the two fixes. Formatting remains a separate, not-yet-approved cleanup.
