@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { Navigate, useLocation } from "react-router";
 
 import { useCurrentUser } from "../model/useCurrentUser";
-import { AppShell } from "../../app/AppShell";
+import { AppShell } from "../../../app/AppShell";
 
 interface RequireAuthProps {
   children: ReactNode;
