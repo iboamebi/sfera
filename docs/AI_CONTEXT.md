@@ -1060,3 +1060,13 @@ Administrator-assisted password recovery has now been implemented; see the check
   - `322fd19243328fe9da97056ba77a142c56e9066b`
   - `e823dc9b3fc47603da6c9061388672701ebf97d8`
 - Local `ruff check .` and `ruff format --check .` must be rerun after synchronizing these changes. Backend pytest is already green; do not repeat it unless a later change affects runtime behavior.
+
+
+## Alembic lint follow-up — 2026-11-08
+
+- The first Ruff cleanup pass did not fully resolve import-order findings and exposed additional legacy violations in two adjacent migrations.
+- Normalized five migration files: `071a88b4b6da`, `4c9e2a7b1d60`, `4d7a9c2e1f30`, `7c2f1a9e4b60`, and `8a4d2f6b1c90`.
+- Changes are limited to imports and equivalent type annotations (`tuple` for the migration `down_revision` sequence type); migration identifiers, dependency values, and upgrade/downgrade operations are unchanged.
+- Commits: `0d69e77333efaf73acbdce68bb0de91b70488eec`, `445cc81be90f8fae6f3e314123d6a26c2c504b9c`, `c136b003a3db5c8ffdec109d0804ee9ab2e8b37f`, `913eece3392038fcfc379495fb93c27caaeea8e6`, `a105b0700397c2292cb1f2c7e717c05e98b38f51`.
+- User's latest local run also reported 26 files not matching Ruff formatting. Do not mass-format unrelated files blindly; collect the exact file list and compare against the feature diff before deciding whether a separate repository-wide formatting cleanup is appropriate.
+- Next local validation: `ruff check .`; then identify the 26 formatting paths with `ruff format --check .` output. Backend pytest already passed (294 tests).
