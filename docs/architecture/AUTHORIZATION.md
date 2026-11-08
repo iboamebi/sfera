@@ -201,7 +201,7 @@ Implemented use cases:
 - return the temporary password only in the creation response;
 - return HTTP 409 when the username is already reserved, including by an archived account.
 
-The Application layer enforces the `admin` role through the shared authorization contract. The API authenticates requests, retains CSRF protection for state-changing operations, and maps duplicate usernames to HTTP 409 and missing users to HTTP 404. Archived accounts cannot be activated or deactivated. Archive and restore are separate lifecycle operations; restoring an account only clears its archived state and does not automatically activate an inactive account.
+The Application layer enforces the `admin` role through the shared authorization contract. The API authenticates requests, retains CSRF protection for state-changing operations, and maps duplicate usernames to HTTP 409 and missing users to HTTP 404. Archived accounts cannot be activated or deactivated. Archive and restore are separate lifecycle operations; restoring an account only clears its archived state and does not automatically activate an inactive account. The service also prevents archiving, deactivating, or demoting the last active administrator. These operations lock user rows in a deterministic order inside the existing Unit of Work transaction before evaluating the active-administrator count, so concurrent administrator lifecycle changes are serialized. Attempts that would leave no active administrator return HTTP 409.
 
 ## Current Persistence
 
