@@ -30,7 +30,7 @@ class AuthenticationApplicationService:
 
         user = self._repository.get_by_username(command.username)
 
-        if user is None or user.archived:
+        if user is None or user.archived or not user.is_active:
             raise AuthenticationFailedApplicationError
 
         if not self._password_hasher.verify(
