@@ -976,3 +976,20 @@ Local typecheck/build and browser review are still required before considering t
 - The displayed value still comes from `OrderRead.issuedAt`; no date formatting, lifecycle, API, or business behavior changed.
 - Implementation commit: `82203d4cacb39c28d73f434e5afc7fe393e19556`.
 - Local frontend typecheck, build, and browser review are pending.
+
+## Application navigation and admin user access checkpoint — 2026-11-08
+
+- Frontend previously exposed `/users` directly but had no shared application navigation; users had to know or remember the URL.
+- Added `frontend/src/app/AppShell.tsx` as the minimal authenticated application shell.
+- Main navigation now provides direct access to Orders, Customers, Organizations, Instruments, and Materials.
+- Administrators additionally see a direct `Пользователи` navigation entry.
+- The authenticated username is displayed in the application header.
+- `RequireAuth` now supports an `adminOnly` guard and wraps authenticated pages in the application shell; the password-change page remains outside the shell.
+- The `/users` route is now explicitly frontend-admin-only and redirects non-admin users to `/orders`. Backend authorization remains the security boundary.
+- No backend/API/domain behavior was changed.
+- Implementation commits:
+  - `26d5d743eb5bba87a4596240fe176efb8edc1be8` — application navigation shell;
+  - `7d3196e97c99f66ad1e17259ebc01506f728d171` — authenticated shell and admin guard;
+  - `d1d4f7e49b0fd88de49203c8e8ed051d4e00208f` — admin-only Users route;
+  - `98d17e3959e26b4a5bd654ff2aff7f937058b15f` — explicit ReactNode type.
+- Local frontend typecheck, build, and browser review are required before considering this navigation stage complete.
