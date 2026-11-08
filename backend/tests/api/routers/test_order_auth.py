@@ -123,6 +123,26 @@ def test_update_order_passes_authenticated_user_to_application_service() -> None
             self.received_user = received_user
             return object()
 
+    class FakeOrderReadService:
+        def get(self, requested_id: object) -> OrderRead:
+            assert requested_id == order_id
+            now = datetime.now(UTC)
+            return OrderRead(
+                id=order_id,
+                number="1001",
+                customer_id=uuid4(),
+                customer_name="Test Customer",
+                status="REGISTERED",
+                received_at=now,
+                created_at=now,
+                updated_at=now,
+                planned_issue_at=None,
+                issued_at=None,
+                comment="Updated order",
+                archived=False,
+                items=[],
+            )
+
     service = FakeOrderService()
 
     result = update_order(
@@ -133,6 +153,7 @@ def test_update_order_passes_authenticated_user_to_application_service() -> None
         ),
         user=user,
         service=service,
+        read_service=FakeOrderReadService(),
     )
 
     assert result is not None
