@@ -9,7 +9,9 @@ from app.application.user.commands.archive_user import ArchiveUserCommand
 from app.application.user.commands.change_user_role import ChangeUserRoleCommand
 from app.application.user.commands.create_user import CreateUserCommand
 from app.application.user.commands.restore_user import RestoreUserCommand
-from app.application.user.commands.reset_user_password import ResetUserPasswordCommand
+from app.application.user.commands.reset_user_password import (
+    ResetUserPasswordCommand,
+)
 from app.application.user.commands.set_user_active import SetUserActiveCommand
 from app.application.user.exceptions import (
     LastActiveAdministratorApplicationError,
@@ -85,6 +87,14 @@ class FakeSessionRepository(SessionRepository):
 
     def revoke_all_for_user(self, user_id) -> None:
         self.revoked_user_ids.append(user_id)
+
+
+class FixedPasswordHasher(PasswordHasher):
+    def hash(self, password: str) -> str:
+        return "argon2-hash-value"
+
+    def verify(self, password: str, password_hash: str) -> bool:
+        return False
 
 
 class FakePasswordHasher(PasswordHasher):
@@ -481,6 +491,7 @@ def test_inactive_administrator_does_not_count_as_available_admin() -> None:
 def test_reset_password_generates_temporary_password_and_revokes_sessions() -> None:
     target = make_user("operator")
     service, repository, uow = make_service([target])
+    service._password_hasher = FixedPasswordHasher()
 
     updated, temporary_password = service.reset_password(
         ResetUserPasswordCommand(user_id=target.id),
@@ -489,8 +500,8 @@ def test_reset_password_generates_temporary_password_and_revokes_sessions() -> N
 
     assert updated is target
     assert updated.must_change_password is True
-    assert updated.password_hash == f"argon2-hash:{temporary_password}"
-    assert updated.password_hash.startswith("argon2-hash:")
+    assert updated.password_hash == "argon2-hash-value"
+    assert updated.password_hash != temporary_password
     assert repository.users == [updated]
     assert service._session_repository.revoked_user_ids == [target.id]
     assert uow.committed is True
