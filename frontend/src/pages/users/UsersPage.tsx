@@ -71,7 +71,8 @@ export function UsersPage() {
   const [includeArchived, setIncludeArchived] = useState(false);
   const [username, setUsername] = useState("");
   const [role, setRole] = useState<UserRole>("operator");
-  const [createdUser, setCreatedUser] = useState<UserCreated | null>(null);\n  const [copyStatus, setCopyStatus] = useState<"idle" | "success" | "error">("idle");
+  const [createdUser, setCreatedUser] = useState<UserCreated | null>(null);
+  const [copyStatus, setCopyStatus] = useState<"idle" | "success" | "error">("idle");
 
   const { data: users, isLoading, isError } = useUsers(includeArchived);
   const administration = useUserAdministration();
@@ -86,6 +87,7 @@ export function UsersPage() {
       {
         onSuccess: (user) => {
           setCreatedUser(user);
+          setCopyStatus("idle");
           setUsername("");
         },
       },
