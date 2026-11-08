@@ -9,6 +9,7 @@ from app.api.routers.users import (
     create_user,
     get_users,
     restore_user,
+    reset_user_password,
     set_user_active,
 )
 from app.application.user.exceptions import (
@@ -33,6 +34,7 @@ class FakeUserAdministrationService:
         self.status_change_error: Exception | None = None
         self.archive_error: Exception | None = None
         self.restore_error: Exception | None = None
+        self.reset_error: Exception | None = None
 
     def get_all(
         self,
@@ -77,6 +79,14 @@ class FakeUserAdministrationService:
         target = next(user for user in self.users if user.id == command.user_id)
         target.restore()
         return target
+
+    def reset_password(self, command: object, actor: User) -> tuple[User, str]:
+        self.actor = actor
+        if self.reset_error is not None:
+            raise self.reset_error
+        target = next(user for user in self.users if user.id == command.user_id)
+        target.must_change_password = True
+        return target, self.temporary_password
 
     def create(self, command: object, actor: User) -> tuple[User, str]:
         self.actor = actor
@@ -336,3 +346,33 @@ def test_last_active_administrator_conflict_maps_to_409(
 
     assert exc_info.value.status_code == 409
     assert exc_info.value.detail == "At least one active administrator must remain"
+
+def test_reset_user_password_returns_one_time_password_and_safe_account_state() -> None:
+    actor = make_user()
+    target = User(
+        id=uuid4(),
+        username="operator-1",
+        password_hash="$argon2id$hashed",
+        role=UserRole.OPERATOR,
+    )
+    service = FakeUserAdministrationService()
+    service.users = [target]
+
+    result = reset_user_password(user_id=target.id, actor=actor, service=service)
+
+    assert result.username == "operator-1"
+    assert result.must_change_password is True
+    assert result.temporary_password == "temporary-password"
+    assert "password_hash" not in result.model_dump()
+    assert service.actor is actor
+
+
+def test_reset_user_password_maps_missing_user_to_404() -> None:
+    service = FakeUserAdministrationService()
+    service.reset_error = UserNotFoundApplicationError()
+
+    with pytest.raises(HTTPException) as exc_info:
+        reset_user_password(user_id=uuid4(), actor=make_user(), service=service)
+
+    assert exc_info.value.status_code == 404
+    assert exc_info.value.detail == "User not found"
