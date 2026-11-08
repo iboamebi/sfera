@@ -264,7 +264,10 @@ def update_order(
         )
         order = read_service.get(order_id)
         if order is None:
-            raise HTTPException(status_code=500, detail="Updated order could not be loaded")
+            raise HTTPException(
+                status_code=500,
+                detail="Updated order could not be loaded",
+            )
         return order
     except OrderNotFoundApplicationError:
         raise HTTPException(status_code=404, detail="Order not found") from None
@@ -285,7 +288,10 @@ def register_order(
 
     order = read_service.get(order_id)
     if order is None:
-        raise HTTPException(status_code=500, detail="Registered order could not be loaded")
+        raise HTTPException(
+            status_code=500,
+            detail="Registered order could not be loaded",
+        )
 
     return order
 
