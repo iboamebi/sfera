@@ -9,7 +9,9 @@ import pytest
 
 from app.application.authorization.authorization import AuthorizationError
 from app.application.order.commands.add_order_item import AddOrderItemCommand
-from app.application.order.commands.assign_order_item_instrument import AssignOrderItemInstrumentCommand
+from app.application.order.commands.assign_order_item_instrument import (
+    AssignOrderItemInstrumentCommand,
+)
 from app.application.order.commands.create_order import CreateOrderCommand
 from app.application.order.commands.register_order import RegisterOrderCommand
 from app.application.order.commands.update_order import UpdateOrderCommand
@@ -21,10 +23,10 @@ from app.application.order.services.order_application_service import (
     OrderApplicationService,
 )
 from app.domains.customer.entities.customer import Customer
+from app.domains.customer.repositories.customer_repository import CustomerRepository
 from app.domains.device.entities.device import Device
 from app.domains.device.repositories.device_repository import DeviceRepository
 from app.domains.device.value_objects.serial_number import SerialNumber
-from app.domains.customer.repositories.customer_repository import CustomerRepository
 from app.domains.order.entities.order import Order
 from app.domains.order.entities.order_item import OrderItem
 from app.domains.order.repositories.order_repository import OrderRepository
