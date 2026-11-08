@@ -101,6 +101,11 @@ def set_user_active(
             SetUserActiveCommand(user_id=user_id, is_active=data.is_active),
             actor,
         )
+    except LastActiveAdministratorApplicationError:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="At least one active administrator must remain",
+        ) from None
     except UserNotFoundApplicationError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -123,6 +128,11 @@ def archive_user(
     """Archive a user account without deleting its history."""
     try:
         return service.archive(ArchiveUserCommand(user_id=user_id), actor)
+    except LastActiveAdministratorApplicationError:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="At least one active administrator must remain",
+        ) from None
     except UserNotFoundApplicationError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
