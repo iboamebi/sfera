@@ -49,3 +49,9 @@ class User(Entity):
 
         self.password_hash = password_hash
         self.must_change_password = False
+
+    def reset_password(self, password_hash: str) -> None:
+        """Replace the password and require a change at next login."""
+
+        self.password_hash = password_hash
+        self.must_change_password = True
