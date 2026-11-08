@@ -80,7 +80,7 @@ export function AppShell({ user, children }: AppShellProps) {
             )}
           </Stack>
 
-          <Stack direction="row" spacing={1} alignItems="center">
+          <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
             <Typography variant="body2" sx={{ whiteSpace: "nowrap" }}>
               {user.username}
             </Typography>
