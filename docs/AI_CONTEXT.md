@@ -1113,3 +1113,12 @@ Administrator-assisted password recovery has now been implemented; see the check
 - Read both current files from the feature branch and applied Ruff's exact ordering: standard-library imports, SQLAlchemy imports (including `sqlalchemy.dialects`), then a separate `alembic` import group.
 - Only import ordering changed; migration identifiers, dependencies, and operations remain unchanged.
 - Local `ruff check .` must be rerun after pulling the two fixes. Formatting remains a separate, not-yet-approved cleanup.
+
+
+## Ruff migration import layout — 2026-11-08 (follow-up)
+
+- The user's rerun still reported two `I001` findings in migrations `8d4f6a1b2c30` and `f3a8c1d9e720`.
+- Re-read the exact current files and followed Ruff's diagnostic: removed the blank line between `from alembic import op` and the Alembic revision-identifiers comment. The import groups themselves remain ordered as Ruff specifies.
+- Only whitespace/comment grouping changed; migration metadata and operations are untouched.
+- Commits: `ccb571c3d8aded1b02ef37d80b8d2e558229da16`, `daa054698fd489e393ff9632ea25640743d37727`.
+- Local `ruff check .` must be rerun. No clean result is claimed.
