@@ -1093,7 +1093,7 @@ Administrator-assisted password recovery has now been implemented; see the check
 
 ## Ruff lint follow-up — 2026-11-08 (continued)
 
-- The latest local run narrowed Ruff lint from 31 findings to 10: import ordering in six Alembic migrations, two undefined `Union` annotations, and one overlong condition in the user-administration Application service.
+- The latest local run narrowed Ruff lint from 31 findings to 10: import ordering in seven Alembic migrations, two undefined `Union` annotations, and one overlong condition in the user-administration Application service.
 - Corrected the Alembic import grouping, changed the remaining `Union` annotation to the equivalent `|` form, and wrapped the active-administrator condition.
 - No migration revision/dependency metadata, migration operations, or business behavior changed.
 - Local `ruff check .` must be rerun after pulling these commits.
