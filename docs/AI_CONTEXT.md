@@ -1232,5 +1232,5 @@ Administrator-assisted password recovery has now been implemented; see the check
 - If a selected instrument becomes hidden by a changed filter, the selection is cleared to prevent adding an invisible instrument. Filter state resets when the order Customer changes.
 - Site lookup failure is non-blocking: the Site filter reports its error while the device list remains usable.
 - Organization selection was intentionally not added: the current Order domain/ORM/API/read contract has no Organization context field. The business model document requires cardinality and persistence to be decided before adding that selection.
-- Implementation commits: `70bf39a` (Site filter) and `cead4ee` (reset filter on Customer change and clarify Site-load error).
+- Implementation commits: `70bf39a` (Site filter), `cead4ee` (reset filter on Customer change and clarify Site-load error), and `00c4fb4` (explicit all-Sites placeholder and typed MUI Select).
 - Local frontend validation is pending. Do not treat this slice as completed until the user reports `npm run typecheck` and `npm run build`.
