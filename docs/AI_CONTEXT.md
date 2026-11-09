@@ -1266,3 +1266,14 @@ Administrator-assisted password recovery has now been implemented; see the check
 - Local Nginx smoke checks returned HTTP 200 for the frontend and API health endpoint; API health response: `{"status":"ok"}`.
 - DNS-based access by hostname was not required for these local server checks.
 - Current synchronized branch: `develop`. Next work should begin by re-reading the current code and selecting the next independent business scenario; the previously recorded Order / Organization context contract remains unresolved and must be audited before implementation.
+
+
+## Order item editing after registration — implementation checkpoint — 2026-11-09
+
+- Business behavior: an order remains editable after registration until production work has started. Registration alone must not prevent correcting the order or filling reserved empty OrderItems.
+- Domain now permits adding, updating, assigning an Instrument to, and removing OrderItems while Order status is `NEW` or `REGISTERED`.
+- These mutations remain blocked for `IN_WORK`, `WAITING`, `COMPLETED`, `ISSUED`, `CLOSED`, and `CANCELLED`. The error now describes the production-work boundary rather than calling every non-NEW order active.
+- Frontend exposes OrderItem editing and adding positions for both `NEW` and `REGISTERED`.
+- This is an intentionally conservative first slice: the current Order lifecycle audit says the Order transitions beyond `REGISTERED` are not implemented. Per-OrderItem editability based on actual WorkflowInstance / Verification / Repair / Diagnostic activity remains a separate follow-up; do not infer that a whole-order status is a reliable per-item production state.
+- Added domain and application regression tests for registered-order item changes and protection after work starts.
+- Branch: `fix/order-edit-after-registration`. Local backend/frontend validation and PR creation are pending.
