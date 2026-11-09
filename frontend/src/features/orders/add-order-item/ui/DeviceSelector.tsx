@@ -191,6 +191,21 @@ export function DeviceSelector({
         </Typography>
       )}
 
+      {onCreateDevice && (
+        <Button
+          onClick={() => onCreateDevice(inputValue.trim())}
+          variant="outlined"
+          disabled={createDeviceDisabled}
+        >
+          Создать карточку СИ
+        </Button>
+      )}
+      {onCreateDevice && createDeviceDisabled && !matchingDevice && (
+        <Typography variant="caption" color="text.secondary">
+          {createDeviceDisabledReason}
+        </Typography>
+      )}
+
       <Autocomplete
         fullWidth
         options={availableDevices}
@@ -256,20 +271,6 @@ export function DeviceSelector({
         </Alert>
       )}
 
-      {onCreateDevice && (
-        <Button
-          onClick={() => onCreateDevice(inputValue.trim())}
-          variant="outlined"
-          disabled={createDeviceDisabled}
-        >
-          Создать карточку СИ
-        </Button>
-      )}
-      {onCreateDevice && createDeviceDisabled && !matchingDevice && (
-        <Typography variant="caption" color="text.secondary">
-          {createDeviceDisabledReason}
-        </Typography>
-      )}
       {matchingDevice && (
         <Alert
           severity={matchingDeviceTypeMatches ? "info" : "warning"}
