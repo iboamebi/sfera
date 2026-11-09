@@ -524,3 +524,55 @@ def test_assign_order_item_rejects_instrument_from_another_customer():
         )
 
     assert repository.get(order.id).items[0].instrument_id is None
+
+
+def test_registered_order_allows_adding_reserved_items():
+    service, repository, customer_repository, _, _, _ = make_service()
+    order = create_order(service, customer_repository, "10013")
+    service.add_item(AddOrderItemCommand(order_id=order.id), make_operator())
+    service.register(RegisterOrderCommand(order.id), make_operator())
+
+    updated_order = service.add_item(
+        AddOrderItemCommand(
+            order_id=order.id,
+            instrument_type_id=uuid4(),
+            quantity=2,
+        ),
+        make_operator(),
+    )
+
+    assert updated_order.status == OrderStatus.REGISTERED
+    assert len(updated_order.items) == 3
+    assert repository.get(order.id) is updated_order
+
+
+def test_registered_order_allows_assigning_reserved_item():
+    customer_id = uuid4()
+    instrument_id = uuid4()
+    device = Device(
+        id=instrument_id,
+        instrument_type_id=uuid4(),
+        customer_id=customer_id,
+        serial_number=SerialNumber("SN-REGISTERED"),
+    )
+    service, repository, customer_repository, _, _, _ = make_service(device)
+    customer_repository.save(make_customer(customer_id))
+    order = service.create(
+        CreateOrderCommand(customer_id=customer_id, number="10014"),
+        make_operator(),
+    )
+    service.add_item(AddOrderItemCommand(order_id=order.id), make_operator())
+    service.register(RegisterOrderCommand(order.id), make_operator())
+
+    updated_order = service.assign_item_instrument(
+        AssignOrderItemInstrumentCommand(
+            order_id=order.id,
+            item_id=order.items[0].id,
+            instrument_id=instrument_id,
+        ),
+        make_operator(),
+    )
+
+    assert updated_order.status == OrderStatus.REGISTERED
+    assert updated_order.items[0].instrument_id == instrument_id
+    assert repository.get(order.id) is updated_order
