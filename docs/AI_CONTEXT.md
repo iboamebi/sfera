@@ -1279,6 +1279,27 @@ Administrator-assisted password recovery has now been implemented; see the check
 - Branch: `fix/order-edit-after-registration`. Local backend/frontend validation and PR creation are pending.
 
 
+## OrderItem instrument assignment and missing-instrument creation — implementation checkpoint — 2026-11-09
+
+- Started from the merged `develop` state after PR #19 (merge commit `2ff130278ce4b6e54a82e6cbdab2594283e54b5f`).
+- The existing OrderItem UI already supported selecting an existing Customer instrument for a reserved empty position, but did not offer creation from that assignment flow.
+- Updated the shared DeviceSelector to show each existing instrument's current Site (or "Без площадки") in search results.
+- Exact serial-number matches are detected across all instruments belonging to the Customer, independently of the active Site and Instrument Type filters. The selector reports the existing card and its current Site and suppresses the create action, preventing an obvious duplicate from being created through this flow.
+- When no exact serial-number match exists, the assignment flow offers creation of a minimal Instrument card. On successful creation, the new card is immediately assigned to the reserved OrderItem.
+- The new card is created without a Site assignment; this does not alter any existing instrument's Site. Existing instrument Site assignments remain untouched by selection.
+- Backend uniqueness constraints for serial numbers were not found in the current Instrument ORM model; this UI guard is scoped to the Customer's currently loaded instrument list and is not a database-level uniqueness guarantee.
+- Frontend local validation is pending. Do not deploy until typecheck, build, and browser validation pass.
+
+
+## Duplicate instrument selection in an Order — correction in progress — 2026-11-09
+
+- User browser validation found two issues: the obsolete "Включать СИ без площадки" checkbox remained, and duplicate instrument cards already present in the Customer database could be selected and added as visually identical OrderItems.
+- Removed the standalone checkbox. Instruments without a Site are now included automatically, including when a Site filter is active; the filter only narrows instruments that have a Site.
+- The order selector now receives IDs of instruments already assigned to sibling OrderItems and excludes those instruments and all cards sharing their serial number.
+- The selector also suppresses serial numbers that occur on multiple Customer cards. Typing such a serial reports that the database contains ambiguous duplicate cards and blocks selection/creation rather than choosing an arbitrary card.
+- Added an Application-level guard for both adding an instrument to an Order and assigning one to a reserved OrderItem. It compares normalized serial numbers against instruments already on that Order, so separate database cards with the same serial cannot create duplicate-looking positions.
+- Added regression tests for duplicate serials with different Instrument IDs in both add and assign flows. Backend and frontend local validation are pending; do not merge or deploy until they pass and the UI is checked again.
+
 ## Create Instrument from the main menu and global scroll-to-top — 2026-11-09
 
 - Added a dedicated `/devices/new` route and a **«Создать СИ»** action on the global Instruments list.
@@ -1291,3 +1312,23 @@ Administrator-assisted password recovery has now been implemented; see the check
 - This frontend slice is locally and functionally validated. No production deployment is implied by this checkpoint.
 - PR #21 was squash-merged into `develop`: `82018c893dca1499b488209e37b3bcdede2c69a5`.
 - Local branch synchronization and production deployment remain separate operational steps; no production deployment is recorded here.
+
+## OrderItem instrument assignment — local validation checkpoint — 2026-11-09
+
+- User synchronized the feature branch through commit `2f6d866`.
+- Backend local validation: `pytest -q tests/api/routers/test_order.py tests/application/order/test_order_application.py` — **20 passed**.
+- `ruff check app/api/routers/order.py tests/api/routers/test_order.py` — passed.
+- The initial scoped `ruff format --check` found formatting-only issues in `backend/tests/api/routers/test_order.py`. Corrected indentation and spacing in commit `7e71e9b`; no behavior changed. The user must rerun the scoped format check after pulling this commit.
+- Frontend local validation: `npm run typecheck` and `npm run build` — passed. Vite emitted its non-blocking warning for a minified chunk larger than 500 kB.
+- Added API regression coverage ensuring that assigning an Instrument belonging to another Customer maps `InstrumentCustomerMismatchApplicationError` to HTTP 409 rather than an unhandled server error.
+- PR #20 remains open. Browser validation of the updated OrderItem assignment/search behavior and final PR checks are still required. Do not deploy as part of this stage.
+
+
+## OrderItem instrument search — strict Site scope and fallback — 2026-11-09
+
+- User confirmed the intended search rule: when one or more Sites are selected, the normal selector result must contain only instruments assigned to those selected Sites. Instruments without a Site and instruments assigned to other Sites must not be mixed into the normal result.
+- If the current Site-scoped search has no matching instrument, the selector displays an informational prompt and an explicit **«Искать везде»** action. This expands the result to the Customer's instruments on other Sites and without a Site; each result continues to show its current Site.
+- Creation is kept unavailable while that fallback action is still offered. After expanding the search, if no exact serial-number match exists anywhere in the Customer's cards, creation of a new Instrument card becomes available. Existing exact-match, ambiguous-serial, and already-in-order protections remain in force.
+- The expanded search is temporary UI state; it does not change any Instrument's Site assignment. Changing the selected Sites returns the selector to strict Site scope; changing Customer resets the search state.
+- Implementation commit: `27f8bc4`.
+- Local frontend typecheck, build, and browser validation are pending. Do not merge or deploy PR #20 until the user verifies strict Site filtering, the explicit expanded-search fallback, duplicate handling, and creation behavior.

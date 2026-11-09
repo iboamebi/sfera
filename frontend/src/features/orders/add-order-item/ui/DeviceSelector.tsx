@@ -1,9 +1,9 @@
 import {
+  Alert,
   Autocomplete,
   Button,
   Checkbox,
   FormControl,
-  FormControlLabel,
   InputLabel,
   ListItemText,
   MenuItem,
@@ -22,8 +22,10 @@ interface DeviceSelectorProps {
   value: string;
   customerId: string;
   onChange: (deviceId: string) => void;
-  onCreateDevice?: () => void;
+  onCreateDevice?: (serialNumber: string) => void;
   instrumentTypeId?: string | null;
+  requireUnmatchedSerial?: boolean;
+  excludedInstrumentIds?: string[];
 }
 
 export function DeviceSelector({
@@ -32,6 +34,8 @@ export function DeviceSelector({
   onChange,
   onCreateDevice,
   instrumentTypeId,
+  requireUnmatchedSerial = false,
+  excludedInstrumentIds = [],
 }: DeviceSelectorProps) {
   const { data: devices = [], isLoading, error } = useDevices();
   const {
@@ -40,18 +44,37 @@ export function DeviceSelector({
     isError: isSitesError,
   } = useCustomerSites(customerId);
   const [selectedSiteIds, setSelectedSiteIds] = useState<string[]>([]);
-  const [includeWithoutSite, setIncludeWithoutSite] = useState(true);
+  const [includeOtherSites, setIncludeOtherSites] = useState(false);
+  const [inputValue, setInputValue] = useState("");
 
   const customerDevices = devices.filter(
     (device) => device.customerId === customerId,
   );
+  const excludedIds = new Set(excludedInstrumentIds);
+  const serialCounts = customerDevices.reduce((counts, device) => {
+    const serial = device.serialNumber.trim().toLocaleLowerCase();
+    counts.set(serial, (counts.get(serial) ?? 0) + 1);
+    return counts;
+  }, new Map<string, number>());
+  const excludedSerials = new Set(
+    customerDevices
+      .filter((device) => excludedIds.has(device.id))
+      .map((device) => device.serialNumber.trim().toLocaleLowerCase()),
+  );
   const siteFilteredDevices = customerDevices.filter((device) => {
-    if (device.siteId === null) {
-      return includeWithoutSite;
+    const serial = device.serialNumber.trim().toLocaleLowerCase();
+    if (
+      excludedIds.has(device.id) ||
+      excludedSerials.has(serial) ||
+      (serialCounts.get(serial) ?? 0) > 1
+    ) {
+      return false;
     }
 
     return (
-      selectedSiteIds.length === 0 || selectedSiteIds.includes(device.siteId)
+      includeOtherSites ||
+      selectedSiteIds.length === 0 ||
+      (device.siteId !== null && selectedSiteIds.includes(device.siteId))
     );
   });
   const availableDevices = instrumentTypeId
@@ -61,10 +84,34 @@ export function DeviceSelector({
     : siteFilteredDevices;
   const selectedDevice =
     availableDevices.find((device) => device.id === value) ?? null;
+  const normalizedInput = inputValue.trim().toLocaleLowerCase();
+  const hasVisibleSearchMatch = availableDevices.some((device) =>
+    device.serialNumber.trim().toLocaleLowerCase().includes(normalizedInput),
+  );
+  const canExpandSiteSearch =
+    selectedSiteIds.length > 0 && !includeOtherSites && !hasVisibleSearchMatch;
+  const matchingDevices = normalizedInput
+    ? customerDevices.filter(
+        (device) => device.serialNumber.trim().toLocaleLowerCase() === normalizedInput,
+      )
+    : [];
+  const matchingDevice = matchingDevices[0] ?? null;
+  const matchingDeviceAlreadyInOrder = matchingDevices.some((device) =>
+    excludedIds.has(device.id),
+  );
+  const matchingSerialIsAmbiguous = matchingDevices.length > 1;
+  const matchingDeviceSite = matchingDevice?.siteId
+    ? sites.find((site) => site.id === matchingDevice.siteId)?.name ?? "Площадка не найдена"
+    : "Без площадки";
+  const matchingDeviceTypeMatches =
+    !instrumentTypeId || matchingDevice?.instrumentTypeId === instrumentTypeId;
+  const matchingDeviceIsVisible = matchingDevice
+    ? availableDevices.some((device) => device.id === matchingDevice.id)
+    : false;
 
   useEffect(() => {
     setSelectedSiteIds([]);
-    setIncludeWithoutSite(true);
+    setIncludeOtherSites(false);
   }, [customerId]);
 
   useEffect(() => {
@@ -102,6 +149,7 @@ export function DeviceSelector({
             setSelectedSiteIds(
               typeof nextValue === "string" ? nextValue.split(",") : nextValue,
             );
+            setIncludeOtherSites(false);
           }}
           renderValue={(selected) =>
             selected.length === 0
@@ -130,26 +178,37 @@ export function DeviceSelector({
         </Typography>
       )}
 
-      <FormControlLabel
-        control={
-          <Checkbox
-            checked={includeWithoutSite}
-            onChange={(event) => setIncludeWithoutSite(event.target.checked)}
-          />
-        }
-        label="Включать СИ без площадки"
-      />
-
       <Autocomplete
         fullWidth
         options={availableDevices}
         value={selectedDevice}
+        inputValue={inputValue}
         loading={isLoading}
         getOptionLabel={(device) => device.serialNumber}
         isOptionEqualToValue={(option, selected) => option.id === selected.id}
-        onChange={(_, device: DeviceRead | null) =>
-          onChange(device?.id ?? "")
-        }
+        onInputChange={(_, nextValue, reason) => {
+          if (reason !== "reset") {
+            setInputValue(nextValue);
+          }
+        }}
+        onChange={(_, device: DeviceRead | null) => {
+          onChange(device?.id ?? "");
+          if (device) setInputValue(device.serialNumber);
+        }}
+        renderOption={(props, device) => (
+          <li {...props} key={device.id}>
+            <Stack spacing={0.25}>
+              <Typography variant="body2">
+                {device.name ?? "СИ"} — № {device.serialNumber}
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                {device.siteId
+                  ? sites.find((site) => site.id === device.siteId)?.name ?? "Площадка не найдена"
+                  : "Без площадки"}
+              </Typography>
+            </Stack>
+          </li>
+        )}
         renderInput={(params) => (
           <TextField
             {...params}
@@ -160,14 +219,66 @@ export function DeviceSelector({
         )}
       />
 
+      {canExpandSiteSearch && (
+        <Alert
+          severity="info"
+          action={
+            <Button
+              color="inherit"
+              size="small"
+              onClick={() => setIncludeOtherSites(true)}
+            >
+              Искать везде
+            </Button>
+          }
+        >
+          На выбранной площадке СИ не найдено. Можно проверить карточки на других площадках и без площадки.
+        </Alert>
+      )}
+
       {onCreateDevice && (
         <Button
-          onClick={onCreateDevice}
+          onClick={() => onCreateDevice(inputValue.trim())}
           variant="outlined"
-          disabled={isLoading}
+          disabled={
+            isLoading ||
+            (requireUnmatchedSerial &&
+              (!normalizedInput || Boolean(matchingDevice) || canExpandSiteSearch))
+          }
         >
           Создать СИ
         </Button>
+      )}
+      {matchingDevice && (
+        <Alert
+          severity={matchingDeviceTypeMatches ? "info" : "warning"}
+          action={
+            matchingDeviceTypeMatches &&
+            !matchingDeviceIsVisible &&
+            !matchingDeviceAlreadyInOrder &&
+            !matchingSerialIsAmbiguous ? (
+              <Button
+                color="inherit"
+                size="small"
+                onClick={() => {
+                  setSelectedSiteIds([]);
+                }}
+              >
+                Показать СИ
+              </Button>
+            ) : undefined
+          }
+        >
+          {matchingSerialIsAmbiguous
+            ? `В базе найдено несколько карточек СИ с заводским номером ${matchingDevice.serialNumber}. Выбор заблокирован: сначала необходимо устранить дубликаты карточек.`
+            : matchingDeviceAlreadyInOrder
+              ? `СИ с заводским номером ${matchingDevice.serialNumber} уже добавлено в этот заказ.`
+              : `СИ с таким заводским номером уже существует: ${matchingDevice.name ?? "без наименования"}, № ${matchingDevice.serialNumber}. Текущая площадка: ${matchingDeviceSite}.`}
+          {!matchingSerialIsAmbiguous && !matchingDeviceAlreadyInOrder &&
+            (matchingDeviceTypeMatches
+              ? " Выберите существующее СИ в списке. Создание дубликата недоступно."
+              : " Тип найденного СИ не совпадает с типом позиции заказа. Проверьте выбранный тип СИ.")}
+        </Alert>
       )}
     </Stack>
   );

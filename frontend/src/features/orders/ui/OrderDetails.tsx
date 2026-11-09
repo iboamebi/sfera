@@ -239,6 +239,9 @@ export function OrderDetails({ order }: OrderDetailsProps) {
                   <AddOrderItemButton
                     orderId={order.id}
                     customerId={order.customerId}
+                    excludedInstrumentIds={order.items.flatMap((item) =>
+                      item.instrumentId ? [item.instrumentId] : [],
+                    )}
                   />
                 </Stack>
               </CardContent>

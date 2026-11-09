@@ -33,6 +33,7 @@ const OPERATION_OPTIONS: Array<{
 interface AddOrderItemButtonProps {
   orderId: string;
   customerId: string;
+  excludedInstrumentIds?: string[];
 }
 
 function getErrorMessage(error: unknown, fallback: string): string {
@@ -53,6 +54,7 @@ function getErrorMessage(error: unknown, fallback: string): string {
 export function AddOrderItemButton({
   orderId,
   customerId,
+  excludedInstrumentIds = [],
 }: AddOrderItemButtonProps) {
   const [deviceId, setDeviceId] = useState("");
   const [instrumentTypeId, setInstrumentTypeId] = useState("");
@@ -61,6 +63,7 @@ export function AddOrderItemButton({
     OrderItemOperation[]
   >(["verification"]);
   const [isCreateDeviceOpen, setIsCreateDeviceOpen] = useState(false);
+  const [initialDeviceSerialNumber, setInitialDeviceSerialNumber] = useState("");
   const [isCreateInstrumentTypeOpen, setIsCreateInstrumentTypeOpen] =
     useState(false);
   const addOrderItemMutation = useAddOrderItem(orderId);
@@ -119,6 +122,7 @@ export function AddOrderItemButton({
       },
       {
         onSuccess: (device) => {
+          setInitialDeviceSerialNumber("");
           setDeviceId(device.id);
           setInstrumentTypeId(device.instrumentTypeId);
           setIsCreateDeviceOpen(false);
@@ -151,6 +155,7 @@ export function AddOrderItemButton({
       <Stack spacing={2}>
         <CreateDeviceForm
           instrumentTypeId={instrumentTypeId}
+          initialSerialNumber={initialDeviceSerialNumber}
           isPending={createDeviceMutation.isPending}
           onSubmit={handleCreateDevice}
           onCreateInstrumentType={() => setIsCreateInstrumentTypeOpen(true)}
@@ -210,8 +215,13 @@ export function AddOrderItemButton({
         <DeviceSelector
           value={deviceId}
           customerId={customerId}
+          excludedInstrumentIds={excludedInstrumentIds}
           onChange={setDeviceId}
-          onCreateDevice={() => setIsCreateDeviceOpen(true)}
+          onCreateDevice={(serialNumber) => {
+            setInitialDeviceSerialNumber(serialNumber);
+            setIsCreateDeviceOpen(true);
+          }}
+          requireUnmatchedSerial
         />
         <Button
           disabled={

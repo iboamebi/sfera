@@ -19,10 +19,12 @@ from app.application.order.commands.update_order import UpdateOrderCommand
 from app.application.order.commands.update_order_item import UpdateOrderItemCommand
 from app.application.order.exceptions import (
     InstrumentAlreadyInActiveOrderApplicationError,
+    InstrumentAlreadyInOrderApplicationError,
     InstrumentCustomerMismatchApplicationError,
     OrderNotFoundApplicationError,
 )
 from app.domains.customer.repositories.customer_repository import CustomerRepository
+from app.domains.device.entities.device import Device
 from app.domains.device.repositories.device_repository import DeviceRepository
 from app.domains.order.entities.order import Order
 from app.domains.order.entities.order_item import OrderItem
@@ -90,11 +92,36 @@ class OrderApplicationService:
         """List orders."""
         return self._repository.list()
 
+    def _ensure_instrument_serial_not_in_order(
+        self,
+        order: Order,
+        instrument: Device,
+        *,
+        exclude_item_id: UUID | None = None,
+    ) -> None:
+        serial_number = instrument.serial_number.value.strip().casefold()
+        for item in order.items:
+            if item.instrument_id is None or item.id == exclude_item_id:
+                continue
+            existing = self._device_repository.get(item.instrument_id)
+            if (
+                existing is not None
+                and existing.serial_number.value.strip().casefold() == serial_number
+            ):
+                raise InstrumentAlreadyInOrderApplicationError(
+                    "СИ с таким заводским номером уже добавлено в этот заказ"
+                )
+
     def add_item(self, command: AddOrderItemCommand, user: User) -> Order:
         require_role(user, UserRole.OPERATOR, UserRole.ADMIN)
 
         with self._uow:
             order = self.get(command.order_id)
+
+            if command.instrument_id is not None:
+                instrument = self._device_repository.get(command.instrument_id)
+                if instrument is not None:
+                    self._ensure_instrument_serial_not_in_order(order, instrument)
 
             if (
                 command.instrument_id is not None
@@ -154,6 +181,12 @@ class OrderApplicationService:
                 raise InstrumentCustomerMismatchApplicationError(
                     "СИ не принадлежит заказчику заказа"
                 )
+
+            self._ensure_instrument_serial_not_in_order(
+                order,
+                instrument,
+                exclude_item_id=command.item_id,
+            )
 
             if self._repository.has_conflicting_order_for_instrument(
                 command.instrument_id,

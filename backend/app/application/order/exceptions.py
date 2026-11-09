@@ -13,3 +13,7 @@ class InstrumentAlreadyInActiveOrderApplicationError(Exception):
 
 class InstrumentCustomerMismatchApplicationError(Exception):
     """Instrument does not belong to the order customer."""
+
+
+class InstrumentAlreadyInOrderApplicationError(Exception):
+    """An instrument with the same serial number already belongs to this order."""

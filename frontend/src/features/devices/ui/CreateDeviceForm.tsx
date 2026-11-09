@@ -17,6 +17,7 @@ type CreateDeviceFormValues = z.infer<typeof createDeviceSchema>;
 
 interface CreateDeviceFormProps {
   instrumentTypeId?: string;
+  initialSerialNumber?: string;
   onSubmit: (data: CreateDeviceFormValues) => void;
   onCreateInstrumentType?: () => void;
   isPending?: boolean;
@@ -24,6 +25,7 @@ interface CreateDeviceFormProps {
 
 export function CreateDeviceForm({
   instrumentTypeId,
+  initialSerialNumber,
   onSubmit,
   onCreateInstrumentType,
   isPending = false,
@@ -37,6 +39,8 @@ export function CreateDeviceForm({
     resolver: zodResolver(createDeviceSchema),
     defaultValues: {
       instrumentTypeId: instrumentTypeId ?? "",
+      name: "",
+      serialNumber: initialSerialNumber ?? "",
     },
   });
 
@@ -46,7 +50,10 @@ export function CreateDeviceForm({
         shouldValidate: true,
       });
     }
-  }, [instrumentTypeId, setValue]);
+    if (initialSerialNumber !== undefined) {
+      setValue("serialNumber", initialSerialNumber, { shouldValidate: true });
+    }
+  }, [initialSerialNumber, instrumentTypeId, setValue]);
 
   const {
     data: instrumentTypes = [],
