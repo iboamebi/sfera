@@ -1289,3 +1289,5 @@ Administrator-assisted password recovery has now been implemented; see the check
 - Local validation by the user completed successfully: frontend `npm run typecheck` and `npm run build` both passed; Vite transformed 1309 modules and produced the production bundle.
 - Browser verification by the user passed: creation from the global Instruments list, creation without assigning a Site, redirect to the newly created Instrument card, appearance of the floating «Наверх» control on scroll, and smooth return to the page top.
 - This frontend slice is locally and functionally validated. No production deployment is implied by this checkpoint.
+- PR #21 was squash-merged into `develop`: `82018c893dca1499b488209e37b3bcdede2c69a5`.
+- Local branch synchronization and production deployment remain separate operational steps; no production deployment is recorded here.
