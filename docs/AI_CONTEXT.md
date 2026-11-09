@@ -1322,3 +1322,13 @@ Administrator-assisted password recovery has now been implemented; see the check
 - Frontend local validation: `npm run typecheck` and `npm run build` — passed. Vite emitted its non-blocking warning for a minified chunk larger than 500 kB.
 - Added API regression coverage ensuring that assigning an Instrument belonging to another Customer maps `InstrumentCustomerMismatchApplicationError` to HTTP 409 rather than an unhandled server error.
 - PR #20 remains open. Browser validation of the updated OrderItem assignment/search behavior and final PR checks are still required. Do not deploy as part of this stage.
+
+
+## OrderItem instrument search — strict Site scope and fallback — 2026-11-09
+
+- User confirmed the intended search rule: when one or more Sites are selected, the normal selector result must contain only instruments assigned to those selected Sites. Instruments without a Site and instruments assigned to other Sites must not be mixed into the normal result.
+- If the current Site-scoped search has no matching instrument, the selector displays an informational prompt and an explicit **«Искать везде»** action. This expands the result to the Customer's instruments on other Sites and without a Site; each result continues to show its current Site.
+- Creation is kept unavailable while that fallback action is still offered. After expanding the search, if no exact serial-number match exists anywhere in the Customer's cards, creation of a new Instrument card becomes available. Existing exact-match, ambiguous-serial, and already-in-order protections remain in force.
+- The expanded search is temporary UI state; it does not change any Instrument's Site assignment. Changing the selected Sites returns the selector to strict Site scope; changing Customer resets the search state.
+- Implementation commit: `27f8bc4`.
+- Local frontend typecheck, build, and browser validation are pending. Do not merge or deploy PR #20 until the user verifies strict Site filtering, the explicit expanded-search fallback, duplicate handling, and creation behavior.
