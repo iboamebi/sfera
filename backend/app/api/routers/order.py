@@ -20,6 +20,7 @@ from app.application.order.commands.update_order import UpdateOrderCommand
 from app.application.order.commands.update_order_item import UpdateOrderItemCommand
 from app.application.order.exceptions import (
     InstrumentAlreadyInActiveOrderApplicationError,
+    InstrumentAlreadyInOrderApplicationError,
     InstrumentCustomerMismatchApplicationError,
     OrderNotFoundApplicationError,
 )
@@ -127,6 +128,8 @@ def add_order_item(
         raise HTTPException(status_code=404, detail="Order not found") from None
     except InstrumentAlreadyInActiveOrderApplicationError as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from None
+    except InstrumentAlreadyInOrderApplicationError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from None
     except InstrumentCustomerMismatchApplicationError as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from None
     except OrderException as exc:
@@ -204,6 +207,8 @@ def assign_order_item_instrument(
     except OrderNotFoundApplicationError:
         raise HTTPException(status_code=404, detail="Order not found") from None
     except InstrumentAlreadyInActiveOrderApplicationError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from None
+    except InstrumentAlreadyInOrderApplicationError as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from None
     except OrderException as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from None
