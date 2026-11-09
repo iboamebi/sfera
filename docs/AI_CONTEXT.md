@@ -1360,3 +1360,12 @@ Administrator-assisted password recovery has now been implemented; see the check
 - Благодаря порядку элементов пустое состояние Autocomplete («СИ не найдено») больше не должно перекрывать кнопку создания; выбор операций и обработчики не менялись.
 - Кнопка «Добавить позицию» остаётся ниже чекбоксов.
 - Изменение интерфейса: локальные typecheck/build и браузерная проверка после синхронизации ветки ожидаются.
+
+
+## OrderItem — create action visibility correction — 2026-11-09
+
+- Production browser validation after PR #22 showed that the «Создать карточку СИ» action was still covered by the open MUI Autocomplete no-options popup. The earlier checkbox relocation did not resolve this overlay.
+- In `DeviceSelector`, moved the create action and its disabled-reason text above the Autocomplete input. The popup opens below the input, so it cannot cover the action. The operation checkboxes remain directly below the complete DeviceSelector; the «Добавить позицию» action remains below the checkboxes.
+- No search, duplicate-detection, Site-filter, creation, or order-item mutation behavior was changed.
+- Branch: `fix/order-item-create-button-visibility`.
+- Local typecheck/build and production browser validation are pending.
