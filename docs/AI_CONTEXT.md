@@ -1332,3 +1332,13 @@ Administrator-assisted password recovery has now been implemented; see the check
 - The expanded search is temporary UI state; it does not change any Instrument's Site assignment. Changing the selected Sites returns the selector to strict Site scope; changing Customer resets the search state.
 - Implementation commit: `27f8bc4`.
 - Local frontend typecheck, build, and browser validation are pending. Do not merge or deploy PR #20 until the user verifies strict Site filtering, the explicit expanded-search fallback, duplicate handling, and creation behavior.
+
+
+## OrderItem — создание СИ с неизвестным заводским номером — 2026-11-09
+
+- Browser validation exposed a UX defect: entering an unknown serial in the OrderItem Autocomplete produced “No options”, while the creation path and its disabled state were not explained clearly.
+- The selector now provides explicit loading/empty-result text and explains why creating a card is unavailable (loading, empty input, existing serial, or required Site-search expansion). The action is labeled “Создать карточку СИ”.
+- The selected Instrument Type is now passed into DeviceSelector so existing-serial matching can report a type mismatch accurately.
+- Existing duplicate protection and the confirmed strict Site-search/fallback behavior are retained; this change does not alter backend contracts or Site assignments.
+- Implementation commits: `c3f8267`, `5eb35e8` on `fix/order-item-unknown-device-creation`.
+- Local typecheck, build, and browser validation are pending. Do not merge or deploy until those checks pass.
