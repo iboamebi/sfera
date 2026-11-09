@@ -198,15 +198,16 @@ export function DeviceSelector({
         inputValue={inputValue}
         loading={isLoading}
         loadingText="Загрузка средств измерений…"
+        clearOnBlur={false}
         noOptionsText={
           normalizedInput
-            ? "СИ с таким номером не найдено. Для создания новой карточки используйте кнопку ниже."
+            ? "СИ не найдено"
             : "Начните вводить заводской номер."
         }
         getOptionLabel={(device) => device.serialNumber}
         isOptionEqualToValue={(option, selected) => option.id === selected.id}
         onInputChange={(_, nextValue, reason) => {
-          if (reason !== "reset") {
+          if (reason === "input" || reason === "clear") {
             setInputValue(nextValue);
           }
         }}
