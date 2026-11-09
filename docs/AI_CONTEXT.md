@@ -1336,6 +1336,10 @@ Administrator-assisted password recovery has now been implemented; see the check
 
 ## OrderItem — создание СИ с неизвестным заводским номером — 2026-11-09
 
+- После успешной проверки сохранения неизвестного номера пользователь предложил упорядочить блок добавления позиции и убрать растягивание на всю ширину страницы.
+- Ограничена максимальная ширина блока до 760 px; группа СИ и количество остаются в компактной верхней строке с переносом; селектор занимает ширину блока; действие «Добавить позицию» перенесено на отдельную строку и визуально выделено как основное (contained), без растягивания на всю ширину.
+- Коммит компоновки: `0cec3e9`. Локальные typecheck/build и браузерная проверка новой компоновки ожидаются.
+
 
 - Follow-up browser validation exposed a second defect in the same flow: MUI Autocomplete cleared the typed serial on blur, which made the create action become disabled; its long empty-result message also obscured the action below the field.
 - Fixed input-state handling to update only on actual typing/clear events, set `clearOnBlur={false}`, and shortened the popup empty-result text. The typed serial now remains available when focus moves to the create action.
