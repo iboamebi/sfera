@@ -175,6 +175,42 @@ def test_update_customer():
     assert repository.get(customer.id) is updated
 
 
+def test_update_customer_clears_optional_fields_when_explicitly_set_to_none():
+    repository = FakeCustomerRepository()
+    service = CustomerApplicationService(
+        repository,
+        FakeUnitOfWork(),
+    )
+
+    customer = service.create(
+        CreateCustomerCommand(
+            name="Original Customer",
+            contact_person="Original Person",
+            phone="+7 900 000-00-00",
+            email="original@example.com",
+            comment="Original comment",
+        ),
+        make_operator(),
+    )
+
+    updated = service.update(
+        UpdateCustomerCommand(
+            customer_id=customer.id,
+            contact_person=None,
+            phone=None,
+            email=None,
+            comment=None,
+        ),
+        make_operator(),
+    )
+
+    assert updated.contact_person is None
+    assert updated.phone is None
+    assert updated.email is None
+    assert updated.comment is None
+    assert updated.name == "Original Customer"
+
+
 def test_update_customer_rejects_unauthorized_user():
     repository = FakeCustomerRepository()
     service = CustomerApplicationService(
