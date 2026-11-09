@@ -22,8 +22,8 @@ import {
 import { useNavigate } from "react-router";
 
 import { useAssignOrderItemInstrument } from "../add-order-item/model/useAssignOrderItemInstrument";
-import { useCreateDevice } from "../../../devices/model/useCreateDevice";
-import { CreateDeviceForm } from "../../../devices/ui/CreateDeviceForm";
+import { useCreateDevice } from "../../devices/model/useCreateDevice";
+import { CreateDeviceForm } from "../../devices/ui/CreateDeviceForm";
 import { useDeleteOrderItem } from "../add-order-item/model/useDeleteOrderItem";
 import { useUpdateOrderItem } from "../add-order-item/model/useUpdateOrderItem";
 import { DeviceSelector } from "../add-order-item/ui/DeviceSelector";
