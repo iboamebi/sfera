@@ -22,6 +22,8 @@ import {
 import { useNavigate } from "react-router";
 
 import { useAssignOrderItemInstrument } from "../add-order-item/model/useAssignOrderItemInstrument";
+import { useCreateDevice } from "../../../devices/model/useCreateDevice";
+import { CreateDeviceForm } from "../../../devices/ui/CreateDeviceForm";
 import { useDeleteOrderItem } from "../add-order-item/model/useDeleteOrderItem";
 import { useUpdateOrderItem } from "../add-order-item/model/useUpdateOrderItem";
 import { DeviceSelector } from "../add-order-item/ui/DeviceSelector";
@@ -71,11 +73,13 @@ export function OrderItems({
   const navigate = useNavigate();
   const updateMutation = useUpdateOrderItem(orderId);
   const assignInstrumentMutation = useAssignOrderItemInstrument(orderId);
+  const createDeviceMutation = useCreateDevice();
   const deleteMutation = useDeleteOrderItem(orderId);
   const createVerificationMutation = useCreateVerification(orderId);
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
   const [editedOperations, setEditedOperations] = useState<OrderItemOperation[]>([]);
   const [assigningItemId, setAssigningItemId] = useState<string | null>(null);
+  const [creatingDeviceItemId, setCreatingDeviceItemId] = useState<string | null>(null);
   const [selectedInstrumentId, setSelectedInstrumentId] = useState("");
   const [creatingVerificationItemId, setCreatingVerificationItemId] = useState<string | null>(null);
   const [verificationDate, setVerificationDate] = useState(getTodayDate);
@@ -130,6 +134,34 @@ export function OrderItems({
         onSuccess: () => {
           setAssigningItemId(null);
           setSelectedInstrumentId("");
+        },
+      },
+    );
+  };
+
+  const createDeviceForItem = (data: {
+    instrumentTypeId: string;
+    name: string;
+    serialNumber: string;
+  }) => {
+    if (!creatingDeviceItemId) return;
+
+    createDeviceMutation.mutate(
+      { ...data, customerId },
+      {
+        onSuccess: (device) => {
+          const itemId = creatingDeviceItemId;
+          setCreatingDeviceItemId(null);
+          setSelectedInstrumentId(device.id);
+          assignInstrumentMutation.mutate(
+            { itemId, instrumentId: device.id },
+            {
+              onSuccess: () => {
+                setAssigningItemId(null);
+                setSelectedInstrumentId("");
+              },
+            },
+          );
         },
       },
     );
