@@ -4,7 +4,6 @@ import {
   Button,
   Checkbox,
   FormControl,
-  FormControlLabel,
   InputLabel,
   ListItemText,
   MenuItem,
@@ -26,6 +25,7 @@ interface DeviceSelectorProps {
   onCreateDevice?: (serialNumber: string) => void;
   instrumentTypeId?: string | null;
   requireUnmatchedSerial?: boolean;
+  excludedInstrumentIds?: string[];
 }
 
 export function DeviceSelector({
@@ -35,6 +35,7 @@ export function DeviceSelector({
   onCreateDevice,
   instrumentTypeId,
   requireUnmatchedSerial = false,
+  excludedInstrumentIds = [],
 }: DeviceSelectorProps) {
   const { data: devices = [], isLoading, error } = useDevices();
   const {
@@ -43,19 +44,36 @@ export function DeviceSelector({
     isError: isSitesError,
   } = useCustomerSites(customerId);
   const [selectedSiteIds, setSelectedSiteIds] = useState<string[]>([]);
-  const [includeWithoutSite, setIncludeWithoutSite] = useState(true);
   const [inputValue, setInputValue] = useState("");
 
   const customerDevices = devices.filter(
     (device) => device.customerId === customerId,
   );
+  const excludedIds = new Set(excludedInstrumentIds);
+  const serialCounts = customerDevices.reduce((counts, device) => {
+    const serial = device.serialNumber.trim().toLocaleLowerCase();
+    counts.set(serial, (counts.get(serial) ?? 0) + 1);
+    return counts;
+  }, new Map<string, number>());
+  const excludedSerials = new Set(
+    customerDevices
+      .filter((device) => excludedIds.has(device.id))
+      .map((device) => device.serialNumber.trim().toLocaleLowerCase()),
+  );
   const siteFilteredDevices = customerDevices.filter((device) => {
-    if (device.siteId === null) {
-      return includeWithoutSite;
+    const serial = device.serialNumber.trim().toLocaleLowerCase();
+    if (
+      excludedIds.has(device.id) ||
+      excludedSerials.has(serial) ||
+      (serialCounts.get(serial) ?? 0) > 1
+    ) {
+      return false;
     }
 
     return (
-      selectedSiteIds.length === 0 || selectedSiteIds.includes(device.siteId)
+      device.siteId === null ||
+      selectedSiteIds.length === 0 ||
+      selectedSiteIds.includes(device.siteId)
     );
   });
   const availableDevices = instrumentTypeId
@@ -66,11 +84,16 @@ export function DeviceSelector({
   const selectedDevice =
     availableDevices.find((device) => device.id === value) ?? null;
   const normalizedInput = inputValue.trim().toLocaleLowerCase();
-  const matchingDevice = normalizedInput
-    ? customerDevices.find(
+  const matchingDevices = normalizedInput
+    ? customerDevices.filter(
         (device) => device.serialNumber.trim().toLocaleLowerCase() === normalizedInput,
-      ) ?? null
-    : null;
+      )
+    : [];
+  const matchingDevice = matchingDevices[0] ?? null;
+  const matchingDeviceAlreadyInOrder = matchingDevices.some((device) =>
+    excludedIds.has(device.id),
+  );
+  const matchingSerialIsAmbiguous = matchingDevices.length > 1;
   const matchingDeviceSite = matchingDevice?.siteId
     ? sites.find((site) => site.id === matchingDevice.siteId)?.name ?? "Площадка не найдена"
     : "Без площадки";
@@ -82,7 +105,6 @@ export function DeviceSelector({
 
   useEffect(() => {
     setSelectedSiteIds([]);
-    setIncludeWithoutSite(true);
   }, [customerId]);
 
   useEffect(() => {
@@ -148,16 +170,6 @@ export function DeviceSelector({
         </Typography>
       )}
 
-      <FormControlLabel
-        control={
-          <Checkbox
-            checked={includeWithoutSite}
-            onChange={(event) => setIncludeWithoutSite(event.target.checked)}
-          />
-        }
-        label="Включать СИ без площадки"
-      />
-
       <Autocomplete
         fullWidth
         options={availableDevices}
@@ -215,13 +227,15 @@ export function DeviceSelector({
         <Alert
           severity={matchingDeviceTypeMatches ? "info" : "warning"}
           action={
-            matchingDeviceTypeMatches && !matchingDeviceIsVisible ? (
+            matchingDeviceTypeMatches &&
+            !matchingDeviceIsVisible &&
+            !matchingDeviceAlreadyInOrder &&
+            !matchingSerialIsAmbiguous ? (
               <Button
                 color="inherit"
                 size="small"
                 onClick={() => {
                   setSelectedSiteIds([]);
-                  setIncludeWithoutSite(true);
                 }}
               >
                 Показать СИ
@@ -229,10 +243,15 @@ export function DeviceSelector({
             ) : undefined
           }
         >
-          СИ с таким заводским номером уже существует: {matchingDevice.name ?? "без наименования"}, № {matchingDevice.serialNumber}. Текущая площадка: {matchingDeviceSite}.
-          {matchingDeviceTypeMatches
-            ? " Выберите существующее СИ в списке. Создание дубликата недоступно."
-            : " Тип найденного СИ не совпадает с типом позиции заказа. Проверьте выбранный тип СИ."}
+          {matchingSerialIsAmbiguous
+            ? `В базе найдено несколько карточек СИ с заводским номером ${matchingDevice.serialNumber}. Выбор заблокирован: сначала необходимо устранить дубликаты карточек.`
+            : matchingDeviceAlreadyInOrder
+              ? `СИ с заводским номером ${matchingDevice.serialNumber} уже добавлено в этот заказ.`
+              : `СИ с таким заводским номером уже существует: ${matchingDevice.name ?? "без наименования"}, № ${matchingDevice.serialNumber}. Текущая площадка: ${matchingDeviceSite}.`}
+          {!matchingSerialIsAmbiguous && !matchingDeviceAlreadyInOrder &&
+            (matchingDeviceTypeMatches
+              ? " Выберите существующее СИ в списке. Создание дубликата недоступно."
+              : " Тип найденного СИ не совпадает с типом позиции заказа. Проверьте выбранный тип СИ.")}
         </Alert>
       )}
     </Stack>
