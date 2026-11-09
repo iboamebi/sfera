@@ -1336,6 +1336,12 @@ Administrator-assisted password recovery has now been implemented; see the check
 
 ## OrderItem — создание СИ с неизвестным заводским номером — 2026-11-09
 
+
+- Follow-up browser validation exposed a second defect in the same flow: MUI Autocomplete cleared the typed serial on blur, which made the create action become disabled; its long empty-result message also obscured the action below the field.
+- Fixed input-state handling to update only on actual typing/clear events, set `clearOnBlur={false}`, and shortened the popup empty-result text. The typed serial now remains available when focus moves to the create action.
+- Follow-up implementation commit: `4dffdad`.
+- Local typecheck/build and browser re-validation of unknown-serial creation are pending. Do not merge or deploy until the user confirms the field retains its value on blur and the create action opens the form with that serial prefilled.
+
 - Browser validation exposed a UX defect: entering an unknown serial in the OrderItem Autocomplete produced “No options”, while the creation path and its disabled state were not explained clearly.
 - The selector now provides explicit loading/empty-result text and explains why creating a card is unavailable (loading, empty input, existing serial, or required Site-search expansion). The action is labeled “Создать карточку СИ”.
 - The selected Instrument Type is now passed into DeviceSelector so existing-serial matching can report a type mismatch accurately.
