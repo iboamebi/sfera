@@ -1,7 +1,22 @@
-import { Autocomplete, Button, Stack, TextField, Typography } from "@mui/material";
+import {
+  Autocomplete,
+  Button,
+  Checkbox,
+  FormControl,
+  FormControlLabel,
+  InputLabel,
+  ListItemText,
+  MenuItem,
+  Select,
+  Stack,
+  TextField,
+  Typography,
+} from "@mui/material";
+import { useEffect, useState } from "react";
 
 import type { DeviceRead } from "../../../devices/model/types";
 import { useDevices } from "../../../devices/model/useDevices";
+import { useCustomerSites } from "../../../sites/model/useCustomerSites";
 
 interface DeviceSelectorProps {
   value: string;
@@ -19,16 +34,43 @@ export function DeviceSelector({
   instrumentTypeId,
 }: DeviceSelectorProps) {
   const { data: devices = [], isLoading, error } = useDevices();
+  const {
+    data: sites = [],
+    isLoading: isSitesLoading,
+    isError: isSitesError,
+  } = useCustomerSites(customerId);
+  const [selectedSiteIds, setSelectedSiteIds] = useState<string[]>([]);
+  const [includeWithoutSite, setIncludeWithoutSite] = useState(true);
+
   const customerDevices = devices.filter(
     (device) => device.customerId === customerId,
   );
+  const siteFilteredDevices = customerDevices.filter((device) => {
+    if (device.siteId === null) {
+      return includeWithoutSite;
+    }
+
+    return (
+      selectedSiteIds.length === 0 || selectedSiteIds.includes(device.siteId)
+    );
+  });
   const availableDevices = instrumentTypeId
-    ? customerDevices.filter(
+    ? siteFilteredDevices.filter(
         (device) => device.instrumentTypeId === instrumentTypeId,
       )
-    : customerDevices;
+    : siteFilteredDevices;
   const selectedDevice =
     availableDevices.find((device) => device.id === value) ?? null;
+
+  useEffect(() => {
+    if (
+      !isLoading &&
+      value &&
+      !availableDevices.some((device) => device.id === value)
+    ) {
+      onChange("");
+    }
+  }, [availableDevices, isLoading, onChange, value]);
 
   if (error) {
     return (
@@ -40,6 +82,56 @@ export function DeviceSelector({
 
   return (
     <Stack spacing={1} sx={{ width: "100%" }}>
+      <FormControl fullWidth size="small" disabled={isSitesLoading}>
+        <InputLabel id="device-site-filter-label">Площадки</InputLabel>
+        <Select
+          labelId="device-site-filter-label"
+          multiple
+          value={selectedSiteIds}
+          label="Площадки"
+          onChange={(event) => {
+            const nextValue = event.target.value;
+            setSelectedSiteIds(
+              typeof nextValue === "string" ? nextValue.split(",") : nextValue,
+            );
+          }}
+          renderValue={(selected) =>
+            selected.length === 0
+              ? "Все площадки"
+              : sites
+                  .filter((site) => selected.includes(site.id))
+                  .map((site) => site.name)
+                  .join(", ")
+          }
+        >
+          {sites.map((site) => (
+            <MenuItem key={site.id} value={site.id}>
+              <Checkbox checked={selectedSiteIds.includes(site.id)} />
+              <ListItemText
+                primary={site.name}
+                secondary={site.address}
+              />
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+
+      {isSitesError && (
+        <Typography color="error" variant="caption">
+          Не удалось загрузить площадки. Поиск выполняется по всем СИ клиента.
+        </Typography>
+      )}
+
+      <FormControlLabel
+        control={
+          <Checkbox
+            checked={includeWithoutSite}
+            onChange={(event) => setIncludeWithoutSite(event.target.checked)}
+          />
+        }
+        label="Включать СИ без площадки"
+      />
+
       <Autocomplete
         fullWidth
         options={availableDevices}
