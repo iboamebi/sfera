@@ -61,6 +61,7 @@ export function AddOrderItemButton({
     OrderItemOperation[]
   >(["verification"]);
   const [isCreateDeviceOpen, setIsCreateDeviceOpen] = useState(false);
+  const [initialDeviceSerialNumber, setInitialDeviceSerialNumber] = useState("");
   const [isCreateInstrumentTypeOpen, setIsCreateInstrumentTypeOpen] =
     useState(false);
   const addOrderItemMutation = useAddOrderItem(orderId);
@@ -119,6 +120,7 @@ export function AddOrderItemButton({
       },
       {
         onSuccess: (device) => {
+          setInitialDeviceSerialNumber("");
           setDeviceId(device.id);
           setInstrumentTypeId(device.instrumentTypeId);
           setIsCreateDeviceOpen(false);
@@ -151,6 +153,7 @@ export function AddOrderItemButton({
       <Stack spacing={2}>
         <CreateDeviceForm
           instrumentTypeId={instrumentTypeId}
+          initialSerialNumber={initialDeviceSerialNumber}
           isPending={createDeviceMutation.isPending}
           onSubmit={handleCreateDevice}
           onCreateInstrumentType={() => setIsCreateInstrumentTypeOpen(true)}
@@ -211,7 +214,10 @@ export function AddOrderItemButton({
           value={deviceId}
           customerId={customerId}
           onChange={setDeviceId}
-          onCreateDevice={() => setIsCreateDeviceOpen(true)}
+          onCreateDevice={(serialNumber) => {
+            setInitialDeviceSerialNumber(serialNumber);
+            setIsCreateDeviceOpen(true);
+          }}
           requireUnmatchedSerial
         />
         <Button
