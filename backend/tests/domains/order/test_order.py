@@ -105,3 +105,52 @@ def test_order_item_rejects_non_positive_quantity(quantity: int):
         match="Order item quantity must be at least one",
     ):
         OrderItem(id=uuid4(), quantity=quantity)
+
+
+def test_registered_order_allows_item_changes():
+    order = create_order("1005")
+    item = OrderItem(id=uuid4())
+    order.add_item(item)
+    order.register()
+
+    order.update_item(item.id, set())
+    order.add_item(OrderItem(id=uuid4()))
+    order.remove_item(item.id)
+
+    assert len(order.items) == 1
+
+
+@pytest.mark.parametrize(
+    "status",
+    [
+        OrderStatus.IN_WORK,
+        OrderStatus.WAITING,
+        OrderStatus.COMPLETED,
+        OrderStatus.ISSUED,
+        OrderStatus.CLOSED,
+        OrderStatus.CANCELLED,
+    ],
+)
+def test_order_rejects_item_changes_after_work_started(status):
+    order = create_order("1006")
+    item = OrderItem(id=uuid4())
+    order.add_item(item)
+    order.status = status
+
+    with pytest.raises(
+        OrderException,
+        match="Cannot modify items after order work has started",
+    ):
+        order.add_item(OrderItem(id=uuid4()))
+
+    with pytest.raises(
+        OrderException,
+        match="Cannot modify items after order work has started",
+    ):
+        order.update_item(item.id, set())
+
+    with pytest.raises(
+        OrderException,
+        match="Cannot modify items after order work has started",
+    ):
+        order.remove_item(item.id)

@@ -51,15 +51,38 @@ def test_assign_instrument_rejects_duplicate_instrument_in_order():
     assert second_item.instrument_id is None
 
 
-def test_assign_instrument_rejects_active_order():
+def test_assign_instrument_is_allowed_after_registration():
     order = make_order()
     item = OrderItem(id=uuid4(), quantity=1)
     order.add_item(item)
     order.status = OrderStatus.REGISTERED
+    instrument_id = uuid4()
+
+    order.assign_instrument(item.id, instrument_id)
+
+    assert item.instrument_id == instrument_id
+
+
+@pytest.mark.parametrize(
+    "status",
+    [
+        OrderStatus.IN_WORK,
+        OrderStatus.WAITING,
+        OrderStatus.COMPLETED,
+        OrderStatus.ISSUED,
+        OrderStatus.CLOSED,
+        OrderStatus.CANCELLED,
+    ],
+)
+def test_assign_instrument_rejects_order_after_work_started(status):
+    order = make_order()
+    item = OrderItem(id=uuid4(), quantity=1)
+    order.add_item(item)
+    order.status = status
 
     with pytest.raises(
         OrderException,
-        match="Cannot assign instrument in active order",
+        match="Cannot modify items after order work has started",
     ):
         order.assign_instrument(item.id, uuid4())
 
