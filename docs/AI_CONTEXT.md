@@ -1352,3 +1352,11 @@ Administrator-assisted password recovery has now been implemented; see the check
 - Existing duplicate protection and the confirmed strict Site-search/fallback behavior are retained; this change does not alter backend contracts or Site assignments.
 - Implementation commits: `c3f8267`, `5eb35e8` on `fix/order-item-unknown-device-creation`.
 - Local typecheck, build, and browser validation are pending. Do not merge or deploy until those checks pass.
+
+
+## OrderItem — расположение операций под селектором СИ — 2026-11-09
+
+- Чекбоксы «Поверка», «Диагностика», «Ремонт», «Продажа» перенесены непосредственно под селектор «Средство измерений» и кнопку создания карточки СИ внутри селектора.
+- Благодаря порядку элементов пустое состояние Autocomplete («СИ не найдено») больше не должно перекрывать кнопку создания; выбор операций и обработчики не менялись.
+- Кнопка «Добавить позицию» остаётся ниже чекбоксов.
+- Изменение интерфейса: локальные typecheck/build и браузерная проверка после синхронизации ветки ожидаются.
