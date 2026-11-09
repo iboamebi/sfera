@@ -44,6 +44,7 @@ export function DeviceSelector({
     isError: isSitesError,
   } = useCustomerSites(customerId);
   const [selectedSiteIds, setSelectedSiteIds] = useState<string[]>([]);
+  const [includeOtherSites, setIncludeOtherSites] = useState(false);
   const [inputValue, setInputValue] = useState("");
 
   const customerDevices = devices.filter(
@@ -71,9 +72,9 @@ export function DeviceSelector({
     }
 
     return (
-      device.siteId === null ||
+      includeOtherSites ||
       selectedSiteIds.length === 0 ||
-      selectedSiteIds.includes(device.siteId)
+      (device.siteId !== null && selectedSiteIds.includes(device.siteId))
     );
   });
   const availableDevices = instrumentTypeId
@@ -84,6 +85,11 @@ export function DeviceSelector({
   const selectedDevice =
     availableDevices.find((device) => device.id === value) ?? null;
   const normalizedInput = inputValue.trim().toLocaleLowerCase();
+  const hasVisibleSearchMatch = availableDevices.some((device) =>
+    device.serialNumber.trim().toLocaleLowerCase().includes(normalizedInput),
+  );
+  const canExpandSiteSearch =
+    selectedSiteIds.length > 0 && !includeOtherSites && !hasVisibleSearchMatch;
   const matchingDevices = normalizedInput
     ? customerDevices.filter(
         (device) => device.serialNumber.trim().toLocaleLowerCase() === normalizedInput,
@@ -105,6 +111,7 @@ export function DeviceSelector({
 
   useEffect(() => {
     setSelectedSiteIds([]);
+    setIncludeOtherSites(false);
   }, [customerId]);
 
   useEffect(() => {
@@ -142,6 +149,7 @@ export function DeviceSelector({
             setSelectedSiteIds(
               typeof nextValue === "string" ? nextValue.split(",") : nextValue,
             );
+            setIncludeOtherSites(false);
           }}
           renderValue={(selected) =>
             selected.length === 0
@@ -211,13 +219,31 @@ export function DeviceSelector({
         )}
       />
 
+      {canExpandSiteSearch && (
+        <Alert
+          severity="info"
+          action={
+            <Button
+              color="inherit"
+              size="small"
+              onClick={() => setIncludeOtherSites(true)}
+            >
+              Искать везде
+            </Button>
+          }
+        >
+          На выбранной площадке СИ не найдено. Можно проверить карточки на других площадках и без площадки.
+        </Alert>
+      )}
+
       {onCreateDevice && (
         <Button
           onClick={() => onCreateDevice(inputValue.trim())}
           variant="outlined"
           disabled={
             isLoading ||
-            (requireUnmatchedSerial && (!normalizedInput || Boolean(matchingDevice)))
+            (requireUnmatchedSerial &&
+              (!normalizedInput || Boolean(matchingDevice) || canExpandSiteSearch))
           }
         >
           Создать СИ
