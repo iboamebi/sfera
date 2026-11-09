@@ -173,8 +173,8 @@ export function AddOrderItemButton({
   }
 
   return (
-    <Stack spacing={2}>
-      <Stack direction="row" spacing={2} sx={{ alignItems: "flex-start" }}>
+    <Stack spacing={2} sx={{ maxWidth: 760 }}>
+      <Stack direction="row" spacing={2} sx={{ alignItems: "flex-start", flexWrap: "wrap" }}>
         <TextField
           select
           label="Группа СИ"
@@ -211,30 +211,18 @@ export function AddOrderItemButton({
         )}
       </Stack>
 
-      <Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
-        <DeviceSelector
-          value={deviceId}
-          customerId={customerId}
-          excludedInstrumentIds={excludedInstrumentIds}
-          onChange={setDeviceId}
-          onCreateDevice={(serialNumber) => {
-            setInitialDeviceSerialNumber(serialNumber);
-            setIsCreateDeviceOpen(true);
-          }}
-          requireUnmatchedSerial
-        />
-        <Button
-          disabled={
-            (!deviceId && !instrumentTypeId) ||
-            (!deviceId && quantity < 1) ||
-            addOrderItemMutation.isPending
-          }
-          onClick={handleAdd}
-          variant="outlined"
-        >
-          {addOrderItemMutation.isPending ? "Добавление…" : "Добавить позицию"}
-        </Button>
-      </Stack>
+      <DeviceSelector
+        value={deviceId}
+        customerId={customerId}
+        instrumentTypeId={instrumentTypeId || null}
+        excludedInstrumentIds={excludedInstrumentIds}
+        onChange={setDeviceId}
+        onCreateDevice={(serialNumber) => {
+          setInitialDeviceSerialNumber(serialNumber);
+          setIsCreateDeviceOpen(true);
+        }}
+        requireUnmatchedSerial
+      />
 
       <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap" }}>
         {OPERATION_OPTIONS.map((operation) => (
@@ -250,6 +238,19 @@ export function AddOrderItemButton({
           />
         ))}
       </Stack>
+
+      <Button
+        disabled={
+          (!deviceId && !instrumentTypeId) ||
+          (!deviceId && quantity < 1) ||
+          addOrderItemMutation.isPending
+        }
+        onClick={handleAdd}
+        variant="contained"
+        sx={{ alignSelf: "flex-start" }}
+      >
+        {addOrderItemMutation.isPending ? "Добавление…" : "Добавить позицию"}
+      </Button>
 
       {addOrderItemMutation.isError && (
         <Typography color="error" variant="body2">

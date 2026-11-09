@@ -108,6 +108,19 @@ export function DeviceSelector({
   const matchingDeviceIsVisible = matchingDevice
     ? availableDevices.some((device) => device.id === matchingDevice.id)
     : false;
+  const createDeviceDisabled =
+    isLoading ||
+    (requireUnmatchedSerial &&
+      (!normalizedInput || Boolean(matchingDevice) || canExpandSiteSearch));
+  const createDeviceDisabledReason = isLoading
+    ? "Загружается список СИ. Создание станет доступно после завершения загрузки."
+    : !normalizedInput
+      ? "Введите заводской номер, чтобы создать новую карточку СИ."
+      : canExpandSiteSearch
+        ? "Сначала выполните поиск по всем площадкам — это исключит создание дубликата."
+        : matchingDevice
+          ? "Карточка с таким заводским номером уже существует. Выберите её в списке или проверьте найденную карточку."
+          : "";
 
   useEffect(() => {
     setSelectedSiteIds([]);
@@ -184,10 +197,17 @@ export function DeviceSelector({
         value={selectedDevice}
         inputValue={inputValue}
         loading={isLoading}
+        loadingText="Загрузка средств измерений…"
+        clearOnBlur={false}
+        noOptionsText={
+          normalizedInput
+            ? "СИ не найдено"
+            : "Начните вводить заводской номер."
+        }
         getOptionLabel={(device) => device.serialNumber}
         isOptionEqualToValue={(option, selected) => option.id === selected.id}
         onInputChange={(_, nextValue, reason) => {
-          if (reason !== "reset") {
+          if (reason === "input" || reason === "clear") {
             setInputValue(nextValue);
           }
         }}
@@ -240,14 +260,15 @@ export function DeviceSelector({
         <Button
           onClick={() => onCreateDevice(inputValue.trim())}
           variant="outlined"
-          disabled={
-            isLoading ||
-            (requireUnmatchedSerial &&
-              (!normalizedInput || Boolean(matchingDevice) || canExpandSiteSearch))
-          }
+          disabled={createDeviceDisabled}
         >
-          Создать СИ
+          Создать карточку СИ
         </Button>
+      )}
+      {onCreateDevice && createDeviceDisabled && !matchingDevice && (
+        <Typography variant="caption" color="text.secondary">
+          {createDeviceDisabledReason}
+        </Typography>
       )}
       {matchingDevice && (
         <Alert

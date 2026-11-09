@@ -1332,3 +1332,31 @@ Administrator-assisted password recovery has now been implemented; see the check
 - The expanded search is temporary UI state; it does not change any Instrument's Site assignment. Changing the selected Sites returns the selector to strict Site scope; changing Customer resets the search state.
 - Implementation commit: `27f8bc4`.
 - Local frontend typecheck, build, and browser validation are pending. Do not merge or deploy PR #20 until the user verifies strict Site filtering, the explicit expanded-search fallback, duplicate handling, and creation behavior.
+
+
+## OrderItem — создание СИ с неизвестным заводским номером — 2026-11-09
+
+- После успешной проверки сохранения неизвестного номера пользователь предложил упорядочить блок добавления позиции и убрать растягивание на всю ширину страницы.
+- Ограничена максимальная ширина блока до 760 px; группа СИ и количество остаются в компактной верхней строке с переносом; селектор занимает ширину блока; действие «Добавить позицию» перенесено на отдельную строку и визуально выделено как основное (contained), без растягивания на всю ширину.
+- Коммит компоновки: `0cec3e9`. Локальные typecheck/build и браузерная проверка новой компоновки ожидаются.
+
+
+- Follow-up browser validation exposed a second defect in the same flow: MUI Autocomplete cleared the typed serial on blur, which made the create action become disabled; its long empty-result message also obscured the action below the field.
+- Fixed input-state handling to update only on actual typing/clear events, set `clearOnBlur={false}`, and shortened the popup empty-result text. The typed serial now remains available when focus moves to the create action.
+- Follow-up implementation commit: `4dffdad`.
+- Local typecheck/build and browser re-validation of unknown-serial creation are pending. Do not merge or deploy until the user confirms the field retains its value on blur and the create action opens the form with that serial prefilled.
+
+- Browser validation exposed a UX defect: entering an unknown serial in the OrderItem Autocomplete produced “No options”, while the creation path and its disabled state were not explained clearly.
+- The selector now provides explicit loading/empty-result text and explains why creating a card is unavailable (loading, empty input, existing serial, or required Site-search expansion). The action is labeled “Создать карточку СИ”.
+- The selected Instrument Type is now passed into DeviceSelector so existing-serial matching can report a type mismatch accurately.
+- Existing duplicate protection and the confirmed strict Site-search/fallback behavior are retained; this change does not alter backend contracts or Site assignments.
+- Implementation commits: `c3f8267`, `5eb35e8` on `fix/order-item-unknown-device-creation`.
+- Local typecheck, build, and browser validation are pending. Do not merge or deploy until those checks pass.
+
+
+## OrderItem — расположение операций под селектором СИ — 2026-11-09
+
+- Чекбоксы «Поверка», «Диагностика», «Ремонт», «Продажа» перенесены непосредственно под селектор «Средство измерений» и кнопку создания карточки СИ внутри селектора.
+- Благодаря порядку элементов пустое состояние Autocomplete («СИ не найдено») больше не должно перекрывать кнопку создания; выбор операций и обработчики не менялись.
+- Кнопка «Добавить позицию» остаётся ниже чекбоксов.
+- Изменение интерфейса: локальные typecheck/build и браузерная проверка после синхронизации ветки ожидаются.
