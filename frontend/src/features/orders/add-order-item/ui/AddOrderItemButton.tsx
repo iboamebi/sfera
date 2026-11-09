@@ -212,6 +212,7 @@ export function AddOrderItemButton({
           customerId={customerId}
           onChange={setDeviceId}
           onCreateDevice={() => setIsCreateDeviceOpen(true)}
+          requireUnmatchedSerial
         />
         <Button
           disabled={
