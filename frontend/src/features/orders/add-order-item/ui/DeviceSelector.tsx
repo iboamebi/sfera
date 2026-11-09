@@ -25,6 +25,7 @@ interface DeviceSelectorProps {
   onChange: (deviceId: string) => void;
   onCreateDevice?: () => void;
   instrumentTypeId?: string | null;
+  requireUnmatchedSerial?: boolean;
 }
 
 export function DeviceSelector({
@@ -33,6 +34,7 @@ export function DeviceSelector({
   onChange,
   onCreateDevice,
   instrumentTypeId,
+  requireUnmatchedSerial = false,
 }: DeviceSelectorProps) {
   const { data: devices = [], isLoading, error } = useDevices();
   const {
@@ -196,10 +198,18 @@ export function DeviceSelector({
         <Button
           onClick={onCreateDevice}
           variant="outlined"
-          disabled={isLoading}
+          disabled={
+            isLoading ||
+            (requireUnmatchedSerial && (!normalizedInput || Boolean(matchingDevice)))
+          }
         >
           Создать СИ
         </Button>
+      )}
+      {matchingDevice && (
+        <Alert severity="info">
+          СИ с таким заводским номером уже существует: {matchingDevice.name ?? "без наименования"}, № {matchingDevice.serialNumber}. Текущая площадка: {matchingDeviceSite}. Выберите существующее СИ в списке. Создание дубликата недоступно.
+        </Alert>
       )}
     </Stack>
   );
