@@ -80,6 +80,7 @@ export function OrderItems({
   const [editedOperations, setEditedOperations] = useState<OrderItemOperation[]>([]);
   const [assigningItemId, setAssigningItemId] = useState<string | null>(null);
   const [creatingDeviceItemId, setCreatingDeviceItemId] = useState<string | null>(null);
+  const [newDeviceSerialNumber, setNewDeviceSerialNumber] = useState("");
   const [selectedInstrumentId, setSelectedInstrumentId] = useState("");
   const [creatingVerificationItemId, setCreatingVerificationItemId] = useState<string | null>(null);
   const [verificationDate, setVerificationDate] = useState(getTodayDate);
@@ -414,6 +415,7 @@ export function OrderItems({
                                     </Typography>
                                     <CreateDeviceForm
                                       instrumentTypeId={item.instrumentTypeId ?? undefined}
+                                      initialSerialNumber={newDeviceSerialNumber}
                                       isPending={createDeviceMutation.isPending}
                                       onSubmit={createDeviceForItem}
                                     />
@@ -435,7 +437,10 @@ export function OrderItems({
                                       customerId={customerId}
                                       instrumentTypeId={item.instrumentTypeId}
                                       onChange={setSelectedInstrumentId}
-                                      onCreateDevice={() => setCreatingDeviceItemId(item.id)}
+                                      onCreateDevice={(serialNumber) => {
+                                        setNewDeviceSerialNumber(serialNumber);
+                                        setCreatingDeviceItemId(item.id);
+                                      }}
                                       requireUnmatchedSerial
                                     />
                                     {assignInstrumentMutation.isError && (
