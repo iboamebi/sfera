@@ -1299,3 +1299,16 @@ Administrator-assisted password recovery has now been implemented; see the check
 - The selector also suppresses serial numbers that occur on multiple Customer cards. Typing such a serial reports that the database contains ambiguous duplicate cards and blocks selection/creation rather than choosing an arbitrary card.
 - Added an Application-level guard for both adding an instrument to an Order and assigning one to a reserved OrderItem. It compares normalized serial numbers against instruments already on that Order, so separate database cards with the same serial cannot create duplicate-looking positions.
 - Added regression tests for duplicate serials with different Instrument IDs in both add and assign flows. Backend and frontend local validation are pending; do not merge or deploy until they pass and the UI is checked again.
+
+## Create Instrument from the main menu and global scroll-to-top — 2026-11-09
+
+- Added a dedicated `/devices/new` route and a **«Создать СИ»** action on the global Instruments list.
+- The creation page uses the existing DeviceForm and create-device mutation. It first requires selecting an active Customer because the current create API contract requires `customerId`; the Site remains optional and is loaded for the selected Customer.
+- On successful creation, the user is redirected to the new Instrument card. The existing Customer-scoped creation route remains unchanged.
+- Added a shared floating **«Наверх»** control in AppShell. It appears after scrolling more than 400 px and scrolls smoothly to the top; it is shared by all authenticated pages rather than copied into each page.
+- Initial local validation found that `@mui/icons-material/KeyboardArrowUp` is unavailable because `@mui/icons-material` is not a frontend dependency. Replaced the icon with a text arrow inside the existing MUI Fab; no dependency was added.
+- Local validation by the user completed successfully: frontend `npm run typecheck` and `npm run build` both passed; Vite transformed 1309 modules and produced the production bundle.
+- Browser verification by the user passed: creation from the global Instruments list, creation without assigning a Site, redirect to the newly created Instrument card, appearance of the floating «Наверх» control on scroll, and smooth return to the page top.
+- This frontend slice is locally and functionally validated. No production deployment is implied by this checkpoint.
+- PR #21 was squash-merged into `develop`: `82018c893dca1499b488209e37b3bcdede2c69a5`.
+- Local branch synchronization and production deployment remain separate operational steps; no production deployment is recorded here.
