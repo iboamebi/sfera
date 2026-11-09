@@ -23,7 +23,7 @@ interface DeviceSelectorProps {
   value: string;
   customerId: string;
   onChange: (deviceId: string) => void;
-  onCreateDevice?: () => void;
+  onCreateDevice?: (serialNumber: string) => void;
   instrumentTypeId?: string | null;
   requireUnmatchedSerial?: boolean;
 }
@@ -201,7 +201,7 @@ export function DeviceSelector({
 
       {onCreateDevice && (
         <Button
-          onClick={onCreateDevice}
+          onClick={() => onCreateDevice(inputValue.trim())}
           variant="outlined"
           disabled={
             isLoading ||
