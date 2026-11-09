@@ -109,6 +109,10 @@ export const router = createBrowserRouter([
     element: <RequireAuth><PriceListPage /></RequireAuth>,
   },
   {
+    path: "/devices/new",
+    element: <RequireAuth><CreateDevicePage /></RequireAuth>,
+  },
+  {
     path: "/devices",
     element: <RequireAuth><DevicesPage /></RequireAuth>,
   },
