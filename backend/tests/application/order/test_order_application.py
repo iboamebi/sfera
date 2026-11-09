@@ -112,8 +112,6 @@ class FakeCustomerRepository(CustomerRepository):
         return customer
 
 
-
-
 class FakeDeviceRepository(DeviceRepository):
     def __init__(self, device: Device | None = None) -> None:
         self.device = device
@@ -187,7 +185,9 @@ def make_customer(customer_id: UUID) -> Customer:
     )
 
 
-def make_service(device: Device | None = None) -> tuple[
+def make_service(
+    device: Device | None = None,
+) -> tuple[
     OrderApplicationService,
     FakeOrderRepository,
     FakeCustomerRepository,
@@ -491,7 +491,6 @@ def test_add_order_item_allows_instrument_after_order_completed():
 
     assert len(order.items) == 1
     assert order.items[0].instrument_id == instrument_id
-
 
 
 def test_assign_order_item_rejects_instrument_from_another_customer():
