@@ -435,6 +435,11 @@ export function OrderItems({
                                     <DeviceSelector
                                       value={selectedInstrumentId}
                                       customerId={customerId}
+                                      excludedInstrumentIds={items.flatMap((otherItem) =>
+                                        otherItem.id !== item.id && otherItem.instrumentId
+                                          ? [otherItem.instrumentId]
+                                          : [],
+                                      )}
                                       instrumentTypeId={item.instrumentTypeId}
                                       onChange={setSelectedInstrumentId}
                                       onCreateDevice={(serialNumber) => {
