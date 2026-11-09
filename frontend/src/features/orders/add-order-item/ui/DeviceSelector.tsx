@@ -63,6 +63,11 @@ export function DeviceSelector({
     availableDevices.find((device) => device.id === value) ?? null;
 
   useEffect(() => {
+    setSelectedSiteIds([]);
+    setIncludeWithoutSite(true);
+  }, [customerId]);
+
+  useEffect(() => {
     if (
       !isLoading &&
       value &&
@@ -118,7 +123,7 @@ export function DeviceSelector({
 
       {isSitesError && (
         <Typography color="error" variant="caption">
-          Не удалось загрузить площадки. Поиск выполняется по всем СИ клиента.
+          Не удалось загрузить площадки. Фильтр по площадкам недоступен.
         </Typography>
       )}
 
