@@ -1208,3 +1208,16 @@ Administrator-assisted password recovery has now been implemented; see the check
 - Confirmed the UI prevents role changes to archived accounts, disables actions that would remove the last active administrator, confirms archive/password-reset actions, and displays the one-time temporary password with the corrected exact-value copy implementation.
 - Frontend route guard redirects users with `must_change_password` to `/change-password`; backend router-level guard independently enforces the same restriction.
 - No additional frontend code changes were warranted in this audit pass.
+
+## Customer edit validation checkpoint — 2026-11-09
+
+- Implemented and validated the Customer edit flow on `feat/user-first-login-password`.
+- Backend update handling distinguishes omitted fields from explicit `None`, so optional customer fields can be cleared without conflating them with an omitted update. Customer name and discount remain non-clearable by application rules.
+- Frontend Customer edit support was added using the existing customer form/update API path; no Organization or Site behavior was changed in this stage.
+- Local validation by the user:
+  - backend `pytest -q`: **296 passed, 21 warnings**;
+  - backend `ruff check .`: **All checks passed**;
+  - scoped `ruff format --check`: **3 files already formatted**;
+  - frontend `npm run typecheck`: passed;
+  - frontend `npm run build`: passed; Vite transformed 1306 modules and emitted only the existing non-blocking main-chunk size warning.
+- No local validation failures remain for this stage. The npm notice about a newer npm major version is informational and unrelated to the build result.
