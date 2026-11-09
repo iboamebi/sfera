@@ -1277,3 +1277,12 @@ Administrator-assisted password recovery has now been implemented; see the check
 - This is an intentionally conservative first slice: the current Order lifecycle audit says the Order transitions beyond `REGISTERED` are not implemented. Per-OrderItem editability based on actual WorkflowInstance / Verification / Repair / Diagnostic activity remains a separate follow-up; do not infer that a whole-order status is a reliable per-item production state.
 - Added domain and application regression tests for registered-order item changes and protection after work starts.
 - Branch: `fix/order-edit-after-registration`. Local backend/frontend validation and PR creation are pending.
+
+
+## Create Instrument from the main menu and global scroll-to-top — 2026-11-09
+
+- Added a dedicated `/devices/new` route and a **«Создать СИ»** action on the global Instruments list.
+- The creation page uses the existing DeviceForm and create-device mutation. It first requires selecting an active Customer because the current create API contract requires `customerId`; the Site remains optional and is loaded for the selected Customer.
+- On successful creation, the user is redirected to the new Instrument card. The existing Customer-scoped creation route remains unchanged.
+- Added a shared floating **«Наверх»** control in AppShell. It appears after scrolling more than 400 px and scrolls smoothly to the top; it is shared by all authenticated pages rather than copied into each page.
+- Local validation is pending: frontend `npm run typecheck`, `npm run build`, and browser checks for direct creation and the global scroll control.
