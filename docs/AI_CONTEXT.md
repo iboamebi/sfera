@@ -1221,3 +1221,16 @@ Administrator-assisted password recovery has now been implemented; see the check
   - frontend `npm run typecheck`: passed;
   - frontend `npm run build`: passed; Vite transformed 1306 modules and emitted only the existing non-blocking main-chunk size warning.
 - No local validation failures remain for this stage. The npm notice about a newer npm major version is informational and unrelated to the build result.
+
+
+## Order instrument search by Customer Site — 2026-11-09
+
+- Inspected the actual order creation and order-item UI, device API/domain/repository contracts, Site API, and the Customer / Organization / Site model document on the feature branch.
+- Added a multi-select Site filter to the order-item `DeviceSelector`. The device list remains restricted to the order's Customer and any selected Instrument Type.
+- Added an independent option to include/exclude Customer instruments whose `site_id` is null. With no selected Site, all Customer Sites remain in scope.
+- Changing the selected Sites affects only the search result; it does not update `Instrument.site_id` or otherwise change permanent ownership/assignment.
+- If a selected instrument becomes hidden by a changed filter, the selection is cleared to prevent adding an invisible instrument. Filter state resets when the order Customer changes.
+- Site lookup failure is non-blocking: the Site filter reports its error while the device list remains usable.
+- Organization selection was intentionally not added: the current Order domain/ORM/API/read contract has no Organization context field. The business model document requires cardinality and persistence to be decided before adding that selection.
+- Implementation commits: `70bf39a` (Site filter) and `cead4ee` (reset filter on Customer change and clarify Site-load error).
+- Local frontend validation is pending. Do not treat this slice as completed until the user reports `npm run typecheck` and `npm run build`.
