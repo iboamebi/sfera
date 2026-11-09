@@ -1277,3 +1277,15 @@ Administrator-assisted password recovery has now been implemented; see the check
 - This is an intentionally conservative first slice: the current Order lifecycle audit says the Order transitions beyond `REGISTERED` are not implemented. Per-OrderItem editability based on actual WorkflowInstance / Verification / Repair / Diagnostic activity remains a separate follow-up; do not infer that a whole-order status is a reliable per-item production state.
 - Added domain and application regression tests for registered-order item changes and protection after work starts.
 - Branch: `fix/order-edit-after-registration`. Local backend/frontend validation and PR creation are pending.
+
+
+## OrderItem instrument assignment and missing-instrument creation — implementation checkpoint — 2026-11-09
+
+- Started from the merged `develop` state after PR #19 (merge commit `2ff130278ce4b6e54a82e6cbdab2594283e54b5f`).
+- The existing OrderItem UI already supported selecting an existing Customer instrument for a reserved empty position, but did not offer creation from that assignment flow.
+- Updated the shared DeviceSelector to show each existing instrument's current Site (or "Без площадки") in search results.
+- Exact serial-number matches are detected across all instruments belonging to the Customer, independently of the active Site and Instrument Type filters. The selector reports the existing card and its current Site and suppresses the create action, preventing an obvious duplicate from being created through this flow.
+- When no exact serial-number match exists, the assignment flow offers creation of a minimal Instrument card. On successful creation, the new card is immediately assigned to the reserved OrderItem.
+- The new card is created without a Site assignment; this does not alter any existing instrument's Site. Existing instrument Site assignments remain untouched by selection.
+- Backend uniqueness constraints for serial numbers were not found in the current Instrument ORM model; this UI guard is scoped to the Customer's currently loaded instrument list and is not a database-level uniqueness guarantee.
+- Frontend local validation is pending. Do not deploy until typecheck, build, and browser validation pass.
