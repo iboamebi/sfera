@@ -192,7 +192,7 @@ def test_register_order_returns_read_model() -> None:
                 id=order_id,
                 number=OrderNumber("1001"),
                 customer_id=read_order.customer_id,
-                        received_at=now,
+                received_at=now,
             )
 
     class FakeOrderReadService:
@@ -260,7 +260,6 @@ def test_update_order_returns_read_model() -> None:
 
     assert result is read_order
     assert result.comment == "Updated comment"
-
 
 
 def test_assign_order_item_maps_customer_mismatch_to_conflict() -> None:
