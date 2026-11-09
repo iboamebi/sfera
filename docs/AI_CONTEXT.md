@@ -1285,4 +1285,5 @@ Administrator-assisted password recovery has now been implemented; see the check
 - The creation page uses the existing DeviceForm and create-device mutation. It first requires selecting an active Customer because the current create API contract requires `customerId`; the Site remains optional and is loaded for the selected Customer.
 - On successful creation, the user is redirected to the new Instrument card. The existing Customer-scoped creation route remains unchanged.
 - Added a shared floating **«Наверх»** control in AppShell. It appears after scrolling more than 400 px and scrolls smoothly to the top; it is shared by all authenticated pages rather than copied into each page.
-- Local validation is pending: frontend `npm run typecheck`, `npm run build`, and browser checks for direct creation and the global scroll control.
+- Initial local validation found that `@mui/icons-material/KeyboardArrowUp` is unavailable because `@mui/icons-material` is not a frontend dependency. Replaced the icon with a text arrow inside the existing MUI Fab; no dependency was added.
+- Local validation must be rerun: frontend `npm run typecheck`, `npm run build`, and browser checks for direct creation and the global scroll control.
