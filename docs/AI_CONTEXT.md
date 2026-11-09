@@ -1312,3 +1312,13 @@ Administrator-assisted password recovery has now been implemented; see the check
 - This frontend slice is locally and functionally validated. No production deployment is implied by this checkpoint.
 - PR #21 was squash-merged into `develop`: `82018c893dca1499b488209e37b3bcdede2c69a5`.
 - Local branch synchronization and production deployment remain separate operational steps; no production deployment is recorded here.
+
+## OrderItem instrument assignment — local validation checkpoint — 2026-11-09
+
+- User synchronized the feature branch through commit `2f6d866`.
+- Backend local validation: `pytest -q tests/api/routers/test_order.py tests/application/order/test_order_application.py` — **20 passed**.
+- `ruff check app/api/routers/order.py tests/api/routers/test_order.py` — passed.
+- The initial scoped `ruff format --check` found formatting-only issues in `backend/tests/api/routers/test_order.py`. Corrected indentation and spacing in commit `7e71e9b`; no behavior changed. The user must rerun the scoped format check after pulling this commit.
+- Frontend local validation: `npm run typecheck` and `npm run build` — passed. Vite emitted its non-blocking warning for a minified chunk larger than 500 kB.
+- Added API regression coverage ensuring that assigning an Instrument belonging to another Customer maps `InstrumentCustomerMismatchApplicationError` to HTTP 409 rather than an unhandled server error.
+- PR #20 remains open. Browser validation of the updated OrderItem assignment/search behavior and final PR checks are still required. Do not deploy as part of this stage.
