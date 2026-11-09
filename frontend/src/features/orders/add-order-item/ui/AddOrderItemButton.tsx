@@ -224,19 +224,6 @@ export function AddOrderItemButton({
         requireUnmatchedSerial
       />
 
-      <Button
-        disabled={
-          (!deviceId && !instrumentTypeId) ||
-          (!deviceId && quantity < 1) ||
-          addOrderItemMutation.isPending
-        }
-        onClick={handleAdd}
-        variant="contained"
-        sx={{ alignSelf: "flex-start" }}
-      >
-        {addOrderItemMutation.isPending ? "Добавление…" : "Добавить позицию"}
-      </Button>
-
       <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap" }}>
         {OPERATION_OPTIONS.map((operation) => (
           <FormControlLabel
@@ -251,6 +238,19 @@ export function AddOrderItemButton({
           />
         ))}
       </Stack>
+
+      <Button
+        disabled={
+          (!deviceId && !instrumentTypeId) ||
+          (!deviceId && quantity < 1) ||
+          addOrderItemMutation.isPending
+        }
+        onClick={handleAdd}
+        variant="contained"
+        sx={{ alignSelf: "flex-start" }}
+      >
+        {addOrderItemMutation.isPending ? "Добавление…" : "Добавить позицию"}
+      </Button>
 
       {addOrderItemMutation.isError && (
         <Typography color="error" variant="body2">
