@@ -12,6 +12,7 @@ from app.application.customer.commands.delete_customer import (
     DeleteCustomerCommand,
 )
 from app.application.customer.commands.update_customer import (
+    UNSET,
     UpdateCustomerCommand,
 )
 from app.application.customer.exceptions import (
@@ -92,33 +93,27 @@ class CustomerApplicationService:
         with self._uow:
             customer = self.get(command.customer_id)
 
-            if command.name is not None:
+            if command.name is not UNSET:
+                if command.name is None:
+                    raise ValueError("Customer name cannot be cleared")
                 customer.change_name(command.name)
 
-            if command.contact_person is not None:
-                customer.change_contact_person(
-                    command.contact_person,
-                )
+            if command.contact_person is not UNSET:
+                customer.change_contact_person(command.contact_person)
 
-            if command.phone is not None:
-                customer.change_phone(
-                    command.phone,
-                )
+            if command.phone is not UNSET:
+                customer.change_phone(command.phone)
 
-            if command.email is not None:
-                customer.change_email(
-                    command.email,
-                )
+            if command.email is not UNSET:
+                customer.change_email(command.email)
 
-            if command.comment is not None:
-                customer.change_comment(
-                    command.comment,
-                )
+            if command.comment is not UNSET:
+                customer.change_comment(command.comment)
 
-            if command.discount_percent is not None:
-                customer.change_discount(
-                    command.discount_percent,
-                )
+            if command.discount_percent is not UNSET:
+                if command.discount_percent is None:
+                    raise ValueError("Customer discount cannot be cleared")
+                customer.change_discount(command.discount_percent)
 
             return self._repository.save(customer)
 
