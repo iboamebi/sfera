@@ -74,6 +74,11 @@ export function DeviceSelector({
   const matchingDeviceSite = matchingDevice?.siteId
     ? sites.find((site) => site.id === matchingDevice.siteId)?.name ?? "Площадка не найдена"
     : "Без площадки";
+  const matchingDeviceTypeMatches =
+    !instrumentTypeId || matchingDevice?.instrumentTypeId === instrumentTypeId;
+  const matchingDeviceIsVisible = matchingDevice
+    ? availableDevices.some((device) => device.id === matchingDevice.id)
+    : false;
 
   useEffect(() => {
     setSelectedSiteIds([]);
@@ -207,8 +212,27 @@ export function DeviceSelector({
         </Button>
       )}
       {matchingDevice && (
-        <Alert severity="info">
-          СИ с таким заводским номером уже существует: {matchingDevice.name ?? "без наименования"}, № {matchingDevice.serialNumber}. Текущая площадка: {matchingDeviceSite}. Выберите существующее СИ в списке. Создание дубликата недоступно.
+        <Alert
+          severity={matchingDeviceTypeMatches ? "info" : "warning"}
+          action={
+            matchingDeviceTypeMatches && !matchingDeviceIsVisible ? (
+              <Button
+                color="inherit"
+                size="small"
+                onClick={() => {
+                  setSelectedSiteIds([]);
+                  setIncludeWithoutSite(true);
+                }}
+              >
+                Показать СИ
+              </Button>
+            ) : undefined
+          }
+        >
+          СИ с таким заводским номером уже существует: {matchingDevice.name ?? "без наименования"}, № {matchingDevice.serialNumber}. Текущая площадка: {matchingDeviceSite}.
+          {matchingDeviceTypeMatches
+            ? " Выберите существующее СИ в списке. Создание дубликата недоступно."
+            : " Тип найденного СИ не совпадает с типом позиции заказа. Проверьте выбранный тип СИ."}
         </Alert>
       )}
     </Stack>
