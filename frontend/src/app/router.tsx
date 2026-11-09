@@ -7,7 +7,8 @@ import { CustomersPage } from "../pages/customers/CustomersPage";
 import { CustomerPage } from "../pages/customers/CustomerPage";
 import { CreateCustomerPage } from "../pages/customers/CreateCustomerPage";
 import { CreateSitePage } from "../pages/customers/CreateSitePage";
-import { CreateDevicePage } from "../pages/customers/CreateDevicePage";
+import { CreateDevicePage as CreateCustomerDevicePage } from "../pages/customers/CreateDevicePage";
+import { CreateDevicePage as CreateStandaloneDevicePage } from "../pages/devices/CreateDevicePage";
 import { MaterialsPage } from "../pages/materials/MaterialsPage";
 import { MaterialPage } from "../pages/materials/MaterialPage";
 import { OrganizationsPage } from "../pages/organizations/OrganizationsPage";
@@ -70,7 +71,7 @@ export const router = createBrowserRouter([
   },
   {
     path: "/customers/:customerId/devices/new",
-    element: <RequireAuth><CreateDevicePage /></RequireAuth>,
+    element: <RequireAuth><CreateCustomerDevicePage /></RequireAuth>,
   },
   {
     path: "/organizations",
@@ -110,7 +111,7 @@ export const router = createBrowserRouter([
   },
   {
     path: "/devices/new",
-    element: <RequireAuth><CreateDevicePage /></RequireAuth>,
+    element: <RequireAuth><CreateStandaloneDevicePage /></RequireAuth>,
   },
   {
     path: "/devices",
