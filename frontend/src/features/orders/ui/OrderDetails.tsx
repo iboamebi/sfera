@@ -73,7 +73,7 @@ export function OrderDetails({ order }: OrderDetailsProps) {
   const queryClient = useQueryClient();
   const [isCommentEditing, setIsCommentEditing] = useState(false);
   const [commentDraft, setCommentDraft] = useState(order.comment ?? "");
-  const isEditable = order.status === "NEW";
+  const isEditable = order.status === "NEW" || order.status === "REGISTERED";
 
   const commentMutation = useUpdateOrder({
     onSuccess: () => {
