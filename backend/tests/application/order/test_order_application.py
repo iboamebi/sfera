@@ -17,6 +17,7 @@ from app.application.order.commands.register_order import RegisterOrderCommand
 from app.application.order.commands.update_order import UpdateOrderCommand
 from app.application.order.exceptions import (
     InstrumentAlreadyInActiveOrderApplicationError,
+    InstrumentAlreadyInOrderApplicationError,
     InstrumentCustomerMismatchApplicationError,
 )
 from app.application.order.services.order_application_service import (
@@ -114,18 +115,18 @@ class FakeCustomerRepository(CustomerRepository):
 
 class FakeDeviceRepository(DeviceRepository):
     def __init__(self, device: Device | None = None) -> None:
-        self.device = device
+        self.devices: dict[UUID, Device] = {}
+        if device is not None:
+            self.devices[device.id] = device
 
     def get(self, device_id: UUID) -> Device | None:
-        if self.device is not None and self.device.id == device_id:
-            return self.device
-        return None
+        return self.devices.get(device_id)
 
     def list(self) -> list[Device]:
-        return [self.device] if self.device is not None else []
+        return list(self.devices.values())
 
     def save(self, device: Device) -> None:
-        self.device = device
+        self.devices[device.id] = device
 
 
 class FakeOrderRepository(OrderRepository):
@@ -447,6 +448,77 @@ def test_add_order_item_rejects_instrument_in_another_active_order():
             ),
             make_operator(),
         )
+
+
+def test_add_order_item_rejects_duplicate_serial_within_same_order():
+    customer_id = uuid4()
+    existing_device = Device(
+        id=uuid4(),
+        instrument_type_id=uuid4(),
+        customer_id=customer_id,
+        serial_number=SerialNumber("SN-DUPLICATE"),
+    )
+    candidate_device = Device(
+        id=uuid4(),
+        instrument_type_id=uuid4(),
+        customer_id=customer_id,
+        serial_number=SerialNumber(" sn-duplicate "),
+    )
+    service, repository, customer_repository, _, _, _ = make_service(candidate_device)
+    service._device_repository.save(existing_device)
+    customer_repository.save(make_customer(customer_id))
+    order = service.create(
+        CreateOrderCommand(customer_id=customer_id, number="10015"),
+        make_operator(),
+    )
+    order.add_item(OrderItem(id=uuid4(), instrument_id=existing_device.id))
+    repository.save(order)
+
+    with pytest.raises(InstrumentAlreadyInOrderApplicationError):
+        service.add_item(
+            AddOrderItemCommand(order_id=order.id, instrument_id=candidate_device.id),
+            make_operator(),
+        )
+
+    assert len(order.items) == 1
+
+
+def test_assign_order_item_rejects_duplicate_serial_within_same_order():
+    customer_id = uuid4()
+    existing_device = Device(
+        id=uuid4(),
+        instrument_type_id=uuid4(),
+        customer_id=customer_id,
+        serial_number=SerialNumber("SN-DUPLICATE"),
+    )
+    candidate_device = Device(
+        id=uuid4(),
+        instrument_type_id=uuid4(),
+        customer_id=customer_id,
+        serial_number=SerialNumber("sn-duplicate"),
+    )
+    service, repository, customer_repository, _, _, _ = make_service(candidate_device)
+    service._device_repository.save(existing_device)
+    customer_repository.save(make_customer(customer_id))
+    order = service.create(
+        CreateOrderCommand(customer_id=customer_id, number="10016"),
+        make_operator(),
+    )
+    order.add_item(OrderItem(id=uuid4(), instrument_id=existing_device.id))
+    order.add_item(OrderItem(id=uuid4()))
+    repository.save(order)
+
+    with pytest.raises(InstrumentAlreadyInOrderApplicationError):
+        service.assign_item_instrument(
+            AssignOrderItemInstrumentCommand(
+                order_id=order.id,
+                item_id=order.items[1].id,
+                instrument_id=candidate_device.id,
+            ),
+            make_operator(),
+        )
+
+    assert order.items[1].instrument_id is None
 
 
 def test_add_order_item_creates_separate_items_for_group_quantity():
