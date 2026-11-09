@@ -33,6 +33,7 @@ const OPERATION_OPTIONS: Array<{
 interface AddOrderItemButtonProps {
   orderId: string;
   customerId: string;
+  excludedInstrumentIds?: string[];
 }
 
 function getErrorMessage(error: unknown, fallback: string): string {
@@ -53,6 +54,7 @@ function getErrorMessage(error: unknown, fallback: string): string {
 export function AddOrderItemButton({
   orderId,
   customerId,
+  excludedInstrumentIds = [],
 }: AddOrderItemButtonProps) {
   const [deviceId, setDeviceId] = useState("");
   const [instrumentTypeId, setInstrumentTypeId] = useState("");
@@ -213,6 +215,7 @@ export function AddOrderItemButton({
         <DeviceSelector
           value={deviceId}
           customerId={customerId}
+          excludedInstrumentIds={excludedInstrumentIds}
           onChange={setDeviceId}
           onCreateDevice={(serialNumber) => {
             setInitialDeviceSerialNumber(serialNumber);
