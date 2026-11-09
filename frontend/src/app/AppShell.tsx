@@ -1,5 +1,6 @@
-import type { ReactNode } from "react";
-import { Alert, AppBar, Box, Button, Stack, Toolbar, Typography } from "@mui/material";
+import { useEffect, useState, type ReactNode } from "react";
+import { Alert, AppBar, Box, Button, Fab, Stack, Toolbar, Typography } from "@mui/material";
+import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import { Link, useLocation, useNavigate } from "react-router";
 
 import { useLogout } from "../features/auth/model/useLogout";
@@ -22,6 +23,17 @@ export function AppShell({ user, children }: AppShellProps) {
   const location = useLocation();
   const navigate = useNavigate();
   const logout = useLogout();
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
+  useEffect(() => {
+    const updateScrollTopVisibility = () => {
+      setShowScrollTop(window.scrollY > 400);
+    };
+
+    updateScrollTopVisibility();
+    window.addEventListener("scroll", updateScrollTopVisibility, { passive: true });
+    return () => window.removeEventListener("scroll", updateScrollTopVisibility);
+  }, []);
 
   const handleLogout = () => {
     logout.mutate(undefined, {
@@ -113,6 +125,18 @@ export function AppShell({ user, children }: AppShellProps) {
       >
         {children}
       </Box>
+
+      {showScrollTop && (
+        <Fab
+          color="primary"
+          size="medium"
+          aria-label="Наверх"
+          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+          sx={{ position: "fixed", right: 24, bottom: 24, zIndex: 1200 }}
+        >
+          <KeyboardArrowUpIcon />
+        </Fab>
+      )}
     </Box>
   );
 }
