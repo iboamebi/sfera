@@ -54,11 +54,16 @@ class Order(AggregateRoot):
             comment=comment,
         )
 
-    def add_item(self, item: OrderItem) -> None:
-        """Add item to a new order."""
+    def _ensure_items_editable(self) -> None:
+        """Allow order-item changes before production work starts."""
 
-        if self.status != OrderStatus.NEW:
-            raise OrderException("Cannot add item to active order")
+        if self.status not in {OrderStatus.NEW, OrderStatus.REGISTERED}:
+            raise OrderException("Cannot modify items after order work has started")
+
+    def add_item(self, item: OrderItem) -> None:
+        """Add an item before production work starts."""
+
+        self._ensure_items_editable()
 
         if item.instrument_id is not None and any(
             existing.instrument_id == item.instrument_id
@@ -73,10 +78,9 @@ class Order(AggregateRoot):
         item_id: UUID,
         requested_operations: set[OrderItemOperation],
     ) -> None:
-        """Update an order item while the order is new."""
+        """Update an order item before production work starts."""
 
-        if self.status != OrderStatus.NEW:
-            raise OrderException("Cannot update item in active order")
+        self._ensure_items_editable()
 
         for item in self.items:
             if item.id == item_id:
@@ -90,10 +94,9 @@ class Order(AggregateRoot):
         item_id: UUID,
         instrument_id: UUID,
     ) -> None:
-        """Assign a concrete instrument to an order item."""
+        """Assign a concrete instrument before production work starts."""
 
-        if self.status != OrderStatus.NEW:
-            raise OrderException("Cannot assign instrument in active order")
+        self._ensure_items_editable()
 
         if any(
             item.instrument_id == instrument_id
@@ -110,10 +113,9 @@ class Order(AggregateRoot):
         raise OrderException("Order item not found")
 
     def remove_item(self, item_id: UUID) -> None:
-        """Remove an order item while the order is new."""
+        """Remove an order item before production work starts."""
 
-        if self.status != OrderStatus.NEW:
-            raise OrderException("Cannot remove item from active order")
+        self._ensure_items_editable()
 
         for index, item in enumerate(self.items):
             if item.id == item_id:
