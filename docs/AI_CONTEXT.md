@@ -40,7 +40,7 @@ git@github.com:iboamebi/sfera.git
 Working branch:
 
 ```text
-feat/user-first-login-password
+develop
 ```
 
 Base branch: `develop`.
@@ -446,7 +446,7 @@ The current authentication contract also includes:
 Current active branch:
 
 ```text
-feat/user-first-login-password
+develop
 ```
 
 API contract documentation commit:
@@ -1251,3 +1251,18 @@ Administrator-assisted password recovery has now been implemented; see the check
 - Still unresolved: whether one Order may have exactly one Organization or multiple Organizations, when selection becomes required, and whether the selection is mutable after registration / document issuance.
 - Do not add UI-only state or an Organization dropdown until the persistence and lifecycle contract is agreed.
 - Propose the smallest set of business decisions after inspecting the current code; do not change the normative architecture or introduce a speculative model.
+
+
+## Production synchronization checkpoint — 2026-11-09
+
+- PR #18 (`feat/user-first-login-password`) was merged into `develop`; merge commit: `4e0ebc684e3a542a3a13f2d060e4c2609a8de873`.
+- User synchronized the local `develop` checkout with `origin/develop`; the working tree was confirmed clean after removing eight empty untracked files.
+- Database Alembic revision and the sole repository head both report `c2e5f7a9b310`; no migration upgrade was required.
+- Local backend validation: `pytest -q` — **297 passed, 21 warnings**; `ruff check .` — passed.
+- `ruff format --check .` reports 14 files requiring formatting (508 already formatted). This includes pre-existing/unrelated formatting debt; no mass-formatting was performed.
+- Local frontend `npm run typecheck` — passed.
+- Production backend restart completed; `sfera-backend.service` reported `active (running)`.
+- `frontend/scripts/deploy-production.sh` completed successfully, including the production Vite build and publication to `/var/www/sfera`. Vite emitted only the non-blocking main-chunk warning (>500 kB).
+- Local Nginx smoke checks returned HTTP 200 for the frontend and API health endpoint; API health response: `{"status":"ok"}`.
+- DNS-based access by hostname was not required for these local server checks.
+- Current synchronized branch: `develop`. Next work should begin by re-reading the current code and selecting the next independent business scenario; the previously recorded Order / Organization context contract remains unresolved and must be audited before implementation.
