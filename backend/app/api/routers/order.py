@@ -210,6 +210,8 @@ def assign_order_item_instrument(
         raise HTTPException(status_code=409, detail=str(exc)) from None
     except InstrumentAlreadyInOrderApplicationError as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from None
+    except InstrumentCustomerMismatchApplicationError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from None
     except OrderException as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from None
 
