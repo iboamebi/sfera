@@ -570,3 +570,17 @@ Route:
 ```
 
 Backend Application authorization remains the security boundary. The page route guard only requires authentication and does not replace backend administrator authorization. Local typecheck/build validation is required after this implementation.
+
+
+### Order instrument search by Site
+
+The order-item device selector uses the selected Order Customer's Site list as an optional search filter:
+
+- multiple Sites can be selected;
+- an independent checkbox includes/excludes instruments without a Site;
+- an empty Site selection means all Sites;
+- instrument results remain restricted to the Order Customer and the selected Instrument Type, when present;
+- changing this filter never changes the permanent Instrument–Site assignment;
+- if Site loading fails, the Site filter is unavailable but instrument search remains usable.
+
+Organization selection is not yet part of the order form. The current Order persistence/API contract does not store an Organization, and the business contract requires a separate cardinality/persistence decision before implementing the selection.
