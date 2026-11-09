@@ -66,8 +66,7 @@ class Order(AggregateRoot):
         self._ensure_items_editable()
 
         if item.instrument_id is not None and any(
-            existing.instrument_id == item.instrument_id
-            for existing in self.items
+            existing.instrument_id == item.instrument_id for existing in self.items
         ):
             raise OrderException("Instrument already exists in order")
 
