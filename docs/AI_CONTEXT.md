@@ -1286,4 +1286,6 @@ Administrator-assisted password recovery has now been implemented; see the check
 - On successful creation, the user is redirected to the new Instrument card. The existing Customer-scoped creation route remains unchanged.
 - Added a shared floating **«Наверх»** control in AppShell. It appears after scrolling more than 400 px and scrolls smoothly to the top; it is shared by all authenticated pages rather than copied into each page.
 - Initial local validation found that `@mui/icons-material/KeyboardArrowUp` is unavailable because `@mui/icons-material` is not a frontend dependency. Replaced the icon with a text arrow inside the existing MUI Fab; no dependency was added.
-- Local validation must be rerun: frontend `npm run typecheck`, `npm run build`, and browser checks for direct creation and the global scroll control.
+- Local validation by the user completed successfully: frontend `npm run typecheck` and `npm run build` both passed; Vite transformed 1309 modules and produced the production bundle.
+- Browser verification by the user passed: creation from the global Instruments list, creation without assigning a Site, redirect to the newly created Instrument card, appearance of the floating «Наверх» control on scroll, and smooth return to the page top.
+- This frontend slice is locally and functionally validated. No production deployment is implied by this checkpoint.
