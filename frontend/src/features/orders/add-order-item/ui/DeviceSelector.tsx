@@ -88,9 +88,12 @@ export function DeviceSelector({
   return (
     <Stack spacing={1} sx={{ width: "100%" }}>
       <FormControl fullWidth size="small" disabled={isSitesLoading}>
-        <InputLabel id="device-site-filter-label">Площадки</InputLabel>
-        <Select
+        <InputLabel id="device-site-filter-label" shrink>
+          Площадки
+        </InputLabel>
+        <Select<string[]>
           labelId="device-site-filter-label"
+          displayEmpty
           multiple
           value={selectedSiteIds}
           label="Площадки"
