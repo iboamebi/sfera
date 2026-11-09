@@ -1234,3 +1234,20 @@ Administrator-assisted password recovery has now been implemented; see the check
 - Organization selection was intentionally not added: the current Order domain/ORM/API/read contract has no Organization context field. The business model document requires cardinality and persistence to be decided before adding that selection.
 - Implementation commits: `70bf39a` (Site filter), `cead4ee` (reset filter on Customer change and clarify Site-load error), and `00c4fb4` (explicit all-Sites placeholder and typed MUI Select).
 - Local frontend validation is pending. Do not treat this slice as completed until the user reports `npm run typecheck` and `npm run build`.
+
+## Order instrument search by Customer Site — local validation complete — 2026-11-09
+
+- User ran frontend validation after the Site-filter implementation:
+  - `npm run typecheck`: passed (`tsc --noEmit`);
+  - `npm run build`: passed (`tsc -b && vite build`);
+  - Vite transformed 1306 modules and completed the production build successfully.
+- No TypeScript or build errors were reported. The Site-filter frontend slice is complete.
+- No backend validation was repeated because this slice changed only the frontend.
+
+## Next stage — Order / Organization context contract
+
+- Begin with a read-only audit of the actual Order domain, persistence model, repository/mapper, Application use cases, API schemas/read model, and frontend create/edit flows.
+- The business decision already recorded in `docs/architecture/CUSTOMER_ORGANIZATION_SITE_MODEL.md` is that Organization is selected in the context of an Order and is not a permanent Customer–Organization relation.
+- Still unresolved: whether one Order may have exactly one Organization or multiple Organizations, when selection becomes required, and whether the selection is mutable after registration / document issuance.
+- Do not add UI-only state or an Organization dropdown until the persistence and lifecycle contract is agreed.
+- Propose the smallest set of business decisions after inspecting the current code; do not change the normative architecture or introduce a speculative model.
