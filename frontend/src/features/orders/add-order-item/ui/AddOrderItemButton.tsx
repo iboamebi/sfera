@@ -215,6 +215,7 @@ export function AddOrderItemButton({
         <DeviceSelector
           value={deviceId}
           customerId={customerId}
+          instrumentTypeId={instrumentTypeId || null}
           excludedInstrumentIds={excludedInstrumentIds}
           onChange={setDeviceId}
           onCreateDevice={(serialNumber) => {
