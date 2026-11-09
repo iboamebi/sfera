@@ -6,14 +6,19 @@ import {
   createCustomerSchema,
   type CreateCustomerSchema,
 } from "../model/schema";
+import type { CreateCustomerForm } from "../model/types";
 
 interface CustomerFormProps {
   onSubmit: (data: CreateCustomerSchema) => void;
+  initialValues?: CreateCustomerForm;
+  submitLabel?: string;
   isPending?: boolean;
 }
 
 export function CustomerForm({
   onSubmit,
+  initialValues,
+  submitLabel = "Создать клиента",
   isPending = false,
 }: CustomerFormProps) {
   const {
@@ -22,7 +27,12 @@ export function CustomerForm({
     formState: { errors },
   } = useForm<CreateCustomerSchema>({
     resolver: zodResolver(createCustomerSchema),
-    defaultValues: {
+    defaultValues: initialValues ?? {
+      name: "",
+      contactPerson: "",
+      phone: "",
+      email: "",
+      comment: "",
       discountPercent: 0,
     },
   });
@@ -83,12 +93,8 @@ export function CustomerForm({
           disabled={isPending}
         />
 
-        <Button
-          type="submit"
-          variant="contained"
-          disabled={isPending}
-        >
-          {isPending ? "Создание..." : "Создать клиента"}
+        <Button type="submit" variant="contained" disabled={isPending}>
+          {isPending ? "Сохранение..." : submitLabel}
         </Button>
       </Stack>
     </form>
