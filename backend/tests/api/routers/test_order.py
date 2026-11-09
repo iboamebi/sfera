@@ -1,14 +1,20 @@
 from datetime import UTC, datetime
 from uuid import uuid4
 
+import pytest
+from fastapi import HTTPException
+
 from app.api.routers.order import (
     OrderItemCreate,
+    OrderItemInstrumentAssign,
     add_order_item,
+    assign_order_item_instrument,
     create_order,
     get_order,
     register_order,
     update_order,
 )
+from app.application.order.exceptions import InstrumentCustomerMismatchApplicationError
 from app.domains.order.entities.order import Order
 from app.domains.order.value_objects.order_number import OrderNumber
 from app.schemas.order import OrderRead, OrderUpdate
@@ -254,3 +260,32 @@ def test_update_order_returns_read_model() -> None:
 
     assert result is read_order
     assert result.comment == "Updated comment"
+
+
+
+def test_assign_order_item_maps_customer_mismatch_to_conflict() -> None:
+    order_id = uuid4()
+    item_id = uuid4()
+    instrument_id = uuid4()
+
+    class FakeOrderService:
+        def assign_item_instrument(self, command: object, user: object) -> None:
+            raise InstrumentCustomerMismatchApplicationError(
+                "СИ не принадлежит заказчику заказа"
+            )
+
+    class FakeOrderReadService:
+        pass
+
+    with pytest.raises(HTTPException) as exc_info:
+        assign_order_item_instrument(
+            order_id=order_id,
+            item_id=item_id,
+            data=OrderItemInstrumentAssign(instrument_id=instrument_id),
+            user=object(),
+            service=FakeOrderService(),
+            read_service=FakeOrderReadService(),
+        )
+
+    assert exc_info.value.status_code == 409
+    assert exc_info.value.detail == "СИ не принадлежит заказчику заказа"
