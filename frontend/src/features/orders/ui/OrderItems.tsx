@@ -167,34 +167,6 @@ export function OrderItems({
     );
   };
 
-  const createDeviceForItem = (data: {
-    instrumentTypeId: string;
-    name: string;
-    serialNumber: string;
-  }) => {
-    if (!creatingDeviceItemId) return;
-
-    createDeviceMutation.mutate(
-      { ...data, customerId },
-      {
-        onSuccess: (device) => {
-          const itemId = creatingDeviceItemId;
-          setCreatingDeviceItemId(null);
-          setSelectedInstrumentId(device.id);
-          assignInstrumentMutation.mutate(
-            { itemId, instrumentId: device.id },
-            {
-              onSuccess: () => {
-                setAssigningItemId(null);
-                setSelectedInstrumentId("");
-              },
-            },
-          );
-        },
-      },
-    );
-  };
-
   const closeExpandedRow = () => {
     setEditingItemId(null);
     setAssigningItemId(null);
