@@ -5,17 +5,12 @@ Revises: 381d8fcd7761, d1f7a8c9e2b4
 Create Date: 2026-08-23 20:46:48.796760
 
 """
-from typing import Sequence, Union
-
-from alembic import op
-import sqlalchemy as sa
-
 
 # revision identifiers, used by Alembic.
-revision: str = '071a88b4b6da'
-down_revision: Union[str, Sequence[str], None] = ('381d8fcd7761', 'd1f7a8c9e2b4')
-branch_labels: Union[str, Sequence[str], None] = None
-depends_on: Union[str, Sequence[str], None] = None
+revision: str = "071a88b4b6da"
+down_revision: tuple[str, str] = ("381d8fcd7761", "d1f7a8c9e2b4")
+branch_labels: str | tuple[str, ...] | None = None
+depends_on: str | tuple[str, ...] | None = None
 
 
 def upgrade() -> None:

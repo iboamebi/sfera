@@ -2,7 +2,7 @@
 
 ## Status
 
-Architecture decision recorded. Audit foundation, persistence, and the first transactional Verification integration slice are complete.
+Architecture decision recorded. Audit foundation, persistence, the first transactional Verification integration slice, and PostgreSQL append-only enforcement are complete.
 
 ## Date
 
@@ -437,7 +437,7 @@ AuditRecord B
 
 For the current Verification scope, one new corrective/invalidation record refers to one prior audit record. A multi-record correction relation is outside the current scope and must be designed separately if required.
 
-Database-level protection against `UPDATE`/`DELETE` is required in production in addition to an append-only Repository contract.
+Database-level protection against `UPDATE`/`DELETE` is implemented by Alembic migration `9f2a6c4d8e10`. A PostgreSQL functional check confirmed that `INSERT` succeeds while `UPDATE` and `DELETE` are rejected by the trigger with SQLSTATE `55000`.
 
 ---
 
@@ -581,11 +581,10 @@ System/background actors must also be identifiable. Anonymous audit operations a
 - immutable Application `AuditOperation` and `AuditRecord` contracts;
 - Application `AuditRepository` persistence boundary;
 - SQLAlchemy `AuditRecordModel` persistence model;
-- explicit model registration in `app.db.model_registry`.
+- explicit model registration in `app.db.model_registry`;
+- PostgreSQL trigger enforcement preventing `UPDATE` and `DELETE` on `audit_records` (migration `9f2a6c4d8e10`, functionally verified against PostgreSQL).
 
 ### Not yet implemented
-
-- immutable database/application enforcement for audit records;
 - system-wide operation correlation generation/propagation through business use cases;
 - complete field-level change generation across all audit-worthy mutations;
 - audit read/query contract;
@@ -594,6 +593,55 @@ System/background actors must also be identifiable. Anonymous audit operations a
 - retention and operational storage requirements;
 
 ---
+
+### First Persistent Order Integration
+
+Order registration now writes a persistent audit operation and record in the same Unit of Work as the order status transition. The audit record uses the existing operation context id, which also correlates the `OrderRegistered` domain event.
+
+Recorded fields:
+
+- action: `order.registered`;
+- entity type: `order`;
+- entity id: the registered order id;
+- changes: `status` from the prior value to `REGISTERED`;
+- actor and operation initiator: the authenticated user.
+
+The application test verifies that the audit record and domain-event operation correlation use the same operation id. This is the first additional persistent integration slice; other mutation areas remain open.
+
+### Initial Application Mutation Inventory
+
+A first code inspection found that persistent Audit Trail writes currently exist in
+`VerificationApplicationService` for these operations:
+
+- `create` → `verification.created`;
+- `start` → `verification.started`;
+- `approve` → `verification.approved`;
+- `reject` → `verification.rejected`.
+
+The following Application services expose mutation use cases but do not currently
+reference the Audit application contracts in the inspected service files:
+
+| Area | Observed mutation use cases |
+|---|---|
+| Order | create, add/update/delete item, assign item instrument, update, register |
+| Workflow | start, move to next stage, complete |
+| Repair | create, start, complete, cancel |
+| Diagnostic | create, complete, set recommendation |
+| Warehouse | create, add stock, reserve, release, create movement |
+| Customer | create, update, delete |
+| User administration | change role, set active, archive, restore, create |
+| Device | create, update, connect, disconnect |
+| Material | create, update, archive, restore |
+| Price list | create, update, activate, add/remove/update item |
+| Organization | create, update |
+| Instrument type | create, update, archive, restore |
+| Site | create |
+
+This is an initial technical inventory, not a decision that every listed operation
+must produce an audit record. Business significance, required change fields,
+reason requirements, and actor/operation context must be classified before
+implementing audit writes. Read-only operations and authentication/session
+lifecycle require a separate security-oriented review.
 
 ## 20. Open Design Questions
 
@@ -639,4 +687,31 @@ Approved decisions:
 19. Audit remains separate from Domain Event notification and business entity state.
 ```
 
-The current branch contains the Audit application/persistence foundation and the first transactional Verification integration slice. Full Audit Trail implementation remains incomplete until system-wide coverage, immutability enforcement, propagation, read/query capabilities and rollout requirements are resolved.
+The current branch contains the Audit application/persistence foundation, the first transactional Verification integration slice, and database-level append-only enforcement. Full Audit Trail implementation remains incomplete until system-wide coverage, operation propagation, read/query capabilities, system actor representation and rollout requirements are resolved.
+
+
+### Repair completion integration
+
+Repair completion now persists `repair.completed` in the same Unit of Work as the domain state change. The record captures the previous and new status, the previous and new result, and the authenticated technician/admin as both actor and operation initiator. Other Repair mutations remain outside this integration slice until separately classified and implemented.
+
+### Diagnostic Completion Integration
+
+Diagnostic completion now writes a persistent audit operation and record in the same Unit of Work as the conclusion update.
+
+Recorded fields:
+
+- action: `diagnostic.completed`;
+- entity type: `diagnostic`;
+- entity id: the completed diagnostic id;
+- changes: conclusion from its previous value to the new conclusion;
+- actor and operation initiator: the authenticated user.
+
+The integration deliberately covers completion only. Creating a diagnostic is an initial work-record operation; setting a recommendation remains a separate mutation and requires its own business significance/change-field review before audit integration.
+
+
+
+## One-time pre-operational data reset — 2026-11-05
+
+The user explicitly confirmed that no valid Verification history has yet been created and approved clearing the existing pre-operational business data. Alembic revision `a6c8e1f3b520` therefore removes the existing untrusted Verification and audit rows as part of a one-time clean-slate initialization, while preserving Organizations and the `alex` admin account.
+
+This is not a change to the normal audit policy. The migration uses PostgreSQL `TRUNCATE` for the audit table; its row-level UPDATE/DELETE immutability trigger remains installed and enabled. This is a privileged, one-time initialization operation only. After this reset, Audit Trail remains append-only and Verification history must not be physically deleted.

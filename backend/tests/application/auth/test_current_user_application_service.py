@@ -54,6 +54,16 @@ class FakeUserRepository(UserRepository):
     ) -> User | None:
         return None
 
+    def get_all(self, include_archived: bool = False) -> list[User]:
+        if self.user is None:
+            return []
+        if self.user.archived and not include_archived:
+            return []
+        return [self.user]
+
+    def get_all_for_update(self) -> list[User]:
+        return [self.user] if self.user is not None else []
+
     def save(self, user: User) -> User:
         self.user = user
         return user
@@ -93,6 +103,33 @@ def test_get_rejects_missing_session() -> None:
         service.get(
             GetCurrentUserCommand(
                 session_id="missing",
+                now=datetime(2026, 8, 18, 20, tzinfo=UTC),
+            ),
+        )
+
+
+def test_get_rejects_inactive_user() -> None:
+    user = User(
+        id=uuid4(),
+        username="alice",
+        password_hash="hash",
+        is_active=False,
+    )
+    session = Session(
+        id=uuid4(),
+        user_id=user.id,
+        session_id="session-1",
+        expires_at=datetime(2026, 8, 19, 20, tzinfo=UTC),
+    )
+    service = CurrentUserApplicationService(
+        FakeSessionRepository(session),
+        FakeUserRepository(user),
+    )
+
+    with pytest.raises(AuthenticationFailedApplicationError):
+        service.get(
+            GetCurrentUserCommand(
+                session_id="session-1",
                 now=datetime(2026, 8, 18, 20, tzinfo=UTC),
             ),
         )

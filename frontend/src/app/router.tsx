@@ -2,12 +2,17 @@ import { createBrowserRouter } from "react-router";
 
 import { RequireAuth } from "../features/auth/ui/RequireAuth";
 import { LoginPage } from "../pages/auth/LoginPage";
+import { ChangePasswordPage } from "../pages/auth/ChangePasswordPage";
 import { CustomersPage } from "../pages/customers/CustomersPage";
 import { CustomerPage } from "../pages/customers/CustomerPage";
+import { CreateCustomerPage } from "../pages/customers/CreateCustomerPage";
+import { CreateSitePage } from "../pages/customers/CreateSitePage";
+import { CreateDevicePage } from "../pages/customers/CreateDevicePage";
 import { MaterialsPage } from "../pages/materials/MaterialsPage";
 import { MaterialPage } from "../pages/materials/MaterialPage";
 import { OrganizationsPage } from "../pages/organizations/OrganizationsPage";
 import { OrganizationPage } from "../pages/organizations/OrganizationPage";
+import { CreateOrganizationPage } from "../pages/organizations/CreateOrganizationPage";
 import { VerificationPage } from "../pages/verifications/VerificationPage";
 import { DiagnosticPage } from "../pages/diagnostics/DiagnosticPage";
 import { RepairPage } from "../pages/repairs/RepairPage";
@@ -20,11 +25,16 @@ import { DevicesPage } from "../pages/devices/DevicesPage";
 import { InstrumentTypePage } from "../pages/instrument-types/InstrumentTypePage";
 import { InstrumentTypesPage } from "../pages/instrument-types/InstrumentTypesPage";
 import { WarehouseStockPage } from "../pages/warehouses/WarehouseStockPage";
+import { UsersPage } from "../pages/users/UsersPage";
 
 export const router = createBrowserRouter([
   {
     path: "/login",
     element: <LoginPage />,
+  },
+  {
+    path: "/change-password",
+    element: <RequireAuth><ChangePasswordPage /></RequireAuth>,
   },
   {
     path: "/",
@@ -47,12 +57,28 @@ export const router = createBrowserRouter([
     element: <RequireAuth><CustomersPage /></RequireAuth>,
   },
   {
+    path: "/customers/new",
+    element: <RequireAuth><CreateCustomerPage /></RequireAuth>,
+  },
+  {
     path: "/customers/:customerId",
     element: <RequireAuth><CustomerPage /></RequireAuth>,
   },
   {
+    path: "/customers/:customerId/sites/new",
+    element: <RequireAuth><CreateSitePage /></RequireAuth>,
+  },
+  {
+    path: "/customers/:customerId/devices/new",
+    element: <RequireAuth><CreateDevicePage /></RequireAuth>,
+  },
+  {
     path: "/organizations",
     element: <RequireAuth><OrganizationsPage /></RequireAuth>,
+  },
+  {
+    path: "/organizations/new",
+    element: <RequireAuth><CreateOrganizationPage /></RequireAuth>,
   },
   {
     path: "/organizations/:organizationId",
@@ -101,5 +127,9 @@ export const router = createBrowserRouter([
   {
     path: "/warehouses/:warehouseId/stocks",
     element: <RequireAuth><WarehouseStockPage /></RequireAuth>,
+  },
+  {
+    path: "/users",
+    element: <RequireAuth adminOnly><UsersPage /></RequireAuth>,
   },
 ]);

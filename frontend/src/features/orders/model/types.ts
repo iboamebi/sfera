@@ -14,6 +14,7 @@ export interface OrderItem {
   modification: string | null;
   comment: string | null;
   requestedOperations: OrderItemOperation[];
+  verificationIds: string[];
 }
 
 export interface OrderRead {

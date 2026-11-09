@@ -9,6 +9,9 @@ from fastapi import Depends
 from app.application.auth.services.authentication_application_service import (
     AuthenticationApplicationService,
 )
+from app.application.auth.services.change_password_application_service import (
+    ChangePasswordApplicationService,
+)
 from app.application.auth.services.current_user_application_service import (
     CurrentUserApplicationService,
 )
@@ -47,6 +50,9 @@ from app.application.repair.services.repair_application_service import (
 )
 from app.application.site.services.site_application_service import (
     SiteApplicationService,
+)
+from app.application.user.services.user_administration_application_service import (
+    UserAdministrationApplicationService,
 )
 from app.application.verification.services.verification_application_service import (
     VerificationApplicationService,
@@ -149,6 +155,15 @@ def get_authentication_service(
     return AuthenticationApplicationService(repository, password_hasher)
 
 
+def get_change_password_service(
+    repository: UserRepository = Depends(get_user_repository),
+    password_hasher: Argon2PasswordHasher = Depends(get_password_hasher),
+    uow: UnitOfWork = Depends(get_unit_of_work),
+) -> ChangePasswordApplicationService:
+    """Provide ChangePassword application service."""
+    return ChangePasswordApplicationService(repository, password_hasher, uow)
+
+
 def get_session_token_generator() -> SecureSessionTokenGenerator:
     """Provide secure authenticated session token generator."""
     return SecureSessionTokenGenerator()
@@ -168,21 +183,44 @@ def get_current_user_service(
     session_repository: SessionRepository = Depends(get_session_repository),
     user_repository: UserRepository = Depends(get_user_repository),
 ) -> CurrentUserApplicationService:
-    """Provide current user application service."""
+    """Provide CurrentUser application service."""
     return CurrentUserApplicationService(session_repository, user_repository)
+
+
+def get_user_administration_service(
+    repository: UserRepository = Depends(get_user_repository),
+    password_hasher: Argon2PasswordHasher = Depends(get_password_hasher),
+    uow: UnitOfWork = Depends(get_unit_of_work),
+    session_repository: SessionRepository = Depends(get_session_repository),
+) -> UserAdministrationApplicationService:
+    """Provide User administration application service."""
+    return UserAdministrationApplicationService(
+        repository,
+        password_hasher,
+        uow,
+        session_repository,
+    )
 
 
 def get_order_service(
     repository: OrderRepository = Depends(get_order_repository),
     customer_repository: CustomerRepository = Depends(get_customer_repository),
+    device_repository: DeviceRepository = Depends(get_device_repository),
     uow: UnitOfWork = Depends(get_unit_of_work),
+    audit_operation_repository: AuditOperationRepository = Depends(
+        get_audit_operation_repository,
+    ),
+    audit_repository: AuditRepository = Depends(get_audit_repository),
     event_dispatcher: EventDispatcher = Depends(get_event_dispatcher),
 ) -> OrderApplicationService:
     """Provide Order application service."""
     return OrderApplicationService(
         repository,
         customer_repository,
+        device_repository,
         uow,
+        audit_operation_repository,
+        audit_repository,
         event_dispatcher,
     )
 
@@ -218,10 +256,18 @@ def get_device_service(
     instrument_type_repository: InstrumentTypeRepository = Depends(
         get_instrument_type_repository
     ),
+    customer_repository: CustomerRepository = Depends(get_customer_repository),
+    site_repository: SiteRepository = Depends(get_site_repository),
     uow: UnitOfWork = Depends(get_unit_of_work),
 ) -> DeviceApplicationService:
     """Provide Device application service."""
-    return DeviceApplicationService(repository, instrument_type_repository, uow)
+    return DeviceApplicationService(
+        repository,
+        instrument_type_repository,
+        customer_repository,
+        site_repository,
+        uow,
+    )
 
 
 def get_instrument_type_service(
@@ -287,10 +333,11 @@ def get_organization_service(
 
 def get_site_service(
     repository: SiteRepository = Depends(get_site_repository),
+    customer_repository: CustomerRepository = Depends(get_customer_repository),
     uow: UnitOfWork = Depends(get_unit_of_work),
 ) -> SiteApplicationService:
     """Provide Site application service."""
-    return SiteApplicationService(repository, uow)
+    return SiteApplicationService(repository, customer_repository, uow)
 
 
 def get_workflow_service(
@@ -313,14 +360,32 @@ def get_price_list_service(
 def get_repair_service(
     repository: RepairRepository = Depends(get_repair_repository),
     uow: UnitOfWork = Depends(get_unit_of_work),
+    audit_operation_repository: AuditOperationRepository = Depends(
+        get_audit_operation_repository,
+    ),
+    audit_repository: AuditRepository = Depends(get_audit_repository),
 ) -> RepairApplicationService:
     """Provide Repair application service."""
-    return RepairApplicationService(repository, uow)
+    return RepairApplicationService(
+        repository,
+        uow,
+        audit_operation_repository,
+        audit_repository,
+    )
 
 
 def get_diagnostic_service(
     repository: DiagnosticRepository = Depends(get_diagnostic_repository),
     uow: UnitOfWork = Depends(get_unit_of_work),
+    audit_operation_repository: AuditOperationRepository = Depends(
+        get_audit_operation_repository,
+    ),
+    audit_repository: AuditRepository = Depends(get_audit_repository),
 ) -> DiagnosticApplicationService:
     """Provide Diagnostic application service."""
-    return DiagnosticApplicationService(repository, uow)
+    return DiagnosticApplicationService(
+        repository,
+        uow,
+        audit_operation_repository,
+        audit_repository,
+    )

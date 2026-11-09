@@ -25,11 +25,11 @@ class SiteRepository(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def get_by_organization_id(
+    def get_by_customer_id(
         self,
-        organization_id: UUID,
+        customer_id: UUID,
     ) -> list[Site]:
-        """Get sites belonging to an organization."""
+        """Get sites belonging to a customer."""
 
         raise NotImplementedError
 

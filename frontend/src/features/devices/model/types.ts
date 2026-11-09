@@ -8,6 +8,8 @@ export type DeviceStatus =
 export interface DeviceRead {
   id: string;
   instrumentTypeId: string;
+  customerId: string;
+  siteId: string | null;
   name: string | null;
   serialNumber: string;
   registryNumber: string | null;

@@ -90,11 +90,8 @@ def test_create_customer():
         FakeUnitOfWork(),
     )
 
-    organization_id = uuid4()
-
     customer = service.create(
         CreateCustomerCommand(
-            organization_id=organization_id,
             name="Sfera Test Customer",
             contact_person="Test Person",
             phone="+7 900 000-00-00",
@@ -106,7 +103,6 @@ def test_create_customer():
     )
 
     assert customer.id is not None
-    assert customer.organization_id == organization_id
     assert customer.name == "Sfera Test Customer"
     assert customer.contact_person == "Test Person"
     assert customer.phone == "+7 900 000-00-00"
@@ -134,7 +130,6 @@ def test_create_customer_rejects_unauthorized_user():
     with pytest.raises(AuthorizationError, match="not authorized"):
         service.create(
             CreateCustomerCommand(
-                organization_id=uuid4(),
                 name="Unauthorized Customer",
             ),
             user,
@@ -152,7 +147,6 @@ def test_update_customer():
 
     customer = service.create(
         CreateCustomerCommand(
-            organization_id=uuid4(),
             name="Original Customer",
         ),
         make_operator(),
@@ -181,6 +175,42 @@ def test_update_customer():
     assert repository.get(customer.id) is updated
 
 
+def test_update_customer_clears_optional_fields_when_explicitly_set_to_none():
+    repository = FakeCustomerRepository()
+    service = CustomerApplicationService(
+        repository,
+        FakeUnitOfWork(),
+    )
+
+    customer = service.create(
+        CreateCustomerCommand(
+            name="Original Customer",
+            contact_person="Original Person",
+            phone="+7 900 000-00-00",
+            email="original@example.com",
+            comment="Original comment",
+        ),
+        make_operator(),
+    )
+
+    updated = service.update(
+        UpdateCustomerCommand(
+            customer_id=customer.id,
+            contact_person=None,
+            phone=None,
+            email=None,
+            comment=None,
+        ),
+        make_operator(),
+    )
+
+    assert updated.contact_person is None
+    assert updated.phone is None
+    assert updated.email is None
+    assert updated.comment is None
+    assert updated.name == "Original Customer"
+
+
 def test_update_customer_rejects_unauthorized_user():
     repository = FakeCustomerRepository()
     service = CustomerApplicationService(
@@ -190,7 +220,6 @@ def test_update_customer_rejects_unauthorized_user():
 
     customer = service.create(
         CreateCustomerCommand(
-            organization_id=uuid4(),
             name="Original Customer",
         ),
         make_operator(),
@@ -227,7 +256,6 @@ def test_delete_customer():
 
     customer = service.create(
         CreateCustomerCommand(
-            organization_id=uuid4(),
             name="Customer to Delete",
         ),
         make_operator(),
@@ -260,7 +288,6 @@ def test_delete_customer_rejects_unauthorized_user():
 
     customer = service.create(
         CreateCustomerCommand(
-            organization_id=uuid4(),
             name="Customer to Protect",
         ),
         make_operator(),
@@ -294,14 +321,12 @@ def test_get_all_excludes_archived_customers():
 
     active = service.create(
         CreateCustomerCommand(
-            organization_id=uuid4(),
             name="Active Customer",
         ),
         make_operator(),
     )
     archived = service.create(
         CreateCustomerCommand(
-            organization_id=uuid4(),
             name="Archived Customer",
         ),
         make_operator(),

@@ -43,7 +43,7 @@ def make_site() -> Site:
     """Build a Site entity for repository tests."""
     return Site(
         id=uuid4(),
-        organization_id=uuid4(),
+        customer_id=uuid4(),
         name="Main site",
         address="Main street, 1",
     )
@@ -53,7 +53,7 @@ def make_model(site: Site) -> SiteModel:
     """Build a Site ORM model for repository tests."""
     return SiteModel(
         id=site.id,
-        organization_id=site.organization_id,
+        customer_id=site.customer_id,
         name=site.name,
         address=site.address,
         archived=site.archived,
@@ -69,7 +69,7 @@ def test_get_returns_site() -> None:
 
     assert result is not None
     assert result.id == site.id
-    assert result.organization_id == site.organization_id
+    assert result.customer_id == site.customer_id
     assert result.name == site.name
     assert result.address == site.address
 
@@ -90,13 +90,13 @@ def test_get_all_returns_sites() -> None:
     assert [site.id for site in result] == [first.id, second.id]
 
 
-def test_get_by_organization_id_returns_sites() -> None:
+def test_get_by_customer_id_returns_sites() -> None:
     first = make_site()
     second = make_site()
     session = FakeSession([make_model(first), make_model(second)])
 
-    result = SiteRepositorySQLAlchemy(session).get_by_organization_id(
-        first.organization_id,
+    result = SiteRepositorySQLAlchemy(session).get_by_customer_id(
+        first.customer_id,
     )
 
     assert [site.id for site in result] == [first.id, second.id]
@@ -112,7 +112,7 @@ def test_save_creates_site() -> None:
     assert len(session.added) == 1
     model = session.added[0]
     assert isinstance(model, SiteModel)
-    assert model.organization_id == site.organization_id
+    assert model.customer_id == site.customer_id
     assert model.name == site.name
     assert model.address == site.address
     assert model.archived == site.archived

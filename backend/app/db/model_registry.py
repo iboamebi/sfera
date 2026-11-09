@@ -10,7 +10,6 @@ from app.models.audit_operation import AuditOperationModel
 from app.models.audit_record import AuditRecordModel
 from app.models.auth_session import AuthSession
 from app.models.customer import Customer
-from app.models.customer_organization import CustomerOrganization
 from app.models.diagnostic import Diagnostic
 from app.models.document import Document
 from app.models.document_template import DocumentTemplate

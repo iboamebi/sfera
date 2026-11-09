@@ -42,3 +42,10 @@ class User(BaseModel):
         default=True,
         nullable=False,
     )
+
+    must_change_password: Mapped[bool] = mapped_column(
+        Boolean,
+        default=False,
+        server_default="false",
+        nullable=False,
+    )

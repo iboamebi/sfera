@@ -7,11 +7,15 @@ from app.application.device.commands.create_device import CreateDeviceCommand
 from app.application.device.commands.disconnect_device import DisconnectDeviceCommand
 from app.application.device.commands.update_device import UpdateDeviceCommand
 from app.application.device.exceptions import (
+    CustomerNotFoundApplicationError,
     DeviceNotAvailableApplicationError,
     DeviceNotFoundApplicationError,
     DeviceNotInWorkApplicationError,
     InstrumentTypeNotFoundApplicationError,
+    SiteCustomerMismatchApplicationError,
+    SiteNotFoundApplicationError,
 )
+from app.domains.customer.repositories.customer_repository import CustomerRepository
 from app.domains.device.entities.device import Device
 from app.domains.device.exceptions import (
     DeviceNotAvailableDomainError,
@@ -23,6 +27,7 @@ from app.domains.device.value_objects.serial_number import SerialNumber
 from app.domains.instrument_type.repositories.instrument_type_repository import (
     InstrumentTypeRepository,
 )
+from app.domains.site.repositories.site_repository import SiteRepository
 from app.shared.unit_of_work.unit_of_work import UnitOfWork
 
 
@@ -33,10 +38,14 @@ class DeviceApplicationService:
         self,
         repository: DeviceRepository,
         instrument_type_repository: InstrumentTypeRepository,
+        customer_repository: CustomerRepository,
+        site_repository: SiteRepository,
         unit_of_work: UnitOfWork,
     ) -> None:
         self._repository = repository
         self._instrument_type_repository = instrument_type_repository
+        self._customer_repository = customer_repository
+        self._site_repository = site_repository
         self._uow = unit_of_work
 
     def create(
@@ -46,6 +55,20 @@ class DeviceApplicationService:
         """Create device."""
 
         with self._uow:
+            customer = self._customer_repository.get(command.customer_id)
+
+            if customer is None:
+                raise CustomerNotFoundApplicationError
+
+            if command.site_id is not None:
+                site = self._site_repository.get(command.site_id)
+
+                if site is None:
+                    raise SiteNotFoundApplicationError
+
+                if site.customer_id != command.customer_id:
+                    raise SiteCustomerMismatchApplicationError
+
             instrument_type = self._instrument_type_repository.get(
                 command.instrument_type_id,
             )
@@ -56,6 +79,8 @@ class DeviceApplicationService:
             device = DeviceFactory.create(
                 device_id=uuid4(),
                 instrument_type_id=command.instrument_type_id,
+                customer_id=command.customer_id,
+                site_id=command.site_id,
                 name=command.name,
                 serial_number=command.serial_number,
             )

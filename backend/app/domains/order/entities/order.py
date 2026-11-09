@@ -21,10 +21,8 @@ class Order(AggregateRoot):
 
     number: OrderNumber
     customer_id: UUID
-    organization_id: UUID
     received_at: datetime
 
-    site_id: UUID | None = None
     planned_issue_at: datetime | None = None
     issued_at: datetime | None = None
     comment: str | None = None
@@ -41,9 +39,7 @@ class Order(AggregateRoot):
         id: UUID,
         number: OrderNumber,
         customer_id: UUID,
-        organization_id: UUID,
         received_at: datetime,
-        site_id: UUID | None = None,
         planned_issue_at: datetime | None = None,
         comment: str | None = None,
     ) -> "Order":
@@ -53,9 +49,7 @@ class Order(AggregateRoot):
             id=id,
             number=number,
             customer_id=customer_id,
-            organization_id=organization_id,
             received_at=received_at,
-            site_id=site_id,
             planned_issue_at=planned_issue_at,
             comment=comment,
         )

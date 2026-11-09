@@ -48,16 +48,16 @@ class SiteRepositorySQLAlchemy(SiteRepository):
 
         return [self._mapper.to_domain(model) for model in models]
 
-    def get_by_organization_id(
+    def get_by_customer_id(
         self,
-        organization_id: UUID,
+        customer_id: UUID,
     ) -> list[Site]:
-        """Get sites belonging to an organization."""
+        """Get sites belonging to a customer."""
 
         models = (
             self._session.query(SiteModel)
             .filter(
-                SiteModel.organization_id == organization_id,
+                SiteModel.customer_id == customer_id,
             )
             .all()
         )

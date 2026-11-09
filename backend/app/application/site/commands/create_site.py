@@ -10,6 +10,6 @@ from uuid import UUID
 class CreateSiteCommand:
     """Command for creating a site."""
 
-    organization_id: UUID
+    customer_id: UUID
     name: str
     address: str

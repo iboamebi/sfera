@@ -1,5 +1,5 @@
 """
-Password hashing port.
+Shared password hashing contract.
 """
 
 from abc import ABC, abstractmethod
@@ -7,6 +7,12 @@ from abc import ABC, abstractmethod
 
 class PasswordHasher(ABC):
     """Abstract password hashing service."""
+
+    @abstractmethod
+    def hash(self, password: str) -> str:
+        """Return a secure hash for a plaintext password."""
+
+        raise NotImplementedError
 
     @abstractmethod
     def verify(

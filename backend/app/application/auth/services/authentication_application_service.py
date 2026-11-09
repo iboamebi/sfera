@@ -6,9 +6,9 @@ from app.application.auth.commands.authenticate_user import (
     AuthenticateUserCommand,
 )
 from app.application.auth.exceptions import AuthenticationFailedApplicationError
-from app.application.auth.ports.password_hasher import PasswordHasher
 from app.domains.user.entities.user import User
 from app.domains.user.repositories.user_repository import UserRepository
+from app.shared.password_hasher import PasswordHasher
 
 
 class AuthenticationApplicationService:
@@ -30,7 +30,7 @@ class AuthenticationApplicationService:
 
         user = self._repository.get_by_username(command.username)
 
-        if user is None or user.archived:
+        if user is None or user.archived or not user.is_active:
             raise AuthenticationFailedApplicationError
 
         if not self._password_hasher.verify(

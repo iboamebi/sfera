@@ -4,14 +4,8 @@ import {
   type UseMutationOptions,
 } from "@tanstack/react-query";
 
-import { createDevice } from "../api/createDevice";
+import { createDevice, type CreateDeviceInput } from "../api/createDevice";
 import type { DeviceRead } from "./types";
-
-type CreateDeviceInput = {
-  instrumentTypeId: string;
-  name: string;
-  serialNumber: string;
-};
 
 export function useCreateDevice(
   options?: UseMutationOptions<DeviceRead, Error, CreateDeviceInput>,

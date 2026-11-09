@@ -200,6 +200,7 @@ def get_customer_repository(
     return CustomerRepositorySQLAlchemy(session)
 
 
+
 def get_device_repository(
     session: Session = Depends(get_session),
 ) -> DeviceRepository:

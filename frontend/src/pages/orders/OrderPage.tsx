@@ -1,7 +1,12 @@
-import { Button, Stack, Typography } from "@mui/material";
+import {
+  Button,
+  Card,
+  CardContent,
+  Stack,
+  Typography,
+} from "@mui/material";
 import { useNavigate, useParams } from "react-router";
 
-import { UpdateOrder } from "../../features/orders/update-order/ui/UpdateOrder";
 import { useOrder } from "../../features/orders/model/useOrder";
 import { OrderActions } from "../../features/orders/ui/OrderActions";
 import { OrderDetails } from "../../features/orders/ui/OrderDetails";
@@ -25,7 +30,7 @@ export function OrderPage() {
   }
 
   return (
-    <Stack spacing={2}>
+    <Stack spacing={3}>
       <Button
         variant="outlined"
         onClick={() => navigate("/orders")}
@@ -33,9 +38,22 @@ export function OrderPage() {
       >
         Назад
       </Button>
+
       <OrderDetails order={data} />
-      <OrderActions order={data} />
-      <UpdateOrder order={data} />
+
+      {data.status === "NEW" && (
+        <Card variant="outlined">
+          <CardContent>
+            <Stack spacing={1.5}>
+              <Typography variant="h6">Регистрация заказа</Typography>
+              <Typography color="text.secondary" variant="body2">
+                Отдельное действие: переводит заказ в зарегистрированное состояние.
+              </Typography>
+              <OrderActions order={data} />
+            </Stack>
+          </CardContent>
+        </Card>
+      )}
     </Stack>
   );
 }

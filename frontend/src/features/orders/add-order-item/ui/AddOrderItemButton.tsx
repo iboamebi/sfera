@@ -32,9 +32,10 @@ const OPERATION_OPTIONS: Array<{
 
 interface AddOrderItemButtonProps {
   orderId: string;
+  customerId: string;
 }
 
-function getErrorMessage(error: unknown): string {
+function getErrorMessage(error: unknown, fallback: string): string {
   if (isAxiosError(error)) {
     const detail = error.response?.data?.detail;
     if (typeof detail === "string" && detail.trim()) {
@@ -46,10 +47,13 @@ function getErrorMessage(error: unknown): string {
     return error.message;
   }
 
-  return "Не удалось добавить позицию";
+  return fallback;
 }
 
-export function AddOrderItemButton({ orderId }: AddOrderItemButtonProps) {
+export function AddOrderItemButton({
+  orderId,
+  customerId,
+}: AddOrderItemButtonProps) {
   const [deviceId, setDeviceId] = useState("");
   const [instrumentTypeId, setInstrumentTypeId] = useState("");
   const [quantity, setQuantity] = useState(1);
@@ -108,13 +112,19 @@ export function AddOrderItemButton({ orderId }: AddOrderItemButtonProps) {
     name: string;
     serialNumber: string;
   }) => {
-    createDeviceMutation.mutate(data, {
-      onSuccess: (device) => {
-        setDeviceId(device.id);
-        setInstrumentTypeId(device.instrumentTypeId);
-        setIsCreateDeviceOpen(false);
+    createDeviceMutation.mutate(
+      {
+        ...data,
+        customerId,
       },
-    });
+      {
+        onSuccess: (device) => {
+          setDeviceId(device.id);
+          setInstrumentTypeId(device.instrumentTypeId);
+          setIsCreateDeviceOpen(false);
+        },
+      },
+    );
   };
 
   const handleCreateInstrumentType = (data: { name: string }) => {
@@ -138,12 +148,22 @@ export function AddOrderItemButton({ orderId }: AddOrderItemButtonProps) {
 
   if (isCreateDeviceOpen) {
     return (
-      <CreateDeviceForm
-        instrumentTypeId={instrumentTypeId}
-        isPending={createDeviceMutation.isPending}
-        onSubmit={handleCreateDevice}
-        onCreateInstrumentType={() => setIsCreateInstrumentTypeOpen(true)}
-      />
+      <Stack spacing={2}>
+        <CreateDeviceForm
+          instrumentTypeId={instrumentTypeId}
+          isPending={createDeviceMutation.isPending}
+          onSubmit={handleCreateDevice}
+          onCreateInstrumentType={() => setIsCreateInstrumentTypeOpen(true)}
+        />
+        {createDeviceMutation.isError && (
+          <Typography color="error" variant="body2">
+            {getErrorMessage(
+              createDeviceMutation.error,
+              "Не удалось создать СИ",
+            )}
+          </Typography>
+        )}
+      </Stack>
     );
   }
 
@@ -176,7 +196,9 @@ export function AddOrderItemButton({ orderId }: AddOrderItemButtonProps) {
             label="Количество"
             type="number"
             value={quantity}
-            onChange={(event) => setQuantity(Math.max(1, Number(event.target.value)))}
+            onChange={(event) =>
+              setQuantity(Math.max(1, Number(event.target.value)))
+            }
             slotProps={{ htmlInput: { min: 1, step: 1 } }}
             required
             sx={{ width: 140 }}
@@ -187,6 +209,7 @@ export function AddOrderItemButton({ orderId }: AddOrderItemButtonProps) {
       <Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
         <DeviceSelector
           value={deviceId}
+          customerId={customerId}
           onChange={setDeviceId}
           onCreateDevice={() => setIsCreateDeviceOpen(true)}
         />
@@ -220,7 +243,10 @@ export function AddOrderItemButton({ orderId }: AddOrderItemButtonProps) {
 
       {addOrderItemMutation.isError && (
         <Typography color="error" variant="body2">
-          {getErrorMessage(addOrderItemMutation.error)}
+          {getErrorMessage(
+            addOrderItemMutation.error,
+            "Не удалось добавить позицию",
+          )}
         </Typography>
       )}
     </Stack>

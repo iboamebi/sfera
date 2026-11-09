@@ -11,7 +11,10 @@ export function LoginPage() {
 
   const handleSubmit = (data: LoginFormValues) => {
     mutate(data, {
-      onSuccess: () => navigate("/orders"),
+      onSuccess: (user) =>
+        navigate(user.mustChangePassword ? "/change-password" : "/orders", {
+          replace: true,
+        }),
     });
   };
 

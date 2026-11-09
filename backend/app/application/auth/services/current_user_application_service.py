@@ -34,7 +34,7 @@ class CurrentUserApplicationService:
             raise AuthenticationFailedApplicationError
 
         user = self._user_repository.get_by_id(session.user_id)
-        if user is None or user.archived:
+        if user is None or user.archived or not user.is_active:
             raise AuthenticationFailedApplicationError
 
         return user

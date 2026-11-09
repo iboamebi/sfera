@@ -78,6 +78,7 @@ async def create(
         valid_from=data.valid_from,
         valid_to=data.valid_to,
         description=data.description,
+        is_active=data.is_active,
     )
 
     return await service.create(command)
@@ -103,6 +104,8 @@ async def update(
         valid_from=data.valid_from,
         valid_to=data.valid_to,
         description=data.description,
+        is_active=data.is_active,
+        updated_fields=frozenset(data.model_fields_set),
     )
 
     try:

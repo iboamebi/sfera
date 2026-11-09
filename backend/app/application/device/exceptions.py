@@ -17,3 +17,15 @@ class DeviceNotInWorkApplicationError(Exception):
 
 class InstrumentTypeNotFoundApplicationError(Exception):
     """Instrument type was not found."""
+
+
+class CustomerNotFoundApplicationError(Exception):
+    """Customer was not found."""
+
+
+class SiteNotFoundApplicationError(Exception):
+    """Site was not found."""
+
+
+class SiteCustomerMismatchApplicationError(Exception):
+    """Site does not belong to the device customer."""

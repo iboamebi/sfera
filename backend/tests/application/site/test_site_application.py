@@ -8,9 +8,12 @@ import pytest
 
 from app.application.authorization.authorization import AuthorizationError
 from app.application.site.commands.create_site import CreateSiteCommand
+from app.application.site.exceptions import CustomerNotFoundApplicationError
 from app.application.site.services.site_application_service import (
     SiteApplicationService,
 )
+from app.domains.customer.entities.customer import Customer
+from app.domains.customer.repositories.customer_repository import CustomerRepository
 from app.domains.site.entities.site import Site
 from app.domains.site.repositories.site_repository import SiteRepository
 from app.domains.user.entities.user import User
@@ -39,6 +42,42 @@ class FakeUnitOfWork(UnitOfWork):
         pass
 
 
+class FakeCustomerRepository(CustomerRepository):
+    """In-memory customer repository for application service tests."""
+
+    def __init__(self) -> None:
+        self._customers: dict[UUID, Customer] = {}
+
+    def get(
+        self,
+        customer_id: UUID,
+        include_archived: bool = False,
+    ) -> Customer | None:
+        customer = self._customers.get(customer_id)
+
+        if customer is None:
+            return None
+
+        if not include_archived and customer.archived:
+            return None
+
+        return customer
+
+    def get_all(
+        self,
+        include_archived: bool = False,
+    ) -> list[Customer]:
+        return [
+            customer
+            for customer in self._customers.values()
+            if include_archived or not customer.archived
+        ]
+
+    def save(self, customer: Customer) -> Customer:
+        self._customers[customer.id] = customer
+        return customer
+
+
 class FakeSiteRepository(SiteRepository):
     """In-memory site repository for application service tests."""
 
@@ -51,14 +90,12 @@ class FakeSiteRepository(SiteRepository):
     def get_all(self) -> list[Site]:
         return list(self._sites.values())
 
-    def get_by_organization_id(
+    def get_by_customer_id(
         self,
-        organization_id: UUID,
+        customer_id: UUID,
     ) -> list[Site]:
         return [
-            site
-            for site in self._sites.values()
-            if site.organization_id == organization_id
+            site for site in self._sites.values() if site.customer_id == customer_id
         ]
 
     def save(self, site: Site) -> Site:
@@ -79,13 +116,19 @@ def make_user(role: UserRole) -> User:
 
 def test_create_site():
     repository = FakeSiteRepository()
+    customer_repository = FakeCustomerRepository()
     uow = FakeUnitOfWork()
-    service = SiteApplicationService(repository, uow)
-    organization_id = uuid4()
+    service = SiteApplicationService(repository, customer_repository, uow)
+    customer = Customer(
+        id=uuid4(),
+        name="Customer",
+    )
+    customer_repository.save(customer)
+    customer_id = customer.id
 
     site = service.create(
         CreateSiteCommand(
-            organization_id=organization_id,
+            customer_id=customer_id,
             name="Main site",
             address="Main street, 1",
         ),
@@ -93,7 +136,7 @@ def test_create_site():
     )
 
     assert site.id is not None
-    assert site.organization_id == organization_id
+    assert site.customer_id == customer_id
     assert site.name == "Main site"
     assert site.address == "Main street, 1"
     assert site.archived is False
@@ -104,13 +147,14 @@ def test_create_site():
 
 def test_create_site_rejects_unauthorized_user():
     repository = FakeSiteRepository()
+    customer_repository = FakeCustomerRepository()
     uow = FakeUnitOfWork()
-    service = SiteApplicationService(repository, uow)
+    service = SiteApplicationService(repository, customer_repository, uow)
 
     with pytest.raises(AuthorizationError, match="not authorized"):
         service.create(
             CreateSiteCommand(
-                organization_id=uuid4(),
+                customer_id=uuid4(),
                 name="Protected site",
                 address="Protected address",
             ),
@@ -124,10 +168,14 @@ def test_create_site_rejects_unauthorized_user():
 
 def test_get_site():
     repository = FakeSiteRepository()
-    service = SiteApplicationService(repository, FakeUnitOfWork())
+    service = SiteApplicationService(
+        repository,
+        FakeCustomerRepository(),
+        FakeUnitOfWork(),
+    )
     site = Site(
         id=uuid4(),
-        organization_id=uuid4(),
+        customer_id=uuid4(),
         name="Main site",
         address="Main street, 1",
     )
@@ -140,16 +188,20 @@ def test_get_site():
 
 def test_get_all_sites():
     repository = FakeSiteRepository()
-    service = SiteApplicationService(repository, FakeUnitOfWork())
+    service = SiteApplicationService(
+        repository,
+        FakeCustomerRepository(),
+        FakeUnitOfWork(),
+    )
     first = Site(
         id=uuid4(),
-        organization_id=uuid4(),
+        customer_id=uuid4(),
         name="First site",
         address="First address",
     )
     second = Site(
         id=uuid4(),
-        organization_id=uuid4(),
+        customer_id=uuid4(),
         name="Second site",
         address="Second address",
     )
@@ -161,25 +213,49 @@ def test_get_all_sites():
     assert result == [first, second]
 
 
-def test_get_sites_by_organization_id():
+def test_create_site_rejects_unknown_customer():
     repository = FakeSiteRepository()
-    service = SiteApplicationService(repository, FakeUnitOfWork())
-    organization_id = uuid4()
+    customer_repository = FakeCustomerRepository()
+    uow = FakeUnitOfWork()
+    service = SiteApplicationService(repository, customer_repository, uow)
+
+    with pytest.raises(CustomerNotFoundApplicationError):
+        service.create(
+            CreateSiteCommand(
+                customer_id=uuid4(),
+                name="Unknown customer site",
+                address="Unknown address",
+            ),
+            make_user(UserRole.OPERATOR),
+        )
+
+    assert repository.get_all() == []
+    assert uow.committed is False
+
+
+def test_get_sites_by_customer_id():
+    repository = FakeSiteRepository()
+    service = SiteApplicationService(
+        repository,
+        FakeCustomerRepository(),
+        FakeUnitOfWork(),
+    )
+    customer_id = uuid4()
     matching = Site(
         id=uuid4(),
-        organization_id=organization_id,
+        customer_id=customer_id,
         name="Matching site",
         address="Matching address",
     )
     other = Site(
         id=uuid4(),
-        organization_id=uuid4(),
+        customer_id=uuid4(),
         name="Other site",
         address="Other address",
     )
     repository.save(matching)
     repository.save(other)
 
-    result = service.get_by_organization_id(organization_id)
+    result = service.get_by_customer_id(customer_id)
 
     assert result == [matching]

@@ -10,6 +10,8 @@ class DeviceCreate(BaseModel):
     """Request for creating an instrument card."""
 
     instrument_type_id: UUID
+    customer_id: UUID
+    site_id: UUID | None = None
     name: str
     serial_number: str
 
@@ -33,6 +35,8 @@ class DeviceRead(BaseModel):
 
     id: UUID
     instrument_type_id: UUID
+    customer_id: UUID
+    site_id: UUID | None = None
     name: str | None = None
     serial_number: str
     registry_number: str | None = None

@@ -47,7 +47,7 @@ export function VerificationPage() {
           <RejectVerificationButton verificationId={data.id} />
         </>
       )}
-      <Typography>Archive state: {data.archived ? "Archived" : "Active"}</Typography>
+      <Typography>Archived: {data.archived ? "Yes" : "No"}</Typography>
     </Stack>
   );
 }

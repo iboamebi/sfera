@@ -1,4 +1,4 @@
-"""
+""" 
 Create device command.
 """
 
@@ -11,5 +11,7 @@ class CreateDeviceCommand:
     """Command for creating a device."""
 
     instrument_type_id: UUID
+    customer_id: UUID
     name: str
     serial_number: str
+    site_id: UUID | None = None

@@ -2,12 +2,16 @@ import type { ReactNode } from "react";
 import { Navigate, useLocation } from "react-router";
 
 import { useCurrentUser } from "../model/useCurrentUser";
+import { AppShell } from "../../../app/AppShell";
 
 interface RequireAuthProps {
   children: ReactNode;
+  adminOnly?: boolean;
 }
 
-export function RequireAuth({ children }: RequireAuthProps) {
+const PASSWORD_CHANGE_PATH = "/change-password";
+
+export function RequireAuth({ children, adminOnly = false }: RequireAuthProps) {
   const location = useLocation();
   const { data: user, isPending, isError } = useCurrentUser();
 
@@ -19,5 +23,21 @@ export function RequireAuth({ children }: RequireAuthProps) {
     return <Navigate to="/login" replace state={{ from: location }} />;
   }
 
-  return children;
+  if (user.mustChangePassword && location.pathname !== PASSWORD_CHANGE_PATH) {
+    return <Navigate to={PASSWORD_CHANGE_PATH} replace />;
+  }
+
+  if (!user.mustChangePassword && location.pathname === PASSWORD_CHANGE_PATH) {
+    return <Navigate to="/orders" replace />;
+  }
+
+  if (adminOnly && user.role !== "admin") {
+    return <Navigate to="/orders" replace />;
+  }
+
+  if (location.pathname === PASSWORD_CHANGE_PATH) {
+    return children;
+  }
+
+  return <AppShell user={user}>{children}</AppShell>;
 }

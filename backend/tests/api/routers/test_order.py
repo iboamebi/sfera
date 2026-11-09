@@ -7,21 +7,20 @@ from app.api.routers.order import (
     create_order,
     get_order,
     register_order,
+    update_order,
 )
 from app.domains.order.entities.order import Order
 from app.domains.order.value_objects.order_number import OrderNumber
-from app.schemas.order import OrderRead
+from app.schemas.order import OrderRead, OrderUpdate
 
 
 def test_create_order_returns_api_contract() -> None:
     customer_id = uuid4()
-    organization_id = uuid4()
     now = datetime.now(UTC)
     order = Order(
         id=uuid4(),
         number=OrderNumber("1001"),
         customer_id=customer_id,
-        organization_id=organization_id,
         received_at=now,
         planned_issue_at=None,
         issued_at=None,
@@ -79,13 +78,11 @@ def test_create_order_returns_api_contract() -> None:
 def test_add_order_item_returns_read_model() -> None:
     order_id = uuid4()
     customer_id = uuid4()
-    organization_id = uuid4()
     now = datetime.now(UTC)
     order = Order(
         id=order_id,
         number=OrderNumber("1001"),
         customer_id=customer_id,
-        organization_id=organization_id,
         received_at=now,
     )
     read_order = OrderRead(
@@ -165,7 +162,6 @@ def test_get_order_returns_api_contract() -> None:
 
 def test_register_order_returns_read_model() -> None:
     order_id = uuid4()
-    organization_id = uuid4()
     now = datetime.now(UTC)
     read_order = OrderRead(
         id=order_id,
@@ -190,8 +186,7 @@ def test_register_order_returns_read_model() -> None:
                 id=order_id,
                 number=OrderNumber("1001"),
                 customer_id=read_order.customer_id,
-                organization_id=organization_id,
-                received_at=now,
+                        received_at=now,
             )
 
     class FakeOrderReadService:
@@ -210,3 +205,52 @@ def test_register_order_returns_read_model() -> None:
     assert result.status.value == "REGISTERED"
     assert result.created_at == now
     assert result.updated_at == now
+
+
+def test_update_order_returns_read_model() -> None:
+    order_id = uuid4()
+    customer_id = uuid4()
+    now = datetime.now(UTC)
+    read_order = OrderRead(
+        id=order_id,
+        number="1001",
+        customer_id=customer_id,
+        customer_name="Test Customer",
+        status="NEW",
+        received_at=now,
+        created_at=now,
+        updated_at=now,
+        planned_issue_at=None,
+        issued_at=None,
+        comment="Updated comment",
+        archived=False,
+        items=[],
+    )
+
+    class FakeOrderService:
+        def update(self, command: object, user: object) -> Order:
+            assert command.order_id == order_id
+            assert command.comment == "Updated comment"
+            return Order(
+                id=order_id,
+                number=OrderNumber("1001"),
+                customer_id=customer_id,
+                received_at=now,
+                comment="Updated comment",
+            )
+
+    class FakeOrderReadService:
+        def get(self, requested_id: object) -> OrderRead:
+            assert requested_id == order_id
+            return read_order
+
+    result = update_order(
+        order_id=order_id,
+        data=OrderUpdate(comment="Updated comment"),
+        user=object(),
+        service=FakeOrderService(),
+        read_service=FakeOrderReadService(),
+    )
+
+    assert result is read_order
+    assert result.comment == "Updated comment"

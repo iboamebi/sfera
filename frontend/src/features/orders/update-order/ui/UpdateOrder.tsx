@@ -26,7 +26,10 @@ export function UpdateOrder({
   const handleSubmit = (data: UpdateOrderSchema) => {
     mutation.mutate({
       orderId: order.id,
-      data,
+      data: {
+        ...data,
+        comment: order.comment ?? "",
+      },
     });
   };
 

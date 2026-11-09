@@ -103,6 +103,7 @@ App
 
 ```text
 /login
+/change-password
 /
 /orders
 /orders/new
@@ -120,9 +121,10 @@ App
 /instrument-types
 /instrument-types/:instrumentTypeId
 /warehouse-stocks/warehouse/:warehouseId
+/users
 ```
 
-`/login` является публичным. Остальные пользовательские маршруты защищены `RequireAuth`. Это соответствует фактическому router contract на текущем `develop`. fileciteturn143file0
+`/login` является публичным. `/change-password` доступен только аутентифицированному пользователю. Остальные пользовательские маршруты защищены `RequireAuth`.
 
 ---
 
@@ -146,6 +148,20 @@ WarehouseStockPage
 
 Frontend отвечает только за отображение и orchestration server state.
 
+### 6.1 Authentication and first-login flow
+
+Implemented:
+
+- login and current-user API adapters;
+- mapping of backend `must_change_password` into frontend `mustChangePassword`;
+- React Query current-user state;
+- authenticated route guard;
+- mandatory redirect to `/change-password` while first-login password change is pending;
+- password-change form and mutation;
+- CSRF header forwarding for cookie-authenticated cross-origin requests.
+
+The frontend route guard is not a security boundary. Backend business routers enforce authentication and first-login completion.
+
 ## 7. Реализованные frontend slices
 
 ### Orders
@@ -157,6 +173,7 @@ Frontend отвечает только за отображение и orchestrat
 * создание заказа;
 * просмотр заказа;
 * позиции заказа;
+* переходы от позиции заказа к связанным поверкам по verification IDs из order read contract;
 * регистрация заказа;
 * обновление cache после регистрации;
 * customer selection.
@@ -175,7 +192,29 @@ Frontend отвечает только за отображение и orchestrat
 
 ### Verification
 
-Реализованы detail read slice и lifecycle actions:
+Реализованы create, detail read slice и lifecycle actions.
+
+Создание поверки доступно из позиции заказа, если запрошена операция поверки, назначено конкретное СИ и для позиции ещё нет поверки:
+
+```text
+OrderItems
+  ↓
+CreateVerification form
+  ↓
+createVerification()
+  ↓
+POST /verifications
+  ↓
+useCreateVerification()
+  ↓
+invalidate order query
+  ↓
+/verifications/:verificationId
+```
+
+Форма передаёт дату, тип поверки (PRIMARY, PERIODIC, AFTER_REPAIR) и необязательную методику. Backend остаётся источником проверки полномочий и наличия назначенного СИ.
+
+Detail and lifecycle flow:
 
 ```text
 API DTO
@@ -511,3 +550,37 @@ Production frontend использует Vite build и nginx. Постоянно
 * возвращаться к legacy CRUD architecture.
 
 Следующий шаг определяется фактическим пользовательским flow и существующим backend contract.
+
+
+## User Administration
+
+User administration UI and API integration are implemented on the active feature branch:
+
+- `GET /users/?include_archived=` loads users through a DTO mapper and React Query;
+- `POST /users/` creates a user and displays the temporary password from the creation response only;
+- role changes use `PATCH /users/{user_id}/role`;
+- activation/deactivation uses `PATCH /users/{user_id}/status`;
+- archive and restore use their dedicated POST endpoints;
+- the list can optionally include archived accounts.
+
+Route:
+
+```text
+/users
+```
+
+Backend Application authorization remains the security boundary. The page route guard only requires authentication and does not replace backend administrator authorization. Local typecheck/build validation is required after this implementation.
+
+
+### Order instrument search by Site
+
+The order-item device selector uses the selected Order Customer's Site list as an optional search filter:
+
+- multiple Sites can be selected;
+- an independent checkbox includes/excludes instruments without a Site;
+- an empty Site selection means all Sites;
+- instrument results remain restricted to the Order Customer and the selected Instrument Type, when present;
+- changing this filter never changes the permanent Instrument–Site assignment;
+- if Site loading fails, the Site filter is unavailable but instrument search remains usable.
+
+Organization selection is not yet part of the order form. The current Order persistence/API contract does not store an Organization, and the business contract requires a separate cardinality/persistence decision before implementing the selection.

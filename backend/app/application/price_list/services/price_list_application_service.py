@@ -2,7 +2,7 @@
 # PriceList application service.
 # Coordinates PriceList use cases between API layer and domain layer.
 
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from app.application.price_list.commands.activate_price_list import (
     ActivatePriceListCommand,
@@ -80,12 +80,14 @@ class PriceListApplicationService:
         """
 
         price_list = PriceList.create(
+            id=uuid4(),
             name=command.name,
             price_list_type=command.price_list_type,
             currency=command.currency,
             valid_from=command.valid_from,
             valid_to=command.valid_to,
             description=command.description,
+            is_active=command.is_active,
         )
 
         return await self.repository.save(price_list)
@@ -118,16 +120,28 @@ class PriceListApplicationService:
                 command.currency,
             )
 
-        if command.valid_from is not None or command.valid_to is not None:
+        if (
+            "valid_from" in command.updated_fields
+            or "valid_to" in command.updated_fields
+        ):
             price_list.change_valid_period(
-                command.valid_from,
-                command.valid_to,
+                command.valid_from
+                if "valid_from" in command.updated_fields
+                else price_list.valid_from,
+                command.valid_to
+                if "valid_to" in command.updated_fields
+                else price_list.valid_to,
             )
 
-        if command.description is not None:
+        if "description" in command.updated_fields:
             price_list.change_description(
                 command.description,
             )
+
+        if command.is_active is True and not price_list.is_active:
+            price_list.activate()
+        elif command.is_active is False and price_list.is_active:
+            price_list.deactivate()
 
         return await self.repository.save(price_list)
 
@@ -162,6 +176,7 @@ class PriceListApplicationService:
             raise PriceListNotFoundApplicationError
 
         item = PriceListItem(
+            id=uuid4(),
             service_code=command.service_code,
             name=command.name,
             price=command.price,

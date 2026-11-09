@@ -8,7 +8,6 @@ export async function createCustomer(
   data: CreateCustomerForm,
 ): Promise<CustomerRead> {
   const response = await http.post<CustomerApiDto>("/customers/", {
-    organization_id: data.organizationId,
     name: data.name,
     contact_person: data.contactPerson?.trim() || null,
     phone: data.phone?.trim() || null,

@@ -1,4 +1,5 @@
 import { Button, Stack, TextField } from "@mui/material";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -22,16 +23,24 @@ export function UpdateOrderForm({
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    reset,
+    formState: { errors, isDirty },
   } = useForm<UpdateOrderSchema>({
     resolver: zodResolver(updateOrderSchema),
     defaultValues: {
       plannedIssueAt: order.plannedIssueAt
         ? order.plannedIssueAt.slice(0, 16)
         : "",
-      comment: order.comment ?? "",
     },
   });
+
+  useEffect(() => {
+    reset({
+      plannedIssueAt: order.plannedIssueAt
+        ? order.plannedIssueAt.slice(0, 16)
+        : "",
+    });
+  }, [order.plannedIssueAt, reset]);
 
   return (
     <Stack
@@ -40,7 +49,7 @@ export function UpdateOrderForm({
       onSubmit={handleSubmit(onSubmit)}
     >
       <TextField
-        label="Планируемая дата выдачи"
+        label="Планируемая выдача"
         type="datetime-local"
         {...register("plannedIssueAt")}
         error={Boolean(errors.plannedIssueAt)}
@@ -53,23 +62,16 @@ export function UpdateOrderForm({
         }}
       />
 
-      <TextField
-        label="Комментарий"
-        multiline
-        minRows={3}
-        {...register("comment")}
-        error={Boolean(errors.comment)}
-        helperText={errors.comment?.message}
-        disabled={isPending}
-      />
-
-      <Button
-        type="submit"
-        variant="contained"
-        disabled={isPending}
-      >
-        {isPending ? "Сохранение..." : "Сохранить"}
-      </Button>
+      {isDirty && (
+        <Button
+          type="submit"
+          variant="contained"
+          disabled={isPending}
+          sx={{ alignSelf: "flex-start" }}
+        >
+          {isPending ? "Сохранение..." : "Сохранить"}
+        </Button>
+      )}
     </Stack>
   );
 }

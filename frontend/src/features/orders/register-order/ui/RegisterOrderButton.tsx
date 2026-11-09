@@ -16,6 +16,7 @@ export function RegisterOrderButton({
       variant="contained"
       onClick={onClick}
       disabled={isPending || disabled}
+      sx={{ alignSelf: "flex-start" }}
     >
       {isPending ? "Регистрация..." : "Зарегистрировать"}
     </Button>

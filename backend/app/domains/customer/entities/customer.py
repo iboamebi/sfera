@@ -3,7 +3,6 @@ Domain entity: Customer.
 """
 
 from dataclasses import dataclass
-from uuid import UUID
 
 from app.shared.base.entity import Entity
 
@@ -14,7 +13,6 @@ class Customer(Entity):
     Customer domain entity.
     """
 
-    organization_id: UUID
     name: str
     contact_person: str | None = None
     phone: str | None = None

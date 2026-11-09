@@ -23,6 +23,7 @@ class OrderItemReadData:
     modification: str | None
     comment: str | None
     requested_operations: set[OrderItemOperation]
+    verification_ids: list[UUID]
 
 
 @dataclass(frozen=True)

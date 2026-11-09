@@ -9,6 +9,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from app.api.dependencies.auth import get_current_user
 from app.api.security.csrf import require_csrf
 from app.application.site.commands.create_site import CreateSiteCommand
+from app.application.site.exceptions import CustomerNotFoundApplicationError
 from app.application.site.services.site_application_service import (
     SiteApplicationService,
 )
@@ -35,16 +36,16 @@ def get_sites(
 
 
 @router.get(
-    "/organization/{organization_id}",
+    "/customer/{customer_id}",
     response_model=list[SiteRead],
 )
-def get_organization_sites(
-    organization_id: UUID,
+def get_customer_sites(
+    customer_id: UUID,
     service: SiteApplicationService = Depends(
         get_site_service,
     ),
 ):
-    return service.get_by_organization_id(organization_id)
+    return service.get_by_customer_id(customer_id)
 
 
 @router.get(
@@ -83,4 +84,11 @@ def create_site(
         **data.model_dump(),
     )
 
-    return service.create(command, user)
+    try:
+        return service.create(command, user)
+
+    except CustomerNotFoundApplicationError:
+        raise HTTPException(
+            status_code=404,
+            detail="Customer not found",
+        ) from None

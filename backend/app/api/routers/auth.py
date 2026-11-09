@@ -4,14 +4,19 @@ from datetime import UTC, datetime
 
 from fastapi import APIRouter, Cookie, Depends, HTTPException, Request, Response, status
 
+from app.api.dependencies.auth import get_current_user as get_authenticated_user
 from app.api.security.csrf import generate_csrf_token, require_csrf
 from app.application.auth.commands.authenticate_user import AuthenticateUserCommand
+from app.application.auth.commands.change_password import ChangePasswordCommand
 from app.application.auth.commands.create_session import CreateSessionCommand
 from app.application.auth.commands.get_current_user import GetCurrentUserCommand
 from app.application.auth.commands.revoke_session import RevokeSessionCommand
 from app.application.auth.exceptions import AuthenticationFailedApplicationError
 from app.application.auth.services.authentication_application_service import (
     AuthenticationApplicationService,
+)
+from app.application.auth.services.change_password_application_service import (
+    ChangePasswordApplicationService,
 )
 from app.application.auth.services.current_user_application_service import (
     CurrentUserApplicationService,
@@ -22,11 +27,17 @@ from app.application.auth.services.session_application_service import (
 from app.core.config import settings
 from app.core.dependencies.services import (
     get_authentication_service,
+    get_change_password_service,
     get_current_user_service,
     get_session_service,
 )
 from app.core.dependencies.uow import get_unit_of_work
-from app.schemas.auth import AuthenticatedUserResponse, LoginRequest
+from app.domains.user.entities.user import User
+from app.schemas.auth import (
+    AuthenticatedUserResponse,
+    ChangePasswordRequest,
+    LoginRequest,
+)
 from app.shared.unit_of_work.unit_of_work import UnitOfWork
 
 router = APIRouter(
@@ -91,7 +102,36 @@ def login(
     return AuthenticatedUserResponse(
         id=user.id,
         username=user.username,
+        role=user.role,
+        must_change_password=user.must_change_password,
     )
+
+
+@router.post(
+    "/change-password",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(require_csrf)],
+)
+def change_password(
+    data: ChangePasswordRequest,
+    user: User = Depends(get_authenticated_user),
+    service: ChangePasswordApplicationService = Depends(get_change_password_service),
+) -> None:
+    """Change the current user's password and clear first-login state."""
+
+    try:
+        service.change(
+            ChangePasswordCommand(
+                user_id=user.id,
+                current_password=data.current_password,
+                new_password=data.new_password,
+            ),
+        )
+    except AuthenticationFailedApplicationError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Current password is incorrect",
+        ) from None
 
 
 @router.get(
@@ -126,6 +166,8 @@ def get_current_user(
     return AuthenticatedUserResponse(
         id=user.id,
         username=user.username,
+        role=user.role,
+        must_change_password=user.must_change_password,
     )
 
 

@@ -79,7 +79,6 @@ def create_customer(
     ),
 ):
     command = CreateCustomerCommand(
-        organization_id=data.organization_id,
         name=data.name,
         contact_person=data.contact_person,
         phone=data.phone,
@@ -126,9 +125,7 @@ def update_customer(
 ):
     command = UpdateCustomerCommand(
         customer_id=customer_id,
-        **data.model_dump(
-            exclude_unset=True,
-        ),
+        **data.model_dump(exclude_unset=True),
     )
 
     return service.update(command, user)

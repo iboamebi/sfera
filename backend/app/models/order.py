@@ -35,16 +35,6 @@ class Order(BaseModel):
         nullable=False,
     )
 
-    organization_id: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey("organizations.id"),
-        nullable=False,
-    )
-
-    site_id: Mapped[uuid.UUID | None] = mapped_column(
-        ForeignKey("sites.id"),
-        nullable=True,
-    )
-
     status: Mapped[OrderStatus] = mapped_column(
         SqlEnum(OrderStatus),
         default=OrderStatus.NEW,
@@ -73,16 +63,6 @@ class Order(BaseModel):
 
     customer = relationship(
         "Customer",
-        back_populates="orders",
-    )
-
-    organization = relationship(
-        "Organization",
-        back_populates="orders",
-    )
-
-    site = relationship(
-        "Site",
         back_populates="orders",
     )
 

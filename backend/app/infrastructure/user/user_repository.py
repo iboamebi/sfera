@@ -66,6 +66,28 @@ class UserRepositorySQLAlchemy(UserRepository):
 
         return self._mapper.to_domain(model)
 
+    def get_all(
+        self,
+        include_archived: bool = False,
+    ) -> list[User]:
+        query = self._session.query(UserModel)
+
+        if not include_archived:
+            query = query.filter(UserModel.archived.is_(False))
+
+        models = query.order_by(UserModel.username).all()
+        return [self._mapper.to_domain(model) for model in models]
+
+    def get_all_for_update(self) -> list[User]:
+        """Lock user rows while evaluating administrator lifecycle changes."""
+        models = (
+            self._session.query(UserModel)
+            .order_by(UserModel.id)
+            .with_for_update()
+            .all()
+        )
+        return [self._mapper.to_domain(model) for model in models]
+
     def save(
         self,
         user: User,

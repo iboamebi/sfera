@@ -1,18 +1,22 @@
 import uuid
 
-from sqlalchemy import ForeignKey, String, Text
+from sqlalchemy import ForeignKey, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base_model import BaseModel
 
 
 class Site(BaseModel):
-    """ORM model for an organization's service or operating site."""
+    """ORM model for a customer's service or operating site."""
 
     __tablename__ = "sites"
 
-    organization_id: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey("organizations.id"),
+    __table_args__ = (
+        UniqueConstraint("id", "customer_id", name="uq_sites_id_customer_id"),
+    )
+
+    customer_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("customers.id"),
         nullable=False,
     )
 
@@ -26,14 +30,9 @@ class Site(BaseModel):
         nullable=False,
     )
 
-    organization = relationship(
-        "Organization",
+    customer = relationship(
+        "Customer",
         back_populates="sites",
-    )
-
-    orders = relationship(
-        "Order",
-        back_populates="site",
     )
 
     instruments = relationship(

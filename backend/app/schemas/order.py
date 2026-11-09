@@ -44,6 +44,7 @@ class OrderItemRead(BaseModel):
     modification: str | None = None
     comment: str | None = None
     requested_operations: list[OrderItemOperation] = Field(default_factory=list)
+    verification_ids: list[UUID] = Field(default_factory=list)
 
 
 class OrderRead(BaseModel):

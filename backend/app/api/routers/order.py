@@ -20,10 +20,13 @@ from app.application.order.commands.update_order import UpdateOrderCommand
 from app.application.order.commands.update_order_item import UpdateOrderItemCommand
 from app.application.order.exceptions import (
     InstrumentAlreadyInActiveOrderApplicationError,
+    InstrumentCustomerMismatchApplicationError,
     OrderNotFoundApplicationError,
 )
 from app.application.order.queries.order_read_service import OrderReadService
-from app.application.order.services.order_application_service import OrderApplicationService
+from app.application.order.services.order_application_service import (
+    OrderApplicationService,
+)
 from app.core.dependencies.services import get_order_read_service, get_order_service
 from app.domains.order.exceptions.order_exception import OrderException
 from app.domains.order.value_objects.order_item_operation import OrderItemOperation
@@ -123,6 +126,8 @@ def add_order_item(
     except OrderNotFoundApplicationError:
         raise HTTPException(status_code=404, detail="Order not found") from None
     except InstrumentAlreadyInActiveOrderApplicationError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from None
+    except InstrumentCustomerMismatchApplicationError as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from None
     except OrderException as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from None
@@ -246,9 +251,10 @@ def update_order(
     data: OrderUpdate,
     user: User = Depends(get_current_user),
     service: OrderApplicationService = Depends(get_order_service),
+    read_service: OrderReadService = Depends(get_order_read_service),
 ):
     try:
-        return service.update(
+        service.update(
             UpdateOrderCommand(
                 order_id=order_id,
                 planned_issue_at=data.planned_issue_at,
@@ -256,6 +262,13 @@ def update_order(
             ),
             user,
         )
+        order = read_service.get(order_id)
+        if order is None:
+            raise HTTPException(
+                status_code=500,
+                detail="Updated order could not be loaded",
+            )
+        return order
     except OrderNotFoundApplicationError:
         raise HTTPException(status_code=404, detail="Order not found") from None
 
@@ -275,7 +288,10 @@ def register_order(
 
     order = read_service.get(order_id)
     if order is None:
-        raise HTTPException(status_code=500, detail="Registered order could not be loaded")
+        raise HTTPException(
+            status_code=500,
+            detail="Registered order could not be loaded",
+        )
 
     return order
 

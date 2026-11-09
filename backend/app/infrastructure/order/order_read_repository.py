@@ -45,19 +45,25 @@ class OrderReadRepositorySQLAlchemy(OrderReadRepository):
                     instrument_name=item.instrument.name if item.instrument else None,
                     instrument_type_name=(
                         item.instrument.instrument_type.name
-                        if item.instrument
-                        and item.instrument.instrument_type
+                        if item.instrument and item.instrument.instrument_type
                         else item.instrument_type.name
                         if item.instrument_type
                         else None
                     ),
-                    serial_number=item.instrument.serial_number if item.instrument else None,
-                    modification=item.instrument.modification if item.instrument else None,
+                    serial_number=item.instrument.serial_number
+                    if item.instrument
+                    else None,
+                    modification=item.instrument.modification
+                    if item.instrument
+                    else None,
                     comment=item.customer_comment,
                     requested_operations={
                         OrderItemOperation(operation)
                         for operation in item.requested_operations
                     },
+                    verification_ids=[
+                        verification.id for verification in item.verifications
+                    ],
                 )
                 for item in order.order_items
             ],
@@ -70,6 +76,7 @@ class OrderReadRepositorySQLAlchemy(OrderReadRepository):
             .joinedload(OrderItem.instrument)
             .joinedload(Instrument.instrument_type),
             joinedload(Order.order_items).joinedload(OrderItem.instrument_type),
+            joinedload(Order.order_items).selectinload(OrderItem.verifications),
         )
 
     def get(self, order_id: UUID) -> OrderReadData | None:

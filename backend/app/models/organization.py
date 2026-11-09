@@ -1,5 +1,5 @@
 from sqlalchemy import String, Text
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base_model import BaseModel
 
@@ -59,25 +59,4 @@ class Organization(BaseModel):
     comment: Mapped[str | None] = mapped_column(
         Text,
         nullable=True,
-    )
-
-    customers = relationship(
-        "Customer",
-        back_populates="organization",
-        cascade="all, delete-orphan",
-    )
-
-    customer_organizations = relationship(
-        "CustomerOrganization",
-        back_populates="organization",
-    )
-
-    orders = relationship(
-        "Order",
-        back_populates="organization",
-    )
-
-    sites = relationship(
-        "Site",
-        back_populates="organization",
     )

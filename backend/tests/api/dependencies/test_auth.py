@@ -4,7 +4,10 @@ from uuid import uuid4
 import pytest
 from fastapi import HTTPException
 
-from app.api.dependencies.auth import get_current_user
+from app.api.dependencies.auth import (
+    get_current_user,
+    require_password_change_completed,
+)
 from app.application.auth.exceptions import AuthenticationFailedApplicationError
 from app.domains.user.entities.user import User
 
@@ -65,3 +68,31 @@ def test_get_current_user_maps_authentication_failure_to_401() -> None:
 
     assert exc_info.value.status_code == 401
     assert exc_info.value.detail == "Authentication required"
+
+
+def test_first_login_user_is_blocked_from_business_endpoints() -> None:
+    user = User(
+        id=uuid4(),
+        username="alice",
+        password_hash="secret",
+        must_change_password=True,
+    )
+
+    with pytest.raises(HTTPException) as exc_info:
+        require_password_change_completed(user=user)
+
+    assert exc_info.value.status_code == 403
+    assert exc_info.value.detail == "Password change required"
+
+
+def test_user_with_changed_password_can_access_business_endpoints() -> None:
+    user = User(
+        id=uuid4(),
+        username="alice",
+        password_hash="secret",
+        must_change_password=False,
+    )
+
+    result = require_password_change_completed(user=user)
+
+    assert result is None

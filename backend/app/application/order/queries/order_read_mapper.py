@@ -34,6 +34,7 @@ class OrderReadMapper:
                     modification=item.modification,
                     comment=item.comment,
                     requested_operations=item.requested_operations,
+                    verification_ids=item.verification_ids,
                 )
                 for item in model.items
             ],

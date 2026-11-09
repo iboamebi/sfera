@@ -114,7 +114,7 @@ Persistence:                   COMPLETE
 Verification integration:      COMPLETE
 System-wide audit coverage:    OPEN
 Audit read/query:              OPEN
-DB append-only enforcement:    OPEN
+DB append-only enforcement:    COMPLETE
 ```
 
 The Audit Trail is not yet considered system-wide complete. Remaining mutation points require an audit coverage review.

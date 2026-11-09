@@ -38,3 +38,15 @@ def get_current_user(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Authentication required",
         ) from None
+
+
+def require_password_change_completed(
+    user: User = Depends(get_current_user),
+) -> None:
+    """Require the authenticated user to complete the first-login password change."""
+
+    if user.must_change_password:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Password change required",
+        )

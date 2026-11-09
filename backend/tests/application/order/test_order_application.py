@@ -9,17 +9,24 @@ import pytest
 
 from app.application.authorization.authorization import AuthorizationError
 from app.application.order.commands.add_order_item import AddOrderItemCommand
+from app.application.order.commands.assign_order_item_instrument import (
+    AssignOrderItemInstrumentCommand,
+)
 from app.application.order.commands.create_order import CreateOrderCommand
 from app.application.order.commands.register_order import RegisterOrderCommand
 from app.application.order.commands.update_order import UpdateOrderCommand
 from app.application.order.exceptions import (
     InstrumentAlreadyInActiveOrderApplicationError,
+    InstrumentCustomerMismatchApplicationError,
 )
 from app.application.order.services.order_application_service import (
     OrderApplicationService,
 )
 from app.domains.customer.entities.customer import Customer
 from app.domains.customer.repositories.customer_repository import CustomerRepository
+from app.domains.device.entities.device import Device
+from app.domains.device.repositories.device_repository import DeviceRepository
+from app.domains.device.value_objects.serial_number import SerialNumber
 from app.domains.order.entities.order import Order
 from app.domains.order.entities.order_item import OrderItem
 from app.domains.order.repositories.order_repository import OrderRepository
@@ -29,6 +36,11 @@ from app.domains.order.value_objects.order_status import (
 )
 from app.domains.user.entities.user import User
 from app.domains.user.value_objects.user_role import UserRole
+from app.shared.audit.models import AuditOperation, AuditRecord
+from app.shared.audit.repositories.audit_operation_repository import (
+    AuditOperationRepository,
+)
+from app.shared.audit.repositories.audit_repository import AuditRepository
 from app.shared.unit_of_work.unit_of_work import UnitOfWork
 
 
@@ -50,6 +62,26 @@ class FakeUnitOfWork(UnitOfWork):
         operation_id: UUID | None = None,
     ) -> None:
         self.registered_operation_ids.append(operation_id)
+
+
+class FakeAuditOperationRepository(AuditOperationRepository):
+    """Fake audit-operation repository for application-service tests."""
+
+    def __init__(self) -> None:
+        self.items: list[AuditOperation] = []
+
+    def save(self, operation: AuditOperation) -> None:
+        self.items.append(operation)
+
+
+class FakeAuditRepository(AuditRepository):
+    """Fake audit-record repository for application-service tests."""
+
+    def __init__(self) -> None:
+        self.items: list[AuditRecord] = []
+
+    def save(self, record: AuditRecord) -> None:
+        self.items.append(record)
 
 
 class FakeCustomerRepository(CustomerRepository):
@@ -78,6 +110,24 @@ class FakeCustomerRepository(CustomerRepository):
     def save(self, customer: Customer) -> Customer:
         self._customers[customer.id] = customer
         return customer
+
+
+
+
+class FakeDeviceRepository(DeviceRepository):
+    def __init__(self, device: Device | None = None) -> None:
+        self.device = device
+
+    def get(self, device_id: UUID) -> Device | None:
+        if self.device is not None and self.device.id == device_id:
+            return self.device
+        return None
+
+    def list(self) -> list[Device]:
+        return [self.device] if self.device is not None else []
+
+    def save(self, device: Device) -> None:
+        self.device = device
 
 
 class FakeOrderRepository(OrderRepository):
@@ -111,10 +161,7 @@ class FakeOrderRepository(OrderRepository):
         return any(
             order.id != exclude_order_id
             and order.status in CONFLICTING_INSTRUMENT_ORDER_STATUSES
-            and any(
-                item.instrument_id == instrument_id
-                for item in order.items
-            )
+            and any(item.instrument_id == instrument_id for item in order.items)
             for order in self._orders.values()
         )
 
@@ -136,27 +183,41 @@ def make_customer(customer_id: UUID) -> Customer:
     """Create a customer with a deterministic organization context."""
     return Customer(
         id=customer_id,
-        organization_id=uuid4(),
         name="Test customer",
     )
 
 
-def make_service() -> tuple[
+def make_service(device: Device | None = None) -> tuple[
     OrderApplicationService,
     FakeOrderRepository,
     FakeCustomerRepository,
     FakeUnitOfWork,
+    FakeAuditOperationRepository,
+    FakeAuditRepository,
 ]:
     """Create an order service with all required fake dependencies."""
     repository = FakeOrderRepository()
     customer_repository = FakeCustomerRepository()
     uow = FakeUnitOfWork()
+    audit_operation_repository = FakeAuditOperationRepository()
+    audit_repository = FakeAuditRepository()
+    device_repository = FakeDeviceRepository(device)
     service = OrderApplicationService(
         repository,
         customer_repository,
+        device_repository,
         uow,
+        audit_operation_repository,
+        audit_repository,
     )
-    return service, repository, customer_repository, uow
+    return (
+        service,
+        repository,
+        customer_repository,
+        uow,
+        audit_operation_repository,
+        audit_repository,
+    )
 
 
 def create_order(
@@ -177,7 +238,14 @@ def create_order(
 
 
 def test_create_register_order_flow():
-    service, _, customer_repository, uow = make_service()
+    (
+        service,
+        _,
+        customer_repository,
+        uow,
+        audit_operation_repository,
+        audit_repository,
+    ) = make_service()
     customer_id = uuid4()
     customer_repository.save(make_customer(customer_id))
 
@@ -197,7 +265,6 @@ def test_create_register_order_flow():
     assert order.id is not None
     assert order.number.value == "10001"
     assert order.customer_id == customer_id
-    assert order.organization_id == customer_repository.get(customer_id).organization_id
     assert order.received_at is not None
     assert order.planned_issue_at == planned_issue_at
     assert order.comment == comment
@@ -207,9 +274,10 @@ def test_create_register_order_flow():
         make_operator(),
     )
 
+    operator = make_operator()
     order = service.register(
         RegisterOrderCommand(order.id),
-        make_operator(),
+        operator,
     )
 
     assert len(order.items) == 1
@@ -217,10 +285,26 @@ def test_create_register_order_flow():
     assert order.status.value == "REGISTERED"
     assert len(uow.registered_operation_ids) == 1
     assert isinstance(uow.registered_operation_ids[0], UUID)
+    assert len(audit_operation_repository.items) == 1
+    assert len(audit_repository.items) == 1
+
+    operation = audit_operation_repository.items[0]
+    record = audit_repository.items[0]
+    assert operation.operation_id == uow.registered_operation_ids[0]
+    assert operation.initiated_by == operator.id
+    assert record.operation_id == operation.operation_id
+    assert record.actor_id == operator.id
+    assert record.action == "order.registered"
+    assert record.entity_type == "order"
+    assert record.entity_id == order.id
+    assert record.changes["status"] == {
+        "old": "NEW",
+        "new": "REGISTERED",
+    }
 
 
 def test_create_order_rejects_unauthorized_user():
-    service, repository, _, _ = make_service()
+    service, repository, _, _, _, _ = make_service()
 
     with pytest.raises(AuthorizationError, match="not authorized"):
         service.create(
@@ -240,7 +324,7 @@ def test_create_order_rejects_unauthorized_user():
 
 
 def test_register_order_rejects_unauthorized_user():
-    service, repository, customer_repository, _ = make_service()
+    service, repository, customer_repository, _, _, _ = make_service()
     customer_id = uuid4()
     customer_repository.save(make_customer(customer_id))
     order = service.create(
@@ -263,7 +347,7 @@ def test_register_order_rejects_unauthorized_user():
 
 
 def test_add_order_item_rejects_unauthorized_user():
-    service, repository, customer_repository, _ = make_service()
+    service, repository, customer_repository, _, _, _ = make_service()
     customer_id = uuid4()
     customer_repository.save(make_customer(customer_id))
     order = service.create(
@@ -286,7 +370,7 @@ def test_add_order_item_rejects_unauthorized_user():
 
 
 def test_update_order_rejects_unauthorized_user():
-    service, repository, customer_repository, _ = make_service()
+    service, repository, customer_repository, _, _, _ = make_service()
     customer_id = uuid4()
     customer_repository.save(make_customer(customer_id))
     order = service.create(
@@ -318,7 +402,7 @@ def test_update_order_rejects_unauthorized_user():
 
 
 def test_update_order_details():
-    service, repository, customer_repository, _ = make_service()
+    service, repository, customer_repository, _, _, _ = make_service()
     customer_id = uuid4()
     customer_repository.save(make_customer(customer_id))
     order = service.create(
@@ -345,13 +429,11 @@ def test_update_order_details():
 
 
 def test_add_order_item_rejects_instrument_in_another_active_order():
-    service, repository, customer_repository, _ = make_service()
+    service, repository, customer_repository, _, _, _ = make_service()
     instrument_id = uuid4()
 
     existing_order = create_order(service, customer_repository, "10007")
-    existing_order.add_item(
-        OrderItem(id=uuid4(), instrument_id=instrument_id)
-    )
+    existing_order.add_item(OrderItem(id=uuid4(), instrument_id=instrument_id))
     existing_order.status = OrderStatus.REGISTERED
     repository.save(existing_order)
 
@@ -368,7 +450,7 @@ def test_add_order_item_rejects_instrument_in_another_active_order():
 
 
 def test_add_order_item_creates_separate_items_for_group_quantity():
-    service, _, customer_repository, _ = make_service()
+    service, _, customer_repository, _, _, _ = make_service()
     order = create_order(service, customer_repository, "10011")
     instrument_type_id = uuid4()
 
@@ -383,22 +465,17 @@ def test_add_order_item_creates_separate_items_for_group_quantity():
 
     assert len(order.items) == 3
     assert all(item.quantity == 1 for item in order.items)
-    assert all(
-        item.instrument_type_id == instrument_type_id
-        for item in order.items
-    )
+    assert all(item.instrument_type_id == instrument_type_id for item in order.items)
     assert all(item.instrument_id is None for item in order.items)
     assert len({item.id for item in order.items}) == 3
 
 
 def test_add_order_item_allows_instrument_after_order_completed():
-    service, repository, customer_repository, _ = make_service()
+    service, repository, customer_repository, _, _, _ = make_service()
     instrument_id = uuid4()
 
     completed_order = create_order(service, customer_repository, "10009")
-    completed_order.add_item(
-        OrderItem(id=uuid4(), instrument_id=instrument_id)
-    )
+    completed_order.add_item(OrderItem(id=uuid4(), instrument_id=instrument_id))
     completed_order.status = OrderStatus.COMPLETED
     repository.save(completed_order)
 
@@ -414,3 +491,36 @@ def test_add_order_item_allows_instrument_after_order_completed():
 
     assert len(order.items) == 1
     assert order.items[0].instrument_id == instrument_id
+
+
+
+def test_assign_order_item_rejects_instrument_from_another_customer():
+    customer_id = uuid4()
+    other_customer_id = uuid4()
+    instrument_id = uuid4()
+    device = Device(
+        id=instrument_id,
+        instrument_type_id=uuid4(),
+        customer_id=other_customer_id,
+        serial_number=SerialNumber("SN-001"),
+    )
+    service, repository, customer_repository, _, _, _ = make_service(device)
+    customer_repository.save(make_customer(customer_id))
+    order = service.create(
+        CreateOrderCommand(customer_id=customer_id, number="10012"),
+        make_operator(),
+    )
+    service.add_item(AddOrderItemCommand(order_id=order.id), make_operator())
+    item_id = order.items[0].id
+
+    with pytest.raises(InstrumentCustomerMismatchApplicationError):
+        service.assign_item_instrument(
+            AssignOrderItemInstrumentCommand(
+                order_id=order.id,
+                item_id=item_id,
+                instrument_id=instrument_id,
+            ),
+            make_operator(),
+        )
+
+    assert repository.get(order.id).items[0].instrument_id is None

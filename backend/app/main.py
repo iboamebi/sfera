@@ -1,7 +1,8 @@
-from fastapi import FastAPI, Request
+from fastapi import Depends, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+from app.api.dependencies.auth import require_password_change_completed
 from app.api.routers import instrument_type, organization, site
 from app.api.routers.auth import router as auth_router
 from app.api.routers.customer import router as customer_router
@@ -14,6 +15,7 @@ from app.api.routers.price_list_item import (
     router as price_list_item_router,
 )
 from app.api.routers.repair import router as repair_router
+from app.api.routers.users import router as users_router
 from app.api.routers.verification import router as verification_router
 from app.api.routers.verification_actions import (
     router as verification_actions_router,
@@ -64,23 +66,78 @@ app.add_middleware(
 )
 
 app.include_router(auth_router)
-app.include_router(organization.router)
-app.include_router(site.router)
-app.include_router(customer_router)
-app.include_router(order_router)
-app.include_router(verification_router)
-app.include_router(verification_actions_router)
-app.include_router(diagnostic_router)
-app.include_router(repair_router)
-app.include_router(material_router)
-app.include_router(warehouse_router)
-app.include_router(warehouse_stock_router)
-app.include_router(warehouse_movement_router)
-app.include_router(price_list_router)
-app.include_router(price_list_item_router)
-app.include_router(device_router)
-app.include_router(instrument_type.router)
-app.include_router(workflow_router)
+app.include_router(
+    organization.router,
+    dependencies=[Depends(require_password_change_completed)],
+)
+app.include_router(
+    site.router,
+    dependencies=[Depends(require_password_change_completed)],
+)
+app.include_router(
+    customer_router,
+    dependencies=[Depends(require_password_change_completed)],
+)
+app.include_router(
+    order_router,
+    dependencies=[Depends(require_password_change_completed)],
+)
+app.include_router(
+    verification_router,
+    dependencies=[Depends(require_password_change_completed)],
+)
+app.include_router(
+    verification_actions_router,
+    dependencies=[Depends(require_password_change_completed)],
+)
+app.include_router(
+    diagnostic_router,
+    dependencies=[Depends(require_password_change_completed)],
+)
+app.include_router(
+    repair_router,
+    dependencies=[Depends(require_password_change_completed)],
+)
+app.include_router(
+    material_router,
+    dependencies=[Depends(require_password_change_completed)],
+)
+app.include_router(
+    warehouse_router,
+    dependencies=[Depends(require_password_change_completed)],
+)
+app.include_router(
+    warehouse_stock_router,
+    dependencies=[Depends(require_password_change_completed)],
+)
+app.include_router(
+    warehouse_movement_router,
+    dependencies=[Depends(require_password_change_completed)],
+)
+app.include_router(
+    price_list_router,
+    dependencies=[Depends(require_password_change_completed)],
+)
+app.include_router(
+    price_list_item_router,
+    dependencies=[Depends(require_password_change_completed)],
+)
+app.include_router(
+    device_router,
+    dependencies=[Depends(require_password_change_completed)],
+)
+app.include_router(
+    instrument_type.router,
+    dependencies=[Depends(require_password_change_completed)],
+)
+app.include_router(
+    workflow_router,
+    dependencies=[Depends(require_password_change_completed)],
+)
+app.include_router(
+    users_router,
+    dependencies=[Depends(require_password_change_completed)],
+)
 
 
 @app.get("/health")

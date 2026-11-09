@@ -19,7 +19,6 @@ from app.domains.verification.value_objects.verification_type import (
     VerificationType,
 )
 
-
 DECISION_AT = datetime(2030, 1, 1, 12, 0, tzinfo=UTC)
 
 

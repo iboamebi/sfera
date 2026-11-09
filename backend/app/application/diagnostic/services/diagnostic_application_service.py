@@ -23,6 +23,11 @@ from app.domains.diagnostic.repositories.diagnostic_repository import (
 )
 from app.domains.user.entities.user import User
 from app.domains.user.value_objects.user_role import UserRole
+from app.shared.audit.models import AuditOperation, AuditRecord
+from app.shared.audit.repositories.audit_operation_repository import (
+    AuditOperationRepository,
+)
+from app.shared.audit.repositories.audit_repository import AuditRepository
 from app.shared.unit_of_work.unit_of_work import UnitOfWork
 
 
@@ -33,9 +38,13 @@ class DiagnosticApplicationService:
         self,
         repository: DiagnosticRepository,
         unit_of_work: UnitOfWork,
+        audit_operation_repository: AuditOperationRepository,
+        audit_repository: AuditRepository,
     ) -> None:
         self._repository = repository
         self._uow = unit_of_work
+        self._audit_operation_repository = audit_operation_repository
+        self._audit_repository = audit_repository
 
     def get(
         self,
@@ -95,12 +104,30 @@ class DiagnosticApplicationService:
                 command.diagnostic_id,
             )
 
+            old_conclusion = diagnostic.conclusion
             diagnostic.complete(
                 command.conclusion,
             )
 
             self._repository.save(
                 diagnostic,
+            )
+            operation = AuditOperation(initiated_by=user.id)
+            self._audit_operation_repository.save(operation)
+            self._audit_repository.save(
+                AuditRecord(
+                    operation_id=operation.operation_id,
+                    actor_id=user.id,
+                    action="diagnostic.completed",
+                    entity_type="diagnostic",
+                    entity_id=diagnostic.id,
+                    changes={
+                        "conclusion": {
+                            "old": old_conclusion,
+                            "new": diagnostic.conclusion,
+                        },
+                    },
+                )
             )
 
         return diagnostic
