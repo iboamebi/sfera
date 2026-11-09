@@ -1289,3 +1289,13 @@ Administrator-assisted password recovery has now been implemented; see the check
 - The new card is created without a Site assignment; this does not alter any existing instrument's Site. Existing instrument Site assignments remain untouched by selection.
 - Backend uniqueness constraints for serial numbers were not found in the current Instrument ORM model; this UI guard is scoped to the Customer's currently loaded instrument list and is not a database-level uniqueness guarantee.
 - Frontend local validation is pending. Do not deploy until typecheck, build, and browser validation pass.
+
+
+## Duplicate instrument selection in an Order — correction in progress — 2026-11-09
+
+- User browser validation found two issues: the obsolete "Включать СИ без площадки" checkbox remained, and duplicate instrument cards already present in the Customer database could be selected and added as visually identical OrderItems.
+- Removed the standalone checkbox. Instruments without a Site are now included automatically, including when a Site filter is active; the filter only narrows instruments that have a Site.
+- The order selector now receives IDs of instruments already assigned to sibling OrderItems and excludes those instruments and all cards sharing their serial number.
+- The selector also suppresses serial numbers that occur on multiple Customer cards. Typing such a serial reports that the database contains ambiguous duplicate cards and blocks selection/creation rather than choosing an arbitrary card.
+- Added an Application-level guard for both adding an instrument to an Order and assigning one to a reserved OrderItem. It compares normalized serial numbers against instruments already on that Order, so separate database cards with the same serial cannot create duplicate-looking positions.
+- Added regression tests for duplicate serials with different Instrument IDs in both add and assign flows. Backend and frontend local validation are pending; do not merge or deploy until they pass and the UI is checked again.
