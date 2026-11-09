@@ -24,6 +24,7 @@ from app.application.order.exceptions import (
     OrderNotFoundApplicationError,
 )
 from app.domains.customer.repositories.customer_repository import CustomerRepository
+from app.domains.device.entities.device import Device
 from app.domains.device.repositories.device_repository import DeviceRepository
 from app.domains.order.entities.order import Order
 from app.domains.order.entities.order_item import OrderItem
@@ -94,7 +95,7 @@ class OrderApplicationService:
     def _ensure_instrument_serial_not_in_order(
         self,
         order: Order,
-        instrument: object,
+        instrument: Device,
         *,
         exclude_item_id: UUID | None = None,
     ) -> None:
