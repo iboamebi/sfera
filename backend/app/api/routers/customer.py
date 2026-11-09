@@ -125,9 +125,7 @@ def update_customer(
 ):
     command = UpdateCustomerCommand(
         customer_id=customer_id,
-        **data.model_dump(
-            exclude_unset=True,
-        ),
+        **data.model_dump(exclude_unset=True),
     )
 
     return service.update(command, user)
