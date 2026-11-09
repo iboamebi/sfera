@@ -167,9 +167,38 @@ export function OrderItems({
     );
   };
 
+  const createDeviceForItem = (data: {
+    instrumentTypeId: string;
+    name: string;
+    serialNumber: string;
+  }) => {
+    if (!creatingDeviceItemId) return;
+
+    createDeviceMutation.mutate(
+      { ...data, customerId },
+      {
+        onSuccess: (device) => {
+          const itemId = creatingDeviceItemId;
+          setCreatingDeviceItemId(null);
+          setSelectedInstrumentId(device.id);
+          assignInstrumentMutation.mutate(
+            { itemId, instrumentId: device.id },
+            {
+              onSuccess: () => {
+                setAssigningItemId(null);
+                setSelectedInstrumentId("");
+              },
+            },
+          );
+        },
+      },
+    );
+  };
+
   const closeExpandedRow = () => {
     setEditingItemId(null);
     setAssigningItemId(null);
+    setCreatingDeviceItemId(null);
     setCreatingVerificationItemId(null);
     setSelectedInstrumentId("");
   };
@@ -201,6 +230,7 @@ export function OrderItems({
                 const expanded =
                   editingItemId === item.id ||
                   assigningItemId === item.id ||
+                  creatingDeviceItemId === item.id ||
                   creatingVerificationItemId === item.id;
 
                 return (
@@ -405,29 +435,59 @@ export function OrderItems({
                             {assigningItemId === item.id && (
                               <>
                                 <Typography variant="subtitle2">Назначение средства измерений</Typography>
-                                <DeviceSelector
-                                  value={selectedInstrumentId}
-                                  customerId={customerId}
-                                  instrumentTypeId={item.instrumentTypeId}
-                                  onChange={setSelectedInstrumentId}
-                                />
-                                <Stack direction="row" spacing={1}>
-                                  <Button
-                                    size="small"
-                                    variant="contained"
-                                    disabled={assignInstrumentMutation.isPending || !selectedInstrumentId}
-                                    onClick={() => saveInstrumentAssignment(item.id)}
-                                  >
-                                    Назначить СИ
-                                  </Button>
-                                  <Button
-                                    size="small"
-                                    disabled={assignInstrumentMutation.isPending}
-                                    onClick={cancelAssigningInstrument}
-                                  >
-                                    Отмена
-                                  </Button>
-                                </Stack>
+                                {creatingDeviceItemId === item.id ? (
+                                  <Stack spacing={1.5}>
+                                    <Typography variant="body2" color="text.secondary">
+                                      Новая карточка будет создана для этого заказчика без площадки. Площадку можно указать отдельно после создания.
+                                    </Typography>
+                                    <CreateDeviceForm
+                                      instrumentTypeId={item.instrumentTypeId ?? undefined}
+                                      isPending={createDeviceMutation.isPending}
+                                      onSubmit={createDeviceForItem}
+                                    />
+                                    {createDeviceMutation.isError && (
+                                      <Alert severity="error">{createDeviceMutation.error.message}</Alert>
+                                    )}
+                                    <Button
+                                      size="small"
+                                      disabled={createDeviceMutation.isPending}
+                                      onClick={() => setCreatingDeviceItemId(null)}
+                                    >
+                                      Назад к поиску СИ
+                                    </Button>
+                                  </Stack>
+                                ) : (
+                                  <>
+                                    <DeviceSelector
+                                      value={selectedInstrumentId}
+                                      customerId={customerId}
+                                      instrumentTypeId={item.instrumentTypeId}
+                                      onChange={setSelectedInstrumentId}
+                                      onCreateDevice={() => setCreatingDeviceItemId(item.id)}
+                                      requireUnmatchedSerial
+                                    />
+                                    {assignInstrumentMutation.isError && (
+                                      <Alert severity="error">{assignInstrumentMutation.error.message}</Alert>
+                                    )}
+                                    <Stack direction="row" spacing={1}>
+                                      <Button
+                                        size="small"
+                                        variant="contained"
+                                        disabled={assignInstrumentMutation.isPending || !selectedInstrumentId}
+                                        onClick={() => saveInstrumentAssignment(item.id)}
+                                      >
+                                        Назначить СИ
+                                      </Button>
+                                      <Button
+                                        size="small"
+                                        disabled={assignInstrumentMutation.isPending}
+                                        onClick={cancelAssigningInstrument}
+                                      >
+                                        Отмена
+                                      </Button>
+                                    </Stack>
+                                  </>
+                                )}
                               </>
                             )}
 
