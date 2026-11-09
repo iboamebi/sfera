@@ -1,6 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { Alert, AppBar, Box, Button, Fab, Stack, Toolbar, Typography } from "@mui/material";
-import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import { Link, useLocation, useNavigate } from "react-router";
 
 import { useLogout } from "../features/auth/model/useLogout";
@@ -134,7 +133,7 @@ export function AppShell({ user, children }: AppShellProps) {
           onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
           sx={{ position: "fixed", right: 24, bottom: 24, zIndex: 1200 }}
         >
-          <KeyboardArrowUpIcon />
+          ↑
         </Fab>
       )}
     </Box>
