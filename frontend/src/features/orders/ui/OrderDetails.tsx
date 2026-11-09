@@ -224,20 +224,26 @@ export function OrderDetails({ order }: OrderDetailsProps) {
 
           <Divider />
 
-          <Stack spacing={2}>
-            <OrderItems
-              items={order.items}
-              orderId={order.id}
-              customerId={order.customerId}
-              editable={isEditable}
-            />
-            {isEditable && (
-              <AddOrderItemButton
-                orderId={order.id}
-                customerId={order.customerId}
-              />
-            )}
-          </Stack>
+          <OrderItems
+            items={order.items}
+            orderId={order.id}
+            customerId={order.customerId}
+            editable={isEditable}
+          />
+
+          {isEditable && (
+            <Card variant="outlined">
+              <CardContent>
+                <Stack spacing={2}>
+                  <Typography variant="h6">Добавление позиций</Typography>
+                  <AddOrderItemButton
+                    orderId={order.id}
+                    customerId={order.customerId}
+                  />
+                </Stack>
+              </CardContent>
+            </Card>
+          )}
         </Stack>
       </CardContent>
     </Card>
