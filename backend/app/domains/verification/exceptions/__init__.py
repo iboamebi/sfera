@@ -29,3 +29,7 @@ class InvalidDecisionCorrectionReasonDomainError(VerificationDomainError):
 
 class InvalidDecisionCorrectionDomainError(VerificationDomainError):
     """Corrected decision fields must match the selected result."""
+
+
+class ActiveVerificationAlreadyExistsDomainError(VerificationDomainError):
+    """An active verification already exists for the order item."""
