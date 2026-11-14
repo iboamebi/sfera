@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import {
   Alert,
@@ -34,6 +34,12 @@ export function CorrectVerificationDecisionForm({
   const [reason, setReason] = useState("");
   const queryClient = useQueryClient();
 
+  useEffect(() => {
+    setResult(currentResult);
+    setValidUntil(currentValidUntil ?? "");
+    setUnsuitableReason(currentUnsuitableReason ?? "");
+  }, [currentResult, currentValidUntil, currentUnsuitableReason]);
+
   const { mutate, isPending, error } = useCorrectVerificationDecision({
     onSuccess: () => {
       queryClient.invalidateQueries({
@@ -44,6 +50,11 @@ export function CorrectVerificationDecisionForm({
 
   const validDecision =
     result === "SUITABLE" ? Boolean(validUntil) : Boolean(unsuitableReason.trim());
+  const hasChanges =
+    result !== currentResult ||
+    (result === "SUITABLE" && validUntil !== (currentValidUntil ?? "")) ||
+    (result === "UNSUITABLE" &&
+      unsuitableReason.trim() !== (currentUnsuitableReason ?? "").trim());
 
   return (
     <Stack spacing={1.5}>
@@ -90,7 +101,7 @@ export function CorrectVerificationDecisionForm({
       />
       <Button
         variant="contained"
-        disabled={!validDecision || !reason.trim() || isPending}
+        disabled={!validDecision || !hasChanges || !reason.trim() || isPending}
         onClick={() =>
           mutate({
             verificationId,
