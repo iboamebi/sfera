@@ -1396,3 +1396,13 @@ Administrator-assisted password recovery has now been implemented; see the check
 - Added parameterized domain coverage for empty, space-only, and tab/newline-only reasons.
 - Commits: `77e849c` (domain invariant), `5f848b0` (tests), `f106a8f` (control-character test case).
 - Local domain validation is pending. Do not merge or deploy until the user reports the scoped checks.
+
+
+## Verification — implementation slice locally validated — 2026-11-14
+
+- Final branch audit against `develop` found exactly six changed files: Verification mapper, mapper tests, Verification action router, Verification Domain entity, Domain tests, and this context document. No unrelated files or database migrations are included.
+- Branch `fix/verification-archived-mapping` is 9 commits ahead of `develop` and 0 commits behind it at the time of audit.
+- User local validation passed after synchronizing through commit `4d1aa0a`: `tests/domains/verification/test_verification.py` — 12 passed; scoped Ruff check — passed; scoped Ruff format check — passed.
+- Earlier scoped local validations also passed: Verification mapper tests — 4 passed; Verification API/router tests — 7 passed (one existing Starlette/httpx deprecation warning); Ruff and format checks passed in both stages.
+- The three implementation corrections are complete: archived-state mapping in both directions, consistent `VerificationRead` response models for approve/reject, and rejection of whitespace-only unsuitable reasons.
+- Before PR creation, run the combined Verification test scope (Domain, Application, API/router, and Infrastructure mapper tests) on the latest branch HEAD. Do not merge or deploy as part of this checkpoint.
