@@ -1504,3 +1504,15 @@ Administrator-assisted password recovery has now been implemented; see the check
 - A separate correction operation is available only for a non-archived Verification with a DECIDED/SUITABLE result and an existing validity date. It requires a non-blank reason and writes an append-only `verification.valid_until_corrected` audit record with old/new dates and the reason.
 - Approval and correction remain restricted to METROLOGIST and ADMIN and require authenticated, CSRF-protected API routes.
 - Branch: `feat/verification-validity-correction`. Backend domain/application/API tests and frontend typecheck/build are pending local validation. Do not merge or deploy before those checks and user confirmation.
+
+
+## Verification — Device card navigation follow-up — 2026-11-14
+
+- After PR #30 merged and was deployed, resumed the separate instrument-name navigation change.
+- The original branch `feat/verification-device-link` was based on the pre-PR #30 commit and diverged from current `develop`; its VerificationPage also lacked the validity-correction UI added by PR #30.
+- Recreated the minimal navigation change on current `develop` as branch `feat/verification-device-link-followup`, preserving the merged validity-correction form and all current page behavior.
+- Instrument name in the «Средство измерений» section links to the existing Device route `/devices/{instrument.id}`; no backend/API/domain/persistence changes.
+- Implementation commit: `cc93c1902b344741f0567534cbd46af2731fce07`.
+- User local validation on the branch passed: `npm run typecheck` and `npm run build` (1310 modules transformed; only the known >500 kB chunk-size warning appeared in the earlier PR #30 build, no warning in this run).
+- GitHub PR #31 is open and mergeable; Backend CI run #1074 completed successfully. No review threads or submitted reviews are present.
+- Browser validation of navigation from a Verification page to the Device card is still pending. Do not merge or deploy until the user confirms this behavior and explicitly authorizes merge.
