@@ -1576,3 +1576,11 @@ Next: complete backend tests/CI, then implement the correction form in the Verif
 - Updated the mapper to reconcile OrderItems by ID: update existing ORM rows in place, add genuinely new rows, and remove only positions absent from the domain aggregate. Existing child relationships are preserved for retained positions.
 - Added an Infrastructure mapper regression test asserting that starting the order and mapping it back preserves the same OrderItem and its Verification relationship.
 - Local regression test passed (2 tests). The first import cleanup in `5223bc0` did not satisfy Ruff: the configured isort behavior requires aliased and non-aliased imports from the same module to be separate blocks. Split the Verification imports accordingly in `164f4c1`. Local Ruff re-validation is pending. No database migration, deployment, backend restart, or PR merge.
+
+## Verification start — multi-position application regression — 2026-11-14
+
+- Local Ruff validation passed after the import sorting correction; `develop` was synchronized with `origin/develop` and the working tree was clean at `fa93f9e`.
+- Reviewed the actual VerificationApplicationService.start implementation and existing application tests. The existing start test covered only a single OrderItem.
+- Added an application regression test with two OrderItems and one Verification per item. Starting the first Verification must preserve both OrderItems and leave the second Verification in CREATED state.
+- The infrastructure mapper regression independently covers preservation of ORM OrderItem/Verification relationships during aggregate persistence.
+- New application regression test requires local pytest and Ruff validation. No production deployment, backend restart, database migration, or PR merge.
