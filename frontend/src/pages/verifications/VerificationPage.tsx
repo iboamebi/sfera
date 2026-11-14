@@ -244,6 +244,14 @@ export function VerificationPage() {
                 <RejectVerificationButton verificationId={data.id} />
               </Stack>
             )}
+            {canCorrectValidity && data.validUntil && (
+              <>
+                <CorrectVerificationValidUntilForm
+                  verificationId={data.id}
+                  currentValidUntil={data.validUntil}
+                />
+              </>
+            )}
           </SectionCard>
         )}
       </Box>
