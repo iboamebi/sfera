@@ -601,7 +601,6 @@ def test_correct_verification_decision_persists_and_audits_old_and_new_values():
         records,
     )
 
-    corrected_at = datetime.now(UTC)
     result = service.correct_decision(
         CorrectVerificationDecisionCommand(
             verification_id=verification.id,
