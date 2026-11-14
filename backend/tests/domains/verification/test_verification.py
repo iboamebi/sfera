@@ -83,7 +83,7 @@ def test_mark_unsuitable_completes_verification():
     assert verification.decision_at == DECISION_AT
 
 
-@pytest.mark.parametrize("reason", ["", " ", "   ", "\\t\\n"])
+@pytest.mark.parametrize("reason", ["", " ", "   ", "\t\n"])
 def test_unsuitable_requires_non_blank_reason(reason: str):
     verification = create_verification()
     verification.start(started_at=DECISION_AT)
