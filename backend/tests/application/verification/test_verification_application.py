@@ -1,11 +1,15 @@
 from datetime import UTC, date, datetime
 from uuid import UUID, uuid4
+from zoneinfo import ZoneInfo
 
 import pytest
 
 from app.application.authorization.authorization import AuthorizationError
 from app.application.verification.commands.approve_verification import (
     ApproveVerificationCommand,
+)
+from app.application.verification.commands.correct_verification_valid_until import (
+    CorrectVerificationValidUntilCommand,
 )
 from app.application.verification.commands.create_verification import (
     CreateVerificationCommand,
@@ -509,3 +513,69 @@ def test_verification_rejection_raises_when_not_found():
             ),
             make_user(UserRole.METROLOGIST),
         )
+
+
+
+def test_approve_verification_calculates_validity_from_local_decision_date():
+    repository = FakeVerificationRepository()
+    verification = make_verification()
+    repository.save(verification)
+    service = make_service(repository)
+
+    result = service.approve(
+        ApproveVerificationCommand(
+            verification_id=verification.id,
+            duration_years=2,
+            time_zone="Europe/Amsterdam",
+        ),
+        make_user(UserRole.METROLOGIST),
+    )
+
+    assert result.decision_at is not None
+    local_date = result.decision_at.astimezone(
+        ZoneInfo("Europe/Amsterdam"),
+    ).date()
+    try:
+        anniversary = local_date.replace(year=local_date.year + 2)
+    except ValueError:
+        anniversary = local_date.replace(year=local_date.year + 2, day=28)
+    from datetime import timedelta
+
+    assert result.valid_until == anniversary - timedelta(days=1)
+
+
+def test_correct_valid_until_persists_and_writes_reasoned_audit():
+    repository = FakeVerificationRepository()
+    verification = make_verification()
+    verification.mark_suitable(
+        date(2030, 1, 1),
+        decision_at=datetime(2026, 11, 14, 10, 0, tzinfo=UTC),
+    )
+    repository.save(verification)
+    operations = FakeAuditOperationRepository()
+    records = FakeAuditRepository()
+    service = VerificationApplicationService(
+        repository,
+        FakeOrderRepository(),
+        FakeUnitOfWork(),
+        operations,
+        records,
+    )
+
+    result = service.correct_valid_until(
+        CorrectVerificationValidUntilCommand(
+            verification_id=verification.id,
+            valid_until=date(2029, 12, 31),
+            reason="Исправлена ошибка ввода",
+        ),
+        make_user(UserRole.METROLOGIST),
+    )
+
+    assert result.valid_until == date(2029, 12, 31)
+    assert len(operations.items) == len(records.items) == 1
+    assert records.items[0].action == "verification.valid_until_corrected"
+    assert records.items[0].changes["valid_until"] == {
+        "old": "2030-01-01",
+        "new": "2029-12-31",
+    }
+    assert records.items[0].reason == "Исправлена ошибка ввода"
