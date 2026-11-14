@@ -5,10 +5,11 @@ import {
   CardContent,
   Chip,
   Divider,
+  Link as MuiLink,
   Stack,
   Typography,
 } from "@mui/material";
-import { useParams } from "react-router";
+import { Link as RouterLink, useParams } from "react-router";
 
 import { useDevice } from "../../features/devices/model/useDevice";
 import { useInstrumentType } from "../../features/instrument-type/model/useInstrumentType";
@@ -190,10 +191,19 @@ export function VerificationPage() {
                 <Alert severity="warning">Не удалось загрузить тип СИ.</Alert>
               )}
               <Stack direction="row" sx={{ flexWrap: "wrap", gap: 2 }}>
-                <DetailRow
-                  label="Наименование"
-                  value={instrument.name || instrumentType?.name || "—"}
-                />
+                <Box sx={{ flex: "1 1 220px", minWidth: 0 }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: "block" }}>
+                    Наименование
+                  </Typography>
+                  <MuiLink
+                    component={RouterLink}
+                    to={`/devices/${instrument.id}`}
+                    variant="body1"
+                    sx={{ overflowWrap: "anywhere" }}
+                  >
+                    {instrument.name || instrumentType?.name || "—"}
+                  </MuiLink>
+                </Box>
                 <DetailRow label="Тип СИ" value={instrumentType?.name ?? "—"} />
                 <DetailRow label="Заводской номер" value={instrument.serialNumber} />
                 <DetailRow label="Регистрационный номер" value={instrument.registryNumber ?? "—"} />
