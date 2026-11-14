@@ -310,8 +310,7 @@ export function OrderItems({
                                   key={verification.id}
                                   direction="row"
                                   spacing={0.75}
-                                  alignItems="center"
-                                  flexWrap="wrap"
+                                  sx={{ alignItems: "center", flexWrap: "wrap" }}
                                 >
                                   <Button
                                     size="small"
