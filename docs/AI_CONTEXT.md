@@ -1448,3 +1448,13 @@ Administrator-assisted password recovery has now been implemented; see the check
 - User local frontend validation on the feature branch: `npm run typecheck` passed; `npm run build` passed (Vite transformed 1307 modules).
 - No backend, database, Arshin integration, or production deployment changes were made as part of the merge.
 - Next: synchronize local `develop`, repeat frontend validation on the merged commit, then deploy frontend to production as requested and verify the Verification page in the browser.
+
+
+## Verification UI — production appearance review — 2026-11-14
+
+- Local `develop` was synchronized with `origin/develop`; working tree was clean. Merged frontend passed `npm run typecheck` and `npm run build`.
+- User deployed the frontend with `frontend/scripts/deploy-production.sh`; script completed with `Production frontend deployed successfully`. Vite emitted a non-blocking chunk-size warning (main JS bundle approximately 854 KB).
+- No backend restart, backend deployment, database migration, or Arshin integration was performed.
+- Browser appearance review is now pending. Navigation: open `/orders`, open an order, then select the `Поверка N` link under an order item that already has a verification.
+- Current Verification page still displays the raw `orderItemId` UUID as «Позиция заказа». The Order read model provides item details and verification IDs, but the Verification read DTO currently only provides `order_item_id`; review whether this should be replaced by contextual navigation or a richer read contract in a separate minimal change after visual feedback.
+- Next sequence remains: visual appearance review → full lifecycle scenario → final display debugging. Use only current Sfera data/API; no Arshin assumptions.
