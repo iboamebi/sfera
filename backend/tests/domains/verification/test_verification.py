@@ -160,3 +160,112 @@ def test_correct_valid_until_rejects_non_suitable_or_undecided_verification():
             date(2029, 12, 31),
             reason="Исправление",
         )
+
+
+def test_correct_decision_changes_suitable_to_unsuitable():
+    verification = create_verification()
+    verification.start(started_at=DECISION_AT)
+    verification.mark_suitable(date(2030, 1, 1), decision_at=DECISION_AT)
+
+    corrected_at = datetime(2030, 1, 2, 12, 0, tzinfo=UTC)
+    verification.correct_decision(
+        result=VerificationResult.UNSUITABLE,
+        valid_until=None,
+        unsuitable_reason="Повреждена пломба",
+        reason="Обнаружена ошибка при оформлении решения",
+        decision_at=corrected_at,
+    )
+
+    assert verification.status == VerificationStatus.DECIDED
+    assert verification.result == VerificationResult.UNSUITABLE
+    assert verification.valid_until is None
+    assert verification.unsuitable_reason == "Повреждена пломба"
+    assert verification.decision_at == corrected_at
+
+
+def test_correct_decision_changes_unsuitable_to_suitable():
+    verification = create_verification()
+    verification.start(started_at=DECISION_AT)
+    verification.mark_unsuitable("Ошибка осмотра", decision_at=DECISION_AT)
+
+    corrected_at = datetime(2030, 1, 2, 12, 0, tzinfo=UTC)
+    verification.correct_decision(
+        result=VerificationResult.SUITABLE,
+        valid_until=date(2032, 1, 1),
+        unsuitable_reason=None,
+        reason="Повторная проверка подтвердила пригодность",
+        decision_at=corrected_at,
+    )
+
+    assert verification.status == VerificationStatus.DECIDED
+    assert verification.result == VerificationResult.SUITABLE
+    assert verification.valid_until == date(2032, 1, 1)
+    assert verification.unsuitable_reason is None
+    assert verification.decision_at == corrected_at
+
+
+@pytest.mark.parametrize("reason", ["", " ", "\t"])
+def test_correct_decision_requires_reason(reason: str):
+    verification = create_verification()
+    verification.start(started_at=DECISION_AT)
+    verification.mark_suitable(date(2030, 1, 1), decision_at=DECISION_AT)
+
+    from app.domains.verification.exceptions import (
+        InvalidDecisionCorrectionReasonDomainError,
+    )
+
+    with pytest.raises(InvalidDecisionCorrectionReasonDomainError):
+        verification.correct_decision(
+            result=VerificationResult.UNSUITABLE,
+            valid_until=None,
+            unsuitable_reason="Повреждена пломба",
+            reason=reason,
+            decision_at=DECISION_AT,
+        )
+
+
+def test_correct_decision_requires_valid_until_for_suitable():
+    verification = create_verification()
+    verification.start(started_at=DECISION_AT)
+    verification.mark_unsuitable("Ошибка", decision_at=DECISION_AT)
+
+    from app.domains.verification.exceptions import (
+        InvalidDecisionCorrectionDomainError,
+    )
+
+    with pytest.raises(InvalidDecisionCorrectionDomainError):
+        verification.correct_decision(
+            result=VerificationResult.SUITABLE,
+            valid_until=None,
+            unsuitable_reason=None,
+            reason="Исправление",
+            decision_at=DECISION_AT,
+        )
+
+
+def test_correct_decision_requires_unsuitable_reason_for_unsuitable():
+    verification = create_verification()
+    verification.start(started_at=DECISION_AT)
+    verification.mark_suitable(date(2030, 1, 1), decision_at=DECISION_AT)
+
+    with pytest.raises(InvalidUnsuitableReasonDomainError):
+        verification.correct_decision(
+            result=VerificationResult.UNSUITABLE,
+            valid_until=None,
+            unsuitable_reason=" ",
+            reason="Исправление",
+            decision_at=DECISION_AT,
+        )
+
+
+def test_correct_decision_rejects_undecided_verification():
+    verification = create_verification()
+
+    with pytest.raises(InvalidVerificationResultStateDomainError):
+        verification.correct_decision(
+            result=VerificationResult.SUITABLE,
+            valid_until=date(2030, 1, 1),
+            unsuitable_reason=None,
+            reason="Исправление",
+            decision_at=DECISION_AT,
+        )
