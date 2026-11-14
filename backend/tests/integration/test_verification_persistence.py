@@ -70,7 +70,7 @@ def test_starting_one_verification_preserves_all_order_items_and_verifications()
             revision = check_session.execute(
                 text("SELECT version_num FROM alembic_version")
             ).scalar_one()
-            assert revision == "d4e8a1c6f230"
+            assert revision == "f7c2a9e4b610"
 
         customer_id = uuid4()
         instrument_type_id = uuid4()
