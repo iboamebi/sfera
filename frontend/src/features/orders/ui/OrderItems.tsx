@@ -517,7 +517,9 @@ export function OrderItems({
                                         },
                                         {
                                           onSuccess: (verification) =>
-                                            navigate(`/verifications/${verification.id}`),
+                                            navigate(
+                                              `/verifications/${verification.id}?returnTo=${encodeURIComponent(`/orders/${orderId}`)}`,
+                                            ),
                                         },
                                       )
                                     }
