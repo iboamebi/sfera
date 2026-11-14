@@ -92,7 +92,8 @@ class FakeVerificationRepository(VerificationRepository):
         return any(
             item.order_item_id == order_item_id
             and not item.archived
-            and item.status in (VerificationStatus.CREATED, VerificationStatus.IN_PROGRESS)
+            and item.status
+            in (VerificationStatus.CREATED, VerificationStatus.IN_PROGRESS)
             for item in self._items.values()
         )
 
