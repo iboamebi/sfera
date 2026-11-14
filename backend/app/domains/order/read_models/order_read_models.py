@@ -2,19 +2,12 @@
 Order read models.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date, datetime
 from uuid import UUID
 
 from app.domains.order.value_objects.order_item_operation import OrderItemOperation
 from app.domains.order.value_objects.order_status import OrderStatus
-from app.domains.verification.value_objects.verification_result import (
-    VerificationResult,
-)
-from app.domains.verification.value_objects.verification_status import (
-    VerificationStatus,
-)
-from app.domains.verification.value_objects.verification_type import VerificationType
 
 
 @dataclass(frozen=True)
@@ -24,9 +17,9 @@ class OrderItemVerificationReadData:
     id: UUID
     created_at: datetime
     verification_date: date
-    verification_type: VerificationType
-    status: VerificationStatus
-    result: VerificationResult | None
+    verification_type: str
+    status: str
+    result: str | None
     valid_until: date | None
     archived: bool
 
@@ -45,7 +38,7 @@ class OrderItemReadData:
     comment: str | None
     requested_operations: set[OrderItemOperation]
     verification_ids: list[UUID]
-    verifications: list[OrderItemVerificationReadData]
+    verifications: list[OrderItemVerificationReadData] = field(default_factory=list)
 
 
 @dataclass(frozen=True)
