@@ -37,6 +37,7 @@ from app.domains.user.entities.user import User
 from app.domains.user.value_objects.user_role import UserRole
 from app.domains.verification.entities.verification import Verification
 from app.domains.verification.exceptions import (
+    ActiveVerificationAlreadyExistsDomainError,
     InvalidVerificationResultStateDomainError,
 )
 from app.domains.verification.repositories.verification_repository import (
@@ -115,7 +116,10 @@ class VerificationApplicationService:
                 verification_type=command.verification_type,
                 methodology=command.methodology,
             )
-            self._repository.save(verification)
+            try:
+                self._repository.save(verification)
+            except ActiveVerificationAlreadyExistsDomainError:
+                raise VerificationAlreadyActiveApplicationError from None
 
             operation = AuditOperation(initiated_by=user.id)
             self._audit_operation_repository.save(operation)
