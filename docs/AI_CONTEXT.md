@@ -1632,3 +1632,13 @@ Next: complete backend tests/CI, then implement the correction form in the Verif
 - Removed only the redundant `c5ce4959d90d` parent from the merge revision. The corrected merge parents are `9b1c7d4e2f30` and `b6c1e8f3a420`; the branch remains included through the latter.
 - Commit: `90e4898` — `fix: remove redundant Alembic merge parent`.
 - Next local validation: pull `develop`; run `alembic heads --verbose` and `alembic history --verbose`; then retry `alembic upgrade head` only with the explicit disposable PostgreSQL URL from `tests/integration/README.md`. Confirm `alembic current`, then let the cleanup trap remove the test container. Never use the application's default database URL.
+
+
+## Isolated PostgreSQL — bootstrap for the one-time data-reset migration — 2026-11-14
+
+- The disposable PostgreSQL migration run successfully passed the Alembic graph and applied migrations through `9f2a6c4d8e14`, then stopped at `a6c8e1f3b520`.
+- The reset migration intentionally requires exactly one `users` row with `username='alex'` and `role='admin'`. A brand-new integration database has no user rows, so the guard correctly refused to run. The Compose cleanup trap removed the disposable database; no application database was used.
+- Reviewed the actual migration, `User` ORM model, initial users table schema, role migration, and integration README. No production migration or runtime behavior should be weakened for this test-only bootstrap.
+- Updated `backend/tests/integration/README.md` to migrate the disposable database to `9f2a6c4d8e14`, insert a placeholder `alex/admin` row with a fixed test-only UUID and unusable password marker, then run `alembic upgrade head`. The reset migration then executes unchanged and retains that placeholder. The container teardown removes it.
+- Commit: `61286fc` — `docs: bootstrap disposable admin for integration migrations`.
+- Next local validation: repeat the disposable PostgreSQL migration procedure exactly as documented, confirm `alembic current` is `c2e5f7a9b310`, and allow cleanup to remove the container. Do not use any non-test database URL or run the application backend against this database.
