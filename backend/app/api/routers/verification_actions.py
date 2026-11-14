@@ -9,11 +9,11 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from app.api.dependencies.auth import get_current_user
 from app.api.security.csrf import require_csrf
-from app.application.verification.commands.correct_verification_valid_until import (
-    CorrectVerificationValidUntilCommand,
-)
 from app.application.verification.commands.approve_verification import (
     ApproveVerificationCommand,
+)
+from app.application.verification.commands.correct_verification_valid_until import (
+    CorrectVerificationValidUntilCommand,
 )
 from app.application.verification.commands.reject_verification import (
     RejectVerificationCommand,
@@ -28,8 +28,10 @@ from app.application.verification.services.verification_application_service impo
     VerificationApplicationService,
 )
 from app.core.dependencies.services import get_verification_service
-from app.domains.verification.exceptions import InvalidVerificationResultStateDomainError
 from app.domains.user.entities.user import User
+from app.domains.verification.exceptions import (
+    InvalidVerificationResultStateDomainError,
+)
 from app.schemas.verification import VerificationRead
 
 router = APIRouter(
@@ -77,9 +79,7 @@ def approve_verification(
         get_verification_service,
     ),
 ):
-    if valid_until is None and (
-        duration_years is None or time_zone is None
-    ):
+    if valid_until is None and (duration_years is None or time_zone is None):
         raise HTTPException(
             status_code=422,
             detail="Provide valid_until or duration_years and time_zone",
@@ -113,7 +113,10 @@ def correct_verification_valid_until(
     ),
 ):
     if not reason.strip():
-        raise HTTPException(status_code=422, detail="Correction reason is required")
+        raise HTTPException(
+            status_code=422,
+            detail="Correction reason is required",
+        )
     try:
         return service.correct_valid_until(
             CorrectVerificationValidUntilCommand(
