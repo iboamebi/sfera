@@ -7,8 +7,6 @@ Create Date: 2026-11-14
 
 from collections.abc import Sequence
 
-import sqlalchemy as sa
-
 from alembic import op
 
 revision: str = "d4e8a1c6f230"
@@ -38,9 +36,7 @@ def upgrade() -> None:
         """
     )
     op.execute(
-
         """
-        DROP INDEX uq_instruments_customer_type_serial;
         CREATE UNIQUE INDEX uq_instruments_customer_type_serial
         ON instruments (
             customer_id,
