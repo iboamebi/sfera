@@ -1675,3 +1675,12 @@ Next: complete backend tests/CI, then implement the correction form in the Verif
 - Commit: `17717b4` — `docs: make disposable admin bootstrap collision-safe`.
 - No application migration or production code changed. The failed run did not reach the persistence test or style validation; the disposable DB was cleaned up.
 - Next: pull `develop` and repeat the documented disposable PostgreSQL flow. Report the migration/current revision, integration pytest, Ruff check and Ruff format results. Do not reuse an application database URL.
+
+
+## Verification persistence integration — successful local run — 2026-11-14
+
+- User completed the disposable PostgreSQL migration chain to `c2e5f7a9b310 (head)`.
+- `pytest -q tests/integration/test_verification_persistence.py`: **1 passed**. This confirms the real SQLAlchemy commit/fresh-session regression: both OrderItems remain, the started Verification is `IN_PROGRESS`, the second remains `CREATED`, and the Order is `IN_WORK`.
+- `ruff check tests/integration/test_verification_persistence.py`: passed.
+- `ruff format --check` reported only three formatting changes. Applied those exact formatting-only changes on `develop` in commit `d62c7be`; the integration test itself does not need to be rerun for the already-passed persistence assertion, but local Ruff format check should be repeated after pulling.
+- The disposable PostgreSQL container/network were removed by the cleanup trap. The reported SSH message `Connection to top.vlsfera.ru closed.` appeared after test completion and cleanup; it does not indicate that pytest or migrations were interrupted. No production database, deployment, or backend restart was involved.
