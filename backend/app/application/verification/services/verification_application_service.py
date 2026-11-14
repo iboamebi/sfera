@@ -356,7 +356,6 @@ class VerificationApplicationService:
 
         return verification
 
-
     def correct_decision(
         self,
         command: CorrectVerificationDecisionCommand,
