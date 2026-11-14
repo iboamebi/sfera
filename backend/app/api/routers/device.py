@@ -17,10 +17,10 @@ from app.application.device.commands.disconnect_device import DisconnectDeviceCo
 from app.application.device.commands.update_device import UpdateDeviceCommand
 from app.application.device.exceptions import (
     CustomerNotFoundApplicationError,
-    DuplicateDeviceSerialNumberApplicationError,
     DeviceNotAvailableApplicationError,
     DeviceNotFoundApplicationError,
     DeviceNotInWorkApplicationError,
+    DuplicateDeviceSerialNumberApplicationError,
     InstrumentTypeNotFoundApplicationError,
     SiteCustomerMismatchApplicationError,
     SiteNotFoundApplicationError,
