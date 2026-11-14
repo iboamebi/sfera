@@ -28,6 +28,7 @@ from app.application.verification.services.verification_application_service impo
     VerificationApplicationService,
 )
 from app.core.dependencies.services import get_verification_service
+from app.domains.verification.exceptions import InvalidVerificationResultStateDomainError
 from app.domains.user.entities.user import User
 from app.schemas.verification import VerificationRead
 
@@ -113,14 +114,20 @@ def correct_verification_valid_until(
 ):
     if not reason.strip():
         raise HTTPException(status_code=422, detail="Correction reason is required")
-    return service.correct_valid_until(
-        CorrectVerificationValidUntilCommand(
-            verification_id=verification_id,
-            valid_until=valid_until,
-            reason=reason,
-        ),
-        user,
-    )
+    try:
+        return service.correct_valid_until(
+            CorrectVerificationValidUntilCommand(
+                verification_id=verification_id,
+                valid_until=valid_until,
+                reason=reason,
+            ),
+            user,
+        )
+    except InvalidVerificationResultStateDomainError:
+        raise HTTPException(
+            status_code=409,
+            detail="Only a suitable decided verification can be corrected",
+        ) from None
 
 
 @router.post(
