@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { Alert, Button, Stack, TextField } from "@mui/material";
+import { Alert, Button, Stack, TextField, Typography } from "@mui/material";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { useApproveVerification } from "../model/useApproveVerification";
@@ -25,10 +25,11 @@ export function ApproveVerificationButton({
   });
 
   return (
-    <Stack spacing={1}>
+    <Stack spacing={1.5}>
+      <Typography variant="subtitle1">Признать СИ пригодным</Typography>
       {error && <Alert severity="error">{error.message}</Alert>}
       <TextField
-        label="Valid until"
+        label="Действительно до"
         type="date"
         value={validUntil}
         onChange={(event) => setValidUntil(event.target.value)}
@@ -37,10 +38,11 @@ export function ApproveVerificationButton({
             shrink: true,
           },
         }}
+        sx={{ maxWidth: 320 }}
       />
-
       <Button
         variant="contained"
+        color="success"
         disabled={isPending || !validUntil}
         onClick={() =>
           mutate({
@@ -48,8 +50,9 @@ export function ApproveVerificationButton({
             validUntil,
           })
         }
+        sx={{ alignSelf: "flex-start" }}
       >
-        {isPending ? "Approving..." : "Approve"}
+        {isPending ? "Сохраняем решение..." : "Подтвердить пригодность"}
       </Button>
     </Stack>
   );
