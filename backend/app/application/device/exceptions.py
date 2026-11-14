@@ -29,3 +29,7 @@ class SiteNotFoundApplicationError(Exception):
 
 class SiteCustomerMismatchApplicationError(Exception):
     """Site does not belong to the device customer."""
+
+
+class DuplicateDeviceSerialNumberApplicationError(Exception):
+    """Serial number already exists for this customer and instrument type."""
