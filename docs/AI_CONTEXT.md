@@ -1468,3 +1468,15 @@ Administrator-assisted password recovery has now been implemented; see the check
 - Removed the raw `order_item_id` UUID from the user-facing page. The current Verification DTO does not expose an order ID or instrument details. Although the Order DTO contains item names and Verification IDs, resolving an order item from the verification page would require loading/searching the order collection; this is intentionally not added as an implicit expensive lookup. Contextual navigation requires a deliberate read-contract decision.
 - No backend, database, lifecycle, or Arshin changes.
 - Next: local frontend typecheck/build, then production visual recheck; only after appearance is accepted proceed to full lifecycle scenario testing.
+
+
+## Verification UI — compact layout merged (PR #28)
+
+- PR #28 `ui: compact Verification detail layout` merged into `develop` by squash.
+- Merge commit: `c1cb0dab9190c04751b2488e85c3ed8099666a00`.
+- Frontend page now uses responsive two-column layout on wide screens and one column on narrow screens; card padding/spacing reduced; detail fields wrap.
+- Raw `order_item_id` UUID removed from the user-facing Verification page. Current Verification read DTO does not expose Order/Instrument context; contextual navigation remains a separate read-contract decision.
+- User local validation on PR head `1b14d2c`: `npm run typecheck` passed; `npm run build` passed (Vite emitted existing >500 kB chunk advisory).
+- Backend CI #1062 succeeded on PR head `1b14d2c`; no review comments or threads.
+- No backend, database, lifecycle, or Arshin changes. Production has not yet received this compact-layout refinement.
+- Next: synchronize local `develop`, validate merged frontend, deploy frontend only, then inspect appearance in production before starting full Verification lifecycle scenario.
