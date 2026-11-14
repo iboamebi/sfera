@@ -12,7 +12,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState } from "react";
 
 import type { DeviceRead } from "../../../devices/model/types";
 import { useDevices } from "../../../devices/model/useDevices";
@@ -26,11 +26,11 @@ interface DeviceSelectorProps {
   instrumentTypeId?: string | null;
   requireUnmatchedSerial?: boolean;
   excludedInstrumentIds?: string[];
-  renderCreateDeviceAction?: (props: {
+  onCreateDeviceActionStateChange?: (state: {
     disabled: boolean;
     serialNumber: string;
     disabledReason: string;
-  }) => ReactNode;
+  }) => void;
 }
 
 export function DeviceSelector({
@@ -41,7 +41,7 @@ export function DeviceSelector({
   instrumentTypeId,
   requireUnmatchedSerial = false,
   excludedInstrumentIds = [],
-  renderCreateDeviceAction,
+  onCreateDeviceActionStateChange,
 }: DeviceSelectorProps) {
   const { data: devices = [], isLoading, error } = useDevices();
   const {
@@ -143,6 +143,19 @@ export function DeviceSelector({
     }
   }, [availableDevices, isLoading, onChange, value]);
 
+  useEffect(() => {
+    onCreateDeviceActionStateChange?.({
+      disabled: createDeviceDisabled,
+      serialNumber: inputValue.trim(),
+      disabledReason: createDeviceDisabledReason,
+    });
+  }, [
+    createDeviceDisabled,
+    createDeviceDisabledReason,
+    inputValue,
+    onCreateDeviceActionStateChange,
+  ]);
+
   if (error) {
     return (
       <Typography color="error">
@@ -197,29 +210,7 @@ export function DeviceSelector({
         </Typography>
       )}
 
-      {onCreateDevice &&
-        (renderCreateDeviceAction
-          ? renderCreateDeviceAction({
-              disabled: createDeviceDisabled,
-              serialNumber: inputValue.trim(),
-              disabledReason: createDeviceDisabledReason,
-            })
-          : (
-              <>
-                <Button
-                  onClick={() => onCreateDevice(inputValue.trim())}
-                  variant="outlined"
-                  disabled={createDeviceDisabled}
-                >
-                  Создать карточку СИ
-                </Button>
-                {createDeviceDisabled && !matchingDevice && (
-                  <Typography variant="caption" color="text.secondary">
-                    {createDeviceDisabledReason}
-                  </Typography>
-                )}
-              </>
-            ))}
+
 
       <Autocomplete
         fullWidth
