@@ -1644,3 +1644,12 @@ Next: complete backend tests/CI, then implement the correction form in the Verif
 - Next local validation: repeat the disposable PostgreSQL migration procedure exactly as documented, confirm `alembic current` is `c2e5f7a9b310`, and allow cleanup to remove the container. Do not use any non-test database URL or run the application backend against this database.
 
 - README follow-up: the bootstrap now runs `psql` inside the disposable Compose container (no host `psql` dependency) and explicitly supplies the required `archived=FALSE` column from the initial users schema. Commit: `b6d0c02`.
+
+
+## Integration migration retry — virtual environment — 2026-11-14
+
+- The latest local retry stopped before any Alembic migration ran: shell reported `alembic: command not found`. The project virtual environment was not activated in that shell.
+- Compose cleanup succeeded and removed the disposable PostgreSQL container/network. No application database was involved.
+- Updated `backend/tests/integration/README.md` to activate `.venv` before running integration migration commands.
+- Commit: `5408277` — `docs: activate backend venv for integration migrations`.
+- Next: pull `develop`, activate `.venv`, then repeat the disposable PostgreSQL migration/bootstrap procedure. Expected revision remains `c2e5f7a9b310`.
