@@ -33,15 +33,29 @@ alembic upgrade 9f2a6c4d8e14
 
 docker compose -f compose.integration.yaml exec -T postgres \
   psql -U sfera_test -d sfera_test -v ON_ERROR_STOP=1 <<'SQL'
-INSERT INTO users (id, username, password_hash, is_active, role, archived)
-VALUES (
-    '00000000-0000-0000-0000-000000000001',
-    'alex',
-    'integration-test-placeholder-not-for-login',
-    TRUE,
-    'admin',
-    FALSE
-);
+DO $
+BEGIN
+    IF EXISTS (
+        SELECT 1 FROM users WHERE username = 'alex' AND role = 'admin'
+    ) THEN
+        RAISE NOTICE 'Disposable alex/admin account already exists; keeping it.';
+    ELSIF EXISTS (
+        SELECT 1 FROM users WHERE username = 'alex'
+    ) THEN
+        RAISE EXCEPTION 'Existing alex account is not an admin; refusing bootstrap.';
+    ELSE
+        INSERT INTO users (id, username, password_hash, is_active, role, archived)
+        VALUES (
+            gen_random_uuid(),
+            'alex',
+            'integration-test-placeholder-not-for-login',
+            TRUE,
+            'admin',
+            FALSE
+        );
+    END IF;
+END
+$;
 SQL
 
 alembic upgrade head
@@ -50,7 +64,7 @@ alembic current
 
 Expected current revision: `c2e5f7a9b310`.
 
-The placeholder account exists only in the disposable database and is removed when the Compose container is torn down. It has no `user_roles` rows and is not a usable application login. The normal Alembic migration chain still executes in full, including the reset migration and its guard.
+The bootstrap is safe to repeat: it preserves an existing `alex/admin` row, refuses an `alex` row with a different role, and otherwise generates a fresh UUID rather than assuming a fixed primary key is unused. The placeholder account exists only in the disposable database and is removed when the Compose container is torn down. It has no `user_roles` rows and is not a usable application login. The normal Alembic migration chain still executes in full, including the reset migration and its guard.
 
 The schema is created through real migrations rather than `metadata.create_all()`, preserving migration-managed database behavior.
 
