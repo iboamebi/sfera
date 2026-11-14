@@ -14,5 +14,15 @@ class DeviceRepository(ABC):
         pass
 
     @abstractmethod
+    def exists_by_customer_type_and_serial_number(
+        self,
+        customer_id: UUID,
+        instrument_type_id: UUID,
+        serial_number: str,
+        exclude_device_id: UUID | None = None,
+    ) -> bool:
+        pass
+
+    @abstractmethod
     def save(self, device: Device) -> None:
         pass
