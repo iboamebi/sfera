@@ -40,7 +40,6 @@ def test_reject_verification_requires_authentication_and_csrf() -> None:
     assert require_csrf in dependencies
 
 
-
 def test_correct_valid_until_requires_authentication_and_csrf() -> None:
     dependencies = get_route_dependencies(correct_verification_valid_until)
 
