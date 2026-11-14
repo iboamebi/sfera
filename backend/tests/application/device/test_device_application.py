@@ -97,8 +97,6 @@ class FakeInstrumentTypeRepository(InstrumentTypeRepository):
         self.instrument_type = instrument_type
 
 
-
-
 class FakeCustomerRepository(CustomerRepository):
     def __init__(self, customer: Customer):
         self.customer = customer
@@ -289,7 +287,6 @@ def test_device_connect_disconnect_flow():
     assert disconnected_device.status == DeviceStatus.COMPLETED
     assert uow.committed
     assert not uow.rolled_back
-
 
 
 def test_device_create_fails_when_customer_not_found():
