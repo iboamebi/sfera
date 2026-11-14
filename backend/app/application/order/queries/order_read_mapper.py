@@ -3,7 +3,7 @@ Order read mapper.
 """
 
 from app.domains.order.read_models.order_read_models import OrderReadData
-from app.schemas.order import OrderItemRead, OrderRead
+from app.schemas.order import OrderItemRead, OrderItemVerificationRead, OrderRead
 
 
 class OrderReadMapper:
@@ -35,6 +35,19 @@ class OrderReadMapper:
                     comment=item.comment,
                     requested_operations=item.requested_operations,
                     verification_ids=item.verification_ids,
+                    verifications=[
+                        OrderItemVerificationRead(
+                            id=verification.id,
+                            created_at=verification.created_at,
+                            verification_date=verification.verification_date,
+                            verification_type=verification.verification_type,
+                            status=verification.status,
+                            result=verification.result,
+                            valid_until=verification.valid_until,
+                            archived=verification.archived,
+                        )
+                        for verification in item.verifications
+                    ],
                 )
                 for item in model.items
             ],
