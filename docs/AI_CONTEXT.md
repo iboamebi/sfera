@@ -1437,3 +1437,14 @@ Administrator-assisted password recovery has now been implemented; see the check
 - Start/approve/reject controls use Russian labels; rejection requires a non-whitespace reason in the UI.
 - No backend contract, persistence model, Arshin integration, or business lifecycle rules were changed.
 - This is the first UI presentation stage only. Full browser scenario validation and final display debugging remain pending local validation.
+
+
+## 2026-11-14 — Verification UI PR #27 merged
+
+- Verification UI presentation branch `feat/verification-ui-presentation` merged into `develop` via squash.
+- PR: https://github.com/iboamebi/sfera/pull/27
+- Merge commit: `510aea4361fbeb7329c6312e39835f2bb99da313`.
+- PR head: `3657b4b3146e92164e5feac7d3a6240adcd10dd4`; GitHub Backend CI run #1056 completed successfully.
+- User local frontend validation on the feature branch: `npm run typecheck` passed; `npm run build` passed (Vite transformed 1307 modules).
+- No backend, database, Arshin integration, or production deployment changes were made as part of the merge.
+- Next: synchronize local `develop`, repeat frontend validation on the merged commit, then deploy frontend to production as requested and verify the Verification page in the browser.
