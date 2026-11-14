@@ -1684,3 +1684,30 @@ Next: complete backend tests/CI, then implement the correction form in the Verif
 - `ruff check tests/integration/test_verification_persistence.py`: passed.
 - `ruff format --check` reported only three formatting changes. Applied those exact formatting-only changes on `develop` in commit `d62c7be`; the integration test itself does not need to be rerun for the already-passed persistence assertion, but local Ruff format check should be repeated after pulling.
 - The disposable PostgreSQL container/network were removed by the cleanup trap. The reported SSH message `Connection to top.vlsfera.ru closed.` appeared after test completion and cleanup; it does not indicate that pytest or migrations were interrupted. No production database, deployment, or backend restart was involved.
+
+
+## Active verification per order item — implementation checkpoint
+
+Дата: 2026-11-14
+
+Зафиксировано бизнес-правило:
+
+- Для одной позиции заказа допускается не более одной неархивной активной поверки.
+- Активные статусы: `CREATED` и `IN_PROGRESS`.
+- `DECIDED` не блокирует следующую поверку.
+- Архивная запись не блокирует создание новой поверки.
+- После завершения текущей поверки новая запись в той же позиции разрешена.
+
+Реализация в GitHub `develop`:
+
+- Application Service проверяет наличие активной поверки через VerificationRepository.
+- Infrastructure Repository выполняет запрос по `order_item_id`, `archived=false` и статусам CREATED/IN_PROGRESS.
+- API возвращает HTTP 409 при попытке повторного создания.
+- OrderItems вместо действия создания показывает `Поверка уже в работе`.
+- PostgreSQL partial unique index `uq_verifications_one_active_per_order_item` обеспечивает ограничение на уровне БД.
+- Alembic migration: `7a9d2e4c6b10`; перед созданием индекса migration явно проверяет отсутствие дублирующихся активных записей и завершится ошибкой с понятным сообщением, если они есть.
+- Добавлены Application, API, Infrastructure repository tests.
+
+Локальная проверка после синхронизации обязательна: focused backend tests, Ruff check/format, Alembic upgrade на disposable integration DB, integration persistence test, frontend typecheck/build и browser scenario review.
+
+Не выполнять production deployment автоматически.
