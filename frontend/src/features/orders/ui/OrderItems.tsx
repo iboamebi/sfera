@@ -384,7 +384,6 @@ export function OrderItems({
                             (hasActiveVerification ? (
                               <Chip
                                 size="small"
-                                color="warning"
                                 label="Есть активная поверка"
                               />
                             ) : (
