@@ -1369,3 +1369,13 @@ Administrator-assisted password recovery has now been implemented; see the check
 - No search, duplicate-detection, Site-filter, creation, or order-item mutation behavior was changed.
 - Branch: `fix/order-item-create-button-visibility`.
 - Local typecheck/build and production browser validation are pending.
+
+
+## Verification — archived state mapper correction — 2026-11-14
+
+- Audited current Verification implementation on `develop` (`eb887867`) and local usage of `methodology`, `VerificationMethod`, and `archived`.
+- Confirmed that the historical migration explicitly converted `verifications.methodology_id` into a nullable text `methodology` field and removed the FK. The current string contract is therefore an intentional migration outcome; do not restore the FK without a separate business decision.
+- Confirmed a persistence defect: `VerificationMapper` did not map the inherited `archived` field in either direction, although Domain, ORM, API DTO, and frontend all expose/use it.
+- Branch `fix/verification-archived-mapping`: mapper now copies `archived` in both directions; mapper tests cover ORM→Domain and Domain→ORM preservation.
+- GitHub commits: `72a845b` (mapper fix), `839c538` (regression tests).
+- Local backend test/ruff validation is pending. Do not merge or deploy until the user reports the scoped checks.
