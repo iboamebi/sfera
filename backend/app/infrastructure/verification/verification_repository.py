@@ -41,6 +41,19 @@ class VerificationRepositorySQLAlchemy(VerificationRepository):
 
         return self._mapper.to_domain(model)
 
+    def has_active_for_order_item(self, order_item_id: UUID) -> bool:
+        """Return whether an unarchived verification is still active."""
+        return (
+            self.session.query(VerificationModel)
+            .filter(
+                VerificationModel.order_item_id == order_item_id,
+                VerificationModel.archived.is_(False),
+                VerificationModel.status.in_(("CREATED", "IN_PROGRESS")),
+            )
+            .first()
+            is not None
+        )
+
     def save(
         self,
         verification: Verification,
