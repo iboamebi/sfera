@@ -1600,3 +1600,14 @@ Next: complete backend tests/CI, then implement the correction form in the Verif
 - Existing coverage is split: application regression uses in-memory fake repositories; mapper regression checks ORM relationship identity in memory. Neither currently demonstrates a SQLAlchemy flush/commit followed by a fresh-session reload against a database.
 - No persistence code change is justified by the current code review. Next validation stage: inspect the repository's actual DB test setup and add a focused SQLAlchemy persistence regression only if it can be done with the existing test infrastructure. Do not claim DB-level persistence is proven until that test passes.
 - No migration, production deployment, backend restart, or PR merge.
+
+
+## Verification start — DB test infrastructure assessment — 2026-11-14
+
+- Reviewed local test-infrastructure inventory reported by the user and the corresponding current GitHub files.
+- `backend/tests/conftest.py` only imports `app.db.model_registry`; it defines no engine, session, transaction, or database fixtures.
+- Existing repository tests use fake sessions. The only `create_engine` / `sessionmaker` setup found in the reported search is the application database configuration in `app/db/database.py`, which binds directly to `settings.DATABASE_URL`.
+- ORM models use PostgreSQL-specific `sqlalchemy.dialects.postgresql.UUID` through `BaseModel`. No SQLite test compatibility or isolated test database configuration is currently established by the inspected code.
+- Therefore, adding a DB integration test that silently connects to the application's configured database would be unsafe; adding an ad hoc SQLite harness would require compatibility work not justified by the current regression.
+- No DB-level test or persistence code change has been made. The application and mapper regressions remain valid at their respective layers, but a real flush/commit/reload regression is still unproven.
+- Next decision: establish an explicit isolated PostgreSQL test database/fixture (with schema lifecycle and cleanup) before adding the persistence integration test. Do not point tests at the production database. No migration, deployment, backend restart, or PR merge.
