@@ -1611,3 +1611,15 @@ Next: complete backend tests/CI, then implement the correction form in the Verif
 - Therefore, adding a DB integration test that silently connects to the application's configured database would be unsafe; adding an ad hoc SQLite harness would require compatibility work not justified by the current regression.
 - No DB-level test or persistence code change has been made. The application and mapper regressions remain valid at their respective layers, but a real flush/commit/reload regression is still unproven.
 - Next decision: establish an explicit isolated PostgreSQL test database/fixture (with schema lifecycle and cleanup) before adding the persistence integration test. Do not point tests at the production database. No migration, deployment, backend restart, or PR merge.
+
+
+## Isolated PostgreSQL integration-test database — 2026-11-14
+
+- Added `backend/compose.integration.yaml` with a dedicated disposable PostgreSQL 17 container, database/user `sfera_test`, test-only credentials, and host binding restricted to `127.0.0.1:55432`.
+- The Compose service has no host bind mount or named volume and uses a separate Compose project name. It does not connect to or reuse the application's configured PostgreSQL service.
+- Added `backend/tests/integration/README.md` with explicit start, `DATABASE_URL`, Alembic migration, and teardown commands.
+- The test schema is created through the real Alembic migration chain, not `Base.metadata.create_all()`, so migration-managed PostgreSQL behavior is retained.
+- No application runtime code, existing tests, database migrations, or production configuration changed.
+- Commits: `65948ad` (isolated PostgreSQL service), `a869b69` (test database instructions).
+- Next local validation: start the disposable container, apply `alembic upgrade head` using only the documented test URL, confirm the Alembic head, then tear down the container. Do not run the application backend against this database.
+- After successful local validation, add an integration-only SQLAlchemy session fixture and a flush/commit/fresh-session regression for starting one Verification in a multi-position Order.
