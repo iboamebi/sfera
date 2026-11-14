@@ -10,6 +10,8 @@ from app.models.order import OrderStatus
 from app.models.order_item import OrderItem as OrderItemModel
 from app.models.verification import (
     Verification as VerificationModel,
+)
+from app.models.verification import (
     VerificationStatus,
     VerificationType,
 )
