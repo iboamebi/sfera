@@ -1742,3 +1742,11 @@ Next: complete backend tests/CI, then implement the correction form in the Verif
 
 
 - Local validation for the in-work instrument assignment change: 27 focused domain tests passed; frontend typecheck and production build passed (1313 modules). Ruff identified one overlong status-guard line and the corresponding formatter adjustment; corrected that exact line in commit `fc011af`. Re-run Ruff check/format locally after pulling. The Vite chunk-size notice is advisory and did not fail the build. Browser scenario review remains pending.
+
+## Order — create and assign a missing instrument during work — 2026-11-14
+
+- Browser review confirmed that assigning an existing instrument to an unassigned order item in IN_WORK works, but creating a missing instrument from the same flow was unavailable.
+- Reviewed DeviceSelector: the parent passed onCreateDevice, and the selector already calculated duplicate/loading guards and a disabled reason, but rendered no control that invoked the callback. The create form in OrderItems was therefore unreachable.
+- Added a “Создать новое СИ” action to DeviceSelector. It passes the entered serial number into the existing CreateDeviceForm flow, keeps creation disabled while the device list is loading, when the serial is blank, when an exact serial match already exists, or while a selected-site search has not been expanded to all sites.
+- The existing create mutation still creates the Device for the order's Customer and then assigns it to the existing unassigned OrderItem. No order-item add/remove permissions or status rules changed.
+- Frontend typecheck/build and browser validation are pending. No backend change, migration, production deployment, backend restart, or PR merge.
