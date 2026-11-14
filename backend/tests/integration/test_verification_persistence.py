@@ -5,11 +5,10 @@ Run only against the explicitly configured disposable integration database.
 
 import os
 from datetime import UTC, date, datetime
+from unittest.mock import Mock
 from uuid import uuid4
 
 import pytest
-from unittest.mock import Mock
-
 from sqlalchemy import create_engine, text
 from sqlalchemy.engine import make_url
 from sqlalchemy.orm import Session, sessionmaker
