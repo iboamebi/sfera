@@ -99,6 +99,20 @@ def test_get_returns_none_without_model() -> None:
     assert result is None
 
 
+def test_has_active_for_order_item_returns_matching_model_state() -> None:
+    model = VerificationModel(
+        id=uuid4(),
+        order_item_id=uuid4(),
+        verification_date=date(2026, 9, 5),
+        created_at=datetime(2026, 9, 5, tzinfo=UTC),
+        status=VerificationStatus.CREATED,
+        verification_type=VerificationType.PERIODIC,
+    )
+    repository = VerificationRepositorySQLAlchemy(FakeSession(model))
+
+    assert repository.has_active_for_order_item(model.order_item_id) is True
+
+
 def test_save_creates_model_with_instrument_id() -> None:
     instrument_id = uuid4()
     entity = make_verification(instrument_id=instrument_id)
