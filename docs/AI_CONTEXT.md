@@ -1558,3 +1558,12 @@ Next: complete backend tests/CI, then implement the correction form in the Verif
 - The correction form requires an unsuitable reason and a separate correction reason, and refreshes the Verification detail after success.
 - Preserved the current `develop` Verification page and validity-correction behavior; validity form now resets its date when server data changes and disables unchanged submissions.
 - Backend one-way enforcement and regression tests are already on `develop` (`43dae81`). No migration, deployment, or backend restart.
+
+## Order — multiple verifications and per-position status locally validated — 2026-11-14
+
+- Local `develop` is synchronized with `origin/develop` at `1aa21e0`; working tree is clean.
+- Backend mapper regression test passed: `1 passed`. Scoped Ruff check passed; all five scoped files are formatted.
+- Frontend `npm run typecheck` passed. `npm run build` passed (1313 modules); Vite reports the existing advisory that a minified chunk exceeds 500 kB.
+- Rechecked the implementation files from PR #36 against `develop`: all five backend and all four frontend implementation files are identical. Only `docs/AI_CONTEXT.md` differs; the feature branch checkpoint is older. No code needs to be transferred from PR #36, and the PR is left open pending a separate cleanup decision.
+- No production deployment, backend restart, database migration, or PR merge was performed.
+- Next: browser scenario review of an order with multiple positions and multiple verifications per position. Confirm global numbering, per-verification lifecycle/result/validity display, ability to create another verification, and that an older suitable result does not mask a newer unsuitable or unfinished result. Verify the order's planned issue date remains the displayed estimate; do not infer readiness from verification alone when other requested operations are outside the read model.
