@@ -5,6 +5,7 @@ from uuid import UUID
 from app.domains.verification.exceptions import (
     InvalidSuitableValidUntilDomainError,
     InvalidUnsuitableReasonDomainError,
+    InvalidValidityCorrectionReasonDomainError,
     InvalidVerificationResultStateDomainError,
 )
 from app.domains.verification.value_objects.verification_result import (
@@ -111,10 +112,6 @@ class Verification(AggregateRoot):
 
     def correct_valid_until(self, valid_until: date, *, reason: str) -> None:
         """Correct the validity date after a suitable decision."""
-        from app.domains.verification.exceptions import (
-            InvalidValidityCorrectionReasonDomainError,
-        )
-
         if (
             self.status != VerificationStatus.DECIDED
             or self.result != VerificationResult.SUITABLE
