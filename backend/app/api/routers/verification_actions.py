@@ -12,6 +12,9 @@ from app.api.security.csrf import require_csrf
 from app.application.verification.commands.approve_verification import (
     ApproveVerificationCommand,
 )
+from app.application.verification.commands.correct_verification_decision import (
+    CorrectVerificationDecisionCommand,
+)
 from app.application.verification.commands.correct_verification_valid_until import (
     CorrectVerificationValidUntilCommand,
 )
@@ -30,9 +33,15 @@ from app.application.verification.services.verification_application_service impo
 from app.core.dependencies.services import get_verification_service
 from app.domains.user.entities.user import User
 from app.domains.verification.exceptions import (
+    InvalidDecisionCorrectionDomainError,
+    InvalidDecisionCorrectionReasonDomainError,
+    InvalidUnsuitableReasonDomainError,
     InvalidVerificationResultStateDomainError,
 )
-from app.schemas.verification import VerificationRead
+from app.schemas.verification import (
+    VerificationDecisionCorrection,
+    VerificationRead,
+)
 
 router = APIRouter(
     prefix="/verifications",
@@ -153,3 +162,48 @@ def reject_verification(
         ),
         user,
     )
+
+
+@router.post(
+    "/{verification_id}/correct-decision",
+    response_model=VerificationRead,
+    dependencies=[Depends(get_current_user), Depends(require_csrf)],
+)
+def correct_verification_decision(
+    verification_id: UUID,
+    payload: VerificationDecisionCorrection,
+    user: User = Depends(get_current_user),
+    service: VerificationApplicationService = Depends(
+        get_verification_service,
+    ),
+):
+    if not payload.reason.strip():
+        raise HTTPException(
+            status_code=422,
+            detail="Correction reason is required",
+        )
+    try:
+        return service.correct_decision(
+            CorrectVerificationDecisionCommand(
+                verification_id=verification_id,
+                result=payload.result,
+                valid_until=payload.valid_until,
+                unsuitable_reason=payload.unsuitable_reason,
+                reason=payload.reason,
+            ),
+            user,
+        )
+    except InvalidVerificationResultStateDomainError:
+        raise HTTPException(
+            status_code=409,
+            detail="Only a decided verification can be corrected",
+        ) from None
+    except (
+        InvalidDecisionCorrectionDomainError,
+        InvalidDecisionCorrectionReasonDomainError,
+        InvalidUnsuitableReasonDomainError,
+    ):
+        raise HTTPException(
+            status_code=422,
+            detail="Corrected decision fields do not match the selected result",
+        ) from None
