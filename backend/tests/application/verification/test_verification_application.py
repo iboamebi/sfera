@@ -515,7 +515,6 @@ def test_verification_rejection_raises_when_not_found():
         )
 
 
-
 def test_approve_verification_calculates_validity_from_local_decision_date():
     repository = FakeVerificationRepository()
     verification = make_verification()
