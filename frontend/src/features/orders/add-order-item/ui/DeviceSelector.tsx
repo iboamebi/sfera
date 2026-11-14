@@ -58,21 +58,21 @@ export function DeviceSelector({
   );
   const excludedIds = new Set(excludedInstrumentIds);
   const serialCounts = customerDevices.reduce((counts, device) => {
-    const serial = device.serialNumber.trim().toLocaleLowerCase();
-    counts.set(serial, (counts.get(serial) ?? 0) + 1);
+    const serialKey = `${device.instrumentTypeId}:${device.serialNumber.trim().toLocaleLowerCase()}`;
+    counts.set(serialKey, (counts.get(serialKey) ?? 0) + 1);
     return counts;
   }, new Map<string, number>());
   const excludedSerials = new Set(
     customerDevices
       .filter((device) => excludedIds.has(device.id))
-      .map((device) => device.serialNumber.trim().toLocaleLowerCase()),
+      .map((device) => `${device.instrumentTypeId}:${device.serialNumber.trim().toLocaleLowerCase()}`),
   );
   const siteFilteredDevices = customerDevices.filter((device) => {
-    const serial = device.serialNumber.trim().toLocaleLowerCase();
+    const serialKey = `${device.instrumentTypeId}:${device.serialNumber.trim().toLocaleLowerCase()}`;
     if (
       excludedIds.has(device.id) ||
-      excludedSerials.has(serial) ||
-      (serialCounts.get(serial) ?? 0) > 1
+      excludedSerials.has(serialKey) ||
+      (serialCounts.get(serialKey) ?? 0) > 1
     ) {
       return false;
     }
@@ -98,7 +98,9 @@ export function DeviceSelector({
     selectedSiteIds.length > 0 && !includeOtherSites && !hasVisibleSearchMatch;
   const matchingDevices = normalizedInput
     ? customerDevices.filter(
-        (device) => device.serialNumber.trim().toLocaleLowerCase() === normalizedInput,
+        (device) =>
+          device.serialNumber.trim().toLocaleLowerCase() === normalizedInput &&
+          (!instrumentTypeId || device.instrumentTypeId === instrumentTypeId),
       )
     : [];
   const matchingDevice = matchingDevices[0] ?? null;
