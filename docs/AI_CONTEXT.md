@@ -1513,4 +1513,6 @@ Administrator-assisted password recovery has now been implemented; see the check
 - Recreated the minimal navigation change on current `develop` as branch `feat/verification-device-link-followup`, preserving the merged validity-correction form and all current page behavior.
 - Instrument name in the «Средство измерений» section links to the existing Device route `/devices/{instrument.id}`; no backend/API/domain/persistence changes.
 - Implementation commit: `cc93c1902b344741f0567534cbd46af2731fce07`.
-- Local frontend typecheck/build and browser validation are pending. Do not merge or deploy until the user reports local validation.
+- User local validation on the branch passed: `npm run typecheck` and `npm run build` (1310 modules transformed; only the known >500 kB chunk-size warning appeared in the earlier PR #30 build, no warning in this run).
+- GitHub PR #31 is open and mergeable; Backend CI run #1074 completed successfully. No review threads or submitted reviews are present.
+- Browser validation of navigation from a Verification page to the Device card is still pending. Do not merge or deploy until the user confirms this behavior and explicitly authorizes merge.
