@@ -16,18 +16,15 @@ import type { VerificationResult } from "../../model/types";
 interface CorrectVerificationDecisionFormProps {
   verificationId: string;
   currentResult: VerificationResult;
-  currentValidUntil: string | null;
   currentUnsuitableReason: string | null;
 }
 
 export function CorrectVerificationDecisionForm({
   verificationId,
   currentResult,
-  currentValidUntil,
   currentUnsuitableReason,
 }: CorrectVerificationDecisionFormProps) {
   const [result, setResult] = useState<VerificationResult>(currentResult);
-  const [validUntil, setValidUntil] = useState(currentValidUntil ?? "");
   const [unsuitableReason, setUnsuitableReason] = useState(
     currentUnsuitableReason ?? "",
   );
@@ -36,9 +33,8 @@ export function CorrectVerificationDecisionForm({
 
   useEffect(() => {
     setResult(currentResult);
-    setValidUntil(currentValidUntil ?? "");
     setUnsuitableReason(currentUnsuitableReason ?? "");
-  }, [currentResult, currentValidUntil, currentUnsuitableReason]);
+  }, [currentResult, currentUnsuitableReason]);
 
   const { mutate, isPending, error } = useCorrectVerificationDecision({
     onSuccess: () => {
