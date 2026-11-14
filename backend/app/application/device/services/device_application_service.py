@@ -8,6 +8,7 @@ from app.application.device.commands.disconnect_device import DisconnectDeviceCo
 from app.application.device.commands.update_device import UpdateDeviceCommand
 from app.application.device.exceptions import (
     CustomerNotFoundApplicationError,
+    DuplicateDeviceSerialNumberApplicationError,
     DeviceNotAvailableApplicationError,
     DeviceNotFoundApplicationError,
     DeviceNotInWorkApplicationError,
@@ -76,6 +77,13 @@ class DeviceApplicationService:
             if instrument_type is None:
                 raise InstrumentTypeNotFoundApplicationError
 
+            if self._repository.exists_by_customer_type_and_serial_number(
+                command.customer_id,
+                command.instrument_type_id,
+                command.serial_number,
+            ):
+                raise DuplicateDeviceSerialNumberApplicationError
+
             device = DeviceFactory.create(
                 device_id=uuid4(),
                 instrument_type_id=command.instrument_type_id,
@@ -115,6 +123,14 @@ class DeviceApplicationService:
 
         with self._uow:
             device = self.get(command.device_id)
+            if self._repository.exists_by_customer_type_and_serial_number(
+                device.customer_id,
+                device.instrument_type_id,
+                command.serial_number,
+                exclude_device_id=device.id,
+            ):
+                raise DuplicateDeviceSerialNumberApplicationError
+
             device.change_name(command.name)
             device.serial_number = SerialNumber(command.serial_number)
             device.registry_number = command.registry_number
