@@ -14,6 +14,7 @@ import { useDevice } from "../../features/devices/model/useDevice";
 import { useInstrumentType } from "../../features/instrument-type/model/useInstrumentType";
 import { ApproveVerificationButton } from "../../features/verifications/approve-verification/ui/ApproveVerificationButton";
 import { CorrectVerificationValidUntilForm } from "../../features/verifications/correct-valid-until/ui/CorrectVerificationValidUntilForm";
+import { CorrectVerificationDecisionForm } from "../../features/verifications/correct-decision/ui/CorrectVerificationDecisionForm";
 import { RejectVerificationButton } from "../../features/verifications/reject-verification/ui/RejectVerificationButton";
 import { StartVerificationButton } from "../../features/verifications/start-verification/ui/StartVerificationButton";
 import { useVerification } from "../../features/verifications/model/useVerification";
@@ -135,6 +136,10 @@ export function VerificationPage() {
     data.status === "DECIDED" &&
     data.result === "SUITABLE" &&
     Boolean(data.validUntil);
+  const canCorrectDecision =
+    !data.archived &&
+    data.status === "DECIDED" &&
+    data.result !== null;
 
   return (
     <Stack spacing={2} sx={{ width: "100%", maxWidth: 1100, mx: "auto" }}>
@@ -234,7 +239,7 @@ export function VerificationPage() {
           </Stack>
         </SectionCard>
 
-        {(canStart || canDecide || canCorrectValidity) && (
+        {(canStart || canDecide || canCorrectValidity || canCorrectDecision) && (
           <SectionCard title="Действия">
             {canStart && <StartVerificationButton verificationId={data.id} />}
             {canDecide && (
@@ -245,10 +250,18 @@ export function VerificationPage() {
               </Stack>
             )}
             {canCorrectValidity && data.validUntil && (
+              <CorrectVerificationValidUntilForm
+                verificationId={data.id}
+                currentValidUntil={data.validUntil}
+              />
+            )}
+            {canCorrectDecision && data.result && (
               <>
-                <CorrectVerificationValidUntilForm
+                <Divider />
+                <CorrectVerificationDecisionForm
                   verificationId={data.id}
-                  currentValidUntil={data.validUntil}
+                  currentResult={data.result}
+                  currentUnsuitableReason={data.unsuitableReason}
                 />
               </>
             )}

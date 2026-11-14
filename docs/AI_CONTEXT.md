@@ -1549,3 +1549,12 @@ Next: complete backend tests/CI, then implement the correction form in the Verif
 - Added Domain and Application regression tests proving the prohibited correction does not mutate the Verification or append audit records.
 - Corrected the verification-start audit test expectation: one AuditOperation groups two AuditRecords (verification.started and order.started_work).
 - No database migration. Frontend correction UI is the next integration stage; no production deployment or backend restart.
+
+
+## Verification decision correction UI consolidated on develop — 2026-11-14
+
+- Added the typed frontend API client and React Query mutation for audited decision correction.
+- Exposed the correction form only for non-archived, decided verifications; the UI permits `SUITABLE → UNSUITABLE` and directs users to create a new Verification for a positive result after an unsuitable decision.
+- The correction form requires an unsuitable reason and a separate correction reason, and refreshes the Verification detail after success.
+- Preserved the current `develop` Verification page and validity-correction behavior; validity form now resets its date when server data changes and disables unchanged submissions.
+- Backend one-way enforcement and regression tests are already on `develop` (`43dae81`). No migration, deployment, or backend restart.
