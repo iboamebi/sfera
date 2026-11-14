@@ -1,6 +1,6 @@
 """Tests for Order mapper."""
 
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from uuid import uuid4
 
 from app.domains.order.value_objects.order_item_operation import OrderItemOperation
@@ -8,6 +8,11 @@ from app.infrastructure.mappers.order_mapper import OrderMapper
 from app.models.order import Order as OrderModel
 from app.models.order import OrderStatus
 from app.models.order_item import OrderItem as OrderItemModel
+from app.models.verification import (
+    Verification as VerificationModel,
+    VerificationStatus,
+    VerificationType,
+)
 
 
 def test_order_mapper_to_domain_preserves_order_items() -> None:
@@ -47,14 +52,6 @@ def test_order_mapper_to_domain_preserves_order_items() -> None:
 
 
 def test_order_mapper_to_model_preserves_verifications_when_updating_order() -> None:
-    from datetime import date
-
-    from app.models.verification import (
-        Verification as VerificationModel,
-        VerificationStatus,
-        VerificationType,
-    )
-
     order_id = uuid4()
     customer_id = uuid4()
     item_id = uuid4()
