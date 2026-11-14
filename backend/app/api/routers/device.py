@@ -79,7 +79,10 @@ def create_device(
     except DuplicateDeviceSerialNumberApplicationError:
         raise HTTPException(
             status_code=409,
-            detail="Instrument with this serial number already exists for this customer and type",
+            detail=(
+                "Instrument with this serial number already exists "
+                "for this customer and type"
+            ),
         ) from None
     except InstrumentTypeNotFoundApplicationError:
         raise HTTPException(
@@ -119,7 +122,10 @@ def update_device(
     except DuplicateDeviceSerialNumberApplicationError:
         raise HTTPException(
             status_code=409,
-            detail="Instrument with this serial number already exists for this customer and type",
+            detail=(
+                "Instrument with this serial number already exists "
+                "for this customer and type"
+            ),
         ) from None
 
 
