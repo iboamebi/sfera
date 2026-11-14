@@ -1818,3 +1818,13 @@ Next: complete backend tests/CI, then implement the correction form in the Verif
 - User request: cancelled verifications must no longer appear under an OrderItem. This is display-only: records remain in the database and verification/audit history is not deleted.
 - Frontend order item display now filters out status `CANCELLED`; cancelled records are also excluded from visible verification numbering, avoiding gaps. DTO/domain frontend status unions include `CANCELLED`.
 - Implementation commits: `2ef6f5e`, `ad15671`, `871b739`. Local frontend validation and browser review are pending.
+
+## Verification return navigation — 2026-11-14
+
+- User requested that verification detail return to the Order from which the verification was created, instead of always returning to the Orders list.
+- When a verification is created from an OrderItem, frontend now passes the source Order route as `returnTo` in the verification URL.
+- Verification detail uses that route for both the back button and successful cancellation; direct/legacy verification URLs fall back to `/orders`.
+- The return path is restricted to `/orders/*` before navigation.
+- Commits: `97e84ff`, `59d9090`, `3e57f1f`.
+- Local frontend validation and browser review are pending.
+
