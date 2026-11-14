@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session, joinedload
 
 from app.domains.order.read_models.order_read_models import (
     OrderItemReadData,
+    OrderItemVerificationReadData,
     OrderReadData,
 )
 from app.domains.order.repositories.order_read_repository import OrderReadRepository
@@ -62,7 +63,31 @@ class OrderReadRepositorySQLAlchemy(OrderReadRepository):
                         for operation in item.requested_operations
                     },
                     verification_ids=[
-                        verification.id for verification in item.verifications
+                        verification.id
+                        for verification in sorted(
+                            item.verifications,
+                            key=lambda value: (value.created_at, value.id),
+                        )
+                    ],
+                    verifications=[
+                        OrderItemVerificationReadData(
+                            id=verification.id,
+                            created_at=verification.created_at,
+                            verification_date=verification.verification_date,
+                            verification_type=verification.verification_type.value,
+                            status=verification.status.value,
+                            result=(
+                                verification.result.value
+                                if verification.result is not None
+                                else None
+                            ),
+                            valid_until=verification.valid_until,
+                            archived=verification.archived,
+                        )
+                        for verification in sorted(
+                            item.verifications,
+                            key=lambda value: (value.created_at, value.id),
+                        )
                     ],
                 )
                 for item in order.order_items
