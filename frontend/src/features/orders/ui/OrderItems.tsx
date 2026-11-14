@@ -79,6 +79,7 @@ const VERIFICATION_STATUS_LABELS: Record<OrderItemVerification["status"], string
   CREATED: "Создана",
   IN_PROGRESS: "В работе",
   DECIDED: "Решение принято",
+  CANCELLED: "Отменена",
 };
 
 function getVerificationResultLabel(
@@ -145,6 +146,7 @@ export function OrderItems({
   const verificationNumbers = new Map(
     items
       .flatMap((item) => item.verifications)
+      .filter((verification) => verification.status !== "CANCELLED")
       .sort(
         (left, right) =>
           left.createdAt.localeCompare(right.createdAt) ||
@@ -284,8 +286,9 @@ export function OrderItems({
                 const displayedVerifications = item.verifications
                   .filter(
                     (verification) =>
-                      verification.status !== "DECIDED" ||
-                      verification.id === latestCompletedVerification?.id,
+                      verification.status !== "CANCELLED" &&
+                      (verification.status !== "DECIDED" ||
+                        verification.id === latestCompletedVerification?.id),
                   )
                   .sort(
                     (left, right) =>
