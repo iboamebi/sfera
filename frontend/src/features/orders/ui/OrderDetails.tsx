@@ -229,6 +229,7 @@ export function OrderDetails({ order }: OrderDetailsProps) {
             orderId={order.id}
             customerId={order.customerId}
             editable={isEditable}
+            allowInstrumentAssignment={order.status === "IN_WORK"}
           />
 
           {isEditable && (
