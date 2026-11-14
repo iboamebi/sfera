@@ -10,11 +10,11 @@ from app.application.authorization.authorization import require_role
 from app.application.verification.commands.approve_verification import (
     ApproveVerificationCommand,
 )
-from app.application.verification.commands.correct_verification_decision import (
-    CorrectVerificationDecisionCommand,
-)
 from app.application.verification.commands.cancel_verification import (
     CancelVerificationCommand,
+)
+from app.application.verification.commands.correct_verification_decision import (
+    CorrectVerificationDecisionCommand,
 )
 from app.application.verification.commands.correct_verification_valid_until import (
     CorrectVerificationValidUntilCommand,
@@ -249,22 +249,26 @@ class VerificationApplicationService:
             self._repository.save(verification)
             operation = AuditOperation(initiated_by=user.id)
             self._audit_operation_repository.save(operation)
-            self._audit_repository.save(AuditRecord(
-                operation_id=operation.operation_id, actor_id=user.id,
-                action="verification.cancelled", entity_type="Verification",
-                entity_id=verification.id,
-                changes={
-                    "status": {
-                        "old": old_status,
-                        "new": verification.status.value,
+            self._audit_repository.save(
+                AuditRecord(
+                    operation_id=operation.operation_id,
+                    actor_id=user.id,
+                    action="verification.cancelled",
+                    entity_type="Verification",
+                    entity_id=verification.id,
+                    changes={
+                        "status": {
+                            "old": old_status,
+                            "new": verification.status.value,
+                        },
+                        "cancellation_reason": {
+                            "old": None,
+                            "new": verification.cancellation_reason,
+                        },
                     },
-                    "cancellation_reason": {
-                        "old": None,
-                        "new": verification.cancellation_reason,
-                    },
-                },
-                reason=verification.cancellation_reason,
-            ))
+                    reason=verification.cancellation_reason,
+                )
+            )
         return verification
 
     def approve(
