@@ -109,7 +109,6 @@ class Verification(AggregateRoot):
         self.unsuitable_reason = reason
         self.decision_at = decision_at
 
-
     def correct_valid_until(self, valid_until: date, *, reason: str) -> None:
         """Correct the validity date after a suitable decision."""
         if (
