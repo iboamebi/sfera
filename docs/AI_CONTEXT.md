@@ -1729,3 +1729,13 @@ Next: complete backend tests/CI, then implement the correction form in the Verif
 - The active-verification guard and create/start/decision lifecycle are unchanged.
 - Commit: `c91eca0517c2d70e889734c2204d1da0b34e3afa`.
 - Local frontend typecheck/build and browser scenario validation are pending.
+
+
+## Order — assign instruments to pre-created positions during work — 2026-11-14
+
+- Clarified the workflow: receiving may create group positions (for example, 20 manometers) before concrete Device records exist. Once work starts on other positions, operators must still be able to create/register those Devices and assign them to the already-existing unassigned positions.
+- This does not permit adding/removing OrderItems or changing requested operations after work starts. It only permits assigning an instrument to an existing item whose `instrument_id` is null while the Order is `IN_WORK`.
+- Domain assignment continues to reject other terminal/waiting statuses, duplicate instruments in the same order, and reassignment of an already-filled item. Application-level customer ownership, serial-number duplication, and conflicting active-order checks remain unchanged.
+- Frontend exposes only the existing “Назначить СИ” action for unassigned items in an `IN_WORK` order; the general editable controls and “Добавление позиций” card remain unavailable.
+- Added domain regression coverage for allowed assignment during work and rejection of replacing an already assigned instrument.
+- Local backend/frontend validation and browser review are pending. No migration, production deployment, backend restart, or PR merge.
