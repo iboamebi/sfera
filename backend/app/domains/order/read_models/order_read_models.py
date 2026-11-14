@@ -3,11 +3,32 @@ Order read models.
 """
 
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import date, datetime
 from uuid import UUID
 
 from app.domains.order.value_objects.order_item_operation import OrderItemOperation
 from app.domains.order.value_objects.order_status import OrderStatus
+from app.domains.verification.value_objects.verification_result import (
+    VerificationResult,
+)
+from app.domains.verification.value_objects.verification_status import (
+    VerificationStatus,
+)
+from app.domains.verification.value_objects.verification_type import VerificationType
+
+
+@dataclass(frozen=True)
+class OrderItemVerificationReadData:
+    """Verification summary exposed as part of an order item."""
+
+    id: UUID
+    created_at: datetime
+    verification_date: date
+    verification_type: VerificationType
+    status: VerificationStatus
+    result: VerificationResult | None
+    valid_until: date | None
+    archived: bool
 
 
 @dataclass(frozen=True)
@@ -24,6 +45,7 @@ class OrderItemReadData:
     comment: str | None
     requested_operations: set[OrderItemOperation]
     verification_ids: list[UUID]
+    verifications: list[OrderItemVerificationReadData]
 
 
 @dataclass(frozen=True)
