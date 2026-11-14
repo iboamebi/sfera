@@ -206,7 +206,9 @@ class VerificationApplicationService:
             valid_until = command.valid_until
             if valid_until is None:
                 if command.duration_years is None or command.time_zone is None:
-                    raise ValueError("Provide valid_until or duration_years and time_zone")
+                    raise ValueError(
+                        "Provide valid_until or duration_years and time_zone"
+                    )
                 if command.duration_years < 1 or command.duration_years > 100:
                     raise ValueError("duration_years must be between 1 and 100")
                 try:
