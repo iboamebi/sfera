@@ -1720,3 +1720,12 @@ Next: complete backend tests/CI, then implement the correction form in the Verif
 - Corrected the active-verification chip to use the neutral default MUI color rather than warning color, matching the agreed UI behavior.
 - Commit: `4166cec6b91fa7217c3aae2198e91d09bba5db67`.
 - Local frontend typecheck/build and browser scenario review are pending.
+
+
+## Order item — latest completed verification summary — 2026-11-14
+
+- Updated the order-item verification summary: all active/non-decided records remain visible; among `DECIDED` records, only the latest by `createdAt` (ID as deterministic tie-breaker) is shown.
+- Visible records are ordered chronologically by creation time. The underlying order payload and verification records are not modified; the full verification history remains intact.
+- The active-verification guard and create/start/decision lifecycle are unchanged.
+- Commit: `c91eca0517c2d70e889734c2204d1da0b34e3afa`.
+- Local frontend typecheck/build and browser scenario validation are pending.
