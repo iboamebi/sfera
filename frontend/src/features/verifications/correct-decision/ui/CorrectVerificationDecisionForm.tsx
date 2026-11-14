@@ -49,12 +49,11 @@ export function CorrectVerificationDecisionForm({
   });
 
   const validDecision =
-    result === "SUITABLE" ? Boolean(validUntil) : Boolean(unsuitableReason.trim());
+    result === "UNSUITABLE" && Boolean(unsuitableReason.trim());
   const hasChanges =
-    result !== currentResult ||
-    (result === "SUITABLE" && validUntil !== (currentValidUntil ?? "")) ||
-    (result === "UNSUITABLE" &&
-      unsuitableReason.trim() !== (currentUnsuitableReason ?? "").trim());
+    currentResult === "SUITABLE" &&
+    result === "UNSUITABLE" &&
+    unsuitableReason.trim() !== (currentUnsuitableReason ?? "").trim();
 
   return (
     <Stack spacing={1.5}>
@@ -73,14 +72,9 @@ export function CorrectVerificationDecisionForm({
         <MenuItem value="UNSUITABLE">Непригодно</MenuItem>
       </TextField>
       {result === "SUITABLE" ? (
-        <TextField
-          label="Действительна до"
-          type="date"
-          value={validUntil}
-          onChange={(event) => setValidUntil(event.target.value)}
-          slotProps={{ inputLabel: { shrink: true } }}
-          sx={{ maxWidth: 320 }}
-        />
+        <Alert severity="info">
+          Для изменения результата на «Пригодно» необходимо создать новую поверку.
+        </Alert>
       ) : (
         <TextField
           label="Причина непригодности"
@@ -101,14 +95,19 @@ export function CorrectVerificationDecisionForm({
       />
       <Button
         variant="contained"
-        disabled={!validDecision || !hasChanges || !reason.trim() || isPending}
+        disabled={
+          currentResult !== "SUITABLE" ||
+          result !== "UNSUITABLE" ||
+          !validDecision ||
+          !hasChanges ||
+          !reason.trim() ||
+          isPending
+        }
         onClick={() =>
           mutate({
             verificationId,
             result,
-            ...(result === "SUITABLE"
-              ? { validUntil }
-              : { unsuitableReason: unsuitableReason.trim() }),
+            unsuitableReason: unsuitableReason.trim(),
             reason: reason.trim(),
           })
         }
