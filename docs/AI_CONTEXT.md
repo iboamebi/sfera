@@ -1553,3 +1553,13 @@ Follow-up changes on `feat/verification-decision-correction-ui`:
 - Disable validity correction when the entered date equals the currently persisted date.
 
 User reproduced the issue in the browser; frontend typecheck/build and a repeat browser test are pending. Do not merge or deploy until those checks pass.
+
+## Verification decision correction — one-way rule clarification — 2026-11-14
+
+Business rule clarified by the user:
+- A decided SUITABLE Verification may be corrected to UNSUITABLE on the same Verification, with a mandatory correction reason and append-only audit.
+- A decided UNSUITABLE Verification must not be corrected to SUITABLE. A positive result requires creating a new Verification record; the previous UNSUITABLE record remains unchanged.
+- The frontend correction form therefore only permits SUITABLE → UNSUITABLE. When the current result is UNSUITABLE, the form must not offer a path to SUITABLE correction. A new Verification must be created through the existing order workflow.
+- This supersedes the earlier bidirectional correction statement in the PR #32/#33 implementation notes. Backend PR #32 currently supports both directions and requires a separate backend follow-up to enforce this invariant; do not treat the frontend restriction as sufficient authorization/business-rule enforcement.
+
+Frontend and backend validations are pending. No merge or deployment.
