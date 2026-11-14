@@ -1799,3 +1799,13 @@ Next: complete backend tests/CI, then implement the correction form in the Verif
 - Verification detail page includes a back-to-`/orders` action and returns to orders after successful cancellation.
 - Backend status enum and nullable cancellation_reason require the Alembic migration `f7c2a9e4b610`; migration has not been applied to any database.
 - Implementation commit: `1e88b865424913c3feb08c46c40b6a627e1d7e60`. Follow-up code/test/documentation validation is pending; do not deploy until local validation passes.
+
+## Verification cancellation — PostgreSQL persistence validation — 2026-11-14
+
+- User confirmed frontend typecheck and production build passed: `tsc --noEmit`, `vite build`, 1315 modules.
+- Backend Ruff check and focused tests passed earlier: Ruff clean, 35 files formatted, 60 focused tests passed.
+- Disposable PostgreSQL migration chain applied successfully through `f7c2a9e4b610 (head)`. Existing persistence integration test passed.
+- Added a second opt-in PostgreSQL integration test that exercises the real `VerificationApplicationService.cancel()` and SQLAlchemy repositories: cancellation from IN_PROGRESS requires and persists a reason; cancellation from CREATED accepts no reason; both status changes and audit records persist; the active slot is released; Order remains IN_WORK.
+- User ran both PostgreSQL integration tests: **2 passed**. Ruff check passed. Ruff format check identified one formatting-only adjustment; corrected on `develop` in the follow-up style commit.
+- Next local validation: pull `develop`, rerun Ruff check/format for `tests/integration/test_verification_persistence.py`, then proceed to browser review of CREATED/IN_PROGRESS cancellation, DECIDED unchanged, and post-cancellation ability to create a new verification.
+- No production migration, deployment, backend restart, or PR merge.
