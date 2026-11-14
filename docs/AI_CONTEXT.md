@@ -1666,3 +1666,12 @@ Next: complete backend tests/CI, then implement the correction form in the Verif
 - GitHub commits: `57299d0` (integration regression), `1ed4b8b` (tighten DB guard / mock dispatcher), `60c7621` (run instructions).
 - Next local validation: pull `develop`, activate backend `.venv`, start the disposable PostgreSQL service, apply the documented migrations/bootstrap, set `SFERA_INTEGRATION_DATABASE_URL="$DATABASE_URL"`, then run `pytest -q tests/integration/test_verification_persistence.py`. Run Ruff check/format on the new test. Keep the cleanup trap active. Report results before proceeding to any further changes.
 - No production migration, deployment, backend restart, or PR merge.
+
+## Integration PostgreSQL bootstrap — primary-key collision — 2026-11-14
+
+- The latest local run stopped during the disposable `alex/admin` bootstrap, before the persistence test or Ruff commands. PostgreSQL rejected the fixed placeholder UUID because that primary key already existed in `users`; the cleanup trap removed the disposable container/network.
+- Reviewed the actual `a6c8e1f3b520` migration: its precondition is exactly one row with `username='alex' AND role='admin'`; it does not require a particular UUID or password and preserves that row.
+- Updated the integration README bootstrap to be collision-safe and repeatable: preserve an existing `alex/admin`; fail explicitly if `alex` exists with another role; otherwise insert the placeholder using PostgreSQL `gen_random_uuid()` instead of a hard-coded primary key.
+- Commit: `17717b4` — `docs: make disposable admin bootstrap collision-safe`.
+- No application migration or production code changed. The failed run did not reach the persistence test or style validation; the disposable DB was cleaned up.
+- Next: pull `develop` and repeat the documented disposable PostgreSQL flow. Report the migration/current revision, integration pytest, Ruff check and Ruff format results. Do not reuse an application database URL.
