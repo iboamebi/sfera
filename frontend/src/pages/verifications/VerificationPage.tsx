@@ -70,7 +70,7 @@ interface DetailRowProps {
 function DetailRow({ label, value }: DetailRowProps) {
   return (
     <Box sx={{ flex: "1 1 220px", minWidth: 0 }}>
-      <Typography variant="caption" color="text.secondary" display="block">
+      <Typography variant="caption" color="text.secondary" sx={{ display: "block" }}>
         {label}
       </Typography>
       <Typography variant="body1" sx={{ overflowWrap: "anywhere" }}>
@@ -152,7 +152,7 @@ export function VerificationPage() {
         }}
       >
         <SectionCard title="Основные сведения">
-          <Stack direction="row" useFlexGap flexWrap="wrap" gap={2}>
+          <Stack direction="row" useFlexGap gap={2} sx={{ flexWrap: "wrap" }}>
             <DetailRow label="Дата поверки" value={formatDate(data.verificationDate)} />
             <DetailRow label="Вид поверки" value={TYPE_LABELS[data.verificationType]} />
             <DetailRow label="Методика" value={data.methodology || "Не указана"} />
