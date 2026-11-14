@@ -1531,3 +1531,13 @@ No database migration is expected: Verification persistence already stores resul
 The separate PR #31 (instrument-name link to Device card) remains open and has not been merged; do not merge without explicit user authorization. Its browser validation was confirmed by the user, although the PR body still needs its validation note refreshed.
 
 Next: complete backend tests/CI, then implement the correction form in the Verification page after the branch coordination with PR #31 is resolved. Order operation-state read model and presentation remain a separate subsequent stage.
+
+
+## Verification — audited decision correction UI — 2026-11-14
+
+- Backend decision correction implemented on PR #32: only METROLOGIST/ADMIN may correct a previously decided result; both SUITABLE↔UNSUITABLE directions are supported; correction reason is mandatory; SUITABLE requires `valid_until`; UNSUITABLE requires a nonblank `unsuitable_reason`; every correction appends an immutable audit record with old/new decision data.
+- Backend local validation: 50 Verification Domain/Application/API tests passed; Ruff check and format check passed. GitHub Backend CI #1078 succeeded on commit `9d8f2c9f56d61b45900d10233c8873993257a686`.
+- Frontend correction API client, React Query mutation, and form were implemented. The form exposes the new result, conditionally requires validity date or unsuitable reason, and always requires the correction reason. It is shown for non-archived decided verifications with an existing result.
+- User local frontend validation passed on the implementation branch: `npm run typecheck`; `npm run build` (1313 modules; existing main bundle size advisory remains).
+- To keep PR #31 focused on the Device-card link, the decision-correction UI was reapplied as a separate branch `feat/verification-decision-correction-ui` based directly on `develop`. This avoids coupling the two independent changes.
+- No merge, deployment, backend restart, or database migration has been performed. Local validation on the isolated UI branch is pending.
