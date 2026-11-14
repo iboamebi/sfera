@@ -1531,3 +1531,14 @@ No database migration is expected: Verification persistence already stores resul
 The separate PR #31 (instrument-name link to Device card) remains open and has not been merged; do not merge without explicit user authorization. Its browser validation was confirmed by the user, although the PR body still needs its validation note refreshed.
 
 Next: complete backend tests/CI, then implement the correction form in the Verification page after the branch coordination with PR #31 is resolved. Order operation-state read model and presentation remain a separate subsequent stage.
+
+
+## Order — multiple verifications and per-position status — 2026-11-14
+
+- Current backend already permits multiple Verification records for one OrderItem; the previous single-verification limitation was only in the OrderItems frontend condition that hid «Создать поверку» after the first record.
+- Order read contract previously exposed only `verification_ids`. It now includes a per-item `verifications` summary: ID, creation timestamp, verification date/type, lifecycle status, result, validity end date, and archived flag. Existing IDs are retained for compatibility.
+- Verification summaries are sorted by `created_at` and ID. The UI assigns one sequential number across all positions in an order, avoiding repeated «Поверка 1» labels for different positions.
+- Each record is displayed with its lifecycle/result state and validity date where available. Creating another Verification remains possible whenever the position requests verification and has an assigned Instrument.
+- Order already has `planned_issue_at`; the existing «Планируемая выдача» field remains the source of the estimated pickup date. This slice does not infer an ETA from verification durations or add scheduling logic.
+- Do not label an entire instrument/order as ready solely from one Verification if other requested operations (repair/diagnostics) are not represented in this read model. A latest unsuitable or unfinished Verification must not be masked by an older suitable record.
+- Branch: `feat/order-verification-status-summary`. Backend/frontend local validation is pending. No merge, production deployment, backend restart, or database migration has been performed.
