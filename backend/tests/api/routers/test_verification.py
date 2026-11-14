@@ -95,6 +95,7 @@ def test_create_verification_returns_created_verification():
         "valid_until": None,
         "result": None,
         "unsuitable_reason": None,
+        "cancellation_reason": None,
         "methodology": "MI 123",
         "id": str(verification.id),
         "instrument_id": str(verification.instrument_id),

@@ -9,6 +9,9 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from app.api.dependencies.auth import get_current_user
 from app.api.security.csrf import require_csrf
+from app.application.verification.commands.cancel_verification import (
+    CancelVerificationCommand,
+)
 from app.application.verification.commands.approve_verification import (
     ApproveVerificationCommand,
 )
@@ -53,17 +56,37 @@ router = APIRouter(
 )
 
 
-@router.post("/{verification_id}/cancel", response_model=VerificationRead, dependencies=[Depends(get_current_user), Depends(require_csrf)])
-def cancel_verification(verification_id: UUID, payload: VerificationCancellation, user: User = Depends(get_current_user), service: VerificationApplicationService = Depends(get_verification_service)):
-    from app.application.verification.commands.cancel_verification import CancelVerificationCommand
+@router.post(
+    "/{verification_id}/cancel",
+    response_model=VerificationRead,
+    dependencies=[Depends(get_current_user), Depends(require_csrf)],
+)
+def cancel_verification(
+    verification_id: UUID,
+    payload: VerificationCancellation,
+    user: User = Depends(get_current_user),
+    service: VerificationApplicationService = Depends(get_verification_service),
+):
     try:
-        return service.cancel(CancelVerificationCommand(verification_id=verification_id, reason=payload.reason), user)
+        return service.cancel(
+            CancelVerificationCommand(
+                verification_id=verification_id,
+                reason=payload.reason,
+            ),
+            user,
+        )
     except VerificationNotFoundApplicationError:
         raise HTTPException(status_code=404, detail="Verification not found") from None
     except VerificationCannotBeCancelledApplicationError:
-        raise HTTPException(status_code=409, detail="Only created or in-progress verifications can be cancelled") from None
+        raise HTTPException(
+            status_code=409,
+            detail="Only created or in-progress verifications can be cancelled",
+        ) from None
     except VerificationCancellationReasonRequiredApplicationError:
-        raise HTTPException(status_code=422, detail="Cancellation reason is required for an in-progress verification") from None
+        raise HTTPException(
+            status_code=422,
+            detail="Cancellation reason is required for an in-progress verification",
+        ) from None
 
 
 @router.post(
