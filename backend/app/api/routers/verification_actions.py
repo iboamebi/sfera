@@ -111,6 +111,8 @@ def correct_verification_valid_until(
         get_verification_service,
     ),
 ):
+    if not reason.strip():
+        raise HTTPException(status_code=422, detail="Correction reason is required")
     return service.correct_valid_until(
         CorrectVerificationValidUntilCommand(
             verification_id=verification_id,
