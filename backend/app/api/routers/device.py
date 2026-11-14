@@ -17,6 +17,7 @@ from app.application.device.commands.disconnect_device import DisconnectDeviceCo
 from app.application.device.commands.update_device import UpdateDeviceCommand
 from app.application.device.exceptions import (
     CustomerNotFoundApplicationError,
+    DuplicateDeviceSerialNumberApplicationError,
     DeviceNotAvailableApplicationError,
     DeviceNotFoundApplicationError,
     DeviceNotInWorkApplicationError,
@@ -59,6 +60,11 @@ def get_device(
         return service.get(device_id)
     except DeviceNotFoundApplicationError:
         raise HTTPException(status_code=404, detail="Device not found") from None
+    except DuplicateDeviceSerialNumberApplicationError:
+        raise HTTPException(
+            status_code=409,
+            detail="Instrument with this serial number already exists for this customer and type",
+        ) from None
 
 
 @router.post(
@@ -75,6 +81,11 @@ def create_device(
 
     try:
         return service.create(command)
+    except DuplicateDeviceSerialNumberApplicationError:
+        raise HTTPException(
+            status_code=409,
+            detail="Instrument with this serial number already exists for this customer and type",
+        ) from None
     except InstrumentTypeNotFoundApplicationError:
         raise HTTPException(
             status_code=404,
