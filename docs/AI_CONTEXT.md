@@ -1458,3 +1458,13 @@ Administrator-assisted password recovery has now been implemented; see the check
 - Browser appearance review is now pending. Navigation: open `/orders`, open an order, then select the `Поверка N` link under an order item that already has a verification.
 - Current Verification page still displays the raw `orderItemId` UUID as «Позиция заказа». The Order read model provides item details and verification IDs, but the Verification read DTO currently only provides `order_item_id`; review whether this should be replaced by contextual navigation or a richer read contract in a separate minimal change after visual feedback.
 - Next sequence remains: visual appearance review → full lifecycle scenario → final display debugging. Use only current Sfera data/API; no Arshin assumptions.
+
+
+## Verification UI — compact layout refinement
+
+- Following production appearance review, the Verification detail page was tightened without changing API or domain contracts.
+- Main details, result/validity, execution history, and lifecycle actions now use a responsive two-column layout on wider screens and a single column on narrow screens.
+- Detail fields are arranged horizontally and wrap as needed; card padding and section spacing were reduced.
+- Removed the raw `order_item_id` UUID from the user-facing page. The current Verification DTO does not expose an order ID or instrument details. Although the Order DTO contains item names and Verification IDs, resolving an order item from the verification page would require loading/searching the order collection; this is intentionally not added as an implicit expensive lookup. Contextual navigation requires a deliberate read-contract decision.
+- No backend, database, lifecycle, or Arshin changes.
+- Next: local frontend typecheck/build, then production visual recheck; only after appearance is accepted proceed to full lifecycle scenario testing.
