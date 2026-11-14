@@ -637,6 +637,47 @@ def test_correct_verification_decision_persists_and_audits_old_and_new_values():
     assert record.reason == "Исправлена ошибка первоначального решения"
 
 
+def test_correct_verification_decision_rejects_unsuitable_to_suitable():
+    from app.domains.verification.exceptions import (
+        InvalidDecisionCorrectionDomainError,
+    )
+
+    repository = FakeVerificationRepository()
+    verification = make_verification()
+    verification.mark_unsuitable(
+        "Повреждена пломба",
+        decision_at=datetime(2026, 11, 14, 10, 0, tzinfo=UTC),
+    )
+    repository.save(verification)
+    operations = FakeAuditOperationRepository()
+    records = FakeAuditRepository()
+    service = VerificationApplicationService(
+        repository,
+        FakeOrderRepository(),
+        FakeUnitOfWork(),
+        operations,
+        records,
+    )
+
+    with pytest.raises(InvalidDecisionCorrectionDomainError):
+        service.correct_decision(
+            CorrectVerificationDecisionCommand(
+                verification_id=verification.id,
+                result=VerificationResult.SUITABLE,
+                valid_until=date(2030, 1, 1),
+                unsuitable_reason=None,
+                reason="Нужно оформить как пригодное",
+            ),
+            make_user(UserRole.METROLOGIST),
+        )
+
+    assert verification.result == VerificationResult.UNSUITABLE
+    assert verification.valid_until is None
+    assert verification.unsuitable_reason == "Повреждена пломба"
+    assert operations.items == []
+    assert records.items == []
+
+
 def test_correct_verification_decision_requires_metrologist_or_admin():
     repository = FakeVerificationRepository()
     verification = make_verification()
