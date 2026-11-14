@@ -34,6 +34,7 @@ def test_verification_mapper_to_domain_preserves_instrument_id() -> None:
         decision_at=decision_at,
         result=VerificationResult.SUITABLE,
         valid_until=date(2027, 9, 5),
+        archived=True,
     )
 
     entity = VerificationMapper().to_domain(model)
@@ -46,6 +47,7 @@ def test_verification_mapper_to_domain_preserves_instrument_id() -> None:
     assert entity.result == VerificationResult.SUITABLE
     assert entity.valid_until == date(2027, 9, 5)
     assert entity.decision_at == decision_at
+    assert entity.archived is True
 
 
 def test_verification_mapper_to_model_preserves_instrument_id() -> None:
@@ -67,6 +69,7 @@ def test_verification_mapper_to_model_preserves_instrument_id() -> None:
         result=VerificationResult.SUITABLE,
         valid_until=date(2027, 9, 5),
         decision_at=decision_at,
+        archived=True,
     )
     model = VerificationModel(
         id=entity.id,
@@ -89,6 +92,7 @@ def test_verification_mapper_to_model_preserves_instrument_id() -> None:
     assert model.result == VerificationResult.SUITABLE
     assert model.valid_until == date(2027, 9, 5)
     assert model.decision_at == decision_at
+    assert model.archived is True
 
 
 def test_verification_mapper_preserves_null_instrument_id() -> None:

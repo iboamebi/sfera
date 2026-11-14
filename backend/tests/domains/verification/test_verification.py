@@ -83,12 +83,13 @@ def test_mark_unsuitable_completes_verification():
     assert verification.decision_at == DECISION_AT
 
 
-def test_unsuitable_requires_reason():
+@pytest.mark.parametrize("reason", ["", " ", "   ", "\t\n"])
+def test_unsuitable_requires_non_blank_reason(reason: str):
     verification = create_verification()
     verification.start(started_at=DECISION_AT)
 
     with pytest.raises(InvalidUnsuitableReasonDomainError):
-        verification.mark_unsuitable("", decision_at=DECISION_AT)
+        verification.mark_unsuitable(reason, decision_at=DECISION_AT)
 
 
 def test_suitable_requires_valid_until():

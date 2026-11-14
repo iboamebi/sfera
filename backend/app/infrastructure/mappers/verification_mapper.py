@@ -42,6 +42,7 @@ class VerificationMapper(
             unsuitable_reason=model.unsuitable_reason,
             methodology=model.methodology,
             decision_at=model.decision_at,
+            archived=model.archived,
         )
 
     def to_model(
@@ -61,4 +62,5 @@ class VerificationMapper(
         model.unsuitable_reason = entity.unsuitable_reason
         model.methodology = entity.methodology
         model.decision_at = entity.decision_at
+        model.archived = entity.archived
         return model

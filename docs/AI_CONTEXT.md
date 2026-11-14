@@ -1369,3 +1369,40 @@ Administrator-assisted password recovery has now been implemented; see the check
 - No search, duplicate-detection, Site-filter, creation, or order-item mutation behavior was changed.
 - Branch: `fix/order-item-create-button-visibility`.
 - Local typecheck/build and production browser validation are pending.
+
+
+## Verification — archived state mapper correction — 2026-11-14
+
+- Audited current Verification implementation on `develop` (`eb887867`) and local usage of `methodology`, `VerificationMethod`, and `archived`.
+- Confirmed that the historical migration explicitly converted `verifications.methodology_id` into a nullable text `methodology` field and removed the FK. The current string contract is therefore an intentional migration outcome; do not restore the FK without a separate business decision.
+- Confirmed a persistence defect: `VerificationMapper` did not map the inherited `archived` field in either direction, although Domain, ORM, API DTO, and frontend all expose/use it.
+- Branch `fix/verification-archived-mapping`: mapper now copies `archived` in both directions; mapper tests cover ORM→Domain and Domain→ORM preservation.
+- GitHub commits: `72a845b` (mapper fix), `839c538` (regression tests).
+- Local backend test/ruff validation is pending. Do not merge or deploy until the user reports the scoped checks.
+
+
+## Verification — action response contract — 2026-11-14
+
+- Local validation of the archived-state mapper correction passed: 4 mapper tests, Ruff checks, and format check.
+- Added explicit `response_model=VerificationRead` to the approve and reject API routes. The start route already declared this response model; the frontend consumes the same Verification DTO for all lifecycle actions.
+- Commit: `d84c934` on `fix/verification-archived-mapping`.
+- Local API validation is pending. Do not merge or deploy until the user reports the scoped checks.
+
+
+## Verification — unsuitable reason invariant — 2026-11-14
+
+- Local validation of the API response-model correction passed: 7 API router tests; Ruff and formatting checks passed. One existing Starlette/httpx deprecation warning remains.
+- Domain validation in `Verification.mark_unsuitable` now rejects whitespace-only reasons using `reason.strip()`; accepted reason text is otherwise preserved.
+- Added parameterized domain coverage for empty, space-only, and tab/newline-only reasons.
+- Commits: `77e849c` (domain invariant), `5f848b0` (tests), `f106a8f` (control-character test case).
+- Local domain validation is pending. Do not merge or deploy until the user reports the scoped checks.
+
+
+## Verification — implementation slice locally validated — 2026-11-14
+
+- Final branch audit against `develop` found exactly six changed files: Verification mapper, mapper tests, Verification action router, Verification Domain entity, Domain tests, and this context document. No unrelated files or database migrations are included.
+- Branch `fix/verification-archived-mapping` is 9 commits ahead of `develop` and 0 commits behind it at the time of audit.
+- User local validation passed after synchronizing through commit `4d1aa0a`: `tests/domains/verification/test_verification.py` — 12 passed; scoped Ruff check — passed; scoped Ruff format check — passed.
+- Earlier scoped local validations also passed: Verification mapper tests — 4 passed; Verification API/router tests — 7 passed (one existing Starlette/httpx deprecation warning); Ruff and format checks passed in both stages.
+- The three implementation corrections are complete: archived-state mapping in both directions, consistent `VerificationRead` response models for approve/reject, and rejection of whitespace-only unsuitable reasons.
+- Before PR creation, run the combined Verification test scope (Domain, Application, API/router, and Infrastructure mapper tests) on the latest branch HEAD. Do not merge or deploy as part of this checkpoint.

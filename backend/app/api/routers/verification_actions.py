@@ -60,6 +60,7 @@ def start_verification(
 
 @router.post(
     "/{verification_id}/approve",
+    response_model=VerificationRead,
     dependencies=[Depends(get_current_user), Depends(require_csrf)],
 )
 def approve_verification(
@@ -81,6 +82,7 @@ def approve_verification(
 
 @router.post(
     "/{verification_id}/reject",
+    response_model=VerificationRead,
     dependencies=[Depends(get_current_user), Depends(require_csrf)],
 )
 def reject_verification(
