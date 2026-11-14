@@ -123,6 +123,11 @@ class Verification(AggregateRoot):
         """Correct a previously recorded final decision with an auditable reason."""
         if self.status != VerificationStatus.DECIDED or self.result is None:
             raise InvalidVerificationResultStateDomainError
+        if (
+            self.result == VerificationResult.UNSUITABLE
+            and result == VerificationResult.SUITABLE
+        ):
+            raise InvalidDecisionCorrectionDomainError
         if not reason.strip():
             raise InvalidDecisionCorrectionReasonDomainError
 
