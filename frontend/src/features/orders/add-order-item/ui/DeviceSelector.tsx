@@ -270,7 +270,7 @@ export function DeviceSelector({
       />
 
       {onCreateDevice && (
-        <Stack spacing={0.5} alignItems="flex-start">
+        <Stack spacing={0.5} sx={{ alignItems: "flex-start" }}>
           <Button
             variant="outlined"
             size="small"
