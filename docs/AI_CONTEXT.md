@@ -1418,3 +1418,13 @@ Administrator-assisted password recovery has now been implemented; see the check
 - PR-head Backend CI completed successfully before merge. No CI status was reported for the squash merge commit itself.
 - No production deployment or backend restart was performed for this slice.
 - Verification persistence/action-contract corrections are merged and locally validated on `develop`.
+
+
+## Metrology — verification history and external source — 2026-11-14
+
+- User confirmed that the Instrument card must show the latest known verification even when it was performed by an external laboratory and obtained from FGIS Arshin; it must not be limited to verifications performed in Sfera.
+- The card's verification summary should identify the record's origin. At minimum, distinguish a verification performed/recorded in Sfera from an externally performed verification imported or recorded from an external source (for example, FGIS Arshin).
+- Keep the verification date, result, and validity end date on the individual verification/history record. The Instrument card displays a derived summary from the latest applicable known record; do not duplicate editable verification dates on the Instrument entity.
+- Preserve provenance on the record so users can tell who/what system supplied the information. Exact source model, import mechanism, and reconciliation rules require a separate audit of the current Arshin integration and existing Verification read contracts before implementation.
+- Current Verification Domain already has `verification_date`, `valid_until`, `result`, `instrument_id`, and free-text `methodology`. Current methodology input remains free text for initial rollout; a structured Method/MethodVersion registry, managed document files, Device/Instrument applicability, and immutable revision linkage are future scope. Do not restore a methodology FK based on the historical migration without a separate design decision.
+- No code or database changes are authorized by this checkpoint; this records the agreed business direction for a later implementation stage.
