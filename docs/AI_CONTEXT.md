@@ -1771,3 +1771,20 @@ Next: complete backend tests/CI, then implement the correction form in the Verif
 - Commits: `8f0d13a` (skip known type lookup), `a6af419` (reuse order-item type).
 - User confirmed that Instrument names and Instrument Types are shared catalogues across Customers. The current free-text `Instrument.name` is a temporary UI placeholder, not an approved catalogue model. A separate shared nomenclature catalogue with search, duplicate/similarity analysis, aliases, and controlled population requires domain/API/schema analysis before implementation.
 - Local frontend typecheck/build after these two commits is pending. No migration, production deployment, backend restart, or PR merge.
+
+
+## Instrument creation — known type validation and production frontend deployment — 2026-11-14
+
+- User confirmed frontend `npm run typecheck` and `npm run build` passed after commits `8f0d13a` and `a6af419`.
+- User also confirmed successful production frontend deployment: `dist/` copied to `/var/www/sfera`, ownership and permissions corrected, deployment script reported success.
+- This confirms only the frontend deployment. No backend code, backend process, or production database was changed for this step.
+
+## Shared instrument nomenclature catalogue — current code analysis — 2026-11-14
+
+- User decision: the Instrument nomenclature catalogue is global/shared across all Customers, like Instrument Types.
+- Current `Instrument.name` is a nullable free-text field on the individual `instruments` row. User explicitly identified it as a temporary placeholder and not the future catalogue model.
+- Existing `InstrumentType` is a separate global domain with its own Domain entity, repository interface, Application Service, SQLAlchemy repository/mapper, API router, dependency providers, schemas, frontend feature, and route. It contains classification/type metadata (`name`, manufacturer, model, measurement type, accuracy class, verification interval, description); it must not be repurposed as the nomenclature catalogue.
+- Device creation currently accepts free-text `name` in `DeviceCreate` and `CreateDeviceForm`. Device mapper/domain currently carry that string directly. A catalogue integration therefore needs an explicit relationship/identifier and a compatibility plan for existing API/read contracts; simply replacing the input with a dropdown is insufficient.
+- Proposed design for review, not yet an approved implementation contract: a separate global `InstrumentNomenclature` entity, associated with an Instrument Type, with one canonical display name and separately managed aliases. Search should normalize case/spacing/punctuation, resolve exact canonical/alias matches, and return near-match suggestions for operator review; fuzzy matches must not silently auto-select or rewrite a record. Catalogue population should be an explicit controlled create action after duplicate/similarity checks.
+- Before implementation, settle whether each nomenclature belongs to exactly one Instrument Type or may be shared by multiple types. This affects the relational model and type-scoped search/duplicate rules.
+- No catalogue code, migration, or production change has been made yet.
