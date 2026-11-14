@@ -12,4 +12,6 @@ class ApproveVerificationCommand:
     """Command to approve verification."""
 
     verification_id: UUID
-    valid_until: date
+    valid_until: date | None = None
+    duration_years: int | None = None
+    time_zone: str | None = None
