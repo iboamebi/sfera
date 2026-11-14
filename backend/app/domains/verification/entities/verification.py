@@ -97,7 +97,7 @@ class Verification(AggregateRoot):
         """Record the final unsuitable decision."""
         if self.status != VerificationStatus.IN_PROGRESS:
             raise InvalidVerificationResultStateDomainError
-        if not reason:
+        if not reason.strip():
             raise InvalidUnsuitableReasonDomainError
         if self.valid_until is not None:
             raise InvalidVerificationResultStateDomainError
