@@ -26,6 +26,16 @@ export function mapOrder(dto: OrderApiDto): OrderRead {
       comment: item.comment,
       requestedOperations: item.requested_operations,
       verificationIds: item.verification_ids,
+      verifications: item.verifications.map((verification) => ({
+        id: verification.id,
+        createdAt: verification.created_at,
+        verificationDate: verification.verification_date,
+        verificationType: verification.verification_type,
+        status: verification.status,
+        result: verification.result,
+        validUntil: verification.valid_until,
+        archived: verification.archived,
+      })),
     })),
   };
 }

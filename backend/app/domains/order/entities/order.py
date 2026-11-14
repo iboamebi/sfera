@@ -134,6 +134,15 @@ class Order(AggregateRoot):
         self.planned_issue_at = planned_issue_at
         self.comment = comment
 
+    def start_work(self) -> None:
+        """Move the order into active work."""
+
+        if self.status == OrderStatus.IN_WORK:
+            return
+        if self.status not in {OrderStatus.NEW, OrderStatus.REGISTERED}:
+            raise OrderException("Cannot start work for order in current status")
+        self.status = OrderStatus.IN_WORK
+
     def register(self) -> None:
         """Register the order."""
 

@@ -4,6 +4,17 @@ export type OrderItemOperation =
   | "repair"
   | "sale";
 
+export interface OrderItemVerification {
+  id: string;
+  createdAt: string;
+  verificationDate: string;
+  verificationType: "PRIMARY" | "PERIODIC" | "AFTER_REPAIR";
+  status: "CREATED" | "IN_PROGRESS" | "DECIDED";
+  result: "SUITABLE" | "UNSUITABLE" | null;
+  validUntil: string | null;
+  archived: boolean;
+}
+
 export interface OrderItem {
   id: string;
   instrumentId: string | null;
@@ -15,6 +26,7 @@ export interface OrderItem {
   comment: string | null;
   requestedOperations: OrderItemOperation[];
   verificationIds: string[];
+  verifications: OrderItemVerification[];
 }
 
 export interface OrderRead {

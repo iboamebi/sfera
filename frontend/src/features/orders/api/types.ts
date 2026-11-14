@@ -1,5 +1,16 @@
 import type { OrderItemOperation } from "../model/types";
 
+export interface OrderItemVerificationApiDto {
+  id: string;
+  created_at: string;
+  verification_date: string;
+  verification_type: "PRIMARY" | "PERIODIC" | "AFTER_REPAIR";
+  status: "CREATED" | "IN_PROGRESS" | "DECIDED";
+  result: "SUITABLE" | "UNSUITABLE" | null;
+  valid_until: string | null;
+  archived: boolean;
+}
+
 export interface OrderItemApiDto {
   id: string;
   instrument_id: string | null;
@@ -11,6 +22,7 @@ export interface OrderItemApiDto {
   comment: string | null;
   requested_operations: OrderItemOperation[];
   verification_ids: string[];
+  verifications: OrderItemVerificationApiDto[];
 }
 
 export interface OrderApiDto {

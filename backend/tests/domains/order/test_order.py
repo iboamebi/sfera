@@ -53,6 +53,16 @@ def test_order_register():
     assert order.status == OrderStatus.REGISTERED
 
 
+def test_order_start_work_changes_status_from_registered():
+    order = create_order("1003")
+    order.add_item(OrderItem(id=uuid4()))
+    order.register()
+
+    order.start_work()
+
+    assert order.status == OrderStatus.IN_WORK
+
+
 def test_empty_order_cannot_register():
     order = create_order("1003")
 
