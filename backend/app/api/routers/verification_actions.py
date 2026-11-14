@@ -9,6 +9,9 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from app.api.dependencies.auth import get_current_user
 from app.api.security.csrf import require_csrf
+from app.application.verification.commands.correct_verification_valid_until import (
+    CorrectVerificationValidUntilCommand,
+)
 from app.application.verification.commands.approve_verification import (
     ApproveVerificationCommand,
 )
@@ -65,7 +68,9 @@ def start_verification(
 )
 def approve_verification(
     verification_id: UUID,
-    valid_until: date,
+    valid_until: date | None = None,
+    duration_years: int | None = None,
+    time_zone: str | None = None,
     user: User = Depends(get_current_user),
     service: VerificationApplicationService = Depends(
         get_verification_service,
@@ -75,6 +80,32 @@ def approve_verification(
         ApproveVerificationCommand(
             verification_id=verification_id,
             valid_until=valid_until,
+            duration_years=duration_years,
+            time_zone=time_zone,
+        ),
+        user,
+    )
+
+
+@router.post(
+    "/{verification_id}/correct-valid-until",
+    response_model=VerificationRead,
+    dependencies=[Depends(get_current_user), Depends(require_csrf)],
+)
+def correct_verification_valid_until(
+    verification_id: UUID,
+    valid_until: date,
+    reason: str,
+    user: User = Depends(get_current_user),
+    service: VerificationApplicationService = Depends(
+        get_verification_service,
+    ),
+):
+    return service.correct_valid_until(
+        CorrectVerificationValidUntilCommand(
+            verification_id=verification_id,
+            valid_until=valid_until,
+            reason=reason,
         ),
         user,
     )
