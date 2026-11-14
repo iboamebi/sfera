@@ -7,6 +7,7 @@ from app.api.dependencies.auth import get_current_user
 from app.api.security.csrf import require_csrf
 from app.application.authorization.authorization import AuthorizationError
 from app.application.verification.exceptions import (
+    VerificationAlreadyActiveApplicationError,
     VerificationInstrumentRequiredApplicationError,
     VerificationOrderItemNotFoundApplicationError,
 )
@@ -143,6 +144,25 @@ def test_create_verification_requires_concrete_instrument():
     assert response.status_code == 422
     assert response.json() == {
         "detail": "Verification requires a concrete instrument",
+    }
+
+
+def test_create_verification_returns_conflict_for_active_verification():
+    client = make_client(
+        FakeVerificationService(VerificationAlreadyActiveApplicationError()),
+    )
+
+    try:
+        response = client.post(
+            "/verifications",
+            json=make_payload(str(uuid4())),
+        )
+    finally:
+        clear_overrides()
+
+    assert response.status_code == 409
+    assert response.json() == {
+        "detail": "A verification is already active for this order item",
     }
 
 
