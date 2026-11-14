@@ -107,3 +107,22 @@ class Verification(AggregateRoot):
         self.valid_until = None
         self.unsuitable_reason = reason
         self.decision_at = decision_at
+
+
+    def correct_valid_until(self, valid_until: date, *, reason: str) -> None:
+        """Correct the validity date after a suitable decision."""
+        from app.domains.verification.exceptions import (
+            InvalidValidityCorrectionReasonDomainError,
+        )
+
+        if (
+            self.status != VerificationStatus.DECIDED
+            or self.result != VerificationResult.SUITABLE
+            or self.valid_until is None
+        ):
+            raise InvalidVerificationResultStateDomainError
+        if not reason.strip():
+            raise InvalidValidityCorrectionReasonDomainError
+        if valid_until is None:
+            raise InvalidSuitableValidUntilDomainError
+        self.valid_until = valid_until
