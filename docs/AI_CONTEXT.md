@@ -1711,3 +1711,12 @@ Next: complete backend tests/CI, then implement the correction form in the Verif
 Локальная проверка после синхронизации обязательна: focused backend tests, Ruff check/format, Alembic upgrade на disposable integration DB, integration persistence test, frontend typecheck/build и browser scenario review.
 
 Не выполнять production deployment автоматически.
+
+
+## Active verification UI review checkpoint — 2026-11-14
+
+- Reviewed the current order-item verification flow on `develop`: active state is derived from non-archived `CREATED` / `IN_PROGRESS` records; completed `DECIDED` records remain in the visible history and do not block creation.
+- The create mutation invalidates the order detail query after success, and the UI navigates to the newly created verification.
+- Corrected the active-verification chip to use the neutral default MUI color rather than warning color, matching the agreed UI behavior.
+- Commit: `4166cec6b91fa7217c3aae2198e91d09bba5db67`.
+- Local frontend typecheck/build and browser scenario review are pending.
