@@ -4,6 +4,7 @@ SQLAlchemy implementation of the DeviceRepository.
 
 from uuid import UUID
 
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.domains.device.entities.device import Device
@@ -46,6 +47,24 @@ class DeviceRepositorySQLAlchemy(DeviceRepository):
 
         instruments = self.db.query(Instrument).all()
         return [self._mapper.to_domain(instrument) for instrument in instruments]
+
+    def exists_by_customer_type_and_serial_number(
+        self,
+        customer_id: UUID,
+        instrument_type_id: UUID,
+        serial_number: str,
+        exclude_device_id: UUID | None = None,
+    ) -> bool:
+        """Check serial uniqueness within customer and instrument type."""
+        query = self.db.query(Instrument.id).filter(
+            Instrument.customer_id == customer_id,
+            Instrument.instrument_type_id == instrument_type_id,
+            func.lower(func.btrim(Instrument.serial_number))
+            == serial_number.strip().lower(),
+        )
+        if exclude_device_id is not None:
+            query = query.filter(Instrument.id != exclude_device_id)
+        return query.first() is not None
 
     def save(
         self,
