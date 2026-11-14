@@ -8,6 +8,9 @@ from app.application.authorization.authorization import AuthorizationError
 from app.application.verification.commands.approve_verification import (
     ApproveVerificationCommand,
 )
+from app.application.verification.commands.correct_verification_decision import (
+    CorrectVerificationDecisionCommand,
+)
 from app.application.verification.commands.correct_verification_valid_until import (
     CorrectVerificationValidUntilCommand,
 )
@@ -578,3 +581,80 @@ def test_correct_valid_until_persists_and_writes_reasoned_audit():
         "new": "2029-12-31",
     }
     assert records.items[0].reason == "Исправлена ошибка ввода"
+
+
+def test_correct_verification_decision_persists_and_audits_old_and_new_values():
+    repository = FakeVerificationRepository()
+    verification = make_verification()
+    verification.mark_suitable(
+        date(2030, 1, 1),
+        decision_at=datetime(2026, 11, 14, 10, 0, tzinfo=UTC),
+    )
+    repository.save(verification)
+    operations = FakeAuditOperationRepository()
+    records = FakeAuditRepository()
+    service = VerificationApplicationService(
+        repository,
+        FakeOrderRepository(),
+        FakeUnitOfWork(),
+        operations,
+        records,
+    )
+
+    corrected_at = datetime.now(UTC)
+    result = service.correct_decision(
+        CorrectVerificationDecisionCommand(
+            verification_id=verification.id,
+            result=VerificationResult.UNSUITABLE,
+            valid_until=None,
+            unsuitable_reason="Повреждена пломба",
+            reason="Исправлена ошибка первоначального решения",
+        ),
+        make_user(UserRole.METROLOGIST),
+    )
+
+    assert result.result == VerificationResult.UNSUITABLE
+    assert result.valid_until is None
+    assert result.unsuitable_reason == "Повреждена пломба"
+    assert result.decision_at is not None
+    assert repository.get(verification.id) is result
+    assert len(operations.items) == len(records.items) == 1
+    record = records.items[0]
+    assert record.action == "verification.decision_corrected"
+    assert record.changes["result"] == {
+        "old": VerificationResult.SUITABLE.value,
+        "new": VerificationResult.UNSUITABLE.value,
+    }
+    assert record.changes["valid_until"] == {
+        "old": "2030-01-01",
+        "new": None,
+    }
+    assert record.changes["unsuitable_reason"] == {
+        "old": None,
+        "new": "Повреждена пломба",
+    }
+    assert record.changes["decision_at"]["old"] == "2026-11-14T10:00:00+00:00"
+    assert record.changes["decision_at"]["new"] == result.decision_at.isoformat()
+    assert record.reason == "Исправлена ошибка первоначального решения"
+
+
+def test_correct_verification_decision_requires_metrologist_or_admin():
+    repository = FakeVerificationRepository()
+    verification = make_verification()
+    verification.mark_suitable(
+        date(2030, 1, 1),
+        decision_at=datetime(2026, 11, 14, 10, 0, tzinfo=UTC),
+    )
+    repository.save(verification)
+
+    with pytest.raises(AuthorizationError):
+        make_service(repository).correct_decision(
+            CorrectVerificationDecisionCommand(
+                verification_id=verification.id,
+                result=VerificationResult.UNSUITABLE,
+                valid_until=None,
+                unsuitable_reason="Повреждена пломба",
+                reason="Исправление",
+            ),
+            make_user(UserRole.OPERATOR),
+        )
