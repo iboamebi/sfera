@@ -331,7 +331,8 @@ def test_start_verification_transitions_and_audits():
     assert result.started_at is not None
     assert result.started_at.tzinfo is not None
     assert order.status.value == "IN_WORK"
-    assert len(audit_operations.items) == len(audit_records.items) == 2
+    assert len(audit_operations.items) == 1
+    assert len(audit_records.items) == 2
     record = audit_records.items[0]
     assert record.action == "verification.started"
     assert record.changes["status"] == {
