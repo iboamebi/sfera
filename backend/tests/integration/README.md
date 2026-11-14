@@ -33,7 +33,7 @@ alembic upgrade 9f2a6c4d8e14
 
 docker compose -f compose.integration.yaml exec -T postgres \
   psql -U sfera_test -d sfera_test -v ON_ERROR_STOP=1 <<'SQL'
-DO $
+DO $$
 BEGIN
     IF EXISTS (
         SELECT 1 FROM users WHERE username = 'alex' AND role = 'admin'
@@ -55,7 +55,7 @@ BEGIN
         );
     END IF;
 END
-$;
+$$;
 SQL
 
 alembic upgrade head
