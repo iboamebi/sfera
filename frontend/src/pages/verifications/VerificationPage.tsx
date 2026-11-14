@@ -261,7 +261,6 @@ export function VerificationPage() {
                 <CorrectVerificationDecisionForm
                   verificationId={data.id}
                   currentResult={data.result}
-                  currentValidUntil={data.validUntil}
                   currentUnsuitableReason={data.unsuitableReason}
                 />
               </>
