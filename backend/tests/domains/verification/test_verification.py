@@ -204,7 +204,7 @@ def test_correct_decision_changes_unsuitable_to_suitable():
     assert verification.decision_at == corrected_at
 
 
-@pytest.mark.parametrize("reason", ["", " ", "\\t"])
+@pytest.mark.parametrize("reason", ["", " ", "\t"])
 def test_correct_decision_requires_reason(reason: str):
     verification = create_verification()
     verification.start(started_at=DECISION_AT)
