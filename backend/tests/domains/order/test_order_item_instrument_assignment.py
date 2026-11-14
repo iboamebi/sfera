@@ -81,7 +81,7 @@ def test_assign_instrument_rejects_order_after_work_started(status):
 
     with pytest.raises(
         OrderException,
-        match="Cannot modify items after order work has started",
+        match="Cannot assign instrument in current order status",
     ):
         order.assign_instrument(item.id, uuid4())
 
