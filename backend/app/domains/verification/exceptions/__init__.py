@@ -21,3 +21,11 @@ class InvalidVerificationResultStateDomainError(VerificationDomainError):
 
 class InvalidValidityCorrectionReasonDomainError(VerificationDomainError):
     """Validity date correction requires a non-blank reason."""
+
+
+class InvalidDecisionCorrectionReasonDomainError(VerificationDomainError):
+    """Decision correction requires a non-blank reason."""
+
+
+class InvalidDecisionCorrectionDomainError(VerificationDomainError):
+    """Corrected decision fields must match the selected result."""
