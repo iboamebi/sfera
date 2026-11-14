@@ -30,14 +30,16 @@ export DATABASE_URL='postgresql+psycopg2://sfera_test:sfera_test_only@127.0.0.1:
 
 alembic upgrade 9f2a6c4d8e14
 
-psql "$DATABASE_URL" -v ON_ERROR_STOP=1 <<'SQL'
-INSERT INTO users (id, username, password_hash, is_active, role)
+docker compose -f compose.integration.yaml exec -T postgres \
+  psql -U sfera_test -d sfera_test -v ON_ERROR_STOP=1 <<'SQL'
+INSERT INTO users (id, username, password_hash, is_active, role, archived)
 VALUES (
     '00000000-0000-0000-0000-000000000001',
     'alex',
     'integration-test-placeholder-not-for-login',
     TRUE,
-    'admin'
+    'admin',
+    FALSE
 );
 SQL
 
