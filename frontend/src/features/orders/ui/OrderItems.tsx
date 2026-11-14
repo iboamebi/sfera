@@ -267,6 +267,11 @@ export function OrderItems({
             </TableHead>
             <TableBody>
               {items.map((item, index) => {
+                const hasActiveVerification = item.verifications.some(
+                  (verification) =>
+                    !verification.archived &&
+                    (verification.status === "CREATED" || verification.status === "IN_PROGRESS"),
+                );
                 const expanded =
                   editingItemId === item.id ||
                   assigningItemId === item.id ||
@@ -375,7 +380,14 @@ export function OrderItems({
                           }}
                         >
                           {item.requestedOperations.includes("verification") &&
-                            item.instrumentId && (
+                            item.instrumentId &&
+                            (hasActiveVerification ? (
+                              <Chip
+                                size="small"
+                                color="warning"
+                                label="Поверка уже в работе"
+                              />
+                            ) : (
                               <Button
                                 size="small"
                                 variant="outlined"
@@ -389,7 +401,7 @@ export function OrderItems({
                               >
                                 Создать поверку
                               </Button>
-                            )}
+                            ))}
                           {editable && !item.instrumentId && (
                             <Button
                               size="small"
