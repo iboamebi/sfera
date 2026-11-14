@@ -1761,3 +1761,13 @@ Next: complete backend tests/CI, then implement the correction form in the Verif
 - Application tests cover duplicate rejection within one type and allowed reuse across different types; infrastructure lookup coverage added.
 - Migration: `d4e8a1c6f230`, based on `7a9d2e4c6b10`.
 - Local backend tests, Ruff, Alembic migration on the disposable PostgreSQL database, frontend typecheck/build, and browser validation are pending. No production migration, deployment, backend restart, or PR merge.
+
+
+## Instrument creation — reuse known Instrument Type — 2026-11-14
+
+- Confirmed UX rule: request only information that is not already known. When creating a Device from an existing OrderItem, reuse its `instrument_type_id`; do not ask the operator to select the type again.
+- `CreateDeviceForm` now hides the Instrument Type selector when `instrumentTypeId` is supplied and does not fetch the shared Instrument Type list in that case. Standalone creation still loads and asks for the type.
+- `useInstrumentTypes(enabled)` now supports disabling the query when the type is already known.
+- Commits: `8f0d13a` (skip known type lookup), `a6af419` (reuse order-item type).
+- User confirmed that Instrument names and Instrument Types are shared catalogues across Customers. The current free-text `Instrument.name` is a temporary UI placeholder, not an approved catalogue model. A separate shared nomenclature catalogue with search, duplicate/similarity analysis, aliases, and controlled population requires domain/API/schema analysis before implementation.
+- Local frontend typecheck/build after these two commits is pending. No migration, production deployment, backend restart, or PR merge.
