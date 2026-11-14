@@ -7,6 +7,7 @@ export type VerificationResult = "SUITABLE" | "UNSUITABLE";
 export interface VerificationRead {
   id: string;
   orderItemId: string;
+  instrumentId: string | null;
   verificationDate: string;
   validUntil: string | null;
   result: VerificationResult | null;
