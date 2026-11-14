@@ -139,7 +139,8 @@ Implemented use cases:
 
 - `create`;
 - `approve`;
-- `reject`.
+- `reject`;
+- `correct_decision` (correction of an already decided result with a mandatory reason).
 
 Authorization is performed in the Application layer. Verification creation and state-changing API routes authenticate the user, retain CSRF protection, and pass the authenticated user to the Application use case.
 
@@ -225,7 +226,7 @@ Implemented:
 - authorization of Organization creation and update;
 - authorization of Material creation, update, archive and restore;
 - authorization of Warehouse state-changing operations covered by the current application contract;
-- authorization of Verification creation, approval and rejection;
+- authorization of Verification creation, approval, rejection and decision correction;
 - authorization of Diagnostic creation, completion and recommendation;
 - authorization of Repair creation, start, completion and cancellation;
 - API forwarding of authenticated users for implemented state-changing boundaries;
