@@ -31,5 +31,13 @@ class InvalidDecisionCorrectionDomainError(VerificationDomainError):
     """Corrected decision fields must match the selected result."""
 
 
+class InvalidVerificationCancellationDomainError(VerificationDomainError):
+    """Only active verifications can be cancelled."""
+
+
+class InvalidVerificationCancellationReasonDomainError(VerificationDomainError):
+    """An in-progress verification requires a reason."""
+
+
 class ActiveVerificationAlreadyExistsDomainError(VerificationDomainError):
     """An active verification already exists for the order item."""

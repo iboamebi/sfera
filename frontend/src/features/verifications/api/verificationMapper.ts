@@ -10,6 +10,7 @@ export function mapVerification(dto: VerificationApiDto): VerificationRead {
     validUntil: dto.valid_until,
     result: dto.result,
     unsuitableReason: dto.unsuitable_reason,
+    cancellationReason: dto.cancellation_reason,
     methodology: dto.methodology,
     createdAt: dto.created_at,
     startedAt: dto.started_at,

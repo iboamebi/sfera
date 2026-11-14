@@ -7,3 +7,4 @@ class VerificationStatus(StrEnum):
     CREATED = "CREATED"
     IN_PROGRESS = "IN_PROGRESS"
     DECIDED = "DECIDED"
+    CANCELLED = "CANCELLED"

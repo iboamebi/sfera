@@ -28,6 +28,8 @@ from app.application.verification.commands.start_verification import (
 from app.application.verification.exceptions import (
     VerificationAlreadyActiveApplicationError,
     VerificationCannotBeStartedApplicationError,
+    VerificationCannotBeCancelledApplicationError,
+    VerificationCancellationReasonRequiredApplicationError,
     VerificationInstrumentRequiredApplicationError,
     VerificationNotFoundApplicationError,
     VerificationOrderItemNotFoundApplicationError,
@@ -39,6 +41,8 @@ from app.domains.verification.entities.verification import Verification
 from app.domains.verification.exceptions import (
     ActiveVerificationAlreadyExistsDomainError,
     InvalidVerificationResultStateDomainError,
+    InvalidVerificationCancellationDomainError,
+    InvalidVerificationCancellationReasonDomainError,
 )
 from app.domains.verification.repositories.verification_repository import (
     VerificationRepository,
@@ -222,6 +226,30 @@ class VerificationApplicationService:
                         },
                     )
                 )
+        return verification
+
+    def cancel(self, command, user: User) -> Verification:
+        require_role(user, UserRole.METROLOGIST, UserRole.ADMIN)
+        with self._uow:
+            verification = self.get(command.verification_id)
+            old_status = verification.status.value
+            try:
+                verification.cancel(reason=command.reason)
+            except InvalidVerificationCancellationDomainError:
+                raise VerificationCannotBeCancelledApplicationError from None
+            except InvalidVerificationCancellationReasonDomainError:
+                raise VerificationCancellationReasonRequiredApplicationError from None
+            self._repository.save(verification)
+            operation = AuditOperation(initiated_by=user.id)
+            self._audit_operation_repository.save(operation)
+            self._audit_repository.save(AuditRecord(
+                operation_id=operation.operation_id, actor_id=user.id,
+                action="verification.cancelled", entity_type="Verification",
+                entity_id=verification.id,
+                changes={"status": {"old": old_status, "new": verification.status.value},
+                         "cancellation_reason": {"old": None, "new": verification.cancellation_reason}},
+                reason=verification.cancellation_reason,
+            ))
         return verification
 
     def approve(

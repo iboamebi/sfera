@@ -4,6 +4,8 @@ from uuid import UUID
 
 from app.domains.verification.exceptions import (
     InvalidDecisionCorrectionDomainError,
+    InvalidVerificationCancellationDomainError,
+    InvalidVerificationCancellationReasonDomainError,
     InvalidDecisionCorrectionReasonDomainError,
     InvalidSuitableValidUntilDomainError,
     InvalidUnsuitableReasonDomainError,
@@ -37,6 +39,7 @@ class Verification(AggregateRoot):
     unsuitable_reason: str | None = None
     methodology: str | None = None
     decision_at: datetime | None = None
+    cancellation_reason: str | None = None
     archived: bool = False
 
     @classmethod
@@ -70,6 +73,14 @@ class Verification(AggregateRoot):
             raise InvalidVerificationResultStateDomainError
         self.status = VerificationStatus.IN_PROGRESS
         self.started_at = started_at
+
+    def cancel(self, *, reason: str | None = None) -> None:
+        if self.status not in (VerificationStatus.CREATED, VerificationStatus.IN_PROGRESS):
+            raise InvalidVerificationCancellationDomainError
+        if self.status == VerificationStatus.IN_PROGRESS and not (reason or '').strip():
+            raise InvalidVerificationCancellationReasonDomainError
+        self.status = VerificationStatus.CANCELLED
+        self.cancellation_reason = reason.strip() if reason and reason.strip() else None
 
     def mark_suitable(
         self,

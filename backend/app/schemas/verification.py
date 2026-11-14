@@ -20,6 +20,7 @@ class VerificationBase(BaseModel):
     valid_until: date | None = None
     result: VerificationResult | None = None
     unsuitable_reason: str | None = None
+    cancellation_reason: str | None = None
     methodology: str | None = None
 
 
@@ -49,6 +50,10 @@ class VerificationRead(VerificationBase):
     status: VerificationStatus
     verification_type: VerificationType
     archived: bool
+
+
+class VerificationCancellation(BaseModel):
+    reason: str | None = None
 
 
 class VerificationDecisionCorrection(BaseModel):

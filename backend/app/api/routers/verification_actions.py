@@ -26,6 +26,9 @@ from app.application.verification.commands.start_verification import (
 )
 from app.application.verification.exceptions import (
     VerificationCannotBeStartedApplicationError,
+    VerificationCannotBeCancelledApplicationError,
+    VerificationCancellationReasonRequiredApplicationError,
+    VerificationNotFoundApplicationError,
 )
 from app.application.verification.services.verification_application_service import (
     VerificationApplicationService,
@@ -39,6 +42,7 @@ from app.domains.verification.exceptions import (
     InvalidVerificationResultStateDomainError,
 )
 from app.schemas.verification import (
+    VerificationCancellation,
     VerificationDecisionCorrection,
     VerificationRead,
 )
@@ -47,6 +51,19 @@ router = APIRouter(
     prefix="/verifications",
     tags=["Verifications"],
 )
+
+
+@router.post("/{verification_id}/cancel", response_model=VerificationRead, dependencies=[Depends(get_current_user), Depends(require_csrf)])
+def cancel_verification(verification_id: UUID, payload: VerificationCancellation, user: User = Depends(get_current_user), service: VerificationApplicationService = Depends(get_verification_service)):
+    from app.application.verification.commands.cancel_verification import CancelVerificationCommand
+    try:
+        return service.cancel(CancelVerificationCommand(verification_id=verification_id, reason=payload.reason), user)
+    except VerificationNotFoundApplicationError:
+        raise HTTPException(status_code=404, detail="Verification not found") from None
+    except VerificationCannotBeCancelledApplicationError:
+        raise HTTPException(status_code=409, detail="Only created or in-progress verifications can be cancelled") from None
+    except VerificationCancellationReasonRequiredApplicationError:
+        raise HTTPException(status_code=422, detail="Cancellation reason is required for an in-progress verification") from None
 
 
 @router.post(

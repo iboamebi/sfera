@@ -1,4 +1,4 @@
-export type VerificationStatus = "CREATED" | "IN_PROGRESS" | "DECIDED";
+export type VerificationStatus = "CREATED" | "IN_PROGRESS" | "DECIDED" | "CANCELLED";
 
 export type VerificationType = "PRIMARY" | "PERIODIC" | "AFTER_REPAIR";
 
@@ -18,5 +18,6 @@ export interface VerificationRead {
   decisionAt: string | null;
   status: VerificationStatus;
   verificationType: VerificationType;
+  cancellationReason: string | null;
   archived: boolean;
 }

@@ -1,6 +1,7 @@
 import {
   Alert,
   Box,
+  Button,
   Card,
   CardContent,
   Chip,
@@ -8,7 +9,7 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import { useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
 
 import { useDevice } from "../../features/devices/model/useDevice";
 import { useInstrumentType } from "../../features/instrument-type/model/useInstrumentType";
@@ -17,6 +18,7 @@ import { CorrectVerificationValidUntilForm } from "../../features/verifications/
 import { CorrectVerificationDecisionForm } from "../../features/verifications/correct-decision/ui/CorrectVerificationDecisionForm";
 import { RejectVerificationButton } from "../../features/verifications/reject-verification/ui/RejectVerificationButton";
 import { StartVerificationButton } from "../../features/verifications/start-verification/ui/StartVerificationButton";
+import { CancelVerificationButton } from "../../features/verifications/cancel-verification/ui/CancelVerificationButton";
 import { useVerification } from "../../features/verifications/model/useVerification";
 import type {
   VerificationResult,
@@ -28,6 +30,7 @@ const STATUS_LABELS: Record<VerificationStatus, string> = {
   CREATED: "Создана",
   IN_PROGRESS: "В работе",
   DECIDED: "Решение принято",
+  CANCELLED: "Отменена",
 };
 
 const TYPE_LABELS: Record<VerificationType, string> = {
@@ -63,6 +66,7 @@ function getStatusColor(
 ): "default" | "info" | "success" | "error" {
   if (status === "CREATED") return "default";
   if (status === "IN_PROGRESS") return "info";
+  if (status === "CANCELLED") return "default";
   return result === "SUITABLE" ? "success" : "error";
 }
 
@@ -104,6 +108,7 @@ function SectionCard({ title, children }: SectionCardProps) {
 }
 
 export function VerificationPage() {
+  const navigate = useNavigate();
   const { verificationId } = useParams<{ verificationId: string }>();
   const { data, error, isLoading } = useVerification(verificationId ?? "");
   const {
@@ -130,6 +135,7 @@ export function VerificationPage() {
   }
 
   const canStart = !data.archived && data.status === "CREATED";
+  const canCancel = !data.archived && (data.status === "CREATED" || data.status === "IN_PROGRESS");
   const canDecide = !data.archived && data.status === "IN_PROGRESS";
   const canCorrectValidity =
     !data.archived &&
@@ -143,6 +149,7 @@ export function VerificationPage() {
 
   return (
     <Stack spacing={2} sx={{ width: "100%", maxWidth: 1100, mx: "auto" }}>
+      <Button variant="outlined" onClick={() => navigate("/orders")} sx={{ alignSelf: "flex-start" }}>Назад к заказам</Button>
       <Stack spacing={1}>
         <Typography variant="h4">Поверка</Typography>
         <Stack
@@ -225,6 +232,7 @@ export function VerificationPage() {
               value={data.result ? RESULT_LABELS[data.result] : "Решение ещё не принято"}
             />
             <DetailRow label="Действительна до" value={formatDate(data.validUntil)} />
+            {data.cancellationReason && <DetailRow label="Причина отмены" value={data.cancellationReason} />}
             {data.unsuitableReason && (
               <DetailRow label="Причина непригодности" value={data.unsuitableReason} />
             )}
@@ -239,9 +247,10 @@ export function VerificationPage() {
           </Stack>
         </SectionCard>
 
-        {(canStart || canDecide || canCorrectValidity || canCorrectDecision) && (
+        {(canStart || canDecide || canCancel || canCorrectValidity || canCorrectDecision) && (
           <SectionCard title="Действия">
             {canStart && <StartVerificationButton verificationId={data.id} />}
+            {canCancel && <CancelVerificationButton verificationId={data.id} requireReason={data.status === "IN_PROGRESS"} onCancelled={() => navigate("/orders")} />}
             {canDecide && (
               <Stack spacing={1.5}>
                 <ApproveVerificationButton verificationId={data.id} />

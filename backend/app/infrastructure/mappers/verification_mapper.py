@@ -40,6 +40,7 @@ class VerificationMapper(
             ),
             valid_until=model.valid_until,
             unsuitable_reason=model.unsuitable_reason,
+            cancellation_reason=model.cancellation_reason,
             methodology=model.methodology,
             decision_at=model.decision_at,
             archived=model.archived,
@@ -60,6 +61,7 @@ class VerificationMapper(
         model.result = entity.result.value if entity.result is not None else None
         model.valid_until = entity.valid_until
         model.unsuitable_reason = entity.unsuitable_reason
+        model.cancellation_reason = entity.cancellation_reason
         model.methodology = entity.methodology
         model.decision_at = entity.decision_at
         model.archived = entity.archived

@@ -18,6 +18,7 @@ class VerificationStatus(StrEnum):
     CREATED = "CREATED"
     IN_PROGRESS = "IN_PROGRESS"
     DECIDED = "DECIDED"
+    CANCELLED = "CANCELLED"
 
 
 class VerificationType(StrEnum):
@@ -79,6 +80,8 @@ class Verification(BaseModel):
         SqlEnum(VerificationResult),
         nullable=True,
     )
+
+    cancellation_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     unsuitable_reason: Mapped[str | None] = mapped_column(
         Text,
