@@ -58,14 +58,21 @@ export function DeviceSelector({
   );
   const excludedIds = new Set(excludedInstrumentIds);
   const serialCounts = customerDevices.reduce((counts, device) => {
-    const serialKey = `${device.instrumentTypeId}:${device.serialNumber.trim().toLocaleLowerCase()}`;
+    const serialKey = `${device.instrumentTypeId}:${device.serialNumber
+      .trim()
+      .toLocaleLowerCase()}`;
     counts.set(serialKey, (counts.get(serialKey) ?? 0) + 1);
     return counts;
   }, new Map<string, number>());
   const excludedSerials = new Set(
     customerDevices
       .filter((device) => excludedIds.has(device.id))
-      .map((device) => `${device.instrumentTypeId}:${device.serialNumber.trim().toLocaleLowerCase()}`),
+      .map(
+        (device) =>
+          `${device.instrumentTypeId}:${device.serialNumber
+            .trim()
+            .toLocaleLowerCase()}`,
+      ),
   );
   const siteFilteredDevices = customerDevices.filter((device) => {
     const serialKey = `${device.instrumentTypeId}:${device.serialNumber.trim().toLocaleLowerCase()}`;
