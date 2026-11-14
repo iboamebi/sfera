@@ -183,26 +183,23 @@ def test_correct_decision_changes_suitable_to_unsuitable():
     assert verification.decision_at == corrected_at
 
 
-def test_correct_decision_changes_unsuitable_to_suitable():
+def test_correct_decision_rejects_unsuitable_to_suitable():
+    from app.domains.verification.exceptions import (
+        InvalidDecisionCorrectionDomainError,
+    )
+
     verification = create_verification()
     verification.start(started_at=DECISION_AT)
     verification.mark_unsuitable("Ошибка осмотра", decision_at=DECISION_AT)
 
-    corrected_at = datetime(2030, 1, 2, 12, 0, tzinfo=UTC)
-    verification.correct_decision(
-        result=VerificationResult.SUITABLE,
-        valid_until=date(2032, 1, 1),
-        unsuitable_reason=None,
-        reason="Повторная проверка подтвердила пригодность",
-        decision_at=corrected_at,
-    )
-
-    assert verification.status == VerificationStatus.DECIDED
-    assert verification.result == VerificationResult.SUITABLE
-    assert verification.valid_until == date(2032, 1, 1)
-    assert verification.unsuitable_reason is None
-    assert verification.decision_at == corrected_at
-
+    with pytest.raises(InvalidDecisionCorrectionDomainError):
+        verification.correct_decision(
+            result=VerificationResult.SUITABLE,
+            valid_until=date(2032, 1, 1),
+            unsuitable_reason=None,
+            reason="Повторная проверка подтвердила пригодность",
+            decision_at=datetime(2030, 1, 2, 12, 0, tzinfo=UTC),
+        )
 
 @pytest.mark.parametrize("reason", ["", " ", "\t"])
 def test_correct_decision_requires_reason(reason: str):
