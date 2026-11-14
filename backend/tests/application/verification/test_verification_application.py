@@ -24,6 +24,7 @@ from app.application.verification.commands.start_verification import (
     StartVerificationCommand,
 )
 from app.application.verification.exceptions import (
+    VerificationAlreadyActiveApplicationError,
     VerificationCannotBeStartedApplicationError,
     VerificationInstrumentRequiredApplicationError,
     VerificationNotFoundApplicationError,
@@ -86,6 +87,14 @@ class FakeVerificationRepository(VerificationRepository):
         verification_id: UUID,
     ) -> Verification | None:
         return self._items.get(verification_id)
+
+    def has_active_for_order_item(self, order_item_id: UUID) -> bool:
+        return any(
+            item.order_item_id == order_item_id
+            and not item.archived
+            and item.status in (VerificationStatus.CREATED, VerificationStatus.IN_PROGRESS)
+            for item in self._items.values()
+        )
 
     def save(
         self,
@@ -245,6 +254,101 @@ def test_create_verification_copies_instrument_from_order_item():
         "old": None,
         "new": VerificationType.PERIODIC.value,
     }
+
+
+@pytest.mark.parametrize(
+    "status",
+    [VerificationStatus.CREATED, VerificationStatus.IN_PROGRESS],
+)
+def test_create_verification_rejects_existing_active_verification(status):
+    repository = FakeVerificationRepository()
+    order_repository = FakeOrderRepository()
+    order, item = make_order_with_item(instrument_id=uuid4())
+    order_repository.save(order)
+    existing = Verification.create(
+        id=uuid4(),
+        order_item_id=item.id,
+        instrument_id=item.instrument_id,
+        verification_date=date.today(),
+        created_at=datetime.now(UTC),
+        verification_type=VerificationType.PERIODIC,
+    )
+    if status == VerificationStatus.IN_PROGRESS:
+        existing.start(started_at=datetime.now(UTC))
+    repository.save(existing)
+    service = make_service(repository, order_repository)
+
+    with pytest.raises(VerificationAlreadyActiveApplicationError):
+        service.create(
+            CreateVerificationCommand(
+                order_item_id=item.id,
+                verification_date=date.today(),
+                verification_type=VerificationType.PERIODIC,
+            ),
+            make_user(UserRole.METROLOGIST),
+        )
+
+    assert len(repository._items) == 1
+
+
+def test_create_verification_allows_new_after_previous_decision():
+    repository = FakeVerificationRepository()
+    order_repository = FakeOrderRepository()
+    order, item = make_order_with_item(instrument_id=uuid4())
+    order_repository.save(order)
+    completed = Verification.create(
+        id=uuid4(),
+        order_item_id=item.id,
+        instrument_id=item.instrument_id,
+        verification_date=date.today(),
+        created_at=datetime.now(UTC),
+        verification_type=VerificationType.PERIODIC,
+    )
+    completed.start(started_at=datetime.now(UTC))
+    completed.mark_unsuitable("Не соответствует", decision_at=datetime.now(UTC))
+    repository.save(completed)
+    service = make_service(repository, order_repository)
+
+    created = service.create(
+        CreateVerificationCommand(
+            order_item_id=item.id,
+            verification_date=date.today(),
+            verification_type=VerificationType.PERIODIC,
+        ),
+        make_user(UserRole.METROLOGIST),
+    )
+
+    assert created.status == VerificationStatus.CREATED
+    assert len(repository._items) == 2
+
+
+def test_create_verification_ignores_archived_active_verification():
+    repository = FakeVerificationRepository()
+    order_repository = FakeOrderRepository()
+    order, item = make_order_with_item(instrument_id=uuid4())
+    order_repository.save(order)
+    archived = Verification.create(
+        id=uuid4(),
+        order_item_id=item.id,
+        instrument_id=item.instrument_id,
+        verification_date=date.today(),
+        created_at=datetime.now(UTC),
+        verification_type=VerificationType.PERIODIC,
+    )
+    archived.archived = True
+    repository.save(archived)
+    service = make_service(repository, order_repository)
+
+    created = service.create(
+        CreateVerificationCommand(
+            order_item_id=item.id,
+            verification_date=date.today(),
+            verification_type=VerificationType.PERIODIC,
+        ),
+        make_user(UserRole.METROLOGIST),
+    )
+
+    assert created.status == VerificationStatus.CREATED
 
 
 def test_create_verification_requires_existing_order_item():
