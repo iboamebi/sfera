@@ -57,22 +57,27 @@ class OrderMapper(BaseMapper[Order, OrderModel]):
         model.comment = entity.comment
         model.status = entity.status.value
 
-        model.order_items.clear()
+        existing_items = {item.id: item for item in model.order_items}
+        retained_item_ids = {item.id for item in entity.items}
+
+        model.order_items[:] = [
+            item for item in model.order_items if item.id in retained_item_ids
+        ]
 
         for line_number, item in enumerate(entity.items, start=1):
-            model.order_items.append(
-                OrderItemModel(
-                    id=item.id,
-                    instrument_id=item.instrument_id,
-                    instrument_type_id=item.instrument_type_id,
-                    quantity=item.quantity,
-                    customer_inventory_number=item.customer_inventory_number,
-                    line_number=line_number,
-                    customer_comment=item.comment,
-                    requested_operations=sorted(
-                        operation.value for operation in item.requested_operations
-                    ),
-                )
+            item_model = existing_items.get(item.id)
+            if item_model is None:
+                item_model = OrderItemModel(id=item.id)
+                model.order_items.append(item_model)
+
+            item_model.instrument_id = item.instrument_id
+            item_model.instrument_type_id = item.instrument_type_id
+            item_model.quantity = item.quantity
+            item_model.customer_inventory_number = item.customer_inventory_number
+            item_model.line_number = line_number
+            item_model.customer_comment = item.comment
+            item_model.requested_operations = sorted(
+                operation.value for operation in item.requested_operations
             )
 
         return model
