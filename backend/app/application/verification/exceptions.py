@@ -12,3 +12,7 @@ class VerificationInstrumentRequiredApplicationError(Exception):
 
 class VerificationCannotBeStartedApplicationError(Exception):
     """Verification cannot be started from its current state."""
+
+
+class VerificationAlreadyActiveApplicationError(Exception):
+    """An unarchived verification is already active for this order item."""
