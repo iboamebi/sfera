@@ -1575,4 +1575,4 @@ Next: complete backend tests/CI, then implement the correction form in the Verif
 - The previous mapper cleared and recreated every ORM OrderItem. Since `OrderItem.verifications` uses `cascade="all, delete-orphan"`, this deleted all Verification rows attached to the order's positions when any Verification was started.
 - Updated the mapper to reconcile OrderItems by ID: update existing ORM rows in place, add genuinely new rows, and remove only positions absent from the domain aggregate. Existing child relationships are preserved for retained positions.
 - Added an Infrastructure mapper regression test asserting that starting the order and mapping it back preserves the same OrderItem and its Verification relationship.
-- Local backend validation is pending. No database migration, deployment, backend restart, or PR merge.
+- Local regression test passed (2 tests). Ruff identified an import-order issue in the new test; imports were moved to module scope in commit `5223bc0`. Re-run Ruff on the test file to confirm. No database migration, deployment, backend restart, or PR merge.
