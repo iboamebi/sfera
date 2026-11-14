@@ -21,14 +21,35 @@ docker compose -f compose.integration.yaml up -d --wait
 
 ## Apply the application schema
 
+The one-time `a6c8e1f3b520` data-reset migration intentionally requires the existing `alex/admin` account. A fresh integration database has no such account. Bootstrap a disposable placeholder account immediately before that migration; do not modify or bypass the production migration's safety guard.
+
 Use the explicit test URL in the same shell:
 
 ```bash
 export DATABASE_URL='postgresql+psycopg2://sfera_test:sfera_test_only@127.0.0.1:55432/sfera_test'
+
+alembic upgrade 9f2a6c4d8e14
+
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 <<'SQL'
+INSERT INTO users (id, username, password_hash, is_active, role)
+VALUES (
+    '00000000-0000-0000-0000-000000000001',
+    'alex',
+    'integration-test-placeholder-not-for-login',
+    TRUE,
+    'admin'
+);
+SQL
+
 alembic upgrade head
+alembic current
 ```
 
-The normal Alembic migration chain is used; this avoids a schema created by `metadata.create_all()` that would omit migration-managed database behavior.
+Expected current revision: `c2e5f7a9b310`.
+
+The placeholder account exists only in the disposable database and is removed when the Compose container is torn down. It has no `user_roles` rows and is not a usable application login. The normal Alembic migration chain still executes in full, including the reset migration and its guard.
+
+The schema is created through real migrations rather than `metadata.create_all()`, preserving migration-managed database behavior.
 
 ## Stop and remove the disposable database
 
