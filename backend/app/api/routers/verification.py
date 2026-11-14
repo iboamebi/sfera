@@ -12,6 +12,7 @@ from app.application.verification.commands.create_verification import (
     CreateVerificationCommand,
 )
 from app.application.verification.exceptions import (
+    VerificationAlreadyActiveApplicationError,
     VerificationInstrumentRequiredApplicationError,
     VerificationNotFoundApplicationError,
     VerificationOrderItemNotFoundApplicationError,
@@ -77,6 +78,11 @@ def create_verification(
         raise HTTPException(
             status_code=404,
             detail="Order item not found",
+        ) from None
+    except VerificationAlreadyActiveApplicationError:
+        raise HTTPException(
+            status_code=409,
+            detail="A verification is already active for this order item",
         ) from None
     except VerificationInstrumentRequiredApplicationError:
         raise HTTPException(
