@@ -7,6 +7,7 @@ from app.application.device.commands.create_device import CreateDeviceCommand
 from app.application.device.commands.disconnect_device import DisconnectDeviceCommand
 from app.application.device.exceptions import (
     CustomerNotFoundApplicationError,
+    DuplicateDeviceSerialNumberApplicationError,
     InstrumentTypeNotFoundApplicationError,
     SiteCustomerMismatchApplicationError,
     SiteNotFoundApplicationError,
@@ -47,6 +48,21 @@ class FakeDeviceRepository(DeviceRepository):
 
     def list(self):
         return [self.device]
+
+    def exists_by_customer_type_and_serial_number(
+        self,
+        customer_id,
+        instrument_type_id,
+        serial_number,
+        exclude_device_id=None,
+    ):
+        return (
+            self.device.id != exclude_device_id
+            and self.device.customer_id == customer_id
+            and self.device.instrument_type_id == instrument_type_id
+            and self.device.serial_number.value.strip().lower()
+            == serial_number.strip().lower()
+        )
 
     def save(
         self,
@@ -387,3 +403,70 @@ def test_device_create_fails_when_site_belongs_to_another_customer():
 
     assert not uow.committed
     assert uow.rolled_back
+
+
+def test_device_create_rejects_duplicate_serial_for_same_customer_and_type():
+    customer = Customer(id=uuid4(), name="Test customer")
+    instrument_type = InstrumentType(id=uuid4(), name="Pressure gauge")
+    existing = Device(
+        id=uuid4(),
+        instrument_type_id=instrument_type.id,
+        customer_id=customer.id,
+        serial_number=SerialNumber("SN-001"),
+    )
+    repository = FakeDeviceRepository(existing)
+    uow = FakeUnitOfWork()
+    service = DeviceApplicationService(
+        repository,
+        FakeInstrumentTypeRepository(instrument_type),
+        FakeCustomerRepository(customer),
+        FakeSiteRepository(),
+        uow,
+    )
+
+    with pytest.raises(DuplicateDeviceSerialNumberApplicationError):
+        service.create(
+            CreateDeviceCommand(
+                instrument_type_id=instrument_type.id,
+                customer_id=customer.id,
+                name="Other gauge",
+                serial_number=" sn-001 ",
+            ),
+        )
+
+    assert not uow.committed
+    assert uow.rolled_back
+
+
+def test_device_create_allows_same_serial_for_different_instrument_type():
+    customer = Customer(id=uuid4(), name="Test customer")
+    existing_type = InstrumentType(id=uuid4(), name="Flow meter")
+    requested_type = InstrumentType(id=uuid4(), name="Pressure gauge")
+    existing = Device(
+        id=uuid4(),
+        instrument_type_id=existing_type.id,
+        customer_id=customer.id,
+        serial_number=SerialNumber("SN-001"),
+    )
+    repository = FakeDeviceRepository(existing)
+    uow = FakeUnitOfWork()
+    service = DeviceApplicationService(
+        repository,
+        FakeInstrumentTypeRepository(requested_type),
+        FakeCustomerRepository(customer),
+        FakeSiteRepository(),
+        uow,
+    )
+
+    created = service.create(
+        CreateDeviceCommand(
+            instrument_type_id=requested_type.id,
+            customer_id=customer.id,
+            name="Pressure gauge",
+            serial_number="SN-001",
+        ),
+    )
+
+    assert created.instrument_type_id == requested_type.id
+    assert repository.device.id == created.id
+    assert uow.committed
