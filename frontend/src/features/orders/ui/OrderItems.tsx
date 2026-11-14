@@ -40,6 +40,7 @@ interface OrderItemsProps {
   orderId: string;
   customerId: string;
   editable?: boolean;
+  allowInstrumentAssignment?: boolean;
 }
 
 const OPERATION_LABELS: Record<OrderItemOperation, string> = {
@@ -122,6 +123,7 @@ export function OrderItems({
   orderId,
   customerId,
   editable = false,
+  allowInstrumentAssignment = false,
 }: OrderItemsProps) {
   const navigate = useNavigate();
   const updateMutation = useUpdateOrderItem(orderId);
@@ -419,7 +421,7 @@ export function OrderItems({
                                 Создать поверку
                               </Button>
                             ))}
-                          {editable && !item.instrumentId && (
+                          {(editable || allowInstrumentAssignment) && !item.instrumentId && (
                             <Button
                               size="small"
                               variant="outlined"
