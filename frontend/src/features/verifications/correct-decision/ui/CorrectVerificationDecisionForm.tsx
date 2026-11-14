@@ -64,9 +64,14 @@ export function CorrectVerificationDecisionForm({
         }
         sx={{ maxWidth: 320 }}
       >
-        <MenuItem value="SUITABLE">Пригодно</MenuItem>
+        <MenuItem value="SUITABLE" disabled={currentResult === "UNSUITABLE"}>Пригодно</MenuItem>
         <MenuItem value="UNSUITABLE">Непригодно</MenuItem>
       </TextField>
+      {currentResult === "UNSUITABLE" && (
+        <Alert severity="info">
+          Для положительного результата необходимо создать новую поверку.
+        </Alert>
+      )}
       {result === "SUITABLE" ? (
         <Alert severity="info">
           Для изменения результата на «Пригодно» необходимо создать новую поверку.
