@@ -260,6 +260,23 @@ export function DeviceSelector({
         )}
       />
 
+      {onCreateDevice && (
+        <Stack spacing={0.5} alignItems="flex-start">
+          <Button
+            variant="outlined"
+            size="small"
+            disabled={createDeviceDisabled}
+            onClick={() => onCreateDevice(inputValue.trim())}
+          >
+            Создать новое СИ
+          </Button>
+          {createDeviceDisabledReason && (
+            <Typography variant="caption" color="text.secondary">
+              {createDeviceDisabledReason}
+            </Typography>
+          )}
+        </Stack>
+      )}
       {canExpandSiteSearch && (
         <Alert
           severity="info"
