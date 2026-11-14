@@ -760,4 +760,3 @@ def test_start_verification_preserves_other_order_items_and_verifications():
     }
     assert repository.get(second_verification.id) is second_verification
     assert second_verification.status == VerificationStatus.CREATED
-
