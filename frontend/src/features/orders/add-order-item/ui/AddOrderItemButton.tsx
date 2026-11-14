@@ -64,6 +64,11 @@ export function AddOrderItemButton({
   >(["verification"]);
   const [isCreateDeviceOpen, setIsCreateDeviceOpen] = useState(false);
   const [initialDeviceSerialNumber, setInitialDeviceSerialNumber] = useState("");
+  const [isCreateDeviceActionState, setIsCreateDeviceActionState] = useState({
+    disabled: true,
+    serialNumber: "",
+    disabledReason: "",
+  });
   const [isCreateInstrumentTypeOpen, setIsCreateInstrumentTypeOpen] =
     useState(false);
   const addOrderItemMutation = useAddOrderItem(orderId);
@@ -217,6 +222,7 @@ export function AddOrderItemButton({
         instrumentTypeId={instrumentTypeId || null}
         excludedInstrumentIds={excludedInstrumentIds}
         onChange={setDeviceId}
+        onCreateDeviceActionStateChange={setIsCreateDeviceActionState}
         onCreateDevice={(serialNumber) => {
           setInitialDeviceSerialNumber(serialNumber);
           setIsCreateDeviceOpen(true);
@@ -232,11 +238,23 @@ export function AddOrderItemButton({
         <Stack spacing={0.25}>
           <Button
             variant="outlined"
-            disabled={false}
-            onClick={() => undefined}
+            disabled={isCreateDeviceActionState.disabled}
+            onClick={() => {
+              setInitialDeviceSerialNumber(
+                isCreateDeviceActionState.serialNumber,
+              );
+              setIsCreateDeviceOpen(true);
+            }}
           >
             Создать карточку СИ
           </Button>
+          {isCreateDeviceActionState.disabled &&
+            isCreateDeviceActionState.serialNumber &&
+            isCreateDeviceActionState.disabledReason && (
+              <Typography variant="caption" color="text.secondary">
+                {isCreateDeviceActionState.disabledReason}
+              </Typography>
+            )}
         </Stack>
 
         {OPERATION_OPTIONS.map((operation) => (
