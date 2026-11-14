@@ -1589,3 +1589,14 @@ Next: complete backend tests/CI, then implement the correction form in the Verif
 - Corrected only those formatting boundaries in `3d788ba`; formatter re-validation is pending.
 
 - Follow-up to the formatter check: the application test file had an extra blank line at EOF. Removed it in `2fd591d`; local `ruff format --check` confirmation is pending.
+
+
+## Verification start — SQLAlchemy persistence path review — 2026-11-14
+
+- Reviewed the current `develop` implementations of `OrderRepositorySQLAlchemy`, `OrderMapper`, `Order` / `OrderItem` / `Verification` ORM models, `VerificationRepositorySQLAlchemy`, `VerificationMapper`, `VerificationApplicationService.start`, and `SqlAlchemyUnitOfWork`.
+- The start use case loads the full Order aggregate through `get_by_order_item_id`, changes the Order status, then saves the aggregate before saving the Verification status.
+- `OrderMapper.to_domain` reads every OrderItem. `OrderMapper.to_model` reconciles retained ORM OrderItem objects by ID and mutates them in place. This preserves their existing child relationships and avoids triggering the `delete-orphan` cascade on retained positions.
+- `OrderItem.verifications` is explicitly configured with `cascade="all, delete-orphan"`; preserving ORM OrderItem identity is therefore required.
+- Existing coverage is split: application regression uses in-memory fake repositories; mapper regression checks ORM relationship identity in memory. Neither currently demonstrates a SQLAlchemy flush/commit followed by a fresh-session reload against a database.
+- No persistence code change is justified by the current code review. Next validation stage: inspect the repository's actual DB test setup and add a focused SQLAlchemy persistence regression only if it can be done with the existing test infrastructure. Do not claim DB-level persistence is proven until that test passes.
+- No migration, production deployment, backend restart, or PR merge.
