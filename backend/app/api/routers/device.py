@@ -60,11 +60,6 @@ def get_device(
         return service.get(device_id)
     except DeviceNotFoundApplicationError:
         raise HTTPException(status_code=404, detail="Device not found") from None
-    except DuplicateDeviceSerialNumberApplicationError:
-        raise HTTPException(
-            status_code=409,
-            detail="Instrument with this serial number already exists for this customer and type",
-        ) from None
 
 
 @router.post(
@@ -121,6 +116,11 @@ def update_device(
         )
     except DeviceNotFoundApplicationError:
         raise HTTPException(status_code=404, detail="Device not found") from None
+    except DuplicateDeviceSerialNumberApplicationError:
+        raise HTTPException(
+            status_code=409,
+            detail="Instrument with this serial number already exists for this customer and type",
+        ) from None
 
 
 @router.post(
