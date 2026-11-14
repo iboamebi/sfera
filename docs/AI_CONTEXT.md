@@ -1531,3 +1531,12 @@ No database migration is expected: Verification persistence already stores resul
 The separate PR #31 (instrument-name link to Device card) remains open and has not been merged; do not merge without explicit user authorization. Its browser validation was confirmed by the user, although the PR body still needs its validation note refreshed.
 
 Next: complete backend tests/CI, then implement the correction form in the Verification page after the branch coordination with PR #31 is resolved. Order operation-state read model and presentation remain a separate subsequent stage.
+
+
+## Order — переход в IN_WORK при старте поверки — 2026-11-14
+
+- Уточнено бизнес-правило: когда хотя бы одна поверка фактически запускается (переход Verification CREATED → IN_PROGRESS), заказ должен перейти в IN_WORK.
+- Переход реализуется через метод Order.start_work() с защитой от возврата из последующих статусов; повторный вызов для IN_WORK является no-op.
+- VerificationApplicationService.start() переводит связанный Order в IN_WORK в той же UnitOfWork и пишет отдельную append-only audit-запись `order.started_work` в той же AuditOperation, что и `verification.started`.
+- Создание поверки само по себе не переводит заказ в IN_WORK: статус меняется именно при начале выполнения поверки.
+- Добавлены Domain/Application тесты перехода и аудита. Локальная валидация ожидается; merge/deploy не выполнять до результата пользователя.

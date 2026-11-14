@@ -301,10 +301,14 @@ def test_create_verification_requires_metrologist_or_admin():
 
 def test_start_verification_transitions_and_audits():
     repository = FakeVerificationRepository()
+    order_repository = FakeOrderRepository()
+    order, item = make_order_with_item(instrument_id=uuid4())
+    order.register()
+    order_repository.save(order)
     verification = Verification.create(
         id=uuid4(),
-        order_item_id=uuid4(),
-        instrument_id=uuid4(),
+        order_item_id=item.id,
+        instrument_id=item.instrument_id,
         verification_date=date.today(),
         created_at=datetime(2026, 9, 5, 10, 0, tzinfo=UTC),
         verification_type=VerificationType.PERIODIC,
@@ -314,7 +318,7 @@ def test_start_verification_transitions_and_audits():
     audit_records = FakeAuditRepository()
     service = VerificationApplicationService(
         repository,
-        FakeOrderRepository(),
+        order_repository,
         FakeUnitOfWork(),
         audit_operations,
         audit_records,
@@ -326,7 +330,8 @@ def test_start_verification_transitions_and_audits():
     assert result.status == VerificationStatus.IN_PROGRESS
     assert result.started_at is not None
     assert result.started_at.tzinfo is not None
-    assert len(audit_operations.items) == len(audit_records.items) == 1
+    assert order.status.value == "IN_WORK"
+    assert len(audit_operations.items) == len(audit_records.items) == 2
     record = audit_records.items[0]
     assert record.action == "verification.started"
     assert record.changes["status"] == {
@@ -335,6 +340,14 @@ def test_start_verification_transitions_and_audits():
     }
     assert record.changes["started_at"]["old"] is None
     assert record.changes["started_at"]["new"] == result.started_at.isoformat()
+    order_record = audit_records.items[1]
+    assert order_record.action == "order.started_work"
+    assert order_record.entity_type == "order"
+    assert order_record.entity_id == order.id
+    assert order_record.changes["status"] == {
+        "old": "REGISTERED",
+        "new": "IN_WORK",
+    }
 
 
 def test_start_verification_rejects_invalid_state():
