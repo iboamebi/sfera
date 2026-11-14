@@ -315,11 +315,7 @@ def test_cancelling_verifications_persists_status_reason_and_audit():
                 .filter(Verification.id.in_(verification_ids))
                 .all()
             }
-            order = (
-                verification_session.query(Order)
-                .filter(Order.id == order_id)
-                .one()
-            )
+            order = verification_session.query(Order).filter(Order.id == order_id).one()
             audit_records = (
                 verification_session.query(AuditRecordModel)
                 .filter(
