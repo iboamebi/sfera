@@ -1480,3 +1480,12 @@ Administrator-assisted password recovery has now been implemented; see the check
 - Backend CI #1062 succeeded on PR head `1b14d2c`; no review comments or threads.
 - No backend, database, lifecycle, or Arshin changes. Production has not yet received this compact-layout refinement.
 - Next: synchronize local `develop`, validate merged frontend, deploy frontend only, then inspect appearance in production before starting full Verification lifecycle scenario.
+
+
+## Verification UI — instrument context
+
+- Production scenario feedback: Verification creation and transition to `IN_PROGRESS` work, but the detail page lacked the measuring instrument identity and attributes.
+- The backend `VerificationRead` schema already includes nullable `instrument_id`; the frontend DTO/model/mapper had omitted it. No backend contract or database change is required.
+- The Verification page now uses the existing Device detail query for the linked instrument and the existing InstrumentType detail query for its type name. It displays instrument name, type, serial number, registry number, modification, manufacture year, and inventory number, with separate loading/error handling for the related reads.
+- The raw order-item UUID remains hidden. No order lookup, Arshin integration, lifecycle change, or persistence change was introduced.
+- Branch: `feat/verification-instrument-context`. Local typecheck/build and browser validation are pending.
