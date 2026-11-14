@@ -385,7 +385,7 @@ export function OrderItems({
                               <Chip
                                 size="small"
                                 color="warning"
-                                label="Поверка уже в работе"
+                                label="Есть активная поверка"
                               />
                             ) : (
                               <Button
