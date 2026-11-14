@@ -4,12 +4,12 @@ from uuid import UUID
 
 from app.domains.verification.exceptions import (
     InvalidDecisionCorrectionDomainError,
-    InvalidVerificationCancellationDomainError,
-    InvalidVerificationCancellationReasonDomainError,
     InvalidDecisionCorrectionReasonDomainError,
     InvalidSuitableValidUntilDomainError,
     InvalidUnsuitableReasonDomainError,
     InvalidValidityCorrectionReasonDomainError,
+    InvalidVerificationCancellationDomainError,
+    InvalidVerificationCancellationReasonDomainError,
     InvalidVerificationResultStateDomainError,
 )
 from app.domains.verification.value_objects.verification_result import (
@@ -75,9 +75,12 @@ class Verification(AggregateRoot):
         self.started_at = started_at
 
     def cancel(self, *, reason: str | None = None) -> None:
-        if self.status not in (VerificationStatus.CREATED, VerificationStatus.IN_PROGRESS):
+        if self.status not in (
+            VerificationStatus.CREATED,
+            VerificationStatus.IN_PROGRESS,
+        ):
             raise InvalidVerificationCancellationDomainError
-        if self.status == VerificationStatus.IN_PROGRESS and not (reason or '').strip():
+        if self.status == VerificationStatus.IN_PROGRESS and not (reason or "").strip():
             raise InvalidVerificationCancellationReasonDomainError
         self.status = VerificationStatus.CANCELLED
         self.cancellation_reason = reason.strip() if reason and reason.strip() else None

@@ -13,11 +13,11 @@ from app.application.verification.commands.approve_verification import (
 from app.application.verification.commands.correct_verification_decision import (
     CorrectVerificationDecisionCommand,
 )
-from app.application.verification.commands.correct_verification_valid_until import (
-    CorrectVerificationValidUntilCommand,
-)
 from app.application.verification.commands.cancel_verification import (
     CancelVerificationCommand,
+)
+from app.application.verification.commands.correct_verification_valid_until import (
+    CorrectVerificationValidUntilCommand,
 )
 from app.application.verification.commands.create_verification import (
     CreateVerificationCommand,
@@ -30,8 +30,8 @@ from app.application.verification.commands.start_verification import (
 )
 from app.application.verification.exceptions import (
     VerificationAlreadyActiveApplicationError,
-    VerificationCannotBeCancelledApplicationError,
     VerificationCancellationReasonRequiredApplicationError,
+    VerificationCannotBeCancelledApplicationError,
     VerificationCannotBeStartedApplicationError,
     VerificationInstrumentRequiredApplicationError,
     VerificationNotFoundApplicationError,
@@ -253,8 +253,16 @@ class VerificationApplicationService:
                 operation_id=operation.operation_id, actor_id=user.id,
                 action="verification.cancelled", entity_type="Verification",
                 entity_id=verification.id,
-                changes={"status": {"old": old_status, "new": verification.status.value},
-                         "cancellation_reason": {"old": None, "new": verification.cancellation_reason}},
+                changes={
+                    "status": {
+                        "old": old_status,
+                        "new": verification.status.value,
+                    },
+                    "cancellation_reason": {
+                        "old": None,
+                        "new": verification.cancellation_reason,
+                    },
+                },
                 reason=verification.cancellation_reason,
             ))
         return verification

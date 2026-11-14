@@ -9,11 +9,11 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from app.api.dependencies.auth import get_current_user
 from app.api.security.csrf import require_csrf
-from app.application.verification.commands.cancel_verification import (
-    CancelVerificationCommand,
-)
 from app.application.verification.commands.approve_verification import (
     ApproveVerificationCommand,
+)
+from app.application.verification.commands.cancel_verification import (
+    CancelVerificationCommand,
 )
 from app.application.verification.commands.correct_verification_decision import (
     CorrectVerificationDecisionCommand,
@@ -28,9 +28,9 @@ from app.application.verification.commands.start_verification import (
     StartVerificationCommand,
 )
 from app.application.verification.exceptions import (
-    VerificationCannotBeStartedApplicationError,
-    VerificationCannotBeCancelledApplicationError,
     VerificationCancellationReasonRequiredApplicationError,
+    VerificationCannotBeCancelledApplicationError,
+    VerificationCannotBeStartedApplicationError,
     VerificationNotFoundApplicationError,
 )
 from app.application.verification.services.verification_application_service import (
