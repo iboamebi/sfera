@@ -8,10 +8,18 @@ from sqlalchemy.orm import Session, joinedload
 
 from app.domains.order.read_models.order_read_models import (
     OrderItemReadData,
+    OrderItemVerificationReadData,
     OrderReadData,
 )
 from app.domains.order.repositories.order_read_repository import OrderReadRepository
 from app.domains.order.value_objects.order_item_operation import OrderItemOperation
+from app.domains.verification.value_objects.verification_result import (
+    VerificationResult,
+)
+from app.domains.verification.value_objects.verification_status import (
+    VerificationStatus,
+)
+from app.domains.verification.value_objects.verification_type import VerificationType
 from app.models.instrument import Instrument
 from app.models.order import Order
 from app.models.order_item import OrderItem
@@ -62,7 +70,33 @@ class OrderReadRepositorySQLAlchemy(OrderReadRepository):
                         for operation in item.requested_operations
                     },
                     verification_ids=[
-                        verification.id for verification in item.verifications
+                        verification.id
+                        for verification in sorted(
+                            item.verifications,
+                            key=lambda value: (value.created_at, value.id),
+                        )
+                    ],
+                    verifications=[
+                        OrderItemVerificationReadData(
+                            id=verification.id,
+                            created_at=verification.created_at,
+                            verification_date=verification.verification_date,
+                            verification_type=VerificationType(
+                                verification.verification_type
+                            ),
+                            status=VerificationStatus(verification.status),
+                            result=(
+                                VerificationResult(verification.result)
+                                if verification.result is not None
+                                else None
+                            ),
+                            valid_until=verification.valid_until,
+                            archived=verification.archived,
+                        )
+                        for verification in sorted(
+                            item.verifications,
+                            key=lambda value: (value.created_at, value.id),
+                        )
                     ],
                 )
                 for item in order.order_items
