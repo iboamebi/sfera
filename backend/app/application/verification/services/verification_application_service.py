@@ -162,12 +162,20 @@ class VerificationApplicationService:
         require_role(user, UserRole.METROLOGIST, UserRole.ADMIN)
         with self._uow:
             verification = self.get(command.verification_id)
+            order = self._order_repository.get_by_order_item_id(
+                verification.order_item_id,
+            )
             old_status = verification.status.value
+            old_order_status = order.status.value if order is not None else None
             started_at = datetime.now(UTC)
             try:
                 verification.start(started_at=started_at)
             except InvalidVerificationResultStateDomainError:
                 raise VerificationCannotBeStartedApplicationError from None
+            if order is not None:
+                order.start_work()
+                self._order_repository.save(order)
+
             self._repository.save(verification)
             operation = AuditOperation(initiated_by=user.id)
             self._audit_operation_repository.save(operation)
@@ -190,6 +198,22 @@ class VerificationApplicationService:
                     },
                 )
             )
+            if order is not None and old_order_status != order.status.value:
+                self._audit_repository.save(
+                    AuditRecord(
+                        operation_id=operation.operation_id,
+                        actor_id=user.id,
+                        action="order.started_work",
+                        entity_type="order",
+                        entity_id=order.id,
+                        changes={
+                            "status": {
+                                "old": old_order_status,
+                                "new": order.status.value,
+                            },
+                        },
+                    )
+                )
         return verification
 
     def approve(
