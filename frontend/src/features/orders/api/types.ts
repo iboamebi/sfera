@@ -5,7 +5,7 @@ export interface OrderItemVerificationApiDto {
   created_at: string;
   verification_date: string;
   verification_type: "PRIMARY" | "PERIODIC" | "AFTER_REPAIR";
-  status: "CREATED" | "IN_PROGRESS" | "DECIDED";
+  status: "CREATED" | "IN_PROGRESS" | "DECIDED" | "CANCELLED";
   result: "SUITABLE" | "UNSUITABLE" | null;
   valid_until: string | null;
   archived: boolean;
