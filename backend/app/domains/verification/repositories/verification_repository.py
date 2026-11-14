@@ -14,6 +14,9 @@ class VerificationRepository(ABC):
     ) -> Verification | None: ...
 
     @abstractmethod
+    def has_active_for_order_item(self, order_item_id: UUID) -> bool: ...
+
+    @abstractmethod
     def save(
         self,
         verification: Verification,
