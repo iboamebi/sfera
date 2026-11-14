@@ -1531,3 +1531,14 @@ No database migration is expected: Verification persistence already stores resul
 The separate PR #31 (instrument-name link to Device card) remains open and has not been merged; do not merge without explicit user authorization. Its browser validation was confirmed by the user, although the PR body still needs its validation note refreshed.
 
 Next: complete backend tests/CI, then implement the correction form in the Verification page after the branch coordination with PR #31 is resolved. Order operation-state read model and presentation remain a separate subsequent stage.
+
+## Verification one-way decision correction backend follow-up — 2026-11-14
+
+The user clarified that a Verification with result UNSUITABLE must not be changed to SUITABLE. A positive outcome requires a new Verification record; the prior unsuitable record remains unchanged.
+
+- Domain `Verification.correct_decision` now rejects UNSUITABLE → SUITABLE with `InvalidDecisionCorrectionDomainError`.
+- SUITABLE → UNSUITABLE remains allowed with correction reason and immutable audit.
+- Domain and Application tests cover rejection and verify no state mutation or audit record is written for the prohibited transition.
+- Backend follow-up branch: `fix/verification-decision-one-way`.
+- Frontend PR #33 is being updated to expose only SUITABLE → UNSUITABLE correction.
+- Tests, lint, CI, and local validation are pending. No merge or deployment.
