@@ -93,9 +93,15 @@ class Order(AggregateRoot):
         item_id: UUID,
         instrument_id: UUID,
     ) -> None:
-        """Assign a concrete instrument before production work starts."""
+        """Assign an instrument to an unassigned item, including during work."""
 
-        self._ensure_items_editable()
+        item = next((item for item in self.items if item.id == item_id), None)
+        if item is None:
+            raise OrderException("Order item not found")
+        if self.status not in {OrderStatus.NEW, OrderStatus.REGISTERED, OrderStatus.IN_WORK}:
+            raise OrderException("Cannot assign instrument in current order status")
+        if item.instrument_id is not None:
+            raise OrderException("Order item already has an instrument")
 
         if any(
             item.instrument_id == instrument_id
@@ -104,12 +110,7 @@ class Order(AggregateRoot):
         ):
             raise OrderException("Instrument already exists in order")
 
-        for item in self.items:
-            if item.id == item_id:
-                item.instrument_id = instrument_id
-                return
-
-        raise OrderException("Order item not found")
+        item.instrument_id = instrument_id
 
     def remove_item(self, item_id: UUID) -> None:
         """Remove an order item before production work starts."""
