@@ -2,9 +2,9 @@
 Application service for verification use cases.
 """
 
-from datetime import UTC, date, datetime, timedelta
-from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
+from datetime import UTC, datetime, timedelta
 from uuid import UUID, uuid4
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from app.application.authorization.authorization import require_role
 from app.application.verification.commands.approve_verification import (
@@ -226,6 +226,7 @@ class VerificationApplicationService:
                     )
                 valid_until = anniversary - timedelta(days=1)
 
+            assert valid_until is not None
             verification.mark_suitable(
                 valid_until,
                 decision_at=decision_at,
