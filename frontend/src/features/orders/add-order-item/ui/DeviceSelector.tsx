@@ -12,7 +12,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 import type { DeviceRead } from "../../../devices/model/types";
 import { useDevices } from "../../../devices/model/useDevices";
@@ -26,6 +26,11 @@ interface DeviceSelectorProps {
   instrumentTypeId?: string | null;
   requireUnmatchedSerial?: boolean;
   excludedInstrumentIds?: string[];
+  renderCreateDeviceAction?: (props: {
+    disabled: boolean;
+    serialNumber: string;
+    disabledReason: string;
+  }) => ReactNode;
 }
 
 export function DeviceSelector({
@@ -36,6 +41,7 @@ export function DeviceSelector({
   instrumentTypeId,
   requireUnmatchedSerial = false,
   excludedInstrumentIds = [],
+  renderCreateDeviceAction,
 }: DeviceSelectorProps) {
   const { data: devices = [], isLoading, error } = useDevices();
   const {
@@ -191,20 +197,29 @@ export function DeviceSelector({
         </Typography>
       )}
 
-      {onCreateDevice && (
-        <Button
-          onClick={() => onCreateDevice(inputValue.trim())}
-          variant="outlined"
-          disabled={createDeviceDisabled}
-        >
-          Создать карточку СИ
-        </Button>
-      )}
-      {onCreateDevice && createDeviceDisabled && !matchingDevice && (
-        <Typography variant="caption" color="text.secondary">
-          {createDeviceDisabledReason}
-        </Typography>
-      )}
+      {onCreateDevice &&
+        (renderCreateDeviceAction
+          ? renderCreateDeviceAction({
+              disabled: createDeviceDisabled,
+              serialNumber: inputValue.trim(),
+              disabledReason: createDeviceDisabledReason,
+            })
+          : (
+              <>
+                <Button
+                  onClick={() => onCreateDevice(inputValue.trim())}
+                  variant="outlined"
+                  disabled={createDeviceDisabled}
+                >
+                  Создать карточку СИ
+                </Button>
+                {createDeviceDisabled && !matchingDevice && (
+                  <Typography variant="caption" color="text.secondary">
+                    {createDeviceDisabledReason}
+                  </Typography>
+                )}
+              </>
+            ))}
 
       <Autocomplete
         fullWidth
