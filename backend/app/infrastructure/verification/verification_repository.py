@@ -4,9 +4,13 @@ SQLAlchemy implementation of VerificationRepository.
 
 from uuid import UUID
 
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.domains.verification.entities.verification import Verification
+from app.domains.verification.exceptions import (
+    ActiveVerificationAlreadyExistsDomainError,
+)
 from app.domains.verification.repositories.verification_repository import (
     VerificationRepository,
 )
@@ -77,4 +81,14 @@ class VerificationRepositorySQLAlchemy(VerificationRepository):
             model,
         )
 
-        self.session.flush()
+        try:
+            self.session.flush()
+        except IntegrityError as error:
+            original = getattr(error, "orig", None)
+            diagnostic = getattr(original, "diag", None)
+            if (
+                getattr(diagnostic, "constraint_name", None)
+                == "uq_verifications_one_active_per_order_item"
+            ):
+                raise ActiveVerificationAlreadyExistsDomainError from None
+            raise
