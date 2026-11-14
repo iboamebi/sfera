@@ -76,15 +76,25 @@ def approve_verification(
         get_verification_service,
     ),
 ):
-    return service.approve(
-        ApproveVerificationCommand(
-            verification_id=verification_id,
-            valid_until=valid_until,
-            duration_years=duration_years,
-            time_zone=time_zone,
-        ),
-        user,
-    )
+    if valid_until is None and (
+        duration_years is None or time_zone is None
+    ):
+        raise HTTPException(
+            status_code=422,
+            detail="Provide valid_until or duration_years and time_zone",
+        )
+    try:
+        return service.approve(
+            ApproveVerificationCommand(
+                verification_id=verification_id,
+                valid_until=valid_until,
+                duration_years=duration_years,
+                time_zone=time_zone,
+            ),
+            user,
+        )
+    except ValueError as error:
+        raise HTTPException(status_code=422, detail=str(error)) from None
 
 
 @router.post(
