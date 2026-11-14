@@ -59,7 +59,7 @@ export function CreateDeviceForm({
     data: instrumentTypes = [],
     isLoading: isInstrumentTypesLoading,
     isError: isInstrumentTypesError,
-  } = useInstrumentTypes();
+  } = useInstrumentTypes(!instrumentTypeId);
 
   const activeInstrumentTypes = instrumentTypes.filter(
     (instrumentType) => !instrumentType.archived,
@@ -68,27 +68,29 @@ export function CreateDeviceForm({
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <Stack spacing={2}>
-        <TextField
-          select
-          label="Тип средства измерений"
-          {...register("instrumentTypeId")}
-          error={Boolean(errors.instrumentTypeId)}
-          helperText={
-            errors.instrumentTypeId?.message ??
-            (isInstrumentTypesError
-              ? "Не удалось загрузить типы средств измерений"
-              : undefined)
-          }
-          disabled={
-            isPending || isInstrumentTypesLoading || isInstrumentTypesError
-          }
-        >
-          {activeInstrumentTypes.map((instrumentType) => (
-            <MenuItem key={instrumentType.id} value={instrumentType.id}>
-              {instrumentType.name}
-            </MenuItem>
-          ))}
-        </TextField>
+        {!instrumentTypeId && (
+          <TextField
+            select
+            label="Тип средства измерений"
+            {...register("instrumentTypeId")}
+            error={Boolean(errors.instrumentTypeId)}
+            helperText={
+              errors.instrumentTypeId?.message ??
+              (isInstrumentTypesError
+                ? "Не удалось загрузить типы средств измерений"
+                : undefined)
+            }
+            disabled={
+              isPending || isInstrumentTypesLoading || isInstrumentTypesError
+            }
+          >
+            {activeInstrumentTypes.map((instrumentType) => (
+              <MenuItem key={instrumentType.id} value={instrumentType.id}>
+                {instrumentType.name}
+              </MenuItem>
+            ))}
+          </TextField>
+        )}
 
         {onCreateInstrumentType && (
           <Button
