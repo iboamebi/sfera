@@ -1587,3 +1587,5 @@ Next: complete backend tests/CI, then implement the correction form in the Verif
 
 - Local validation after `ab8fc64`: application verification tests passed (22), mapper tests passed (2), Ruff lint passed. Ruff format check identified two missing blank lines between test functions in the application test file.
 - Corrected only those formatting boundaries in `3d788ba`; formatter re-validation is pending.
+
+- Follow-up to the formatter check: the application test file had an extra blank line at EOF. Removed it in `2fd591d`; local `ruff format --check` confirmation is pending.
