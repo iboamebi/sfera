@@ -1,5 +1,6 @@
 import {
   Alert,
+  Box,
   Card,
   CardContent,
   Chip,
@@ -68,12 +69,33 @@ interface DetailRowProps {
 
 function DetailRow({ label, value }: DetailRowProps) {
   return (
-    <Stack spacing={0.25}>
-      <Typography variant="caption" color="text.secondary">
+    <Box sx={{ flex: "1 1 220px", minWidth: 0 }}>
+      <Typography variant="caption" color="text.secondary" sx={{ display: "block" }}>
         {label}
       </Typography>
-      <Typography variant="body1">{value}</Typography>
-    </Stack>
+      <Typography variant="body1" sx={{ overflowWrap: "anywhere" }}>
+        {value}
+      </Typography>
+    </Box>
+  );
+}
+
+interface SectionCardProps {
+  title: string;
+  children: React.ReactNode;
+}
+
+function SectionCard({ title, children }: SectionCardProps) {
+  return (
+    <Card variant="outlined">
+      <CardContent sx={{ p: 2, "&:last-child": { pb: 2 } }}>
+        <Stack spacing={1.5}>
+          <Typography variant="h6">{title}</Typography>
+          <Divider />
+          {children}
+        </Stack>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -97,10 +119,15 @@ export function VerificationPage() {
   const canDecide = !data.archived && data.status === "IN_PROGRESS";
 
   return (
-    <Stack spacing={3} sx={{ width: "100%", maxWidth: 960, mx: "auto" }}>
+    <Stack spacing={2} sx={{ width: "100%", maxWidth: 1100, mx: "auto" }}>
       <Stack spacing={1}>
         <Typography variant="h4">Поверка</Typography>
-        <Stack direction="row" spacing={1} sx={{ alignItems: "center", flexWrap: "wrap" }}>
+        <Stack
+          direction="row"
+          spacing={1}
+          useFlexGap
+          sx={{ alignItems: "center", flexWrap: "wrap" }}
+        >
           <Chip
             label={STATUS_LABELS[data.status]}
             color={getStatusColor(data.status, data.result)}
@@ -116,24 +143,24 @@ export function VerificationPage() {
         </Stack>
       </Stack>
 
-      <Card variant="outlined">
-        <CardContent>
-          <Stack spacing={2}>
-            <Typography variant="h6">Основные сведения</Typography>
-            <Divider />
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: { xs: "1fr", md: "repeat(2, minmax(0, 1fr))" },
+          gap: 2,
+          alignItems: "start",
+        }}
+      >
+        <SectionCard title="Основные сведения">
+          <Stack direction="row" sx={{ flexWrap: "wrap", gap: 2 }}>
             <DetailRow label="Дата поверки" value={formatDate(data.verificationDate)} />
             <DetailRow label="Вид поверки" value={TYPE_LABELS[data.verificationType]} />
             <DetailRow label="Методика" value={data.methodology || "Не указана"} />
-            <DetailRow label="Позиция заказа" value={data.orderItemId} />
           </Stack>
-        </CardContent>
-      </Card>
+        </SectionCard>
 
-      <Card variant="outlined">
-        <CardContent>
-          <Stack spacing={2}>
-            <Typography variant="h6">Результат и сроки</Typography>
-            <Divider />
+        <SectionCard title="Результат и сроки">
+          <Stack direction="row" sx={{ flexWrap: "wrap", gap: 2 }}>
             <DetailRow
               label="Результат"
               value={data.result ? RESULT_LABELS[data.result] : "Решение ещё не принято"}
@@ -143,39 +170,29 @@ export function VerificationPage() {
               <DetailRow label="Причина непригодности" value={data.unsuitableReason} />
             )}
           </Stack>
-        </CardContent>
-      </Card>
+        </SectionCard>
 
-      <Card variant="outlined">
-        <CardContent>
-          <Stack spacing={2}>
-            <Typography variant="h6">История выполнения</Typography>
-            <Divider />
+        <SectionCard title="История выполнения">
+          <Stack direction="row" sx={{ flexWrap: "wrap", gap: 2 }}>
             <DetailRow label="Создана" value={formatDateTime(data.createdAt)} />
             <DetailRow label="Начата" value={formatDateTime(data.startedAt)} />
             <DetailRow label="Решение принято" value={formatDateTime(data.decisionAt)} />
           </Stack>
-        </CardContent>
-      </Card>
+        </SectionCard>
 
-      {(canStart || canDecide) && (
-        <Card variant="outlined">
-          <CardContent>
-            <Stack spacing={2}>
-              <Typography variant="h6">Действия</Typography>
-              <Divider />
-              {canStart && <StartVerificationButton verificationId={data.id} />}
-              {canDecide && (
-                <Stack spacing={2}>
-                  <ApproveVerificationButton verificationId={data.id} />
-                  <Divider />
-                  <RejectVerificationButton verificationId={data.id} />
-                </Stack>
-              )}
-            </Stack>
-          </CardContent>
-        </Card>
-      )}
+        {(canStart || canDecide) && (
+          <SectionCard title="Действия">
+            {canStart && <StartVerificationButton verificationId={data.id} />}
+            {canDecide && (
+              <Stack spacing={1.5}>
+                <ApproveVerificationButton verificationId={data.id} />
+                <Divider />
+                <RejectVerificationButton verificationId={data.id} />
+              </Stack>
+            )}
+          </SectionCard>
+        )}
+      </Box>
     </Stack>
   );
 }
