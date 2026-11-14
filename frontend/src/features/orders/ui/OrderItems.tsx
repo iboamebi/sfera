@@ -148,7 +148,10 @@ export function OrderItems({
           left.createdAt.localeCompare(right.createdAt) ||
           left.id.localeCompare(right.id),
       )
-      .map((verification, index) => [verification.id, index + 1]),
+      .map((verification, index): [string, number] => [
+        verification.id,
+        index + 1,
+      ]),
   );
 
   const startEditing = (item: OrderItem) => {
@@ -332,7 +335,7 @@ export function OrderItems({
                                     }
                                   />
                                   <Typography variant="caption" color="text.secondary">
-                                    {formatVerificationDate(verification.verificationDate)}
+                                    {VERIFICATION_TYPE_LABELS[verification.verificationType]} · {formatVerificationDate(verification.verificationDate)}
                                     {verification.validUntil &&
                                       verification.result === "SUITABLE" &&
                                       ` · действует до ${formatVerificationDate(verification.validUntil)}`}
