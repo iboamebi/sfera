@@ -6,6 +6,7 @@ Create Date: 2026-11-14
 """
 
 from alembic import op
+from sqlalchemy import text
 
 revision = "7a9d2e4c6b10"
 down_revision = "c2e5f7a9b310"
@@ -38,7 +39,7 @@ def upgrade() -> None:
         "verifications",
         ["order_item_id"],
         unique=True,
-        postgresql_where=op.text(
+        postgresql_where=text(
             "archived = false AND status IN ('CREATED', 'IN_PROGRESS')"
         ),
     )
