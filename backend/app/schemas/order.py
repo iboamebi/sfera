@@ -2,7 +2,7 @@
 Order API schemas.
 """
 
-from datetime import datetime
+from datetime import date, datetime
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
@@ -10,6 +10,13 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 from app.domains.order.value_objects.order_item_operation import OrderItemOperation
 from app.domains.order.value_objects.order_number import OrderNumber
 from app.domains.order.value_objects.order_status import OrderStatus
+from app.domains.verification.value_objects.verification_result import (
+    VerificationResult,
+)
+from app.domains.verification.value_objects.verification_status import (
+    VerificationStatus,
+)
+from app.domains.verification.value_objects.verification_type import VerificationType
 
 
 class OrderCreate(BaseModel):
@@ -26,6 +33,19 @@ class OrderUpdate(BaseModel):
 
     planned_issue_at: datetime | None = None
     comment: str | None = None
+
+
+class OrderItemVerificationRead(BaseModel):
+    """Verification summary included in an order item response."""
+
+    id: UUID
+    created_at: datetime
+    verification_date: date
+    verification_type: VerificationType
+    status: VerificationStatus
+    result: VerificationResult | None = None
+    valid_until: date | None = None
+    archived: bool
 
 
 class OrderItemRead(BaseModel):
@@ -45,6 +65,7 @@ class OrderItemRead(BaseModel):
     comment: str | None = None
     requested_operations: list[OrderItemOperation] = Field(default_factory=list)
     verification_ids: list[UUID] = Field(default_factory=list)
+    verifications: list[OrderItemVerificationRead] = Field(default_factory=list)
 
 
 class OrderRead(BaseModel):
