@@ -26,6 +26,7 @@ from app.application.verification.commands.start_verification import (
     StartVerificationCommand,
 )
 from app.application.verification.exceptions import (
+    VerificationAlreadyActiveApplicationError,
     VerificationCannotBeStartedApplicationError,
     VerificationInstrumentRequiredApplicationError,
     VerificationNotFoundApplicationError,
@@ -101,6 +102,9 @@ class VerificationApplicationService:
 
             if item.instrument_id is None:
                 raise VerificationInstrumentRequiredApplicationError
+
+            if self._repository.has_active_for_order_item(command.order_item_id):
+                raise VerificationAlreadyActiveApplicationError
 
             verification = Verification.create(
                 id=uuid4(),
