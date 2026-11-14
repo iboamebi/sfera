@@ -152,7 +152,7 @@ export function VerificationPage() {
         }}
       >
         <SectionCard title="Основные сведения">
-          <Stack direction="row" useFlexGap gap={2} sx={{ flexWrap: "wrap" }}>
+          <Stack direction="row" sx={{ flexWrap: "wrap", gap: 2 }}>
             <DetailRow label="Дата поверки" value={formatDate(data.verificationDate)} />
             <DetailRow label="Вид поверки" value={TYPE_LABELS[data.verificationType]} />
             <DetailRow label="Методика" value={data.methodology || "Не указана"} />
@@ -160,7 +160,7 @@ export function VerificationPage() {
         </SectionCard>
 
         <SectionCard title="Результат и сроки">
-          <Stack direction="row" useFlexGap flexWrap="wrap" gap={2}>
+          <Stack direction="row" sx={{ flexWrap: "wrap", gap: 2 }}>
             <DetailRow
               label="Результат"
               value={data.result ? RESULT_LABELS[data.result] : "Решение ещё не принято"}
@@ -173,7 +173,7 @@ export function VerificationPage() {
         </SectionCard>
 
         <SectionCard title="История выполнения">
-          <Stack direction="row" useFlexGap flexWrap="wrap" gap={2}>
+          <Stack direction="row" sx={{ flexWrap: "wrap", gap: 2 }}>
             <DetailRow label="Создана" value={formatDateTime(data.createdAt)} />
             <DetailRow label="Начата" value={formatDateTime(data.startedAt)} />
             <DetailRow label="Решение принято" value={formatDateTime(data.decisionAt)} />
