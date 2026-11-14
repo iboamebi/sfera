@@ -1542,3 +1542,10 @@ Next: complete backend tests/CI, then implement the correction form in the Verif
 - Order already has `planned_issue_at`; the existing «Планируемая выдача» field remains the source of the estimated pickup date. This slice does not infer an ETA from verification durations or add scheduling logic.
 - Do not label an entire instrument/order as ready solely from one Verification if other requested operations (repair/diagnostics) are not represented in this read model. A latest unsuitable or unfinished Verification must not be masked by an older suitable record.
 - Branch: `feat/order-verification-status-summary`. Backend/frontend local validation is pending. No merge, production deployment, backend restart, or database migration has been performed.
+
+## Verification decision correction backend consolidated on develop — 2026-11-14
+
+- Enforced the one-way correction rule in the Verification Domain: `UNSUITABLE → SUITABLE` is rejected; a positive result requires a new Verification.
+- Added Domain and Application regression tests proving the prohibited correction does not mutate the Verification or append audit records.
+- Corrected the verification-start audit test expectation: one AuditOperation groups two AuditRecords (verification.started and order.started_work).
+- No database migration. Frontend correction UI is the next integration stage; no production deployment or backend restart.
