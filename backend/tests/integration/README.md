@@ -62,7 +62,7 @@ alembic upgrade head
 alembic current
 ```
 
-Expected current revision: `d4e8a1c6f230`.
+Expected current revision: `f7c2a9e4b610`.
 
 The bootstrap is safe to repeat: it preserves an existing `alex/admin` row, refuses an `alex` row with a different role, and otherwise generates a fresh UUID rather than assuming a fixed primary key is unused. The placeholder account exists only in the disposable database and is removed when the Compose container is torn down. It has no `user_roles` rows and is not a usable application login. The normal Alembic migration chain still executes in full, including the reset migration and its guard.
 
@@ -83,7 +83,7 @@ The persistence integration fixture and test are a separate next step. Do not ru
 
 ## Run the verification persistence regression
 
-After the migrations have reached `d4e8a1c6f230`, keep the disposable PostgreSQL container running and execute:
+After the migrations have reached `f7c2a9e4b610`, keep the disposable PostgreSQL container running and execute:
 
 ```bash
 export SFERA_INTEGRATION_DATABASE_URL="$DATABASE_URL"
