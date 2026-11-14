@@ -1494,3 +1494,14 @@ Administrator-assisted password recovery has now been implemented; see the check
 - User local validation completed on branch head `a7cb2adb`: `npm run typecheck` passed and `npm run build` passed (1307 modules; existing >500 kB bundle advisory not emitted in this build).
 - GitHub Backend CI run #1065 completed successfully. PR review submissions and inline review threads are empty.
 - PR #29 is ready for merge; production browser validation remains pending and must happen after merge/deployment.
+
+
+## Verification — instrument card navigation and validity-date correction — 2026-11-14
+
+- Production browser validation confirmed that the Verification page now displays the linked Instrument details correctly.
+- User requested two follow-ups: make the instrument name a link to its editable Device card; allow correction of an incorrectly entered `valid_until` after a suitable decision.
+- The current Device detail route is `/devices/:deviceId`; the Verification page already loads the Device and has its ID. No API change is needed for navigation.
+- Branch `feat/verification-device-link`: instrument name now links to `/devices/{instrument.id}`, using the existing Device page and edit workflow. No backend, API, persistence, or lifecycle changes.
+- Implementation commit: `f2465108c876c9da5dfc1072531eb4876d175044`.
+- Local frontend typecheck/build and browser validation are pending.
+- Validity-date correction is not yet implemented. Current Domain allows final decision only from `IN_PROGRESS`; Application already writes immutable audit records for approve/reject, including old/new `valid_until`. A correction must therefore be a separate explicit use case, restricted to a suitable decided Verification, preserving result and decision timestamp and recording old/new date, actor, time, and correction reason in the append-only audit trail. Confirm the correction-reason requirement before implementation.
