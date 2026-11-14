@@ -110,7 +110,8 @@ function SectionCard({ title, children }: SectionCardProps) {
 export function VerificationPage() {
   const navigate = useNavigate();
   const { verificationId } = useParams<{ verificationId: string }>();
-  const returnTo = new URLSearchParams(window.location.search).get("returnTo") ?? "/orders";
+  const requestedReturnTo = new URLSearchParams(window.location.search).get("returnTo");
+  const returnTo = requestedReturnTo?.startsWith("/orders/") ? requestedReturnTo : "/orders";
   const { data, error, isLoading } = useVerification(verificationId ?? "");
   const {
     data: instrument,
@@ -151,7 +152,7 @@ export function VerificationPage() {
   return (
     <Stack spacing={2} sx={{ width: "100%", maxWidth: 1100, mx: "auto" }}>
       <Button variant="outlined" onClick={() => navigate(returnTo)} sx={{ alignSelf: "flex-start" }}>
-        Назад к заказу
+        {returnTo === "/orders" ? "Назад к заказам" : "Назад к заказу"}
       </Button>
       <Stack spacing={1}>
         <Typography variant="h4">Поверка</Typography>
