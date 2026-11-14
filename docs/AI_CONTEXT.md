@@ -1653,3 +1653,16 @@ Next: complete backend tests/CI, then implement the correction form in the Verif
 - Updated `backend/tests/integration/README.md` to activate `.venv` before running integration migration commands.
 - Commit: `5408277` — `docs: activate backend venv for integration migrations`.
 - Next: pull `develop`, activate `.venv`, then repeat the disposable PostgreSQL migration/bootstrap procedure. Expected revision remains `c2e5f7a9b310`.
+
+
+## Verification persistence — disposable PostgreSQL migration and regression test — 2026-11-14
+
+- User successfully ran the complete Alembic chain against the isolated Compose PostgreSQL database. The one-time reset migration ran after the disposable `alex/admin` placeholder bootstrap; final revision is `c2e5f7a9b310 (head)`.
+- The integration database is separate from application/prod PostgreSQL and is removed by the documented Compose cleanup trap. No production database or backend process was used.
+- Reviewed current `develop` implementations of `VerificationApplicationService.start()`, `OrderRepositorySQLAlchemy`, `VerificationRepositorySQLAlchemy`, audit repositories, `OrderMapper`, ORM relationships, and SQLAlchemy Unit of Work.
+- Added `backend/tests/integration/test_verification_persistence.py`. It uses actual PostgreSQL, actual SQLAlchemy repositories and application service, a committed seed transaction, the service's commit boundary, and a fresh session for assertions. It checks both OrderItems survive, the started Verification is `IN_PROGRESS`, the other remains `CREATED`, and the Order becomes `IN_WORK`.
+- The test is explicitly opt-in via `SFERA_INTEGRATION_DATABASE_URL`, refuses any URL other than `postgresql+psycopg2://...@127.0.0.1:55432/sfera_test`, and verifies Alembic head `c2e5f7a9b310` before writing. With no explicit URL it skips. It does not use the application's global database engine.
+- `backend/tests/integration/README.md` documents how to run the test after migrations.
+- GitHub commits: `57299d0` (integration regression), `1ed4b8b` (tighten DB guard / mock dispatcher), `60c7621` (run instructions).
+- Next local validation: pull `develop`, activate backend `.venv`, start the disposable PostgreSQL service, apply the documented migrations/bootstrap, set `SFERA_INTEGRATION_DATABASE_URL="$DATABASE_URL"`, then run `pytest -q tests/integration/test_verification_persistence.py`. Run Ruff check/format on the new test. Keep the cleanup trap active. Report results before proceeding to any further changes.
+- No production migration, deployment, backend restart, or PR merge.
