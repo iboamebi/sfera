@@ -1406,3 +1406,15 @@ Administrator-assisted password recovery has now been implemented; see the check
 - Earlier scoped local validations also passed: Verification mapper tests — 4 passed; Verification API/router tests — 7 passed (one existing Starlette/httpx deprecation warning); Ruff and format checks passed in both stages.
 - The three implementation corrections are complete: archived-state mapping in both directions, consistent `VerificationRead` response models for approve/reject, and rejection of whitespace-only unsuitable reasons.
 - Before PR creation, run the combined Verification test scope (Domain, Application, API/router, and Infrastructure mapper tests) on the latest branch HEAD. Do not merge or deploy as part of this checkpoint.
+
+
+## Verification — PR #26 merged and local validation — 2026-11-14
+
+- PR #26 (`fix: correct Verification persistence and action contracts`) was squash-merged into `develop`; merge commit: `afd8f16f702d28212698139581dbd88c619dc117`.
+- User synchronized the local `develop` branch with `origin/develop` using Fast-forward; the merge commit's six-file change set was received.
+- Post-merge local backend validation on `develop` passed:
+  `pytest -q tests/domains/verification tests/application/verification tests/api/routers/test_verification.py tests/api/routers/test_verification_actions_auth.py tests/infrastructure/mappers/test_verification_mapper.py` — **39 passed, 1 warning**.
+- The only warning is the existing Starlette deprecation warning for using `httpx` with `starlette.testclient`; it does not cause test failures.
+- PR-head Backend CI completed successfully before merge. No CI status was reported for the squash merge commit itself.
+- No production deployment or backend restart was performed for this slice.
+- Verification persistence/action-contract corrections are merged and locally validated on `develop`.
