@@ -1584,3 +1584,6 @@ Next: complete backend tests/CI, then implement the correction form in the Verif
 - Added an application regression test with two OrderItems and one Verification per item. Starting the first Verification must preserve both OrderItems and leave the second Verification in CREATED state.
 - The infrastructure mapper regression independently covers preservation of ORM OrderItem/Verification relationships during aggregate persistence.
 - New application regression test requires local pytest and Ruff validation. No production deployment, backend restart, database migration, or PR merge.
+
+- Local validation after `ab8fc64`: application verification tests passed (22), mapper tests passed (2), Ruff lint passed. Ruff format check identified two missing blank lines between test functions in the application test file.
+- Corrected only those formatting boundaries in `3d788ba`; formatter re-validation is pending.
