@@ -672,6 +672,7 @@ def test_correct_verification_decision_requires_metrologist_or_admin():
             make_user(UserRole.OPERATOR),
         )
 
+
 def test_correct_verification_decision_rejects_unsuitable_to_suitable():
     from app.domains.verification.exceptions import (
         InvalidDecisionCorrectionDomainError,
@@ -711,6 +712,7 @@ def test_correct_verification_decision_rejects_unsuitable_to_suitable():
     assert verification.unsuitable_reason == "Повреждена пломба"
     assert operations.items == []
     assert records.items == []
+
 
 def test_start_verification_preserves_other_order_items_and_verifications():
     repository = FakeVerificationRepository()
