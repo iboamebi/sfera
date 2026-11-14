@@ -100,7 +100,7 @@ export function VerificationPage() {
     <Stack spacing={3} sx={{ width: "100%", maxWidth: 960, mx: "auto" }}>
       <Stack spacing={1}>
         <Typography variant="h4">Поверка</Typography>
-        <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
+        <Stack direction="row" spacing={1} sx={{ alignItems: "center", flexWrap: "wrap" }}>
           <Chip
             label={STATUS_LABELS[data.status]}
             color={getStatusColor(data.status, data.result)}
