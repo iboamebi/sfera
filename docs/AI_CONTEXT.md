@@ -1379,3 +1379,11 @@ Administrator-assisted password recovery has now been implemented; see the check
 - Branch `fix/verification-archived-mapping`: mapper now copies `archived` in both directions; mapper tests cover ORM→Domain and Domain→ORM preservation.
 - GitHub commits: `72a845b` (mapper fix), `839c538` (regression tests).
 - Local backend test/ruff validation is pending. Do not merge or deploy until the user reports the scoped checks.
+
+
+## Verification — action response contract — 2026-11-14
+
+- Local validation of the archived-state mapper correction passed: 4 mapper tests, Ruff checks, and format check.
+- Added explicit `response_model=VerificationRead` to the approve and reject API routes. The start route already declared this response model; the frontend consumes the same Verification DTO for all lifecycle actions.
+- Commit: `d84c934` on `fix/verification-archived-mapping`.
+- Local API validation is pending. Do not merge or deploy until the user reports the scoped checks.
