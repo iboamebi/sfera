@@ -98,7 +98,11 @@ class Order(AggregateRoot):
         item = next((item for item in self.items if item.id == item_id), None)
         if item is None:
             raise OrderException("Order item not found")
-        if self.status not in {OrderStatus.NEW, OrderStatus.REGISTERED, OrderStatus.IN_WORK}:
+        if self.status not in {
+            OrderStatus.NEW,
+            OrderStatus.REGISTERED,
+            OrderStatus.IN_WORK,
+        }:
             raise OrderException("Cannot assign instrument in current order status")
         if item.instrument_id is not None:
             raise OrderException("Order item already has an instrument")
