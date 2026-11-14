@@ -13,9 +13,10 @@ This database is disposable and exists only for backend integration tests.
 
 ## Start the database
 
-From `~/sfera/backend`:
+From `~/sfera/backend`, activate the project virtual environment first so the Alembic CLI and project dependencies are available:
 
 ```bash
+source .venv/bin/activate
 docker compose -f compose.integration.yaml up -d --wait
 ```
 
