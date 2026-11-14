@@ -1531,3 +1531,35 @@ No database migration is expected: Verification persistence already stores resul
 The separate PR #31 (instrument-name link to Device card) remains open and has not been merged; do not merge without explicit user authorization. Its browser validation was confirmed by the user, although the PR body still needs its validation note refreshed.
 
 Next: complete backend tests/CI, then implement the correction form in the Verification page after the branch coordination with PR #31 is resolved. Order operation-state read model and presentation remain a separate subsequent stage.
+
+
+## Verification — audited decision correction UI — 2026-11-14
+
+- Backend decision correction implemented on PR #32: only METROLOGIST/ADMIN may correct a previously decided result; both SUITABLE↔UNSUITABLE directions are supported; correction reason is mandatory; SUITABLE requires `valid_until`; UNSUITABLE requires a nonblank `unsuitable_reason`; every correction appends an immutable audit record with old/new decision data.
+- Backend local validation: 50 Verification Domain/Application/API tests passed; Ruff check and format check passed. GitHub Backend CI #1078 succeeded on commit `9d8f2c9f56d61b45900d10233c8873993257a686`.
+- Frontend correction API client, React Query mutation, and form were implemented. The form exposes the new result, conditionally requires validity date or unsuitable reason, and always requires the correction reason. It is shown for non-archived decided verifications with an existing result.
+- User local frontend validation passed on the implementation branch: `npm run typecheck`; `npm run build` (1313 modules; existing main bundle size advisory remains).
+- To keep PR #31 focused on the Device-card link, the decision-correction UI was reapplied as a separate branch `feat/verification-decision-correction-ui` based directly on `develop`. This avoids coupling the two independent changes.
+- No merge, deployment, backend restart, or database migration has been performed. Local validation on the isolated UI branch is pending.
+
+## Verification correction UI follow-up — 2026-11-14
+
+Browser validation of PR #33 exposed stale frontend form state after a validity-date correction: the decision-correction form retained the original `validUntil` in local state even after the Verification query refetched updated data. Switching SUITABLE → UNSUITABLE → SUITABLE could therefore resubmit the old date.
+
+Follow-up changes on `feat/verification-decision-correction-ui`:
+- Synchronize decision-correction form fields when the current Verification result, validity date, or unsuitable reason changes in the server response.
+- Disable decision correction when the proposed result and associated fields are unchanged from the current persisted decision.
+- Synchronize the standalone validity-correction date when the server-provided date changes.
+- Disable validity correction when the entered date equals the currently persisted date.
+
+User reproduced the issue in the browser; frontend typecheck/build and a repeat browser test are pending. Do not merge or deploy until those checks pass.
+
+## Verification decision correction — one-way rule clarification — 2026-11-14
+
+Business rule clarified by the user:
+- A decided SUITABLE Verification may be corrected to UNSUITABLE on the same Verification, with a mandatory correction reason and append-only audit.
+- A decided UNSUITABLE Verification must not be corrected to SUITABLE. A positive result requires creating a new Verification record; the previous UNSUITABLE record remains unchanged.
+- The frontend correction form therefore only permits SUITABLE → UNSUITABLE. When the current result is UNSUITABLE, the form must not offer a path to SUITABLE correction. A new Verification must be created through the existing order workflow.
+- This supersedes the earlier bidirectional correction statement in the PR #32/#33 implementation notes. Backend PR #32 currently supports both directions and requires a separate backend follow-up to enforce this invariant; do not treat the frontend restriction as sufficient authorization/business-rule enforcement.
+
+Frontend and backend validations are pending. No merge or deployment.

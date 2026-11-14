@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Alert, Button, Stack, TextField, Typography } from "@mui/material";
 import { useQueryClient } from "@tanstack/react-query";
@@ -25,6 +25,10 @@ export function CorrectVerificationValidUntilForm({
     },
   });
 
+  useEffect(() => {
+    setValidUntil(currentValidUntil);
+  }, [currentValidUntil]);
+
   return (
     <Stack spacing={1.5}>
       <Typography variant="subtitle1">Исправить срок действия</Typography>
@@ -47,7 +51,12 @@ export function CorrectVerificationValidUntilForm({
       />
       <Button
         variant="contained"
-        disabled={isPending || !validUntil || !reason.trim()}
+        disabled={
+          isPending ||
+          !validUntil ||
+          validUntil === currentValidUntil ||
+          !reason.trim()
+        }
         onClick={() => mutate({ verificationId, validUntil, reason: reason.trim() })}
         sx={{ alignSelf: "flex-start" }}
       >
