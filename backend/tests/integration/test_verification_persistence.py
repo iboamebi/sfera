@@ -56,8 +56,7 @@ def _integration_database_url() -> str:
         or parsed.database != "sfera_test"
     ):
         pytest.fail(
-            "Refusing to run integration test outside "
-            "127.0.0.1:55432/sfera_test"
+            "Refusing to run integration test outside 127.0.0.1:55432/sfera_test"
         )
     return url
 
@@ -179,15 +178,11 @@ def test_starting_one_verification_preserves_all_order_items_and_verifications()
 
         with session_factory() as verification_session:
             persisted_order = (
-                verification_session.query(Order)
-                .filter(Order.id == order_id)
-                .one()
+                verification_session.query(Order).filter(Order.id == order_id).one()
             )
             persisted_verifications = (
                 verification_session.query(Verification)
-                .filter(
-                    Verification.order_item_id.in_([first_item_id, second_item_id])
-                )
+                .filter(Verification.order_item_id.in_([first_item_id, second_item_id]))
                 .all()
             )
             statuses = {item.id: item.status for item in persisted_verifications}
