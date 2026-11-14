@@ -3,6 +3,8 @@ from datetime import date, datetime
 from uuid import UUID
 
 from app.domains.verification.exceptions import (
+    InvalidDecisionCorrectionDomainError,
+    InvalidDecisionCorrectionReasonDomainError,
     InvalidSuitableValidUntilDomainError,
     InvalidUnsuitableReasonDomainError,
     InvalidValidityCorrectionReasonDomainError,
@@ -107,6 +109,37 @@ class Verification(AggregateRoot):
         self.result = VerificationResult.UNSUITABLE
         self.valid_until = None
         self.unsuitable_reason = reason
+        self.decision_at = decision_at
+
+    def correct_decision(
+        self,
+        *,
+        result: VerificationResult,
+        valid_until: date | None,
+        unsuitable_reason: str | None,
+        reason: str,
+        decision_at: datetime,
+    ) -> None:
+        """Correct a previously recorded final decision with an auditable reason."""
+        if self.status != VerificationStatus.DECIDED or self.result is None:
+            raise InvalidVerificationResultStateDomainError
+        if not reason.strip():
+            raise InvalidDecisionCorrectionReasonDomainError
+
+        if result == VerificationResult.SUITABLE:
+            if valid_until is None or unsuitable_reason is not None:
+                raise InvalidDecisionCorrectionDomainError
+        elif result == VerificationResult.UNSUITABLE:
+            if valid_until is not None:
+                raise InvalidDecisionCorrectionDomainError
+            if unsuitable_reason is None or not unsuitable_reason.strip():
+                raise InvalidUnsuitableReasonDomainError
+        else:
+            raise InvalidDecisionCorrectionDomainError
+
+        self.result = result
+        self.valid_until = valid_until
+        self.unsuitable_reason = unsuitable_reason
         self.decision_at = decision_at
 
     def correct_valid_until(self, valid_until: date, *, reason: str) -> None:
