@@ -10,6 +10,9 @@ from app.application.authorization.authorization import require_role
 from app.application.verification.commands.approve_verification import (
     ApproveVerificationCommand,
 )
+from app.application.verification.commands.correct_verification_decision import (
+    CorrectVerificationDecisionCommand,
+)
 from app.application.verification.commands.correct_verification_valid_until import (
     CorrectVerificationValidUntilCommand,
 )
@@ -351,4 +354,66 @@ class VerificationApplicationService:
                 )
             )
 
+        return verification
+
+
+    def correct_decision(
+        self,
+        command: CorrectVerificationDecisionCommand,
+        user: User,
+    ) -> Verification:
+        """Correct a final verification decision and append an audit record."""
+        require_role(user, UserRole.METROLOGIST, UserRole.ADMIN)
+        with self._uow:
+            verification = self.get(command.verification_id)
+            old_result = verification.result
+            old_valid_until = verification.valid_until
+            old_unsuitable_reason = verification.unsuitable_reason
+            old_decision_at = verification.decision_at
+            decision_at = datetime.now(UTC)
+
+            verification.correct_decision(
+                result=command.result,
+                valid_until=command.valid_until,
+                unsuitable_reason=command.unsuitable_reason,
+                reason=command.reason,
+                decision_at=decision_at,
+            )
+            self._repository.save(verification)
+            operation = AuditOperation(initiated_by=user.id)
+            self._audit_operation_repository.save(operation)
+            self._audit_repository.save(
+                AuditRecord(
+                    operation_id=operation.operation_id,
+                    actor_id=user.id,
+                    action="verification.decision_corrected",
+                    entity_type="Verification",
+                    entity_id=verification.id,
+                    changes={
+                        "result": {
+                            "old": old_result.value if old_result is not None else None,
+                            "new": verification.result.value,
+                        },
+                        "valid_until": {
+                            "old": old_valid_until.isoformat()
+                            if old_valid_until is not None
+                            else None,
+                            "new": verification.valid_until.isoformat()
+                            if verification.valid_until is not None
+                            else None,
+                        },
+                        "unsuitable_reason": {
+                            "old": old_unsuitable_reason,
+                            "new": verification.unsuitable_reason,
+                        },
+                        "decision_at": {
+                            "old": old_decision_at.isoformat()
+                            if old_decision_at is not None
+                            else None,
+                            "new": verification.decision_at.isoformat(),
+                        },
+                    },
+                    reason=command.reason,
+                )
+            )
         return verification
