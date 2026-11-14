@@ -267,3 +267,47 @@ def test_correct_decision_rejects_undecided_verification():
             reason="Исправление",
             decision_at=DECISION_AT,
         )
+
+
+def test_created_verification_can_be_cancelled_without_reason():
+    verification = create_verification()
+
+    verification.cancel()
+
+    assert verification.status == VerificationStatus.CANCELLED
+    assert verification.cancellation_reason is None
+
+
+def test_in_progress_verification_requires_cancellation_reason():
+    from app.domains.verification.exceptions import (
+        InvalidVerificationCancellationReasonDomainError,
+    )
+
+    verification = create_verification()
+    verification.start(started_at=DECISION_AT)
+
+    with pytest.raises(InvalidVerificationCancellationReasonDomainError):
+        verification.cancel()
+
+
+def test_in_progress_verification_can_be_cancelled_with_reason():
+    verification = create_verification()
+    verification.start(started_at=DECISION_AT)
+
+    verification.cancel(reason="Клиент отказался от поверки")
+
+    assert verification.status == VerificationStatus.CANCELLED
+    assert verification.cancellation_reason == "Клиент отказался от поверки"
+
+
+def test_decided_verification_cannot_be_cancelled():
+    from app.domains.verification.exceptions import (
+        InvalidVerificationCancellationDomainError,
+    )
+
+    verification = create_verification()
+    verification.start(started_at=DECISION_AT)
+    verification.mark_suitable(date(2030, 1, 1), decision_at=DECISION_AT)
+
+    with pytest.raises(InvalidVerificationCancellationDomainError):
+        verification.cancel(reason="Отмена")

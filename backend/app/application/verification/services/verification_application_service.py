@@ -16,6 +16,9 @@ from app.application.verification.commands.correct_verification_decision import 
 from app.application.verification.commands.correct_verification_valid_until import (
     CorrectVerificationValidUntilCommand,
 )
+from app.application.verification.commands.cancel_verification import (
+    CancelVerificationCommand,
+)
 from app.application.verification.commands.create_verification import (
     CreateVerificationCommand,
 )
@@ -27,9 +30,9 @@ from app.application.verification.commands.start_verification import (
 )
 from app.application.verification.exceptions import (
     VerificationAlreadyActiveApplicationError,
-    VerificationCannotBeStartedApplicationError,
     VerificationCannotBeCancelledApplicationError,
     VerificationCancellationReasonRequiredApplicationError,
+    VerificationCannotBeStartedApplicationError,
     VerificationInstrumentRequiredApplicationError,
     VerificationNotFoundApplicationError,
     VerificationOrderItemNotFoundApplicationError,
@@ -40,9 +43,9 @@ from app.domains.user.value_objects.user_role import UserRole
 from app.domains.verification.entities.verification import Verification
 from app.domains.verification.exceptions import (
     ActiveVerificationAlreadyExistsDomainError,
-    InvalidVerificationResultStateDomainError,
     InvalidVerificationCancellationDomainError,
     InvalidVerificationCancellationReasonDomainError,
+    InvalidVerificationResultStateDomainError,
 )
 from app.domains.verification.repositories.verification_repository import (
     VerificationRepository,
@@ -228,7 +231,11 @@ class VerificationApplicationService:
                 )
         return verification
 
-    def cancel(self, command, user: User) -> Verification:
+    def cancel(
+        self,
+        command: CancelVerificationCommand,
+        user: User,
+    ) -> Verification:
         require_role(user, UserRole.METROLOGIST, UserRole.ADMIN)
         with self._uow:
             verification = self.get(command.verification_id)

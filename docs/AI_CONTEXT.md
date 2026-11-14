@@ -1788,3 +1788,14 @@ Next: complete backend tests/CI, then implement the correction form in the Verif
 - Proposed design for review, not yet an approved implementation contract: a separate global `InstrumentNomenclature` entity, associated with an Instrument Type, with one canonical display name and separately managed aliases. Search should normalize case/spacing/punctuation, resolve exact canonical/alias matches, and return near-match suggestions for operator review; fuzzy matches must not silently auto-select or rewrite a record. Catalogue population should be an explicit controlled create action after duplicate/similarity checks.
 - Before implementation, settle whether each nomenclature belongs to exactly one Instrument Type or may be shared by multiple types. This affects the relational model and type-scoped search/duplicate rules.
 - No catalogue code, migration, or production change has been made yet.
+
+
+## Verification cancellation workflow — implementation in progress — 2026-11-14
+
+- User approved direct implementation in `develop`, without a separate PR.
+- Business rules: CREATED may be cancelled without a reason; IN_PROGRESS may be cancelled only with a non-blank reason; DECIDED cannot be cancelled. Existing DECIDED invalidation/correction actions are unchanged.
+- Cancellation is a distinct terminal status, retained in verification history and append-only audit. Cancellation reason is stored separately from unsuitable reason.
+- The Order status is not reverted when a verification is cancelled; an Order can contain other work in progress.
+- Verification detail page includes a back-to-`/orders` action and returns to orders after successful cancellation.
+- Backend status enum and nullable cancellation_reason require the Alembic migration `f7c2a9e4b610`; migration has not been applied to any database.
+- Implementation commit: `1e88b865424913c3feb08c46c40b6a627e1d7e60`. Follow-up code/test/documentation validation is pending; do not deploy until local validation passes.
