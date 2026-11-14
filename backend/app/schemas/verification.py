@@ -49,3 +49,12 @@ class VerificationRead(VerificationBase):
     status: VerificationStatus
     verification_type: VerificationType
     archived: bool
+
+
+class VerificationDecisionCorrection(BaseModel):
+    """Payload for correcting a previously decided verification result."""
+
+    result: VerificationResult
+    valid_until: date | None = None
+    unsuitable_reason: str | None = None
+    reason: str
