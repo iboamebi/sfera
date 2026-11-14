@@ -65,7 +65,7 @@ export function ApproveVerificationButton({
           setDurationYears(event.target.value);
           setManualValidUntil("");
         }}
-        inputProps={{ min: 1, max: 100, step: 1 }}
+        slotProps={{ htmlInput: { min: 1, max: 100, step: 1 } }}
         sx={{ maxWidth: 220 }}
       />
       {preview && (
