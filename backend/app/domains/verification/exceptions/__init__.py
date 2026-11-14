@@ -17,3 +17,7 @@ class InvalidSuitableValidUntilDomainError(VerificationDomainError):
 
 class InvalidVerificationResultStateDomainError(VerificationDomainError):
     """Verification result fields must match the declared result."""
+
+
+class InvalidValidityCorrectionReasonDomainError(VerificationDomainError):
+    """Validity date correction requires a non-blank reason."""

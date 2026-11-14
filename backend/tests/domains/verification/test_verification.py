@@ -122,3 +122,41 @@ def test_start_requires_created_state():
 
     with pytest.raises(InvalidVerificationResultStateDomainError):
         verification.start(started_at=DECISION_AT)
+
+
+def test_correct_valid_until_updates_only_suitable_decision():
+    verification = create_verification()
+    verification.start(started_at=DECISION_AT)
+    verification.mark_suitable(date(2030, 1, 1), decision_at=DECISION_AT)
+
+    verification.correct_valid_until(
+        date(2029, 12, 31),
+        reason="Исправлена ошибка ввода",
+    )
+
+    assert verification.valid_until == date(2029, 12, 31)
+    assert verification.decision_at == DECISION_AT
+
+
+@pytest.mark.parametrize("reason", ["", " ", "  \t"])
+def test_correct_valid_until_requires_non_blank_reason(reason: str):
+    from app.domains.verification.exceptions import (
+        InvalidValidityCorrectionReasonDomainError,
+    )
+
+    verification = create_verification()
+    verification.start(started_at=DECISION_AT)
+    verification.mark_suitable(date(2030, 1, 1), decision_at=DECISION_AT)
+
+    with pytest.raises(InvalidValidityCorrectionReasonDomainError):
+        verification.correct_valid_until(date(2029, 12, 31), reason=reason)
+
+
+def test_correct_valid_until_rejects_non_suitable_or_undecided_verification():
+    verification = create_verification()
+
+    with pytest.raises(InvalidVerificationResultStateDomainError):
+        verification.correct_valid_until(
+            date(2029, 12, 31),
+            reason="Исправление",
+        )

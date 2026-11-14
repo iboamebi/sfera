@@ -12,6 +12,9 @@ from app.api.security.csrf import require_csrf
 from app.application.verification.commands.approve_verification import (
     ApproveVerificationCommand,
 )
+from app.application.verification.commands.correct_verification_valid_until import (
+    CorrectVerificationValidUntilCommand,
+)
 from app.application.verification.commands.reject_verification import (
     RejectVerificationCommand,
 )
@@ -26,6 +29,9 @@ from app.application.verification.services.verification_application_service impo
 )
 from app.core.dependencies.services import get_verification_service
 from app.domains.user.entities.user import User
+from app.domains.verification.exceptions import (
+    InvalidVerificationResultStateDomainError,
+)
 from app.schemas.verification import VerificationRead
 
 router = APIRouter(
@@ -65,19 +71,66 @@ def start_verification(
 )
 def approve_verification(
     verification_id: UUID,
-    valid_until: date,
+    valid_until: date | None = None,
+    duration_years: int | None = None,
+    time_zone: str | None = None,
     user: User = Depends(get_current_user),
     service: VerificationApplicationService = Depends(
         get_verification_service,
     ),
 ):
-    return service.approve(
-        ApproveVerificationCommand(
-            verification_id=verification_id,
-            valid_until=valid_until,
-        ),
-        user,
-    )
+    if valid_until is None and (duration_years is None or time_zone is None):
+        raise HTTPException(
+            status_code=422,
+            detail="Provide valid_until or duration_years and time_zone",
+        )
+    try:
+        return service.approve(
+            ApproveVerificationCommand(
+                verification_id=verification_id,
+                valid_until=valid_until,
+                duration_years=duration_years,
+                time_zone=time_zone,
+            ),
+            user,
+        )
+    except ValueError as error:
+        raise HTTPException(status_code=422, detail=str(error)) from None
+
+
+@router.post(
+    "/{verification_id}/correct-valid-until",
+    response_model=VerificationRead,
+    dependencies=[Depends(get_current_user), Depends(require_csrf)],
+)
+def correct_verification_valid_until(
+    verification_id: UUID,
+    valid_until: date,
+    reason: str,
+    user: User = Depends(get_current_user),
+    service: VerificationApplicationService = Depends(
+        get_verification_service,
+    ),
+):
+    if not reason.strip():
+        raise HTTPException(
+            status_code=422,
+            detail="Correction reason is required",
+        )
+    try:
+        return service.correct_valid_until(
+            CorrectVerificationValidUntilCommand(
+                verification_id=verification_id,
+                valid_until=valid_until,
+                reason=reason,
+            ),
+            user,
+        )
+    except InvalidVerificationResultStateDomainError:
+        raise HTTPException(
+            status_code=409,
+            detail="Only a suitable decided verification can be corrected",
+        ) from None
 
 
 @router.post(

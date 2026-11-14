@@ -1494,3 +1494,13 @@ Administrator-assisted password recovery has now been implemented; see the check
 - User local validation completed on branch head `a7cb2adb`: `npm run typecheck` passed and `npm run build` passed (1307 modules; existing >500 kB bundle advisory not emitted in this build).
 - GitHub Backend CI run #1065 completed successfully. PR review submissions and inline review threads are empty.
 - PR #29 is ready for merge; production browser validation remains pending and must happen after merge/deployment.
+
+
+## Verification — validity duration and correction
+
+- Approval now accepts either a manually entered `valid_until` date or a duration in calendar years plus the operator's IANA timezone. When duration is used, the application captures one UTC `decision_at`, converts it to the supplied timezone, adds the requested number of calendar years, then subtracts one day.
+- A February 29 anniversary that falls in a non-leap year is clamped to February 28 before subtracting one day.
+- The frontend displays a preview based on the operator's current local date, but the backend remains authoritative and calculates from the actual persisted decision timestamp. An optional manually entered final date overrides the calculation.
+- A separate correction operation is available only for a non-archived Verification with a DECIDED/SUITABLE result and an existing validity date. It requires a non-blank reason and writes an append-only `verification.valid_until_corrected` audit record with old/new dates and the reason.
+- Approval and correction remain restricted to METROLOGIST and ADMIN and require authenticated, CSRF-protected API routes.
+- Branch: `feat/verification-validity-correction`. Backend domain/application/API tests and frontend typecheck/build are pending local validation. Do not merge or deploy before those checks and user confirmation.
