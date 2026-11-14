@@ -1809,3 +1809,12 @@ Next: complete backend tests/CI, then implement the correction form in the Verif
 - User ran both PostgreSQL integration tests: **2 passed**. Ruff check passed. Ruff format check identified one formatting-only adjustment; corrected on `develop` in the follow-up style commit.
 - Next local validation: pull `develop`, rerun Ruff check/format for `tests/integration/test_verification_persistence.py`, then proceed to browser review of CREATED/IN_PROGRESS cancellation, DECIDED unchanged, and post-cancellation ability to create a new verification.
 - No production migration, deployment, backend restart, or PR merge.
+
+
+## Verification cancellation — production schema and order-position display — 2026-11-14
+
+- User explicitly approved applying migrations to the application database `sphere`.
+- Applied Alembic through `f7c2a9e4b610 (head)`; verified database `sphere` contains `verifications.cancellation_reason`. No backend restart was performed.
+- User request: cancelled verifications must no longer appear under an OrderItem. This is display-only: records remain in the database and verification/audit history is not deleted.
+- Frontend order item display now filters out status `CANCELLED`; cancelled records are also excluded from visible verification numbering, avoiding gaps. DTO/domain frontend status unions include `CANCELLED`.
+- Implementation commits: `2ef6f5e`, `ad15671`, `871b739`. Local frontend validation and browser review are pending.
