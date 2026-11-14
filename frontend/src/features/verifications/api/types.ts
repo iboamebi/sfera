@@ -1,6 +1,7 @@
 export interface VerificationApiDto {
   id: string;
   order_item_id: string;
+  instrument_id: string | null;
   verification_date: string;
   valid_until: string | null;
   result: "SUITABLE" | "UNSUITABLE" | null;

@@ -10,6 +10,8 @@ import {
 } from "@mui/material";
 import { useParams } from "react-router";
 
+import { useDevice } from "../../features/devices/model/useDevice";
+import { useInstrumentType } from "../../features/instrument-type/model/useInstrumentType";
 import { ApproveVerificationButton } from "../../features/verifications/approve-verification/ui/ApproveVerificationButton";
 import { RejectVerificationButton } from "../../features/verifications/reject-verification/ui/RejectVerificationButton";
 import { StartVerificationButton } from "../../features/verifications/start-verification/ui/StartVerificationButton";
@@ -102,6 +104,16 @@ function SectionCard({ title, children }: SectionCardProps) {
 export function VerificationPage() {
   const { verificationId } = useParams<{ verificationId: string }>();
   const { data, error, isLoading } = useVerification(verificationId ?? "");
+  const {
+    data: instrument,
+    error: instrumentError,
+    isLoading: instrumentLoading,
+  } = useDevice(data?.instrumentId ?? "");
+  const {
+    data: instrumentType,
+    error: instrumentTypeError,
+    isLoading: instrumentTypeLoading,
+  } = useInstrumentType(instrument?.instrumentTypeId ?? "");
 
   if (isLoading) {
     return <Typography color="text.secondary">Загрузка поверки...</Typography>;
@@ -151,6 +163,42 @@ export function VerificationPage() {
           alignItems: "start",
         }}
       >
+        <SectionCard title="Средство измерений">
+          {instrumentLoading && (
+            <Typography color="text.secondary">Загрузка сведений о СИ...</Typography>
+          )}
+          {instrumentError && (
+            <Alert severity="warning">Не удалось загрузить карточку СИ.</Alert>
+          )}
+          {!instrumentLoading && !instrumentError && !instrument && (
+            <Typography color="text.secondary">
+              К поверке не привязана карточка СИ.
+            </Typography>
+          )}
+          {instrument && (
+            <>
+              {instrumentTypeLoading && (
+                <Typography color="text.secondary">Загрузка типа СИ...</Typography>
+              )}
+              {instrumentTypeError && (
+                <Alert severity="warning">Не удалось загрузить тип СИ.</Alert>
+              )}
+              <Stack direction="row" sx={{ flexWrap: "wrap", gap: 2 }}>
+                <DetailRow
+                  label="Наименование"
+                  value={instrument.name || instrumentType?.name || "—"}
+                />
+                <DetailRow label="Тип СИ" value={instrumentType?.name ?? "—"} />
+                <DetailRow label="Заводской номер" value={instrument.serialNumber} />
+                <DetailRow label="Регистрационный номер" value={instrument.registryNumber ?? "—"} />
+                <DetailRow label="Модификация" value={instrument.modification ?? "—"} />
+                <DetailRow label="Год выпуска" value={instrument.manufactureYear?.toString() ?? "—"} />
+                <DetailRow label="Инвентарный номер" value={instrument.inventoryNumber ?? "—"} />
+              </Stack>
+            </>
+          )}
+        </SectionCard>
+
         <SectionCard title="Основные сведения">
           <Stack direction="row" sx={{ flexWrap: "wrap", gap: 2 }}>
             <DetailRow label="Дата поверки" value={formatDate(data.verificationDate)} />
