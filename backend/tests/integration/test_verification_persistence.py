@@ -14,6 +14,9 @@ from sqlalchemy.engine import make_url
 from sqlalchemy.orm import Session, sessionmaker
 
 import app.db.model_registry  # noqa: F401
+from app.application.verification.commands.cancel_verification import (
+    CancelVerificationCommand,
+)
 from app.application.verification.commands.start_verification import (
     StartVerificationCommand,
 )
@@ -31,6 +34,7 @@ from app.infrastructure.order.order_repository import OrderRepositorySQLAlchemy
 from app.infrastructure.verification.verification_repository import (
     VerificationRepositorySQLAlchemy,
 )
+from app.models.audit_record import AuditRecordModel
 from app.models.customer import Customer
 from app.models.instrument import Instrument
 from app.models.instrument_type import InstrumentType
@@ -196,5 +200,160 @@ def test_starting_one_verification_preserves_all_order_items_and_verifications()
                 second_verification_id: VerificationStatus.CREATED,
             }
             assert persisted_order.status == OrderStatus.IN_WORK
+    finally:
+        engine.dispose()
+
+
+def test_cancelling_verifications_persists_status_reason_and_audit():
+    engine = create_engine(_integration_database_url())
+    session_factory = sessionmaker(bind=engine, expire_on_commit=False)
+
+    try:
+        customer_id = uuid4()
+        instrument_type_id = uuid4()
+        instrument_ids = [uuid4(), uuid4()]
+        order_id = uuid4()
+        item_ids = [uuid4(), uuid4()]
+        verification_ids = [uuid4(), uuid4()]
+        user_id = uuid4()
+        now = datetime.now(UTC)
+
+        with session_factory() as seed_session:
+            seed_session.add(
+                Customer(id=customer_id, name="Cancellation integration customer")
+            )
+            seed_session.add(
+                InstrumentType(id=instrument_type_id, name="Cancellation test type")
+            )
+            seed_session.add_all(
+                [
+                    Instrument(
+                        id=instrument_id,
+                        customer_id=customer_id,
+                        instrument_type_id=instrument_type_id,
+                        serial_number=f"IT-{instrument_id}",
+                    )
+                    for instrument_id in instrument_ids
+                ]
+            )
+            seed_session.flush()
+            seed_session.add(
+                Order(
+                    id=order_id,
+                    number=f"IT-{order_id}",
+                    customer_id=customer_id,
+                    received_at=now,
+                    status=OrderStatus.REGISTERED,
+                    order_items=[
+                        OrderItem(
+                            id=item_id,
+                            instrument_id=instrument_id,
+                            line_number=index,
+                            quantity=1,
+                            requested_operations=[],
+                        )
+                        for index, (item_id, instrument_id) in enumerate(
+                            zip(item_ids, instrument_ids, strict=True),
+                            start=1,
+                        )
+                    ],
+                )
+            )
+            seed_session.flush()
+            seed_session.add_all(
+                [
+                    Verification(
+                        id=verification_id,
+                        order_item_id=item_id,
+                        instrument_id=instrument_id,
+                        verification_date=date(2026, 11, 14),
+                        created_at=now,
+                        status=VerificationStatus.CREATED,
+                        verification_type=VerificationType.PERIODIC,
+                    )
+                    for verification_id, item_id, instrument_id in zip(
+                        verification_ids, item_ids, instrument_ids, strict=True
+                    )
+                ]
+            )
+            seed_session.commit()
+
+        with session_factory() as service_session:
+            service = VerificationApplicationService(
+                VerificationRepositorySQLAlchemy(service_session),
+                OrderRepositorySQLAlchemy(service_session),
+                SqlAlchemyUnitOfWork(service_session, event_dispatcher=Mock()),
+                AuditOperationRepositorySQLAlchemy(service_session),
+                AuditRepositorySQLAlchemy(service_session),
+            )
+            user = DomainUser(
+                id=user_id,
+                username="integration-metrologist",
+                password_hash="not-a-login",
+                role=UserRole.METROLOGIST,
+            )
+            service.start(
+                StartVerificationCommand(verification_id=verification_ids[0]),
+                user,
+            )
+            service.cancel(
+                CancelVerificationCommand(
+                    verification_id=verification_ids[0],
+                    reason="Заказчик отказался от поверки",
+                ),
+                user,
+            )
+            service.cancel(
+                CancelVerificationCommand(verification_id=verification_ids[1]),
+                user,
+            )
+
+        with session_factory() as verification_session:
+            persisted = {
+                item.id: item
+                for item in verification_session.query(Verification)
+                .filter(Verification.id.in_(verification_ids))
+                .all()
+            }
+            order = (
+                verification_session.query(Order)
+                .filter(Order.id == order_id)
+                .one()
+            )
+            audit_records = (
+                verification_session.query(AuditRecordModel)
+                .filter(
+                    AuditRecordModel.entity_type == "Verification",
+                    AuditRecordModel.entity_id.in_(verification_ids),
+                    AuditRecordModel.action == "verification.cancelled",
+                )
+                .all()
+            )
+
+            assert persisted[verification_ids[0]].status == VerificationStatus.CANCELLED
+            assert (
+                persisted[verification_ids[0]].cancellation_reason
+                == "Заказчик отказался от поверки"
+            )
+            assert persisted[verification_ids[1]].status == VerificationStatus.CANCELLED
+            assert persisted[verification_ids[1]].cancellation_reason is None
+            assert order.status == OrderStatus.IN_WORK
+            assert len(audit_records) == 2
+            assert {
+                record.entity_id: (record.reason, record.changes["status"])
+                for record in audit_records
+            } == {
+                verification_ids[0]: (
+                    "Заказчик отказался от поверки",
+                    {"old": "IN_PROGRESS", "new": "CANCELLED"},
+                ),
+                verification_ids[1]: (
+                    None,
+                    {"old": "CREATED", "new": "CANCELLED"},
+                ),
+            }
+            assert not VerificationRepositorySQLAlchemy(
+                verification_session
+            ).has_active_for_order_item(item_ids[0])
     finally:
         engine.dispose()
