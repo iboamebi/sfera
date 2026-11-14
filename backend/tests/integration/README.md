@@ -62,7 +62,7 @@ alembic upgrade head
 alembic current
 ```
 
-Expected current revision: `c2e5f7a9b310`.
+Expected current revision: `7a9d2e4c6b10`.
 
 The bootstrap is safe to repeat: it preserves an existing `alex/admin` row, refuses an `alex` row with a different role, and otherwise generates a fresh UUID rather than assuming a fixed primary key is unused. The placeholder account exists only in the disposable database and is removed when the Compose container is torn down. It has no `user_roles` rows and is not a usable application login. The normal Alembic migration chain still executes in full, including the reset migration and its guard.
 
@@ -83,13 +83,13 @@ The persistence integration fixture and test are a separate next step. Do not ru
 
 ## Run the verification persistence regression
 
-After the migrations have reached `c2e5f7a9b310`, keep the disposable PostgreSQL container running and execute:
+After the migrations have reached `7a9d2e4c6b10`, keep the disposable PostgreSQL container running and execute:
 
 ```bash
 export SFERA_INTEGRATION_DATABASE_URL="$DATABASE_URL"
 pytest -q tests/integration/test_verification_persistence.py
 ```
 
-The test refuses to run unless the explicit integration URL resolves to `127.0.0.1:55432/sfera_test`, and it verifies the expected Alembic head before seeding data. If the integration URL is not set, pytest skips the test. The test seeds a unique customer, two instruments, one registered order with two positions, and one CREATED verification per position. It starts the first verification through the real application service and SQLAlchemy repositories, then verifies the committed state through a fresh database session: both positions remain, the started verification is IN_PROGRESS, the other remains CREATED, and the order is IN_WORK.
+The test refuses to run unless the explicit integration URL resolves to `127.0.0.1:55432/sfera_test`, and it verifies the expected Alembic head and the active-verification uniqueness index before seeding data. If the integration URL is not set, pytest skips the test. The test seeds a unique customer, two instruments, one registered order with two positions, and one CREATED verification per position. It starts the first verification through the real application service and SQLAlchemy repositories, then verifies the committed state through a fresh database session: both positions remain, the started verification is IN_PROGRESS, the other remains CREATED, and the order is IN_WORK.
 
 Run this test only while the disposable integration database is active. Do not point `SFERA_INTEGRATION_DATABASE_URL` at any application or production database.
