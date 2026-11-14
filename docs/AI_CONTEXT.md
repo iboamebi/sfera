@@ -1428,3 +1428,12 @@ Administrator-assisted password recovery has now been implemented; see the check
 - Preserve provenance on the record so users can tell who/what system supplied the information. Exact source model, import mechanism, and reconciliation rules require a separate audit of the current Arshin integration and existing Verification read contracts before implementation.
 - Current Verification Domain already has `verification_date`, `valid_until`, `result`, `instrument_id`, and free-text `methodology`. Current methodology input remains free text for initial rollout; a structured Method/MethodVersion registry, managed document files, Device/Instrument applicability, and immutable revision linkage are future scope. Do not restore a methodology FK based on the historical migration without a separate design decision.
 - No code or database changes are authorized by this checkpoint; this records the agreed business direction for a later implementation stage.
+
+
+## Verification UI presentation checkpoint
+
+- The verification detail page now presents the existing Verification read contract in Russian, grouped into main details, result/validity, execution history, and lifecycle actions.
+- Lifecycle and result values use human-readable labels and status chips; archived records are visibly marked.
+- Start/approve/reject controls use Russian labels; rejection requires a non-whitespace reason in the UI.
+- No backend contract, persistence model, Arshin integration, or business lifecycle rules were changed.
+- This is the first UI presentation stage only. Full browser scenario validation and final display debugging remain pending local validation.
