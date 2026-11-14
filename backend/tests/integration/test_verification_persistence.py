@@ -8,7 +8,9 @@ from datetime import UTC, date, datetime
 from uuid import uuid4
 
 import pytest
-from sqlalchemy import create_engine, select
+from unittest.mock import Mock
+
+from sqlalchemy import create_engine, text
 from sqlalchemy.engine import make_url
 from sqlalchemy.orm import Session, sessionmaker
 
@@ -68,8 +70,7 @@ def test_starting_one_verification_preserves_all_order_items_and_verifications()
     try:
         with Session(engine) as check_session:
             revision = check_session.execute(
-                select(__import__("sqlalchemy").text("version_num"))
-                .select_from(__import__("sqlalchemy").text("alembic_version"))
+                text("SELECT version_num FROM alembic_version")
             ).scalar_one()
             assert revision == "c2e5f7a9b310"
 
@@ -163,7 +164,7 @@ def test_starting_one_verification_preserves_all_order_items_and_verifications()
             service = VerificationApplicationService(
                 VerificationRepositorySQLAlchemy(service_session),
                 OrderRepositorySQLAlchemy(service_session),
-                SqlAlchemyUnitOfWork(service_session, event_dispatcher=None),
+                SqlAlchemyUnitOfWork(service_session, event_dispatcher=Mock()),
                 AuditOperationRepositorySQLAlchemy(service_session),
                 AuditRepositorySQLAlchemy(service_session),
             )
