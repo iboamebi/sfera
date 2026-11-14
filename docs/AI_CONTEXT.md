@@ -1739,3 +1739,6 @@ Next: complete backend tests/CI, then implement the correction form in the Verif
 - Frontend exposes only the existing “Назначить СИ” action for unassigned items in an `IN_WORK` order; the general editable controls and “Добавление позиций” card remain unavailable.
 - Added domain regression coverage for allowed assignment during work and rejection of replacing an already assigned instrument.
 - Local backend/frontend validation and browser review are pending. No migration, production deployment, backend restart, or PR merge.
+
+
+- Local validation for the in-work instrument assignment change: 27 focused domain tests passed; frontend typecheck and production build passed (1313 modules). Ruff identified one overlong status-guard line and the corresponding formatter adjustment; corrected that exact line in commit `fc011af`. Re-run Ruff check/format locally after pulling. The Vite chunk-size notice is advisory and did not fail the build. Browser scenario review remains pending.
