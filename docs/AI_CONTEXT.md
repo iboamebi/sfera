@@ -1750,3 +1750,14 @@ Next: complete backend tests/CI, then implement the correction form in the Verif
 - Added a “Создать новое СИ” action to DeviceSelector. It passes the entered serial number into the existing CreateDeviceForm flow, keeps creation disabled while the device list is loading, when the serial is blank, when an exact serial match already exists, or while a selected-site search has not been expanded to all sites.
 - The existing create mutation still creates the Device for the order's Customer and then assigns it to the existing unassigned OrderItem. No order-item add/remove permissions or status rules changed.
 - Frontend typecheck/build and browser validation are pending. No backend change, migration, production deployment, backend restart, or PR merge.
+
+
+## Instrument serial uniqueness — Customer + Instrument Type — 2026-11-14
+
+- Confirmed business rule: a serial number is unique within the pair `customer_id + instrument_type_id`. The same serial may legitimately occur on different instrument types for one Customer; duplicates for the same Customer and type are forbidden.
+- The previous order-item DeviceSelector compared serials only within Customer, so an existing instrument of another type incorrectly blocked creation. Matching, ambiguity detection, and duplicate filtering now include Instrument Type.
+- Backend DeviceRepository exposes a scoped serial lookup. DeviceApplicationService checks uniqueness on both create and serial-number update; API maps conflicts to HTTP 409.
+- Added PostgreSQL unique expression index `uq_instruments_customer_type_serial` over Customer, Instrument Type, and normalized `lower(btrim(serial_number))`. The migration checks for existing same-scope duplicates first and fails with a clear error rather than modifying business data.
+- Application tests cover duplicate rejection within one type and allowed reuse across different types; infrastructure lookup coverage added.
+- Migration: `d4e8a1c6f230`, based on `7a9d2e4c6b10`.
+- Local backend tests, Ruff, Alembic migration on the disposable PostgreSQL database, frontend typecheck/build, and browser validation are pending. No production migration, deployment, backend restart, or PR merge.
