@@ -27,7 +27,11 @@ import { CreateDeviceForm } from "../../devices/ui/CreateDeviceForm";
 import { useDeleteOrderItem } from "../add-order-item/model/useDeleteOrderItem";
 import { useUpdateOrderItem } from "../add-order-item/model/useUpdateOrderItem";
 import { DeviceSelector } from "../add-order-item/ui/DeviceSelector";
-import type { OrderItem, OrderItemOperation } from "../model/types";
+import type {
+  OrderItem,
+  OrderItemOperation,
+  OrderItemVerification,
+} from "../model/types";
 import { useCreateVerification } from "../../verifications/create-verification/model/useCreateVerification";
 import type { VerificationType } from "../../verifications/model/types";
 
@@ -58,11 +62,60 @@ function getTodayDate(): string {
   return `${year}-${month}-${day}`;
 }
 
+function formatVerificationDate(value: string): string {
+  return new Intl.DateTimeFormat("ru-RU", { dateStyle: "medium" }).format(
+    new Date(`${value}T00:00:00`),
+  );
+}
+
 const VERIFICATION_TYPE_LABELS: Record<VerificationType, string> = {
   PRIMARY: "Первичная",
   PERIODIC: "Периодическая",
   AFTER_REPAIR: "После ремонта",
 };
+
+const VERIFICATION_STATUS_LABELS: Record<OrderItemVerification["status"], string> = {
+  CREATED: "Создана",
+  IN_PROGRESS: "В работе",
+  DECIDED: "Решение принято",
+};
+
+function getVerificationResultLabel(
+  verification: OrderItemVerification,
+): string | null {
+  if (verification.status !== "DECIDED") {
+    return null;
+  }
+
+  if (verification.result === "SUITABLE") {
+    return "Пригодно";
+  }
+  if (verification.result === "UNSUITABLE") {
+    return "Непригодно";
+  }
+  return "Результат не указан";
+}
+
+function getVerificationColor(
+  verification: OrderItemVerification,
+): "default" | "warning" | "success" | "error" {
+  if (verification.archived) {
+    return "default";
+  }
+  if (verification.status === "CREATED") {
+    return "default";
+  }
+  if (verification.status === "IN_PROGRESS") {
+    return "warning";
+  }
+  if (verification.result === "SUITABLE") {
+    return "success";
+  }
+  if (verification.result === "UNSUITABLE") {
+    return "error";
+  }
+  return "default";
+}
 
 export function OrderItems({
   items,
@@ -86,6 +139,17 @@ export function OrderItems({
   const [verificationDate, setVerificationDate] = useState(getTodayDate);
   const [verificationType, setVerificationType] = useState<VerificationType>("PRIMARY");
   const [methodology, setMethodology] = useState("");
+
+  const verificationNumbers = new Map(
+    items
+      .flatMap((item) => item.verifications)
+      .sort(
+        (left, right) =>
+          left.createdAt.localeCompare(right.createdAt) ||
+          left.id.localeCompare(right.id),
+      )
+      .map((verification, index) => [verification.id, index + 1]),
+  );
 
   const startEditing = (item: OrderItem) => {
     setEditingItemId(item.id);
@@ -232,19 +296,50 @@ export function OrderItems({
                         ) : (
                           item.instrumentName ?? "—"
                         )}
-                        {item.verificationIds.length > 0 && (
-                          <Stack direction="row" spacing={0.5} sx={{ flexWrap: "wrap", mt: 0.5 }}>
-                            {item.verificationIds.map((verificationId, verificationIndex) => (
-                              <Button
-                                key={verificationId}
-                                size="small"
-                                variant="text"
-                                sx={{ minWidth: 0, px: 0.5 }}
-                                onClick={() => navigate(`/verifications/${verificationId}`)}
-                              >
-                                Поверка {verificationIndex + 1}
-                              </Button>
-                            ))}
+                        {item.verifications.length > 0 && (
+                          <Stack spacing={0.75} sx={{ mt: 0.75 }}>
+                            {item.verifications.map((verification) => {
+                              const number = verificationNumbers.get(verification.id);
+                              const resultLabel = getVerificationResultLabel(verification);
+
+                              return (
+                                <Stack
+                                  key={verification.id}
+                                  direction="row"
+                                  spacing={0.75}
+                                  alignItems="center"
+                                  flexWrap="wrap"
+                                >
+                                  <Button
+                                    size="small"
+                                    variant="text"
+                                    sx={{ minWidth: 0, px: 0.5 }}
+                                    onClick={() =>
+                                      navigate(`/verifications/${verification.id}`)
+                                    }
+                                  >
+                                    Поверка №{number}
+                                  </Button>
+                                  <Chip
+                                    size="small"
+                                    color={getVerificationColor(verification)}
+                                    label={
+                                      verification.archived
+                                        ? "Архивная"
+                                        : resultLabel
+                                          ? resultLabel
+                                          : VERIFICATION_STATUS_LABELS[verification.status]
+                                    }
+                                  />
+                                  <Typography variant="caption" color="text.secondary">
+                                    {formatVerificationDate(verification.verificationDate)}
+                                    {verification.validUntil &&
+                                      verification.result === "SUITABLE" &&
+                                      ` · действует до ${formatVerificationDate(verification.validUntil)}`}
+                                  </Typography>
+                                </Stack>
+                              );
+                            })}
                           </Stack>
                         )}
                       </TableCell>
@@ -278,8 +373,7 @@ export function OrderItems({
                           }}
                         >
                           {item.requestedOperations.includes("verification") &&
-                            item.instrumentId &&
-                            item.verificationIds.length === 0 && (
+                            item.instrumentId && (
                               <Button
                                 size="small"
                                 variant="outlined"
