@@ -201,6 +201,7 @@ def test_correct_decision_rejects_unsuitable_to_suitable():
             decision_at=datetime(2030, 1, 2, 12, 0, tzinfo=UTC),
         )
 
+
 @pytest.mark.parametrize("reason", ["", " ", "\t"])
 def test_correct_decision_requires_reason(reason: str):
     verification = create_verification()
