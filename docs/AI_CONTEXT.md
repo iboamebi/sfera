@@ -1567,3 +1567,12 @@ Next: complete backend tests/CI, then implement the correction form in the Verif
 - Rechecked the implementation files from PR #36 against `develop`: all five backend and all four frontend implementation files are identical. Only `docs/AI_CONTEXT.md` differs; the feature branch checkpoint is older. No code needs to be transferred from PR #36, and the PR is left open pending a separate cleanup decision.
 - No production deployment, backend restart, database migration, or PR merge was performed.
 - Next: browser scenario review of an order with multiple positions and multiple verifications per position. Confirm global numbering, per-verification lifecycle/result/validity display, ability to create another verification, and that an older suitable result does not mask a newer unsuitable or unfinished result. Verify the order's planned issue date remains the displayed estimate; do not infer readiness from verification alone when other requested operations are outside the read model.
+
+
+## Order — preserve verification history when starting work — 2026-11-14
+
+- Browser scenario exposed data loss: starting a Verification also transitions its Order to `IN_WORK`. The Order repository saves the aggregate through `OrderMapper.to_model()`.
+- The previous mapper cleared and recreated every ORM OrderItem. Since `OrderItem.verifications` uses `cascade="all, delete-orphan"`, this deleted all Verification rows attached to the order's positions when any Verification was started.
+- Updated the mapper to reconcile OrderItems by ID: update existing ORM rows in place, add genuinely new rows, and remove only positions absent from the domain aggregate. Existing child relationships are preserved for retained positions.
+- Added an Infrastructure mapper regression test asserting that starting the order and mapping it back preserves the same OrderItem and its Verification relationship.
+- Local backend validation is pending. No database migration, deployment, backend restart, or PR merge.
