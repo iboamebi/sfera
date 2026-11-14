@@ -4,16 +4,24 @@ import { mapVerification } from "../../api/verificationMapper";
 import type { VerificationApiDto } from "../../api/types";
 import type { VerificationRead } from "../../model/types";
 
+interface ApproveVerificationInput {
+  verificationId: string;
+  durationYears: number;
+  timeZone: string;
+  validUntil?: string;
+}
+
 export async function approveVerification(
-  verificationId: string,
-  validUntil: string,
+  input: ApproveVerificationInput,
 ): Promise<VerificationRead> {
   const response = await http.post<VerificationApiDto>(
-    `/verifications/${verificationId}/approve`,
+    `/verifications/${input.verificationId}/approve`,
     null,
     {
       params: {
-        valid_until: validUntil,
+        duration_years: input.durationYears,
+        time_zone: input.timeZone,
+        ...(input.validUntil ? { valid_until: input.validUntil } : {}),
       },
     },
   );
