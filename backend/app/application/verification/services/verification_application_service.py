@@ -2,12 +2,16 @@
 Application service for verification use cases.
 """
 
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime, timedelta
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 from uuid import UUID, uuid4
 
 from app.application.authorization.authorization import require_role
 from app.application.verification.commands.approve_verification import (
     ApproveVerificationCommand,
+)
+from app.application.verification.commands.correct_verification_valid_until import (
+    CorrectVerificationValidUntilCommand,
 )
 from app.application.verification.commands.create_verification import (
     CreateVerificationCommand,
@@ -198,10 +202,33 @@ class VerificationApplicationService:
             old_result = verification.result
             old_valid_until = verification.valid_until
             old_unsuitable_reason = verification.unsuitable_reason
+            decision_at = datetime.now(UTC)
+            valid_until = command.valid_until
+            if valid_until is None:
+                if command.duration_years is None or command.time_zone is None:
+                    raise ValueError("Provide valid_until or duration_years and time_zone")
+                if command.duration_years < 1 or command.duration_years > 100:
+                    raise ValueError("duration_years must be between 1 and 100")
+                try:
+                    local_decision_date = decision_at.astimezone(
+                        ZoneInfo(command.time_zone),
+                    ).date()
+                except (ZoneInfoNotFoundError, ValueError):
+                    raise ValueError("Invalid IANA time zone") from None
+                try:
+                    anniversary = local_decision_date.replace(
+                        year=local_decision_date.year + command.duration_years,
+                    )
+                except ValueError:
+                    anniversary = local_decision_date.replace(
+                        year=local_decision_date.year + command.duration_years,
+                        day=28,
+                    )
+                valid_until = anniversary - timedelta(days=1)
 
             verification.mark_suitable(
-                command.valid_until,
-                decision_at=datetime.now(UTC),
+                valid_until,
+                decision_at=decision_at,
             )
 
             self._repository.save(verification)
@@ -234,6 +261,43 @@ class VerificationApplicationService:
                 )
             )
 
+        return verification
+
+    def correct_valid_until(
+        self,
+        command: CorrectVerificationValidUntilCommand,
+        user: User,
+    ) -> Verification:
+        """Correct the validity date of an already suitable decision."""
+        require_role(user, UserRole.METROLOGIST, UserRole.ADMIN)
+        with self._uow:
+            verification = self.get(command.verification_id)
+            old_valid_until = verification.valid_until
+            verification.correct_valid_until(
+                command.valid_until,
+                reason=command.reason,
+            )
+            self._repository.save(verification)
+            operation = AuditOperation(initiated_by=user.id)
+            self._audit_operation_repository.save(operation)
+            self._audit_repository.save(
+                AuditRecord(
+                    operation_id=operation.operation_id,
+                    actor_id=user.id,
+                    action="verification.valid_until_corrected",
+                    entity_type="Verification",
+                    entity_id=verification.id,
+                    changes={
+                        "valid_until": {
+                            "old": old_valid_until.isoformat()
+                            if old_valid_until is not None
+                            else None,
+                            "new": verification.valid_until.isoformat(),
+                        },
+                    },
+                    reason=command.reason,
+                )
+            )
         return verification
 
     def reject(
