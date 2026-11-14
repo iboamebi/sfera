@@ -1541,3 +1541,15 @@ Next: complete backend tests/CI, then implement the correction form in the Verif
 - User local frontend validation passed on the implementation branch: `npm run typecheck`; `npm run build` (1313 modules; existing main bundle size advisory remains).
 - To keep PR #31 focused on the Device-card link, the decision-correction UI was reapplied as a separate branch `feat/verification-decision-correction-ui` based directly on `develop`. This avoids coupling the two independent changes.
 - No merge, deployment, backend restart, or database migration has been performed. Local validation on the isolated UI branch is pending.
+
+## Verification correction UI follow-up — 2026-11-14
+
+Browser validation of PR #33 exposed stale frontend form state after a validity-date correction: the decision-correction form retained the original `validUntil` in local state even after the Verification query refetched updated data. Switching SUITABLE → UNSUITABLE → SUITABLE could therefore resubmit the old date.
+
+Follow-up changes on `feat/verification-decision-correction-ui`:
+- Synchronize decision-correction form fields when the current Verification result, validity date, or unsuitable reason changes in the server response.
+- Disable decision correction when the proposed result and associated fields are unchanged from the current persisted decision.
+- Synchronize the standalone validity-correction date when the server-provided date changes.
+- Disable validity correction when the entered date equals the currently persisted date.
+
+User reproduced the issue in the browser; frontend typecheck/build and a repeat browser test are pending. Do not merge or deploy until those checks pass.
