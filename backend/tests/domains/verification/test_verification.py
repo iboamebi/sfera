@@ -138,7 +138,7 @@ def test_correct_valid_until_updates_only_suitable_decision():
     assert verification.decision_at == DECISION_AT
 
 
-@pytest.mark.parametrize("reason", ["", " ", "  \\t"])
+@pytest.mark.parametrize("reason", ["", " ", "  \t"])
 def test_correct_valid_until_requires_non_blank_reason(reason: str):
     from app.domains.verification.exceptions import (
         InvalidValidityCorrectionReasonDomainError,
