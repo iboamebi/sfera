@@ -1504,3 +1504,30 @@ Administrator-assisted password recovery has now been implemented; see the check
 - A separate correction operation is available only for a non-archived Verification with a DECIDED/SUITABLE result and an existing validity date. It requires a non-blank reason and writes an append-only `verification.valid_until_corrected` audit record with old/new dates and the reason.
 - Approval and correction remain restricted to METROLOGIST and ADMIN and require authenticated, CSRF-protected API routes.
 - Branch: `feat/verification-validity-correction`. Backend domain/application/API tests and frontend typecheck/build are pending local validation. Do not merge or deploy before those checks and user confirmation.
+
+
+## Verification Decision Correction Checkpoint — 2026-11-14
+
+A new backend use case is being implemented on branch `feat/verification-decision-correction`.
+
+Business rule confirmed:
+- A decided Verification may have its result corrected in either direction: SUITABLE ↔ UNSUITABLE.
+- Every correction requires a non-blank correction reason.
+- A corrected SUITABLE decision requires `valid_until` and clears `unsuitable_reason`.
+- A corrected UNSUITABLE decision requires a non-blank `unsuitable_reason`, clears `valid_until`, and retains the correction reason separately.
+- `decision_at` is updated to the correction timestamp.
+- Each correction appends an immutable AuditRecord with old/new result, validity date, unsuitable reason and decision timestamp; the correction reason is stored as AuditRecord.reason.
+- Only METROLOGIST / ADMIN may execute the use case, enforced in Application.
+
+Current implementation files:
+- Domain: `backend/app/domains/verification/entities/verification.py`, `backend/app/domains/verification/exceptions/__init__.py`.
+- Application: `backend/app/application/verification/commands/correct_verification_decision.py`, `backend/app/application/verification/services/verification_application_service.py`.
+- API: `backend/app/api/routers/verification_actions.py`, `backend/app/schemas/verification.py`.
+- Tests: domain, application audit/authorization and API auth/CSRF tests.
+- Authorization contract updated in `docs/architecture/AUTHORIZATION.md`.
+
+No database migration is expected: Verification persistence already stores result, valid_until, unsuitable_reason and decision_at; audit uses the existing append-only audit tables.
+
+The separate PR #31 (instrument-name link to Device card) remains open and has not been merged; do not merge without explicit user authorization. Its browser validation was confirmed by the user, although the PR body still needs its validation note refreshed.
+
+Next: complete backend tests/CI, then implement the correction form in the Verification page after the branch coordination with PR #31 is resolved. Order operation-state read model and presentation remain a separate subsequent stage.
