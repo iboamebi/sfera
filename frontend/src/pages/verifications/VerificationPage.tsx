@@ -110,6 +110,7 @@ function SectionCard({ title, children }: SectionCardProps) {
 export function VerificationPage() {
   const navigate = useNavigate();
   const { verificationId } = useParams<{ verificationId: string }>();
+  const returnTo = new URLSearchParams(window.location.search).get("returnTo") ?? "/orders";
   const { data, error, isLoading } = useVerification(verificationId ?? "");
   const {
     data: instrument,
@@ -149,7 +150,9 @@ export function VerificationPage() {
 
   return (
     <Stack spacing={2} sx={{ width: "100%", maxWidth: 1100, mx: "auto" }}>
-      <Button variant="outlined" onClick={() => navigate("/orders")} sx={{ alignSelf: "flex-start" }}>Назад к заказам</Button>
+      <Button variant="outlined" onClick={() => navigate(returnTo)} sx={{ alignSelf: "flex-start" }}>
+        Назад к заказу
+      </Button>
       <Stack spacing={1}>
         <Typography variant="h4">Поверка</Typography>
         <Stack
@@ -250,7 +253,11 @@ export function VerificationPage() {
         {(canStart || canDecide || canCancel || canCorrectValidity || canCorrectDecision) && (
           <SectionCard title="Действия">
             {canStart && <StartVerificationButton verificationId={data.id} />}
-            {canCancel && <CancelVerificationButton verificationId={data.id} requireReason={data.status === "IN_PROGRESS"} onCancelled={() => navigate("/orders")} />}
+            {canCancel && <CancelVerificationButton
+                verificationId={data.id}
+                requireReason={data.status === "IN_PROGRESS"}
+                onCancelled={() => navigate(returnTo)}
+              />}
             {canDecide && (
               <Stack spacing={1.5}>
                 <ApproveVerificationButton verificationId={data.id} />
