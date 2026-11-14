@@ -9,7 +9,7 @@ export interface OrderItemVerification {
   createdAt: string;
   verificationDate: string;
   verificationType: "PRIMARY" | "PERIODIC" | "AFTER_REPAIR";
-  status: "CREATED" | "IN_PROGRESS" | "DECIDED";
+  status: "CREATED" | "IN_PROGRESS" | "DECIDED" | "CANCELLED";
   result: "SUITABLE" | "UNSUITABLE" | null;
   validUntil: string | null;
   archived: boolean;
