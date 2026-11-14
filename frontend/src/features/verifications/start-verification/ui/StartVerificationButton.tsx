@@ -28,7 +28,7 @@ export function StartVerificationButton({
         disabled={isPending}
         onClick={() => mutate(verificationId)}
       >
-        {isPending ? "Starting..." : "Start verification"}
+        {isPending ? "Начинаем поверку..." : "Начать поверку"}
       </Button>
     </Stack>
   );
