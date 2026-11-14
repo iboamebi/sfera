@@ -1489,3 +1489,8 @@ Administrator-assisted password recovery has now been implemented; see the check
 - The Verification page now uses the existing Device detail query for the linked instrument and the existing InstrumentType detail query for its type name. It displays instrument name, type, serial number, registry number, modification, manufacture year, and inventory number, with separate loading/error handling for the related reads.
 - The raw order-item UUID remains hidden. No order lookup, Arshin integration, lifecycle change, or persistence change was introduced.
 - Branch: `feat/verification-instrument-context`. Local typecheck/build and browser validation are pending.
+
+
+- User local validation completed on branch head `a7cb2adb`: `npm run typecheck` passed and `npm run build` passed (1307 modules; existing >500 kB bundle advisory not emitted in this build).
+- GitHub Backend CI run #1065 completed successfully. PR review submissions and inline review threads are empty.
+- PR #29 is ready for merge; production browser validation remains pending and must happen after merge/deployment.
