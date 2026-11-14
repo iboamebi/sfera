@@ -1387,3 +1387,12 @@ Administrator-assisted password recovery has now been implemented; see the check
 - Added explicit `response_model=VerificationRead` to the approve and reject API routes. The start route already declared this response model; the frontend consumes the same Verification DTO for all lifecycle actions.
 - Commit: `d84c934` on `fix/verification-archived-mapping`.
 - Local API validation is pending. Do not merge or deploy until the user reports the scoped checks.
+
+
+## Verification — unsuitable reason invariant — 2026-11-14
+
+- Local validation of the API response-model correction passed: 7 API router tests; Ruff and formatting checks passed. One existing Starlette/httpx deprecation warning remains.
+- Domain validation in `Verification.mark_unsuitable` now rejects whitespace-only reasons using `reason.strip()`; accepted reason text is otherwise preserved.
+- Added parameterized domain coverage for empty, space-only, and tab/newline-only reasons.
+- Commits: `77e849c` (domain invariant), `5f848b0` (tests), `f106a8f` (control-character test case).
+- Local domain validation is pending. Do not merge or deploy until the user reports the scoped checks.
