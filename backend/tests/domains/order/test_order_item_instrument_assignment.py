@@ -66,7 +66,6 @@ def test_assign_instrument_is_allowed_after_registration():
 @pytest.mark.parametrize(
     "status",
     [
-        OrderStatus.IN_WORK,
         OrderStatus.WAITING,
         OrderStatus.COMPLETED,
         OrderStatus.ISSUED,
@@ -92,3 +91,25 @@ def test_assign_instrument_rejects_unknown_item():
 
     with pytest.raises(OrderException, match="Order item not found"):
         order.assign_instrument(uuid4(), uuid4())
+
+
+def test_assign_instrument_is_allowed_during_work_for_unassigned_item():
+    order = make_order()
+    item = OrderItem(id=uuid4(), quantity=1)
+    order.add_item(item)
+    order.status = OrderStatus.IN_WORK
+    instrument_id = uuid4()
+
+    order.assign_instrument(item.id, instrument_id)
+
+    assert item.instrument_id == instrument_id
+
+
+def test_assign_instrument_during_work_rejects_already_assigned_item():
+    order = make_order()
+    item = OrderItem(id=uuid4(), instrument_id=uuid4(), quantity=1)
+    order.add_item(item)
+    order.status = OrderStatus.IN_WORK
+
+    with pytest.raises(OrderException, match="Order item already has an instrument"):
+        order.assign_instrument(item.id, uuid4())
