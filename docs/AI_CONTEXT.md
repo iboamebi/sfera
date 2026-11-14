@@ -1623,3 +1623,12 @@ Next: complete backend tests/CI, then implement the correction form in the Verif
 - Commits: `65948ad` (isolated PostgreSQL service), `a869b69` (test database instructions).
 - Next local validation: start the disposable container, apply `alembic upgrade head` using only the documented test URL, confirm the Alembic head, then tear down the container. Do not run the application backend against this database.
 - After successful local validation, add an integration-only SQLAlchemy session fixture and a flush/commit/fresh-session regression for starting one Verification in a multi-position Order.
+
+
+## Isolated PostgreSQL setup — Alembic revision graph correction — 2026-11-14
+
+- The first disposable PostgreSQL migration attempt failed in Alembic revision graph processing with `KeyError: 'c5ce4959d90d'`; the Compose cleanup trap removed the test container/network afterward.
+- The revision identifiers are unique. The graph defect was in `c7e4a91d2b60`: it declared `c5ce4959d90d` as a merge parent even though that revision is already an ancestor of `b6c1e8f3a420` through `c5ce4959d90d → 22ae78ebd152 → 5def9c7caf65 → be6d8dc2f696 → 8f4c2d1a9b30 → d1f7a8c9e2b4 → 071a88b4b6da → b6c1e8f3a420`.
+- Removed only the redundant `c5ce4959d90d` parent from the merge revision. The corrected merge parents are `9b1c7d4e2f30` and `b6c1e8f3a420`; the branch remains included through the latter.
+- Commit: `90e4898` — `fix: remove redundant Alembic merge parent`.
+- Next local validation: pull `develop`; run `alembic heads --verbose` and `alembic history --verbose`; then retry `alembic upgrade head` only with the explicit disposable PostgreSQL URL from `tests/integration/README.md`. Confirm `alembic current`, then let the cleanup trap remove the test container. Never use the application's default database URL.
