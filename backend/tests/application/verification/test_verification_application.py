@@ -712,3 +712,50 @@ def test_correct_verification_decision_rejects_unsuitable_to_suitable():
     assert operations.items == []
     assert records.items == []
 
+def test_start_verification_preserves_other_order_items_and_verifications():
+    repository = FakeVerificationRepository()
+    order_repository = FakeOrderRepository()
+    first_order, first_item = make_order_with_item(instrument_id=uuid4())
+    second_item = OrderItem(
+        id=uuid4(),
+        instrument_id=uuid4(),
+    )
+    first_order.items.append(second_item)
+    first_order.register()
+    order_repository.save(first_order)
+
+    first_verification = Verification.create(
+        id=uuid4(),
+        order_item_id=first_item.id,
+        instrument_id=first_item.instrument_id,
+        verification_date=date.today(),
+        created_at=datetime.now(UTC),
+        verification_type=VerificationType.PERIODIC,
+    )
+    second_verification = Verification.create(
+        id=uuid4(),
+        order_item_id=second_item.id,
+        instrument_id=second_item.instrument_id,
+        verification_date=date.today(),
+        created_at=datetime.now(UTC),
+        verification_type=VerificationType.PERIODIC,
+    )
+    repository.save(first_verification)
+    repository.save(second_verification)
+    service = make_service(repository, order_repository)
+
+    result = service.start(
+        StartVerificationCommand(verification_id=first_verification.id),
+        make_user(UserRole.METROLOGIST),
+    )
+
+    saved_order = order_repository.get(first_order.id)
+    assert result.status == VerificationStatus.IN_PROGRESS
+    assert saved_order is not None
+    assert {item.id for item in saved_order.items} == {
+        first_item.id,
+        second_item.id,
+    }
+    assert repository.get(second_verification.id) is second_verification
+    assert second_verification.status == VerificationStatus.CREATED
+
