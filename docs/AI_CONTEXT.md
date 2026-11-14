@@ -1703,7 +1703,7 @@ Next: complete backend tests/CI, then implement the correction form in the Verif
 - Application Service проверяет наличие активной поверки через VerificationRepository.
 - Infrastructure Repository выполняет запрос по `order_item_id`, `archived=false` и статусам CREATED/IN_PROGRESS.
 - API возвращает HTTP 409 при попытке повторного создания.
-- OrderItems вместо действия создания показывает `Поверка уже в работе`.
+- OrderItems вместо действия создания показывает `Есть активная поверка`.
 - PostgreSQL partial unique index `uq_verifications_one_active_per_order_item` обеспечивает ограничение на уровне БД.
 - Alembic migration: `7a9d2e4c6b10`; перед созданием индекса migration явно проверяет отсутствие дублирующихся активных записей и завершится ошибкой с понятным сообщением, если они есть.
 - Добавлены Application, API, Infrastructure repository tests.
