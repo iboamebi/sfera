@@ -31,7 +31,7 @@ function formatDate(value: string): string {
 export function ApproveVerificationButton({
   verificationId,
 }: ApproveVerificationButtonProps) {
-  const [durationYears, setDurationYears] = useState("2");
+  const [durationYears, setDurationYears] = useState("");
   const [manualValidUntil, setManualValidUntil] = useState("");
   const preview = useMemo(() => {
     const years = Number(durationYears);
