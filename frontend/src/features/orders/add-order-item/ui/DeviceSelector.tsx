@@ -26,6 +26,11 @@ interface DeviceSelectorProps {
   instrumentTypeId?: string | null;
   requireUnmatchedSerial?: boolean;
   excludedInstrumentIds?: string[];
+  onCreateDeviceActionStateChange?: (state: {
+    disabled: boolean;
+    serialNumber: string;
+    disabledReason: string;
+  }) => void;
 }
 
 export function DeviceSelector({
@@ -36,6 +41,7 @@ export function DeviceSelector({
   instrumentTypeId,
   requireUnmatchedSerial = false,
   excludedInstrumentIds = [],
+  onCreateDeviceActionStateChange,
 }: DeviceSelectorProps) {
   const { data: devices = [], isLoading, error } = useDevices();
   const {
@@ -137,6 +143,19 @@ export function DeviceSelector({
     }
   }, [availableDevices, isLoading, onChange, value]);
 
+  useEffect(() => {
+    onCreateDeviceActionStateChange?.({
+      disabled: createDeviceDisabled,
+      serialNumber: inputValue.trim(),
+      disabledReason: createDeviceDisabledReason,
+    });
+  }, [
+    createDeviceDisabled,
+    createDeviceDisabledReason,
+    inputValue,
+    onCreateDeviceActionStateChange,
+  ]);
+
   if (error) {
     return (
       <Typography color="error">
@@ -191,20 +210,7 @@ export function DeviceSelector({
         </Typography>
       )}
 
-      {onCreateDevice && (
-        <Button
-          onClick={() => onCreateDevice(inputValue.trim())}
-          variant="outlined"
-          disabled={createDeviceDisabled}
-        >
-          Создать карточку СИ
-        </Button>
-      )}
-      {onCreateDevice && createDeviceDisabled && !matchingDevice && (
-        <Typography variant="caption" color="text.secondary">
-          {createDeviceDisabledReason}
-        </Typography>
-      )}
+
 
       <Autocomplete
         fullWidth

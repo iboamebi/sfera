@@ -64,6 +64,11 @@ export function AddOrderItemButton({
   >(["verification"]);
   const [isCreateDeviceOpen, setIsCreateDeviceOpen] = useState(false);
   const [initialDeviceSerialNumber, setInitialDeviceSerialNumber] = useState("");
+  const [isCreateDeviceActionState, setIsCreateDeviceActionState] = useState({
+    disabled: true,
+    serialNumber: "",
+    disabledReason: "",
+  });
   const [isCreateInstrumentTypeOpen, setIsCreateInstrumentTypeOpen] =
     useState(false);
   const addOrderItemMutation = useAddOrderItem(orderId);
@@ -217,6 +222,7 @@ export function AddOrderItemButton({
         instrumentTypeId={instrumentTypeId || null}
         excludedInstrumentIds={excludedInstrumentIds}
         onChange={setDeviceId}
+        onCreateDeviceActionStateChange={setIsCreateDeviceActionState}
         onCreateDevice={(serialNumber) => {
           setInitialDeviceSerialNumber(serialNumber);
           setIsCreateDeviceOpen(true);
@@ -224,7 +230,33 @@ export function AddOrderItemButton({
         requireUnmatchedSerial
       />
 
-      <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap" }}>
+      <Stack
+        direction="row"
+        spacing={1}
+        sx={{ alignItems: "center", flexWrap: "wrap" }}
+      >
+        <Stack spacing={0.25}>
+          <Button
+            variant="outlined"
+            disabled={isCreateDeviceActionState.disabled}
+            onClick={() => {
+              setInitialDeviceSerialNumber(
+                isCreateDeviceActionState.serialNumber,
+              );
+              setIsCreateDeviceOpen(true);
+            }}
+          >
+            Создать карточку СИ
+          </Button>
+          {isCreateDeviceActionState.disabled &&
+            isCreateDeviceActionState.serialNumber &&
+            isCreateDeviceActionState.disabledReason && (
+              <Typography variant="caption" color="text.secondary">
+                {isCreateDeviceActionState.disabledReason}
+              </Typography>
+            )}
+        </Stack>
+
         {OPERATION_OPTIONS.map((operation) => (
           <FormControlLabel
             key={operation.value}
@@ -237,20 +269,20 @@ export function AddOrderItemButton({
             label={operation.label}
           />
         ))}
-      </Stack>
 
-      <Button
-        disabled={
-          (!deviceId && !instrumentTypeId) ||
-          (!deviceId && quantity < 1) ||
-          addOrderItemMutation.isPending
-        }
-        onClick={handleAdd}
-        variant="contained"
-        sx={{ alignSelf: "flex-start" }}
-      >
-        {addOrderItemMutation.isPending ? "Добавление…" : "Добавить позицию"}
-      </Button>
+        <Button
+          disabled={
+            (!deviceId && !instrumentTypeId) ||
+            (!deviceId && quantity < 1) ||
+            addOrderItemMutation.isPending
+          }
+          onClick={handleAdd}
+          variant="contained"
+          sx={{ marginLeft: "auto" }}
+        >
+          {addOrderItemMutation.isPending ? "Добавление…" : "Добавить позицию"}
+        </Button>
+      </Stack>
 
       {addOrderItemMutation.isError && (
         <Typography color="error" variant="body2">
