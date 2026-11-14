@@ -3,6 +3,7 @@ from fastapi.routing import APIRoute
 from app.api.dependencies.auth import get_current_user
 from app.api.routers.verification_actions import (
     approve_verification,
+    correct_verification_decision,
     correct_verification_valid_until,
     reject_verification,
     router,
@@ -42,6 +43,13 @@ def test_reject_verification_requires_authentication_and_csrf() -> None:
 
 def test_correct_valid_until_requires_authentication_and_csrf() -> None:
     dependencies = get_route_dependencies(correct_verification_valid_until)
+
+    assert get_current_user in dependencies
+    assert require_csrf in dependencies
+
+
+def test_correct_verification_decision_requires_authentication_and_csrf() -> None:
+    dependencies = get_route_dependencies(correct_verification_decision)
 
     assert get_current_user in dependencies
     assert require_csrf in dependencies
