@@ -272,6 +272,24 @@ export function OrderItems({
                     !verification.archived &&
                     (verification.status === "CREATED" || verification.status === "IN_PROGRESS"),
                 );
+                const latestCompletedVerification = item.verifications
+                  .filter((verification) => verification.status === "DECIDED")
+                  .sort(
+                    (left, right) =>
+                      right.createdAt.localeCompare(left.createdAt) ||
+                      right.id.localeCompare(left.id),
+                  )[0];
+                const displayedVerifications = item.verifications
+                  .filter(
+                    (verification) =>
+                      verification.status !== "DECIDED" ||
+                      verification.id === latestCompletedVerification?.id,
+                  )
+                  .sort(
+                    (left, right) =>
+                      left.createdAt.localeCompare(right.createdAt) ||
+                      left.id.localeCompare(right.id),
+                  );
                 const expanded =
                   editingItemId === item.id ||
                   assigningItemId === item.id ||
@@ -304,9 +322,9 @@ export function OrderItems({
                         ) : (
                           item.instrumentName ?? "—"
                         )}
-                        {item.verifications.length > 0 && (
+                        {displayedVerifications.length > 0 && (
                           <Stack spacing={0.75} sx={{ mt: 0.75 }}>
-                            {item.verifications.map((verification) => {
+                            {displayedVerifications.map((verification) => {
                               const number = verificationNumbers.get(verification.id);
                               const resultLabel = getVerificationResultLabel(verification);
 
