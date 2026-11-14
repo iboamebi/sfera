@@ -2,7 +2,7 @@ import uuid
 from datetime import date, datetime
 from enum import StrEnum
 
-from sqlalchemy import Date, DateTime, ForeignKey, String, Text
+from sqlalchemy import Date, DateTime, ForeignKey, Index, String, Text, text
 from sqlalchemy import Enum as SqlEnum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -30,6 +30,16 @@ class Verification(BaseModel):
     """ORM model for an instrument verification process."""
 
     __tablename__ = "verifications"
+    __table_args__ = (
+        Index(
+            "uq_verifications_one_active_per_order_item",
+            "order_item_id",
+            unique=True,
+            postgresql_where=text(
+                "archived = false AND status IN ('CREATED', 'IN_PROGRESS')"
+            ),
+        ),
+    )
 
     order_item_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("order_items.id"),
