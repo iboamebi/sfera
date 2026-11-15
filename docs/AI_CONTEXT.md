@@ -2233,3 +2233,16 @@ Implemented employee identity/contact details separately from login credentials 
 ### Validation
 
 - GitHub implementation is complete for the initial UI slice. Frontend `npm run typecheck`, `npm run build`, and browser review are pending local validation after synchronization.
+
+
+### Frontend local validation — 2026-11-15
+
+После синхронизации до `a56526746a0fc4bb76ee3a2d1b3639e4a0feb4a2` пользователь подтвердил:
+
+- `npm ci` — успешно.
+- `npm run typecheck` — успешно, ошибок TypeScript нет.
+- `npm run build` — успешно, Vite преобразовал 1327 модулей.
+- Осталось предупреждение Vite о bundle chunk размером около 896 КБ после минификации; сборку оно не блокирует.
+- Browser review сценария изменения Site ещё не выполнен.
+- На commit PR нет настроенных status checks (пустой список statuses).
+- Production deployment и backend restart не выполнялись.
