@@ -15,6 +15,8 @@ import { OrderError } from "../../features/orders/ui/OrderError";
 export function OrderPage() {
   const { orderId } = useParams<{ orderId: string }>();
   const navigate = useNavigate();
+  const requestedReturnTo = new URLSearchParams(window.location.search).get("returnTo");
+  const returnTo = requestedReturnTo === "/verifications" ? "/verifications" : "/orders";
   const { data, error, isLoading } = useOrder(orderId ?? "");
 
   if (isLoading) {
@@ -33,10 +35,10 @@ export function OrderPage() {
     <Stack spacing={3}>
       <Button
         variant="outlined"
-        onClick={() => navigate("/orders")}
+        onClick={() => navigate(returnTo)}
         sx={{ alignSelf: "flex-start" }}
       >
-        Назад
+        {returnTo === "/verifications" ? "Назад к поверкам" : "Назад к заказам"}
       </Button>
 
       <OrderDetails order={data} />
