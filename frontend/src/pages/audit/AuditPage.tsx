@@ -21,7 +21,7 @@ import type { AuditFilters, AuditRecord } from "../../features/audit/model/types
 const DEFAULT_FILTERS: AuditFilters = {
   occurredFrom: "",
   occurredTo: "",
-  actorId: "",
+  actorQuery: "",
   action: "",
   entityType: "",
   operationId: "",
