@@ -2,9 +2,9 @@ from fastapi.routing import APIRoute
 
 from app.api.dependencies.auth import get_current_user
 from app.api.routers.device import (
+    change_device_site,
     connect_device,
     create_device,
-    change_device_site,
     disconnect_device,
     router,
 )
