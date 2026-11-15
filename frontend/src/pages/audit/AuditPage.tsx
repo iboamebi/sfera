@@ -204,7 +204,7 @@ export function AuditPage() {
                     <TableCell>Пользователь</TableCell>
                     <TableCell>Действие</TableCell>
                     <TableCell>Тип сущности</TableCell>
-                    <TableCell>ID сущности</TableCell>
+                    <TableCell>Объект</TableCell>
                     <TableCell>Детали</TableCell>
                   </TableRow>
                 </TableHead>
@@ -212,7 +212,6 @@ export function AuditPage() {
                   {data.items.map((record) => (
                     <Fragment key={record.id}>
                       <TableRow
-                        key={record.id}
                         hover
                         selected={expandedId === record.id}
                       >
@@ -224,8 +223,8 @@ export function AuditPage() {
                         </TableCell>
                         <TableCell>{record.action}</TableCell>
                         <TableCell>{record.entityType}</TableCell>
-                        <TableCell sx={{ maxWidth: 180, overflowWrap: "anywhere" }}>
-                          {record.entityId ?? "—"}
+                        <TableCell sx={{ minWidth: 220 }}>
+                          {record.entityDisplayName ?? "Неизвестный объект"}
                         </TableCell>
                         <TableCell>
                           <Button
