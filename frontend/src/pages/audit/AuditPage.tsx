@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import {
   Alert,
   Button,
@@ -87,7 +87,10 @@ export function AuditPage() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const { data, isLoading, isError, error } = useAuditRecords(filters);
 
-  const updateFilter = (field: keyof AuditFilters, value: string) => {
+  const updateFilter = (
+    field: "occurredFrom" | "occurredTo" | "actorId" | "action" | "entityType" | "operationId",
+    value: string,
+  ) => {
     setFilters((current) => ({
       ...current,
       [field]: value,
@@ -205,7 +208,7 @@ export function AuditPage() {
                 </TableHead>
                 <TableBody>
                   {data.items.map((record) => (
-                    <>
+                    <Fragment key={record.id}>
                       <TableRow
                         key={record.id}
                         hover
@@ -235,14 +238,14 @@ export function AuditPage() {
                           </Button>
                         </TableCell>
                       </TableRow>
-                      <TableRow key={`${record.id}-details`}>
+                      <TableRow>
                         <TableCell colSpan={6} sx={{ p: 0, borderBottom: 0 }}>
                           <Collapse in={expandedId === record.id} unmountOnExit>
                             <AuditRecordDetails record={record} />
                           </Collapse>
                         </TableCell>
                       </TableRow>
-                    </>
+                    </Fragment>
                   ))}
                 </TableBody>
               </Table>
