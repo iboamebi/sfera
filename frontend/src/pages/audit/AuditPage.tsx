@@ -87,7 +87,7 @@ export function AuditPage() {
   const { data, isLoading, isError, error } = useAuditRecords(filters);
 
   const updateFilter = (
-    field: "occurredFrom" | "occurredTo" | "actorId" | "action" | "entityType" | "operationId",
+    field: "occurredFrom" | "occurredTo" | "actorQuery" | "action" | "entityType" | "operationId",
     value: string,
   ) => {
     setFilters((current) => ({
