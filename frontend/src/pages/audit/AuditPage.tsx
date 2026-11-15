@@ -163,7 +163,7 @@ export function AuditPage() {
               fullWidth
             />
           </Stack>
-          <Stack direction="row" spacing={1} justifyContent="flex-end">
+          <Stack direction="row" spacing={1} sx={{ justifyContent: "flex-end" }}>
             <Button onClick={resetFilters}>Сбросить</Button>
           </Stack>
         </Stack>
@@ -180,7 +180,7 @@ export function AuditPage() {
 
       {data && (
         <>
-          <Stack direction="row" justifyContent="space-between" alignItems="center">
+          <Stack direction="row" sx={{ justifyContent: "space-between", alignItems: "center" }}>
             <Typography color="text.secondary">
               Записей: {data.total.toLocaleString("ru-RU")}
             </Typography>
@@ -252,7 +252,7 @@ export function AuditPage() {
             </TableContainer>
           )}
 
-          <Stack direction="row" spacing={2} justifyContent="flex-end" alignItems="center">
+          <Stack direction="row" spacing={2} sx={{ justifyContent: "flex-end", alignItems: "center" }}>
             <Button
               disabled={filters.offset === 0 || isLoading}
               onClick={() =>
