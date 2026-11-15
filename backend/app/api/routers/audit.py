@@ -19,6 +19,7 @@ def list_audit_records(
     occurred_from: datetime | None = Query(default=None),
     occurred_to: datetime | None = Query(default=None),
     actor_id: UUID | None = Query(default=None),
+    actor_query: str | None = Query(default=None, min_length=1, max_length=255),
     action: str | None = Query(default=None, min_length=1, max_length=100),
     entity_type: str | None = Query(default=None, min_length=1, max_length=100),
     operation_id: UUID | None = Query(default=None),
