@@ -369,7 +369,7 @@ export function UsersPage() {
               {visibleUsers.map((user) => (
                 <TableRow key={user.id} hover>
                   <TableCell sx={{ minWidth: 190 }}>
-                    <Typography variant="body2" fontWeight={600}>
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
                       {employeeName(user)}
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
