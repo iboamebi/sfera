@@ -10,6 +10,7 @@ export interface AuditRecord {
   action: string;
   entityType: string;
   entityId: string | null;
+  entityDisplayName: string | null;
   changes: Record<string, unknown>;
   reason: string | null;
   relatedRecordId: string | null;
