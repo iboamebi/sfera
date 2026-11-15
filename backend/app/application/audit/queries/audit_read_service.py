@@ -25,6 +25,7 @@ class AuditReadService:
         occurred_from: datetime | None = None,
         occurred_to: datetime | None = None,
         actor_id: UUID | None = None,
+        actor_query: str | None = None,
         action: str | None = None,
         entity_type: str | None = None,
         operation_id: UUID | None = None,
