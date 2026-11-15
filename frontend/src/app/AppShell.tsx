@@ -76,6 +76,19 @@ export function AppShell({ user, children }: AppShellProps) {
             {user.role === "admin" && (
               <Button
                 component={Link}
+                to="/audit"
+                color="inherit"
+                variant={location.pathname === "/audit" ? "outlined" : "text"}
+                aria-current={location.pathname === "/audit" ? "page" : undefined}
+                sx={{ textTransform: "none" }}
+              >
+                Журнал аудита
+              </Button>
+            )}
+
+            {user.role === "admin" && (
+              <Button
+                component={Link}
                 to="/users"
                 color="inherit"
                 variant={
