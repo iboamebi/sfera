@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Alert, Button, Stack, Typography } from "@mui/material";
-import { Link, useNavigate, useParams } from "react-router";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router";
 
 import { useCustomer } from "../../features/customers/model/useCustomer";
 import { useUpdateCustomer } from "../../features/customers/model/useUpdateCustomer";
@@ -10,6 +10,12 @@ import { useCustomerSites } from "../../features/sites/model/useCustomerSites";
 export function CustomerPage() {
   const { customerId } = useParams<{ customerId: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const requestedReturnTo = searchParams.get("returnTo");
+  const returnTo =
+    requestedReturnTo && /^\/orders\/[^/?#]+$/.test(requestedReturnTo)
+      ? requestedReturnTo
+      : "/customers";
   const [isEditing, setIsEditing] = useState(false);
   const { data, error, isLoading } = useCustomer(customerId ?? "");
   const {
@@ -37,10 +43,10 @@ export function CustomerPage() {
     <Stack spacing={3}>
       <Button
         variant="outlined"
-        onClick={() => navigate("/customers")}
+        onClick={() => navigate(returnTo)}
         sx={{ alignSelf: "flex-start" }}
       >
-        Назад к клиентам
+        {returnTo.startsWith("/orders/") ? "Назад к заказу" : "Назад к клиентам"}
       </Button>
 
       {isEditing ? (
