@@ -1992,3 +1992,16 @@ No production deployment, backend restart, or database migration was performed a
 - Frontend `npm run typecheck`: passed.
 - Frontend `npm run build`: passed; Vite transformed 1319 modules.
 - Browser revalidation of the three return-navigation paths remains pending.
+
+
+## Verification list sorting checkpoint
+
+- Browser review confirmed all three return-navigation paths: list → verification → list, list → order → list, and OrderItem → verification → source order.
+- Added client-side multi-column sorting to the general Verification table, consistent with the existing Orders table interaction.
+- Sortable columns: verification date, order number, customer, instrument (name/type plus serial number), verification type, status, result, and valid-until date.
+- Header click cycle: ascending → descending → inactive. Multiple selected criteria retain priority order and display their priority number.
+- Dates use ISO values; order numbers use numeric-aware locale comparison. Missing result/valid-until values remain at the bottom in either direction.
+- Sorting runs after the existing search and filters. No backend/API/database changes.
+- Files: `frontend/src/features/verifications/model/verificationSorting.ts`, `frontend/src/pages/verifications/VerificationsPage.tsx`.
+- Commits: `0482745`, `765cc1b`, `881e8a1`.
+- Local typecheck/build validation is pending.
