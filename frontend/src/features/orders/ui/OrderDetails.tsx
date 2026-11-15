@@ -16,6 +16,7 @@ import {
 } from "@mui/material";
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { Link } from "react-router";
 
 import { AddOrderItemButton } from "../add-order-item/ui/AddOrderItemButton";
 import type { OrderRead } from "../model/types";
@@ -111,7 +112,22 @@ export function OrderDetails({ order }: OrderDetailsProps) {
           >
             <Stack spacing={0.5}>
               <Typography variant="h5">Заказ № {order.number}</Typography>
-              <Typography color="text.secondary" variant="body1">
+              <Typography
+                component={Link}
+                to={`/customers/${order.customerId}?returnTo=${encodeURIComponent(`/orders/${order.id}`)}`}
+                variant="body1"
+                sx={{
+                  color: "primary.main",
+                  textDecoration: "none",
+                  width: "fit-content",
+                  "&:hover": { textDecoration: "underline" },
+                  "&:focus-visible": {
+                    outline: "2px solid",
+                    outlineColor: "primary.main",
+                    outlineOffset: 2,
+                  },
+                }}
+              >
                 {order.customerName}
               </Typography>
             </Stack>
