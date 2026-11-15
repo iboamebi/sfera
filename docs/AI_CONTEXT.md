@@ -2165,7 +2165,7 @@ Implemented employee identity/contact details separately from login credentials 
 - The `users.full_name` database column already existed, but it was not represented in the User Domain entity, UserMapper, User administration schemas, or frontend DTO/page. The current UI therefore presented `username` as the person's name.
 - The existing account role is an authorization role (`admin`, `operator`, `metrologist`, `technician`, `warehouse`), not an employment position.
 - Added optional `phone` and `position` columns; legacy accounts remain valid with nullable employee profile fields.
-- The new Alembic migration `c4e8a1d7b260` follows the current GitHub migration head `9f2a6c4d8e14`.
+- The new Alembic migration `c4e8a1d7b260` follows the current GitHub migration head `f7c2a9e4b610`.
 
 ### Backend
 
