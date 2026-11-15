@@ -137,7 +137,7 @@ Order     → Site        не является постоянной привя�
 2. Добавить прямое владение Instrument через Customer и проверку согласованности Instrument/Site/Customer. Реализовано в backend.
 3. Удалить устаревшую связь Order–Site после проверки зависимостей; Site для OrderItem получать через Instrument. Реализовано в backend.
 4. Частично реализовать поиск Site/Instrument в интерфейсе заказа: фильтр по нескольким Site и отдельное включение СИ без Site добавлены в order-item selector. Выбор Organization и persistence order context остаются открытыми до отдельного решения о cardinality и контракте хранения.
-5. Реализовать контролируемое изменение Instrument–Site с основанием и историей.
+5. Реализовано контролируемое изменение Instrument–Site: отдельный Application use case проверяет Customer ownership, требует основание и записывает старое/новое Site, пользователя и время в append-only Audit Trail.
 
 Каждый этап проверяется и фиксируется отдельно.
 

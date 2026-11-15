@@ -33,3 +33,7 @@ class SiteCustomerMismatchApplicationError(Exception):
 
 class DuplicateDeviceSerialNumberApplicationError(Exception):
     """Serial number already exists for this customer and instrument type."""
+
+
+class DeviceSiteChangeReasonRequiredApplicationError(Exception):
+    """A documented reason is required to change an instrument site."""
