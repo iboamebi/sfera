@@ -51,6 +51,9 @@ function AuditRecordDetails({ record }: { record: AuditRecord }) {
           : "—"}
       </Typography>
       <Typography variant="body2">
+        <strong>ID пользователя:</strong> {record.actorId}
+      </Typography>
+      <Typography variant="body2">
         <strong>ID операции:</strong> {record.operationId}
       </Typography>
       <Typography variant="body2">
