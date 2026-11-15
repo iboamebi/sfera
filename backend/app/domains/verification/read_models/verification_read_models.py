@@ -6,8 +6,12 @@ from dataclasses import dataclass
 from datetime import date, datetime
 from uuid import UUID
 
-from app.domains.verification.value_objects.verification_result import VerificationResult
-from app.domains.verification.value_objects.verification_status import VerificationStatus
+from app.domains.verification.value_objects.verification_result import (
+    VerificationResult,
+)
+from app.domains.verification.value_objects.verification_status import (
+    VerificationStatus,
+)
 from app.domains.verification.value_objects.verification_type import VerificationType
 
 
