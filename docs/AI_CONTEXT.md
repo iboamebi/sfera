@@ -498,7 +498,6 @@ docs/architecture/AUTHENTICATION.md
 ```
 
 ## Production State
-
 Production topology remains:
 
 ```text
@@ -997,8 +996,7 @@ Local typecheck/build and browser review are still required before considering t
 
 ## Last active administrator protection checkpoint — 2026-11-08
 
-- Confirmed the user-administration backend previously allowed the last active administrator to be archived, deactivated, or demoted.
-- Added an Application error for attempts that would leave zero active, non-archived administrators; the API maps it to HTTP 409.
+- Confirmed the user-administration backend previously allowed the last active administrator to be archived, deactivated, or demoted.- Added an Application error for attempts that would leave zero active, non-archived administrators; the API maps it to HTTP 409.
 - Added a UserRepository operation that loads all user rows with deterministic ordering and `SELECT FOR UPDATE`; the existing Unit of Work holds these locks through the state change and commit, serializing concurrent administrator lifecycle operations.
 - Applied the guard to archive, deactivation, and role demotion. Inactive and archived administrators do not count as available administrators; promoting, activating, restoring, and non-admin lifecycle changes retain their existing behavior.
 - Added Application regression tests for all three blocked operations, allowed archive when a second active administrator exists, and exclusion of inactive administrators; added API 409 mapping tests.
@@ -1497,7 +1495,6 @@ Administrator-assisted password recovery has now been implemented; see the check
 
 
 ## Verification — validity duration and correction
-
 - Approval now accepts either a manually entered `valid_until` date or a duration in calendar years plus the operator's IANA timezone. When duration is used, the application captures one UTC `decision_at`, converts it to the supplied timezone, adds the requested number of calendar years, then subtracts one day.
 - A February 29 anniversary that falls in a non-leap year is clamped to February 28 before subtracting one day.
 - The frontend displays a preview based on the operator's current local date, but the backend remains authoritative and calculates from the actual persisted decision timestamp. An optional manually entered final date overrides the calculation.
@@ -1997,8 +1994,7 @@ No production deployment, backend restart, or database migration was performed a
 ## Verification list sorting checkpoint
 
 - Browser review confirmed all three return-navigation paths: list → verification → list, list → order → list, and OrderItem → verification → source order.
-- Added client-side multi-column sorting to the general Verification table, consistent with the existing Orders table interaction.
-- Sortable columns: verification date, order number, customer, instrument (name/type plus serial number), verification type, status, result, and valid-until date.
+- Added client-side multi-column sorting to the general Verification table, consistent with the existing Orders table interaction.- Sortable columns: verification date, order number, customer, instrument (name/type plus serial number), verification type, status, result, and valid-until date.
 - Header click cycle: ascending → descending → inactive. Multiple selected criteria retain priority order and display their priority number.
 - Dates use ISO values; order numbers use numeric-aware locale comparison. Missing result/valid-until values remain at the bottom in either direction.
 - Sorting runs after the existing search and filters. No backend/API/database changes.
@@ -2107,3 +2103,31 @@ Current stage:
 - Audit persistence: existing.
 - Audit read API: IMPLEMENTED, local validation pending.
 - Admin Audit frontend: NOT IMPLEMENTED.
+
+## Audit Trail — frontend implementation checkpoint — 2026-11-15
+
+Implemented the administrator-facing Audit Journal UI against the existing read-only `GET /audit/` API.
+
+### Frontend
+
+- Added Audit feature DTOs, API mapper, Axios query adapter and React Query hook.
+- Added `/audit` page with date/time range, actor UUID, exact action, exact entity type and operation UUID filters.
+- Added paginated newest-first records table showing timestamp, actor, action, entity type and entity UUID.
+- Each row expands to show operation/record/entity/related UUIDs, initiator, reason and the raw structured `changes` payload.
+- Registered `/audit` with `RequireAuth adminOnly`; added the navigation item for ADMIN users.
+- Backend Application authorization remains authoritative; frontend route guard is only a UX boundary.
+- No Audit write behavior, Domain Event persistence, schema or database changes.
+
+### GitHub commits
+
+- `1b7426d` — audit frontend model and DTOs.
+- `1498981`, `007ad7f`, `e11caae` — mapper, API adapter and query hook.
+- `35f1631` — Audit Journal page.
+- `2046d33` — admin-only route.
+- `6606a6d` — admin navigation item.
+
+### Local validation required
+
+Run frontend typecheck and production build after pulling `develop`. Then review `/audit` in the browser as an administrator: initial list, each filter, pagination, expanded details, empty/error states, and non-admin redirect behavior.
+
+No production deployment or backend restart is part of this stage.
