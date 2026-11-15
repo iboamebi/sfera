@@ -26,7 +26,7 @@ export interface AuditRecordPageApiDto {
 export interface AuditQueryParams {
   occurred_from?: string;
   occurred_to?: string;
-  actor_id?: string;
+  actor_query?: string;
   action?: string;
   entity_type?: string;
   operation_id?: string;
