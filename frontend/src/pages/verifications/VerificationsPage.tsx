@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import {
+  Button,
   FormControl,
   InputLabel,
   MenuItem,
@@ -17,6 +18,11 @@ import {
 } from "@mui/material";
 import { Link } from "react-router";
 
+import {
+  sortVerifications,
+  type VerificationSortCriterion,
+  type VerificationSortField,
+} from "../../features/verifications/model/verificationSorting";
 import { useVerifications } from "../../features/verifications/model/useVerifications";
 import type {
   VerificationListRead,
@@ -42,6 +48,20 @@ const TYPE_LABELS: Record<VerificationListRead["verificationType"], string> = {
   AFTER_REPAIR: "После ремонта",
 };
 
+const sortableColumns: Array<{
+  field: VerificationSortField;
+  label: string;
+}> = [
+  { field: "verificationDate", label: "Дата поверки" },
+  { field: "orderNumber", label: "Заказ" },
+  { field: "customerName", label: "Клиент" },
+  { field: "instrument", label: "СИ" },
+  { field: "verificationType", label: "Тип" },
+  { field: "status", label: "Статус" },
+  { field: "result", label: "Результат" },
+  { field: "validUntil", label: "Действительна до" },
+];
+
 function formatDate(value: string | null): string {
   if (!value) return "—";
   const [year, month, day] = value.slice(0, 10).split("-");
@@ -66,6 +86,7 @@ export function VerificationsPage() {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<VerificationStatus | "ALL">("ALL");
   const [result, setResult] = useState<VerificationResult | "ALL" | "NONE">("ALL");
+  const [sortCriteria, setSortCriteria] = useState<VerificationSortCriterion[]>([]);
 
   const filteredVerifications = useMemo(() => {
     const query = search.trim().toLocaleLowerCase("ru-RU");
@@ -88,6 +109,31 @@ export function VerificationsPage() {
       return matchesSearch && matchesStatus && matchesResult;
     });
   }, [result, search, status, verifications]);
+
+  const sortedVerifications = useMemo(
+    () => sortVerifications(filteredVerifications, sortCriteria),
+    [filteredVerifications, sortCriteria],
+  );
+
+  const handleSortClick = (field: VerificationSortField) => {
+    setSortCriteria((current) => {
+      const existing = current.find((criterion) => criterion.field === field);
+
+      if (!existing) {
+        return [...current, { field, direction: "asc" }];
+      }
+
+      if (existing.direction === "asc") {
+        return current.map((criterion) =>
+          criterion.field === field
+            ? { ...criterion, direction: "desc" }
+            : criterion,
+        );
+      }
+
+      return current.filter((criterion) => criterion.field !== field);
+    });
+  };
 
   if (isLoading) {
     return <Typography>Загрузка поверок...</Typography>;
@@ -170,24 +216,44 @@ export function VerificationsPage() {
           <Table size="small" sx={{ minWidth: 1100 }}>
             <TableHead>
               <TableRow>
-                <TableCell sx={{ fontWeight: 700, whiteSpace: "nowrap" }}>
-                  Дата поверки
-                </TableCell>
-                <TableCell sx={{ fontWeight: 700, whiteSpace: "nowrap" }}>
-                  Заказ
-                </TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>Клиент</TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>СИ</TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>Тип</TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>Статус</TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>Результат</TableCell>
-                <TableCell sx={{ fontWeight: 700, whiteSpace: "nowrap" }}>
-                  Действительна до
-                </TableCell>
+                {sortableColumns.map(({ field, label }) => {
+                  const criterion = sortCriteria.find(
+                    (item) => item.field === field,
+                  );
+                  const priority = sortCriteria.findIndex(
+                    (item) => item.field === field,
+                  );
+
+                  return (
+                    <TableCell
+                      key={field}
+                      sx={{ fontWeight: 700, whiteSpace: "nowrap" }}
+                    >
+                      <Button
+                        size="small"
+                        color="inherit"
+                        onClick={() => handleSortClick(field)}
+                        aria-label={`Сортировать по полю «${label}»`}
+                        sx={{
+                          minWidth: 0,
+                          px: 0.5,
+                          fontWeight: 700,
+                          textTransform: "none",
+                        }}
+                      >
+                        {label}
+                        {criterion &&
+                          ` ${criterion.direction === "asc" ? "↑" : "↓"}`}
+                        {criterion && sortCriteria.length > 1 &&
+                          ` ${priority + 1}`}
+                      </Button>
+                    </TableCell>
+                  );
+                })}
               </TableRow>
             </TableHead>
             <TableBody>
-              {filteredVerifications.map((verification) => (
+              {sortedVerifications.map((verification) => (
                 <TableRow key={verification.id} hover>
                   <TableCell>
                     <Link to={`/verifications/${verification.id}?returnTo=/verifications`}>
