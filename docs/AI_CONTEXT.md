@@ -2073,3 +2073,37 @@ Current status:
 - Domain Events: in-memory post-commit dispatch; no persistent event history.
 - Audit read/query: NOT IMPLEMENTED.
 - Admin Audit UI: NOT IMPLEMENTED.
+
+
+## Audit Trail — backend read API implementation — 2026-11-15
+
+Implemented the first read-only backend slice for the administrative Audit Journal on `develop`.
+
+### API
+
+- Added `GET /audit/`, protected by authentication and the existing first-login password-change guard.
+- Application `AuditReadService` enforces `UserRole.ADMIN` with the established `require_role` policy. Non-admin users are rejected before the repository is queried.
+- The response is paginated: `items`, `total`, `limit`, `offset`; limit is constrained to 1–200.
+- Filters: inclusive `occurred_from` / `occurred_to`, `actor_id`, exact `action`, exact `entity_type`, and `operation_id`.
+- Invalid date range (`occurred_from > occurred_to`) returns HTTP 422.
+- Records are ordered newest-first by `occurred_at`, then `id` for stable pagination.
+- The read projection joins the actor and operation initiator to current User rows. UUIDs remain present even when a related User row cannot be resolved; display names are nullable.
+
+### Architecture and boundaries
+
+- Added Audit domain read model/repository contract, Infrastructure SQLAlchemy read repository, Application query service/mapper, API schema/router, and DI providers.
+- Registered the router in `app/main.py`.
+- Added focused Application tests for ADMIN authorization, projection mapping, and filter forwarding.
+- No database migration or write-path change.
+- No Domain Event persistence; this API reads only `audit_records` and its existing `audit_operations` metadata.
+- Audit records remain append-only; the read API has no mutation operations.
+
+### GitHub implementation commits
+
+- `e1a6447` through `6f9f40d` — read model, repository, service, schema, router, DI, registration, tests, and import cleanup.
+- Latest code still requires local backend validation: focused pytest, Ruff check, and Ruff format check. Do not proceed to frontend integration until those checks pass.
+
+Current stage:
+- Audit persistence: existing.
+- Audit read API: IMPLEMENTED, local validation pending.
+- Admin Audit frontend: NOT IMPLEMENTED.
