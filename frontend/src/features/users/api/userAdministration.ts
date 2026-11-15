@@ -1,11 +1,18 @@
 import { http } from "../../../shared/api/http";
-import type { UserCreated, UserRead, UserRole } from "../model/types";
+import type {
+  UserCreateInput,
+  UserCreated,
+  UserProfileInput,
+  UserRead,
+  UserRole,
+} from "../model/types";
 import { mapCreatedUser, mapUser } from "./userMapper";
 import type {
   UserActiveApiRequest,
   UserApiDto,
   UserCreateApiRequest,
   UserCreatedApiDto,
+  UserProfileApiRequest,
   UserRoleApiRequest,
 } from "./types";
 
@@ -17,14 +24,34 @@ export async function getUsers(includeArchived = false): Promise<UserRead[]> {
   return response.data.map(mapUser);
 }
 
-export async function createUser(
-  username: string,
-  role: UserRole,
-): Promise<UserCreated> {
-  const request: UserCreateApiRequest = { username, role };
+export async function createUser(data: UserCreateInput): Promise<UserCreated> {
+  const request: UserCreateApiRequest = {
+    username: data.username,
+    full_name: data.fullName,
+    phone: data.phone.trim() || null,
+    position: data.position.trim() || null,
+    role: data.role,
+  };
   const response = await http.post<UserCreatedApiDto>("/users/", request);
 
   return mapCreatedUser(response.data);
+}
+
+export async function updateUserProfile(
+  userId: string,
+  data: UserProfileInput,
+): Promise<UserRead> {
+  const request: UserProfileApiRequest = {
+    full_name: data.fullName,
+    phone: data.phone.trim() || null,
+    position: data.position.trim() || null,
+  };
+  const response = await http.patch<UserApiDto>(
+    `/users/${userId}/profile`,
+    request,
+  );
+
+  return mapUser(response.data);
 }
 
 export async function resetUserPassword(userId: string): Promise<UserCreated> {
