@@ -86,6 +86,7 @@ from app.core.dependencies.repositories import (
     get_session_repository,
     get_site_repository,
     get_user_repository,
+    get_verification_read_repository,
     get_verification_repository,
     get_warehouse_movement_repository,
     get_warehouse_repository,
