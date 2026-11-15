@@ -6,6 +6,7 @@ from datetime import timedelta
 
 from fastapi import Depends
 
+from app.application.audit.queries.audit_read_service import AuditReadService
 from app.application.auth.services.authentication_application_service import (
     AuthenticationApplicationService,
 )
@@ -72,6 +73,7 @@ from app.application.workflow.services.workflow_application_service import (
 from app.core.dependencies.events import get_event_dispatcher
 from app.core.dependencies.repositories import (
     get_audit_operation_repository,
+    get_audit_read_repository,
     get_audit_repository,
     get_customer_repository,
     get_device_repository,
@@ -96,6 +98,7 @@ from app.core.dependencies.repositories import (
     get_workflow_repository,
 )
 from app.core.dependencies.uow import get_unit_of_work
+from app.domains.audit.repositories.audit_read_repository import AuditReadRepository
 from app.domains.auth.repositories.session_repository import SessionRepository
 from app.domains.customer.repositories.customer_repository import CustomerRepository
 from app.domains.device.repositories.device_repository import DeviceRepository
@@ -230,6 +233,13 @@ def get_order_service(
         audit_repository,
         event_dispatcher,
     )
+
+
+def get_audit_read_service(
+    repository: AuditReadRepository = Depends(get_audit_read_repository),
+) -> AuditReadService:
+    """Provide administrator audit read service."""
+    return AuditReadService(repository)
 
 
 def get_order_read_service(
