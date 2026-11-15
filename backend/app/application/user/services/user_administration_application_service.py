@@ -43,6 +43,29 @@ class UserAdministrationApplicationService:
         require_role(user, UserRole.ADMIN)
         return self._repository.get_all(include_archived=include_archived)
 
+    def update_profile(
+        self,
+        command: UpdateUserProfileCommand,
+        actor: User,
+    ) -> User:
+        """Update employee contact and display information as an administrator."""
+        require_role(actor, UserRole.ADMIN)
+
+        with self._uow:
+            user = self._repository.get_by_id(
+                command.user_id,
+                include_archived=True,
+            )
+            if user is None:
+                raise UserNotFoundApplicationError
+
+            user.update_profile(
+                full_name=command.full_name,
+                phone=command.phone,
+                position=command.position,
+            )
+            return self._repository.save(user)
+
     def change_role(self, command: ChangeUserRoleCommand, actor: User) -> User:
         """Change a user's role as an administrator."""
         require_role(actor, UserRole.ADMIN)
@@ -207,6 +230,9 @@ class UserAdministrationApplicationService:
             id=uuid4(),
             username=command.username,
             password_hash=self._password_hasher.hash(temporary_password),
+            full_name=command.full_name,
+            phone=command.phone,
+            position=command.position,
             role=command.role,
             must_change_password=True,
         )
