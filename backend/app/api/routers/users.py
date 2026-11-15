@@ -277,6 +277,9 @@ def create_user(
     return UserCreated(
         id=user.id,
         username=user.username,
+        full_name=user.full_name,
+        phone=user.phone,
+        position=user.position,
         role=user.role,
         is_active=user.is_active,
         archived=user.archived,
