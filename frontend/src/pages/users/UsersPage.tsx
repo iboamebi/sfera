@@ -30,7 +30,8 @@ import type {
   UserRead,
   UserRole,
 } from "../../features/users/model/types";
-import { useUserAdministration } from "../../features/users/model/useUserAdministration";
+import { useUserAdministration } from
+  "../../features/users/model/useUserAdministration";
 import { useUsers } from "../../features/users/model/useUsers";
 
 const roles: UserRole[] = [
@@ -341,7 +342,7 @@ export function UsersPage() {
       {isLoading && <Typography>Загрузка сотрудников...</Typography>}
       {isError && (
         <Alert severity="error">
-          Не удалось загрузить пользователей. Убедитесь, что у вашей учётной записи есть права администратора.
+          Не удалось загрузить пользователей. Проверьте права администратора.
         </Alert>
       )}
       {!isLoading && !isError && visibleUsers.length === 0 && (
@@ -384,7 +385,9 @@ export function UsersPage() {
                       fullWidth
                       disabled={
                         user.archived ||
-                        (user.role === "admin" && user.isActive && activeAdminCount <= 1) ||
+                        (user.role === "admin" &&
+                          user.isActive &&
+                          activeAdminCount <= 1) ||
                         administration.changeRole.isPending
                       }
                     >
@@ -425,7 +428,8 @@ export function UsersPage() {
                           onClick={() => {
                             if (
                               window.confirm(
-                                `Сбросить пароль пользователя ${user.username}? Все его активные сеансы будут завершены.`,
+                                `Сбросить пароль ${user.username}? ` +
+                                  "Все активные сеансы будут завершены.",
                               )
                             ) {
                               administration.resetPassword.mutate(user.id, {
@@ -446,7 +450,9 @@ export function UsersPage() {
                             size="small"
                             disabled={
                               administration.changeStatus.isPending ||
-                              (user.role === "admin" && user.isActive && activeAdminCount <= 1)
+                              (user.role === "admin" &&
+                                user.isActive &&
+                                activeAdminCount <= 1)
                             }
                             onClick={() =>
                               administration.changeStatus.mutate({
