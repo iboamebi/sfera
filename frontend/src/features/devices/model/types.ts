@@ -29,3 +29,8 @@ export interface UpdateDeviceInput {
   inventoryNumber: string | null;
   comment: string | null;
 }
+
+export interface ChangeDeviceSiteInput {
+  siteId: string | null;
+  reason: string;
+}

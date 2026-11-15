@@ -2211,3 +2211,57 @@ Implemented employee identity/contact details separately from login credentials 
 - Зафиксированы 21 предупреждение, не относящиеся к этому изменению: Starlette TestClient/httpx deprecation и существующие вызовы `datetime.utcnow()` в PriceList.
 - Ранее выявленные ошибки полного Ruff/format запуска находятся в неизменённых файлах; целевые проверки всех файлов PR проходят.
 - Backend slice Instrument–Site reassignment локально валидирован. PR #38 остаётся открытым; merge и production deployment не выполнялись.
+
+## Instrument–Site reassignment — backend merged and frontend slice implemented — 2026-11-15
+
+### Backend
+
+- PR #38 was squash-merged into `develop` as `cae51944f810bbb83af46fe77331cb046c728b8a`.
+- This supersedes the earlier checkpoint text that described PR #38 as open. Backend local validation remains: 377 passed, 2 skipped; scoped Ruff and format checks passed for all PR backend files.
+
+### Frontend implementation
+
+- Work is on `feat/device-site-assignment-ui`, based on the merged `develop`.
+- Added an API adapter for `PATCH /devices/{device_id}/site`, mapping the existing snake_case DTO through the current Device mapper.
+- Added a React Query mutation hook that updates the Device detail cache and invalidates the Device collection.
+- Added a dedicated Site assignment section to the existing Device card. It loads Sites for the Instrument's Customer, allows selecting an active Site or clearing the assignment, and requires a nonblank reason before enabling save.
+- The currently assigned archived Site remains visible/selectable as the current value; other archived Sites are not offered as targets.
+- Assignment remains separate from ordinary Device metadata editing. The backend is authoritative for Customer ownership, reason validation, and immutable audit recording.
+- The existing admin Audit Journal remains the historical read surface; this frontend slice does not add a second history store or alter audit data.
+- No backend, database, migration, or production changes are included in this frontend slice.
+
+### Validation
+
+- GitHub implementation is complete for the initial UI slice. Frontend `npm run typecheck`, `npm run build`, and browser review are pending local validation after synchronization.
+
+
+### Frontend local validation — 2026-11-15
+
+После синхронизации до `a56526746a0fc4bb76ee3a2d1b3639e4a0feb4a2` пользователь подтвердил:
+
+- `npm ci` — успешно.
+- `npm run typecheck` — успешно, ошибок TypeScript нет.
+- `npm run build` — успешно, Vite преобразовал 1327 модулей.
+- Осталось предупреждение Vite о bundle chunk размером около 896 КБ после минификации; сборку оно не блокирует.
+- Browser review сценария изменения Site ещё не выполнен.
+- На commit PR нет настроенных status checks (пустой список statuses).
+- Production deployment и backend restart не выполнялись.
+
+
+### Instrument–Site reassignment — UI behavior refinement — 2026-11-15
+
+- Browser review confirmed scenarios 1–4: reassignment to another active Site with a reason, clearing the Site with a reason, updated assignment display, and the corresponding `instrument.site_changed` record in the admin Audit Journal.
+- Review of the actual `DeviceCard` implementation identified that `DeviceSiteAssignment` was rendered in both view and metadata-edit modes.
+- The Site assignment operation is independent from ordinary Instrument metadata editing: it has its own endpoint, mandatory reason, and audit record. Therefore the assignment control is now shown only in the card view mode; metadata-edit mode edits only Instrument fields.
+- The archived-current-Site scenario remains unverified in the browser and is explicitly deferred. The implementation still retains the current archived Site in the available options while excluding other archived Sites.
+- Frontend typecheck/build and a short browser regression check after this refinement are pending.
+- No backend, database, migration, or production changes.
+
+
+### Instrument–Site reassignment — final frontend validation — 2026-11-15
+
+- После последнего изменения DeviceCard пользователь повторно подтвердил локальные `npm run typecheck` и `npm run build` — оба завершились успешно; Vite преобразовал 1327 модулей.
+- Browser regression после изменения: сценарии 1–4 пройдены. Блок назначения Site виден в режиме просмотра, скрыт в режиме редактирования, сохранение обычных полей СИ не меняет Site, после выхода из режима редактирования блок снова виден.
+- Проверка уже назначенного архивного Site остаётся отложенной.
+- GitHub review PR #39: base `develop`, head `aef934e68f6a02a8aa3e01a0254505007f1c511c`, mergeable; review threads отсутствуют, submitted reviews отсутствуют. Между base и head 6 изменённых файлов.
+- No backend, database, migration, or production changes. Production deployment and backend restart were not performed.

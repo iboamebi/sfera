@@ -3,6 +3,7 @@ import { Button, Stack, TextField, Typography } from "@mui/material";
 
 import { useInstrumentType } from "../../instrument-type/model/useInstrumentType";
 import { useUpdateDevice } from "../model/useUpdateDevice";
+import { DeviceSiteAssignment } from "./DeviceSiteAssignment";
 import type { DeviceRead, UpdateDeviceInput } from "../model/types";
 
 interface DeviceCardProps {
@@ -63,6 +64,7 @@ export function DeviceCard({
         <Typography>Год выпуска: {device.manufactureYear ?? "—"}</Typography>
         <Typography>Инвентарный номер: {device.inventoryNumber ?? "—"}</Typography>
         <Typography>Комментарий: {device.comment ?? "—"}</Typography>
+        <DeviceSiteAssignment device={device} />
         <Button variant="outlined" onClick={() => setEditing(true)}>
           Редактировать карту СИ
         </Button>
