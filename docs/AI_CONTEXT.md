@@ -2153,3 +2153,38 @@ No production deployment or backend restart is part of this stage.
 - The entity UUID remains in the expanded technical details. No schema migration, write-path change, or Domain Event persistence was introduced.
 - Backend focused service test now checks mapping of the display name. Local backend tests/Ruff and frontend typecheck/build remain required after pulling `develop`.
 - The next separately scoped improvement is the Users administration page: distinguish employee full name from login and assess adding phone number, position, and a more usable employee list/detail presentation. No Users implementation is included in this audit change.
+
+
+
+## Users Administration — employee profile — 2026-11-15
+
+Implemented employee identity/contact details separately from login credentials and system authorization.
+
+### Existing model findings
+
+- The `users.full_name` database column already existed, but it was not represented in the User Domain entity, UserMapper, User administration schemas, or frontend DTO/page. The current UI therefore presented `username` as the person's name.
+- The existing account role is an authorization role (`admin`, `operator`, `metrologist`, `technician`, `warehouse`), not an employment position.
+- Added optional `phone` and `position` columns; legacy accounts remain valid with nullable employee profile fields.
+- The new Alembic migration `c4e8a1d7b260` follows the current GitHub migration head `9f2a6c4d8e14`.
+
+### Backend
+
+- Extended User Domain entity and SQLAlchemy mapper with `full_name`, `phone`, and `position`.
+- User creation now accepts required full name plus optional phone and position; username remains a separate login credential.
+- Added administrator-only `PATCH /users/{user_id}/profile` for updating employee profile fields, including inactive/archived accounts. It does not change role, password, sessions, or account status.
+- User read/create/password-reset responses include employee profile fields.
+- Added focused Application, API-router, and repository-mapping tests.
+- Existing account lifecycle and last-active-administrator safeguards remain unchanged.
+
+### Frontend
+
+- User creation form now distinguishes ФИО, login, phone, employment position, and system role.
+- Employee table shows full name with login beneath it, phone, position, system role, and account status.
+- Added text search by full name, login, phone, position, and role.
+- Added an employee-details dialog for editing ФИО, phone, and position. Login and authorization role remain separate controls.
+- Existing password reset, activate/deactivate, archive/restore, and last-admin safeguards remain available.
+
+### Validation
+
+- Local backend tests, Ruff, frontend typecheck/build, and browser review are pending after pulling `develop`.
+- Do not run the Alembic migration or deploy/restart production until the user has reviewed the changes and explicitly proceeds with the required local/database validation.
