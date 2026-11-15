@@ -34,6 +34,9 @@ def test_get_all_returns_inactive_users_for_administration() -> None:
     active = UserModel(
         id=uuid4(),
         username="active",
+        full_name="Иван Иванов",
+        phone="+7 900 000-00-00",
+        position="Инженер",
         password_hash="hash",
         role=UserRole.OPERATOR.value,
         is_active=True,
@@ -56,4 +59,7 @@ def test_get_all_returns_inactive_users_for_administration() -> None:
     assert [user.username for user in result] == ["active", "inactive"]
     assert result[1].is_active is False
     assert result[1].must_change_password is True
+    assert result[0].full_name == "Иван Иванов"
+    assert result[0].phone == "+7 900 000-00-00"
+    assert result[0].position == "Инженер"
     assert session.query_result.ordered is True
