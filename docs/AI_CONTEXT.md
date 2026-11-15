@@ -2141,3 +2141,15 @@ No production deployment or backend restart is part of this stage.
 - Replaced the frontend actor UUID filter with a free-text search by username or full name. Backend query uses case-insensitive partial matching against the current User row; the legacy actor_id API filter remains available for exact technical queries.
 - Audit entity references are polymorphic (entity_type + entity_id) and existing entity types are historically inconsistent. There is no universal entity display-name field or confirmed resolver in the current read contract, so entity UUIDs remain explicit for now; do not guess names from arbitrary changes payloads. A follow-up can add type-specific display projections after inventorying actual audited entity types and their name fields.
 - Focused backend test and frontend typecheck/build are required after pulling the change. No audit write path, migration, or Domain Event behavior changed.
+
+
+
+## Audit Journal — human-readable entity names — 2026-11-15
+
+- Extended the read-only audit projection with `entity_display_name`; no audit records or write paths are changed.
+- Existing entity types are handled exactly as currently stored: `order`, `Verification`, and `repair`. Historical values are not normalized or rewritten.
+- Orders display as «Заказ № N». Verification and repair records display the operation type plus the linked order number and, when available, the instrument serial number.
+- The projection uses optional joins to current Order, OrderItem, Verification, Repair and Instrument rows. Missing/deleted/unrecognized entities produce a null display name; the UI shows a neutral «Неизвестный объект» fallback.
+- The entity UUID remains in the expanded technical details. No schema migration, write-path change, or Domain Event persistence was introduced.
+- Backend focused service test now checks mapping of the display name. Local backend tests/Ruff and frontend typecheck/build remain required after pulling `develop`.
+- The next separately scoped improvement is the Users administration page: distinguish employee full name from login and assess adding phone number, position, and a more usable employee list/detail presentation. No Users implementation is included in this audit change.
