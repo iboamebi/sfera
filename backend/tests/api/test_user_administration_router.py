@@ -4,6 +4,7 @@ import pytest
 from fastapi import HTTPException
 
 from app.api.routers.users import (
+    update_user_profile,
     archive_user,
     change_user_role,
     create_user,
@@ -19,7 +20,12 @@ from app.application.user.exceptions import (
 )
 from app.domains.user.entities.user import User
 from app.domains.user.value_objects.user_role import UserRole
-from app.schemas.user import UserActiveUpdate, UserCreate, UserRoleUpdate
+from app.schemas.user import (
+    UserActiveUpdate,
+    UserCreate,
+    UserProfileUpdate,
+    UserRoleUpdate,
+)
 
 
 class FakeUserAdministrationService:
@@ -35,6 +41,7 @@ class FakeUserAdministrationService:
         self.archive_error: Exception | None = None
         self.restore_error: Exception | None = None
         self.reset_error: Exception | None = None
+        self.profile_error: Exception | None = None
 
     def get_all(
         self,
@@ -44,6 +51,18 @@ class FakeUserAdministrationService:
         self.actor = user
         self.include_archived = include_archived
         return self.users
+
+    def update_profile(self, command: object, actor: User) -> User:
+        self.actor = actor
+        if self.profile_error is not None:
+            raise self.profile_error
+        target = next(user for user in self.users if user.id == command.user_id)
+        target.update_profile(
+            full_name=command.full_name,
+            phone=command.phone,
+            position=command.position,
+        )
+        return target
 
     def change_role(self, command: object, actor: User) -> User:
         self.actor = actor
@@ -96,6 +115,9 @@ class FakeUserAdministrationService:
             id=uuid4(),
             username=command.username,
             password_hash="$argon2id$hashed",
+            full_name=command.full_name,
+            phone=command.phone,
+            position=command.position,
             role=command.role,
             must_change_password=True,
         )
@@ -125,6 +147,49 @@ def test_get_users_forwards_actor_and_archived_filter() -> None:
     assert result == service.users
     assert service.actor is actor
     assert service.include_archived is True
+
+
+def test_update_user_profile_returns_employee_details() -> None:
+    actor = make_user()
+    target = User(
+        id=uuid4(),
+        username="employee-1",
+        password_hash="$argon2id$hashed",
+        role=UserRole.OPERATOR,
+    )
+    service = FakeUserAdministrationService()
+    service.users = [target]
+
+    result = update_user_profile(
+        user_id=target.id,
+        data=UserProfileUpdate(
+            full_name="Алексей Иванов",
+            phone="+7 900 123-45-67",
+            position="Инженер",
+        ),
+        actor=actor,
+        service=service,
+    )
+
+    assert result.full_name == "Алексей Иванов"
+    assert result.phone == "+7 900 123-45-67"
+    assert result.position == "Инженер"
+    assert service.actor is actor
+
+
+def test_update_user_profile_maps_missing_user_to_404() -> None:
+    service = FakeUserAdministrationService()
+    service.profile_error = UserNotFoundApplicationError()
+
+    with pytest.raises(HTTPException) as exc_info:
+        update_user_profile(
+            user_id=uuid4(),
+            data=UserProfileUpdate(full_name="Неизвестный сотрудник"),
+            actor=make_user(),
+            service=service,
+        )
+
+    assert exc_info.value.status_code == 404
 
 
 def test_change_user_role_returns_updated_user() -> None:
@@ -277,7 +342,7 @@ def test_create_user_returns_temporary_password_and_account_state() -> None:
     service = FakeUserAdministrationService()
 
     result = create_user(
-        data=UserCreate(username="operator-1", role=UserRole.OPERATOR),
+        data=UserCreate(username="operator-1", full_name="Оператор", role=UserRole.OPERATOR),
         actor=actor,
         service=service,
     )
@@ -296,7 +361,7 @@ def test_create_user_maps_duplicate_username_to_conflict() -> None:
 
     with pytest.raises(HTTPException) as exc_info:
         create_user(
-            data=UserCreate(username="existing", role=UserRole.OPERATOR),
+            data=UserCreate(username="existing", full_name="Существующий сотрудник", role=UserRole.OPERATOR),
             actor=make_user(),
             service=service,
         )
