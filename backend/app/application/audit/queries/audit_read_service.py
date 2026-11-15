@@ -3,12 +3,12 @@
 from datetime import datetime
 from uuid import UUID
 
+from app.application.audit.queries.audit_read_mapper import AuditReadMapper
 from app.application.authorization.authorization import require_role
 from app.domains.audit.repositories.audit_read_repository import AuditReadRepository
 from app.domains.user.entities.user import User
 from app.domains.user.value_objects.user_role import UserRole
 from app.schemas.audit import AuditRecordPageRead
-from app.application.audit.queries.audit_read_mapper import AuditReadMapper
 
 
 class AuditReadService:
