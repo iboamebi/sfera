@@ -2275,7 +2275,7 @@ Implemented employee identity/contact details separately from login credentials 
 - Preserved existing safeguards: creation is disabled while the Instrument list is loading, when the serial is empty, when a matching Instrument already exists, and while a selected-Site search still needs expansion to all Sites.
 - Made the Instrument Type selector responsive on narrow viewports and allowed the add-item form to use the available width while retaining its desktop max width.
 - Frontend-only presentation change. No backend, database, API contract, migration, or production changes.
-- Branch: `fix/order-page-device-selector-ux`. Frontend typecheck/build and browser regression are pending local validation.
+- Branch: `fix/order-page-device-selector-ux`. User confirmed frontend typecheck, build, and browser regression all passed.
 
 
 ## Order → Customer navigation — 2026-11-15
