@@ -47,6 +47,7 @@ def test_admin_can_list_audit_records_and_filters_are_forwarded() -> None:
         action="verification.approved",
         entity_type="Verification",
         entity_id=uuid4(),
+        entity_display_name="Поверка · заказ № 42 · СИ № 123",
         changes={"result": {"old": None, "new": "SUITABLE"}},
         reason=None,
         related_record_id=None,
@@ -76,6 +77,7 @@ def test_admin_can_list_audit_records_and_filters_are_forwarded() -> None:
     assert result.items[0].id == record.id
     assert result.items[0].actor_username == "operator"
     assert result.items[0].initiator_username == "admin"
+    assert result.items[0].entity_display_name == record.entity_display_name
     assert result.items[0].changes == record.changes
     assert repository.filters == {
         "occurred_from": occurred_from,
