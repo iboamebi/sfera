@@ -1936,3 +1936,17 @@ Browser review after local validation:
 - cancelled/archived rows remain distinguishable and do not appear as active work.
 
 No production deployment or backend restart is part of this stage.
+
+## General Verification Page — validation correction — 2026-11-15
+
+User-local validation exposed an incomplete dependency wiring change in the first Verification list slice:
+
+- get_verification_read_repository was correctly defined in core/dependencies/repositories.py, but its import was missing from core/dependencies/services.py.
+- Ruff also identified formatting/import-order issues in the new read model, read service, and API test.
+
+Corrected in GitHub:
+- services.py now imports get_verification_read_repository.
+- New Python files/tests were formatted to project Ruff conventions.
+- No business/API contract change was made.
+
+The user should rerun the same backend focused test/Ruff commands. Frontend validation remains pending.
