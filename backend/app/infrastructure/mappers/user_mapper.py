@@ -26,6 +26,9 @@ class UserMapper(
             id=model.id,
             username=model.username,
             password_hash=model.password_hash,
+            full_name=model.full_name,
+            phone=model.phone,
+            position=model.position,
             role=UserRole(model.role),
             archived=model.archived,
             is_active=model.is_active,
@@ -40,6 +43,9 @@ class UserMapper(
         """Convert User between domain entity and ORM model."""
 
         model.username = entity.username
+        model.full_name = entity.full_name
+        model.phone = entity.phone
+        model.position = entity.position
         model.password_hash = entity.password_hash
         model.role = entity.role.value
         model.archived = entity.archived
