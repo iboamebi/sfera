@@ -460,7 +460,13 @@ def test_create_user_requires_admin_role() -> None:
 
     with pytest.raises(AuthorizationError, match="not authorized"):
         service.create(
-            CreateUserCommand(username="new-user", role=UserRole.OPERATOR),
+            CreateUserCommand(
+                username="new-user",
+                full_name="Новый сотрудник",
+                phone=None,
+                position=None,
+                role=UserRole.OPERATOR,
+            ),
             make_user("operator", UserRole.OPERATOR),
         )
 
