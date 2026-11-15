@@ -342,12 +342,21 @@ def test_create_user_returns_temporary_password_and_account_state() -> None:
     service = FakeUserAdministrationService()
 
     result = create_user(
-        data=UserCreate(username="operator-1", full_name="Оператор", role=UserRole.OPERATOR),
+        data=UserCreate(
+            username="operator-1",
+            full_name="Оператор",
+            phone="+7 900 000-00-00",
+            position="Инженер",
+            role=UserRole.OPERATOR,
+        ),
         actor=actor,
         service=service,
     )
 
     assert result.username == "operator-1"
+    assert result.full_name == "Оператор"
+    assert result.phone == "+7 900 000-00-00"
+    assert result.position == "Инженер"
     assert result.role == UserRole.OPERATOR
     assert result.must_change_password is True
     assert result.temporary_password == "temporary-password"
