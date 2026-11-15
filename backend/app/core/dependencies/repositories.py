@@ -39,6 +39,9 @@ from app.domains.repair.repositories.repair_repository import (
 )
 from app.domains.site.repositories.site_repository import SiteRepository
 from app.domains.user.repositories.user_repository import UserRepository
+from app.domains.verification.repositories.verification_read_repository import (
+    VerificationReadRepository,
+)
 from app.domains.verification.repositories.verification_repository import (
     VerificationRepository,
 )
@@ -97,6 +100,9 @@ from app.infrastructure.repair.repair_repository import (
 )
 from app.infrastructure.site.site_repository import SiteRepositorySQLAlchemy
 from app.infrastructure.user.user_repository import UserRepositorySQLAlchemy
+from app.infrastructure.verification.verification_read_repository import (
+    VerificationReadRepositorySQLAlchemy,
+)
 from app.infrastructure.verification.verification_repository import (
     VerificationRepositorySQLAlchemy,
 )
@@ -231,6 +237,14 @@ def get_order_read_repository(
     """Provide Order read repository."""
 
     return OrderReadRepositorySQLAlchemy(session)
+
+
+def get_verification_read_repository(
+    session: Session = Depends(get_session),
+) -> VerificationReadRepository:
+    """Provide Verification read repository."""
+
+    return VerificationReadRepositorySQLAlchemy(session)
 
 
 def get_verification_repository(
