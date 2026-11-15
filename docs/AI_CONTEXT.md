@@ -497,7 +497,9 @@ Contract:
 docs/architecture/AUTHENTICATION.md
 ```
 
-## Production StateProduction topology remains:
+## Production State
+
+Production topology remains:
 
 ```text
 ZeroTier client
@@ -995,8 +997,10 @@ Local typecheck/build and browser review are still required before considering t
 
 ## Last active administrator protection checkpoint — 2026-11-08
 
-- Confirmed the user-administration backend previously allowed the last active administrator to be archived, deactivated, or demoted.- Added an Application error for attempts that would leave zero active, non-archived administrators; the API maps it to HTTP 409.
-- Added a UserRepository operation that loads all user rows with deterministic ordering and `SELECT FOR UPDATE`; the existing Unit of Work holds these locks through the state change and commit, serializing concurrent administrator lifecycle operations.- Applied the guard to archive, deactivation, and role demotion. Inactive and archived administrators do not count as available administrators; promoting, activating, restoring, and non-admin lifecycle changes retain their existing behavior.
+- Confirmed the user-administration backend previously allowed the last active administrator to be archived, deactivated, or demoted.
+- Added an Application error for attempts that would leave zero active, non-archived administrators; the API maps it to HTTP 409.
+- Added a UserRepository operation that loads all user rows with deterministic ordering and `SELECT FOR UPDATE`; the existing Unit of Work holds these locks through the state change and commit, serializing concurrent administrator lifecycle operations.
+- Applied the guard to archive, deactivation, and role demotion. Inactive and archived administrators do not count as available administrators; promoting, activating, restoring, and non-admin lifecycle changes retain their existing behavior.
 - Added Application regression tests for all three blocked operations, allowed archive when a second active administrator exists, and exclusion of inactive administrators; added API 409 mapping tests.
 - Backend and frontend local validation have not yet been run for this checkpoint.
 
@@ -1495,7 +1499,8 @@ Administrator-assisted password recovery has now been implemented; see the check
 ## Verification — validity duration and correction
 - Approval now accepts either a manually entered `valid_until` date or a duration in calendar years plus the operator's IANA timezone. When duration is used, the application captures one UTC `decision_at`, converts it to the supplied timezone, adds the requested number of calendar years, then subtracts one day.
 - A February 29 anniversary that falls in a non-leap year is clamped to February 28 before subtracting one day.
-- The frontend displays a preview based on the operator's current local date, but the backend remains authoritative and calculates from the actual persisted decision timestamp. An optional manually entered final date overrides the calculation.- A separate correction operation is available only for a non-archived Verification with a DECIDED/SUITABLE result and an existing validity date. It requires a non-blank reason and writes an append-only `verification.valid_until_corrected` audit record with old/new dates and the reason.
+- The frontend displays a preview based on the operator's current local date, but the backend remains authoritative and calculates from the actual persisted decision timestamp. An optional manually entered final date overrides the calculation.
+- A separate correction operation is available only for a non-archived Verification with a DECIDED/SUITABLE result and an existing validity date. It requires a non-blank reason and writes an append-only `verification.valid_until_corrected` audit record with old/new dates and the reason.
 - Approval and correction remain restricted to METROLOGIST and ADMIN and require authenticated, CSRF-protected API routes.
 - Branch: `feat/verification-validity-correction`. Backend domain/application/API tests and frontend typecheck/build are pending local validation. Do not merge or deploy before those checks and user confirmation.
 
@@ -1994,10 +1999,10 @@ No production deployment, backend restart, or database migration was performed a
 - Added client-side multi-column sorting to the general Verification table, consistent with the existing Orders table interaction.- Sortable columns: verification date, order number, customer, instrument (name/type plus serial number), verification type, status, result, and valid-until date.
 - Header click cycle: ascending → descending → inactive. Multiple selected criteria retain priority order and display their priority number.
 - Dates use ISO values; order numbers use numeric-aware locale comparison. Missing result/valid-until values remain at the bottom in either direction.
-- Sorting runs after the existing search and filters. No backend/API/database changes.- Files: `frontend/src/features/verifications/model/verificationSorting.ts`, `frontend/src/pages/verifications/VerificationsPage.tsx`.
+- Sorting runs after the existing search and filters. No backend/API/database changes.
+- Files: `frontend/src/features/verifications/model/verificationSorting.ts`, `frontend/src/pages/verifications/VerificationsPage.tsx`.
 - Commits: `0482745`, `765cc1b`, `881e8a1`.
 - Local typecheck/build validation is pending.
-
 ## Verification list sorting — local validation complete
 
 Пользователь подтвердил после синхронизации `develop`:
@@ -2120,7 +2125,6 @@ Implemented the administrator-facing Audit Journal UI against the existing read-
 - `35f1631` — Audit Journal page.
 - `2046d33` — admin-only route.
 - `6606a6d` — admin navigation item.
-- `17fd6db` — stable React row keys and typed filter field.
 - `17fd6db` — stable React row keys and typed filter field.
 
 ### Local validation required
