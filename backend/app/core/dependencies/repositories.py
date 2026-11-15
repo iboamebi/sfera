@@ -1,5 +1,4 @@
-""" 
-Repository dependency providers.
+"""Repository dependency providers.
 """
 
 from fastapi import Depends
@@ -272,7 +271,7 @@ def get_repair_repository(
 
 def get_site_repository(
     session: Session = Depends(get_session),
-) -> SiteRepository:
+) -> SiteRepositoryRepository:
     """Provide Site repository."""
 
     return SiteRepositorySQLAlchemy(session)
