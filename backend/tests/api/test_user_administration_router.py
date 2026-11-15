@@ -370,7 +370,11 @@ def test_create_user_maps_duplicate_username_to_conflict() -> None:
 
     with pytest.raises(HTTPException) as exc_info:
         create_user(
-            data=UserCreate(username="existing", full_name="Существующий сотрудник", role=UserRole.OPERATOR),
+            data=UserCreate(
+                username="existing",
+                full_name="Существующий сотрудник",
+                role=UserRole.OPERATOR,
+            ),
             actor=make_user(),
             service=service,
         )
