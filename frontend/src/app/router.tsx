@@ -15,6 +15,7 @@ import { OrganizationsPage } from "../pages/organizations/OrganizationsPage";
 import { OrganizationPage } from "../pages/organizations/OrganizationPage";
 import { CreateOrganizationPage } from "../pages/organizations/CreateOrganizationPage";
 import { VerificationPage } from "../pages/verifications/VerificationPage";
+import { VerificationsPage } from "../pages/verifications/VerificationsPage";
 import { DiagnosticPage } from "../pages/diagnostics/DiagnosticPage";
 import { RepairPage } from "../pages/repairs/RepairPage";
 import { PriceListPage } from "../pages/price-lists/PriceListPage";
@@ -92,6 +93,10 @@ export const router = createBrowserRouter([
   {
     path: "/materials/:materialId",
     element: <RequireAuth><MaterialPage /></RequireAuth>,
+  },
+  {
+    path: "/verifications",
+    element: <RequireAuth><VerificationsPage /></RequireAuth>,
   },
   {
     path: "/verifications/:verificationId",
