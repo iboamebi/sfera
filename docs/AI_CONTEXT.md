@@ -1972,3 +1972,15 @@ Remaining validation is browser review only:
 - confirm archived entries show «В архиве».
 
 No production deployment, backend restart, or database migration was performed as part of this general-list stage.
+
+
+## Verification list navigation — browser feedback correction — 2026-11-15
+
+- Browser review confirmed that navigation from the general Verification list to Verification and Order details worked, but the detail pages did not return to the originating list.
+- The list now adds the explicit `returnTo=/verifications` context to both Verification and Order links.
+- Verification detail accepts the exact `/verifications` return target as well as the existing `/orders/*` source-order return path. Direct/legacy URLs still fall back to `/orders`.
+- Order detail accepts only the exact `/verifications` return target; all other entry points continue returning to `/orders`.
+- No lifecycle, archive, backend, or database behavior changed.
+- Commits: `f364e90`, `8b77438`, `afabdf2`.
+- Local frontend typecheck/build and browser revalidation are pending.
+- Archive state remains a read-only existing flag. No archive transition/action or business rule has been implemented; that requires a separate decision.
