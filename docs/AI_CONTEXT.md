@@ -2265,3 +2265,14 @@ Implemented employee identity/contact details separately from login credentials 
 - Проверка уже назначенного архивного Site остаётся отложенной.
 - GitHub review PR #39: base `develop`, head `aef934e68f6a02a8aa3e01a0254505007f1c511c`, mergeable; review threads отсутствуют, submitted reviews отсутствуют. Между base и head 6 изменённых файлов.
 - No backend, database, migration, or production changes. Production deployment and backend restart were not performed.
+
+
+## Order detail — add-item form UX refinement — 2026-11-15
+
+- Current base: `develop` at `a9bbca40f5b8bfaa6cf2d0f4ee607454f86b7d39`.
+- Confirmed that the «Создать новое СИ» action in `DeviceSelector` and the «Создать карточку СИ» action in `AddOrderItemButton` both opened the same `CreateDeviceForm` with the same entered serial number. They were duplicate entry points, not separate use cases.
+- Removed the duplicate parent-level button and its callback/state plumbing. Kept one «Создать новое СИ» action inside `DeviceSelector` and moved it above the Autocomplete field so the expanded suggestions popper cannot cover it.
+- Preserved existing safeguards: creation is disabled while the Instrument list is loading, when the serial is empty, when a matching Instrument already exists, and while a selected-Site search still needs expansion to all Sites.
+- Made the Instrument Type selector responsive on narrow viewports and allowed the add-item form to use the available width while retaining its desktop max width.
+- Frontend-only presentation change. No backend, database, API contract, migration, or production changes.
+- Branch: `fix/order-page-device-selector-ux`. Frontend typecheck/build and browser regression are pending local validation.

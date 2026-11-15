@@ -64,11 +64,6 @@ export function AddOrderItemButton({
   >(["verification"]);
   const [isCreateDeviceOpen, setIsCreateDeviceOpen] = useState(false);
   const [initialDeviceSerialNumber, setInitialDeviceSerialNumber] = useState("");
-  const [isCreateDeviceActionState, setIsCreateDeviceActionState] = useState({
-    disabled: true,
-    serialNumber: "",
-    disabledReason: "",
-  });
   const [isCreateInstrumentTypeOpen, setIsCreateInstrumentTypeOpen] =
     useState(false);
   const addOrderItemMutation = useAddOrderItem(orderId);
@@ -178,7 +173,7 @@ export function AddOrderItemButton({
   }
 
   return (
-    <Stack spacing={2} sx={{ maxWidth: 760 }}>
+    <Stack spacing={2} sx={{ width: "100%", maxWidth: 760 }}>
       <Stack direction="row" spacing={2} sx={{ alignItems: "flex-start", flexWrap: "wrap" }}>
         <TextField
           select
@@ -191,7 +186,10 @@ export function AddOrderItemButton({
               ? "Не удалось загрузить группы СИ"
               : "Можно добавить позицию по группе без конкретного СИ"
           }
-          sx={{ minWidth: 280 }}
+          sx={{
+            minWidth: { xs: "100%", sm: 280 },
+            flex: { xs: "1 1 100%", sm: "0 1 auto" },
+          }}
         >
           <MenuItem value="">Не выбрана</MenuItem>
           {activeInstrumentTypes.map((instrumentType) => (
@@ -222,7 +220,6 @@ export function AddOrderItemButton({
         instrumentTypeId={instrumentTypeId || null}
         excludedInstrumentIds={excludedInstrumentIds}
         onChange={setDeviceId}
-        onCreateDeviceActionStateChange={setIsCreateDeviceActionState}
         onCreateDevice={(serialNumber) => {
           setInitialDeviceSerialNumber(serialNumber);
           setIsCreateDeviceOpen(true);
@@ -235,28 +232,6 @@ export function AddOrderItemButton({
         spacing={1}
         sx={{ alignItems: "center", flexWrap: "wrap" }}
       >
-        <Stack spacing={0.25}>
-          <Button
-            variant="outlined"
-            disabled={isCreateDeviceActionState.disabled}
-            onClick={() => {
-              setInitialDeviceSerialNumber(
-                isCreateDeviceActionState.serialNumber,
-              );
-              setIsCreateDeviceOpen(true);
-            }}
-          >
-            Создать карточку СИ
-          </Button>
-          {isCreateDeviceActionState.disabled &&
-            isCreateDeviceActionState.serialNumber &&
-            isCreateDeviceActionState.disabledReason && (
-              <Typography variant="caption" color="text.secondary">
-                {isCreateDeviceActionState.disabledReason}
-              </Typography>
-            )}
-        </Stack>
-
         {OPERATION_OPTIONS.map((operation) => (
           <FormControlLabel
             key={operation.value}
