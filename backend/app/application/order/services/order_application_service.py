@@ -120,8 +120,12 @@ class OrderApplicationService:
 
             if command.instrument_id is not None:
                 instrument = self._device_repository.get(command.instrument_id)
-                if instrument is not None:
-                    self._ensure_instrument_serial_not_in_order(order, instrument)
+                if instrument is None or instrument.customer_id != order.customer_id:
+                    raise InstrumentCustomerMismatchApplicationError(
+                        "СИ не принадлежит заказчику заказа"
+                    )
+
+                self._ensure_instrument_serial_not_in_order(order, instrument)
 
             if (
                 command.instrument_id is not None

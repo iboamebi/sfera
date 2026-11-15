@@ -125,6 +125,22 @@ class FakeDeviceRepository(DeviceRepository):
     def list(self) -> list[Device]:
         return list(self.devices.values())
 
+    def exists_by_customer_type_and_serial_number(
+        self,
+        customer_id: UUID,
+        instrument_type_id: UUID,
+        serial_number: str,
+        exclude_device_id: UUID | None = None,
+    ) -> bool:
+        normalized_serial = serial_number.strip().casefold()
+        return any(
+            device.id != exclude_device_id
+            and device.customer_id == customer_id
+            and device.instrument_type_id == instrument_type_id
+            and device.serial_number.value.casefold() == normalized_serial
+            for device in self.devices.values()
+        )
+
     def save(self, device: Device) -> None:
         self.devices[device.id] = device
 
@@ -430,24 +446,74 @@ def test_update_order_details():
 
 
 def test_add_order_item_rejects_instrument_in_another_active_order():
-    service, repository, customer_repository, _, _, _ = make_service()
-    instrument_id = uuid4()
+    customer_id = uuid4()
+    instrument = Device(
+        id=uuid4(),
+        instrument_type_id=uuid4(),
+        customer_id=customer_id,
+        serial_number=SerialNumber("SN-ACTIVE"),
+    )
+    service, repository, customer_repository, _, _, _ = make_service(instrument)
+    customer_repository.save(make_customer(customer_id))
 
-    existing_order = create_order(service, customer_repository, "10007")
-    existing_order.add_item(OrderItem(id=uuid4(), instrument_id=instrument_id))
+    existing_order = service.create(
+        CreateOrderCommand(customer_id=customer_id, number="10007"),
+        make_operator(),
+    )
+    existing_order.add_item(OrderItem(id=uuid4(), instrument_id=instrument.id))
     existing_order.status = OrderStatus.REGISTERED
     repository.save(existing_order)
 
-    order = create_order(service, customer_repository, "10008")
+    order = service.create(
+        CreateOrderCommand(customer_id=customer_id, number="10008"),
+        make_operator(),
+    )
 
     with pytest.raises(InstrumentAlreadyInActiveOrderApplicationError):
         service.add_item(
             AddOrderItemCommand(
                 order_id=order.id,
-                instrument_id=instrument_id,
+                instrument_id=instrument.id,
             ),
             make_operator(),
         )
+
+
+def test_add_order_item_rejects_instrument_from_another_customer():
+    customer_id = uuid4()
+    instrument = Device(
+        id=uuid4(),
+        instrument_type_id=uuid4(),
+        customer_id=uuid4(),
+        serial_number=SerialNumber("SN-OTHER-CUSTOMER"),
+    )
+    service, _, customer_repository, _, _, _ = make_service(instrument)
+    customer_repository.save(make_customer(customer_id))
+    order = service.create(
+        CreateOrderCommand(customer_id=customer_id, number="10017"),
+        make_operator(),
+    )
+
+    with pytest.raises(InstrumentCustomerMismatchApplicationError):
+        service.add_item(
+            AddOrderItemCommand(order_id=order.id, instrument_id=instrument.id),
+            make_operator(),
+        )
+
+    assert order.items == []
+
+
+def test_add_order_item_rejects_unknown_instrument():
+    service, _, customer_repository, _, _, _ = make_service()
+    order = create_order(service, customer_repository, "10018")
+
+    with pytest.raises(InstrumentCustomerMismatchApplicationError):
+        service.add_item(
+            AddOrderItemCommand(order_id=order.id, instrument_id=uuid4()),
+            make_operator(),
+        )
+
+    assert order.items == []
 
 
 def test_add_order_item_rejects_duplicate_serial_within_same_order():
@@ -543,26 +609,39 @@ def test_add_order_item_creates_separate_items_for_group_quantity():
 
 
 def test_add_order_item_allows_instrument_after_order_completed():
-    service, repository, customer_repository, _, _, _ = make_service()
-    instrument_id = uuid4()
+    customer_id = uuid4()
+    instrument = Device(
+        id=uuid4(),
+        instrument_type_id=uuid4(),
+        customer_id=customer_id,
+        serial_number=SerialNumber("SN-COMPLETED"),
+    )
+    service, repository, customer_repository, _, _, _ = make_service(instrument)
+    customer_repository.save(make_customer(customer_id))
 
-    completed_order = create_order(service, customer_repository, "10009")
-    completed_order.add_item(OrderItem(id=uuid4(), instrument_id=instrument_id))
+    completed_order = service.create(
+        CreateOrderCommand(customer_id=customer_id, number="10009"),
+        make_operator(),
+    )
+    completed_order.add_item(OrderItem(id=uuid4(), instrument_id=instrument.id))
     completed_order.status = OrderStatus.COMPLETED
     repository.save(completed_order)
 
-    order = create_order(service, customer_repository, "10010")
+    order = service.create(
+        CreateOrderCommand(customer_id=customer_id, number="10010"),
+        make_operator(),
+    )
 
     service.add_item(
         AddOrderItemCommand(
             order_id=order.id,
-            instrument_id=instrument_id,
+            instrument_id=instrument.id,
         ),
         make_operator(),
     )
 
     assert len(order.items) == 1
-    assert order.items[0].instrument_id == instrument_id
+    assert order.items[0].instrument_id == instrument.id
 
 
 def test_assign_order_item_rejects_instrument_from_another_customer():
