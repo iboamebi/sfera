@@ -3,7 +3,7 @@
 from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import func
+from sqlalchemy import func, or_
 from sqlalchemy.orm import Session, aliased
 
 from app.domains.audit.read_models.audit_read_models import AuditRecordReadData
