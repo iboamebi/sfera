@@ -190,12 +190,12 @@ export function VerificationsPage() {
               {filteredVerifications.map((verification) => (
                 <TableRow key={verification.id} hover>
                   <TableCell>
-                    <Link to={`/verifications/${verification.id}`}>
+                    <Link to={`/verifications/${verification.id}?returnTo=/verifications`}>
                       {formatDate(verification.verificationDate)}
                     </Link>
                   </TableCell>
                   <TableCell>
-                    <Link to={`/orders/${verification.orderId}`}>
+                    <Link to={`/orders/${verification.orderId}?returnTo=/verifications`}>
                       {verification.orderNumber}
                     </Link>
                   </TableCell>
