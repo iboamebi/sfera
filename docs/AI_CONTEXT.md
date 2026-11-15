@@ -2276,3 +2276,12 @@ Implemented employee identity/contact details separately from login credentials 
 - Made the Instrument Type selector responsive on narrow viewports and allowed the add-item form to use the available width while retaining its desktop max width.
 - Frontend-only presentation change. No backend, database, API contract, migration, or production changes.
 - Branch: `fix/order-page-device-selector-ux`. Frontend typecheck/build and browser regression are pending local validation.
+
+
+## Order → Customer navigation — 2026-11-15
+
+- Current base: `develop` at `5341e92217a81cd232074aecd6a3b7379bef8e0f` (PR #40 UX refinement merged; local typecheck/build/browser validation reported passed by user).
+- On the order detail page, the customer name is now intended to be the navigation control: blue primary color, no permanent underline, underline on hover, visible keyboard focus. It links to the existing `/customers/:customerId` route and passes the originating order as an internal `returnTo` query parameter.
+- Customer detail page validates `returnTo` against the internal order path shape before using it. Its back button returns to that order when opened from an order; direct customer navigation retains the existing «Назад к клиентам» behavior.
+- No API, backend, database, or migration changes.
+- Branch: `feat/order-customer-card-navigation`. Local frontend typecheck/build and browser navigation regression are pending.
