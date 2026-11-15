@@ -60,9 +60,11 @@ from app.domains.workflow.repositories.workflow_repository import (
     WorkflowInstanceRepository,
     WorkflowRepository,
 )
-from app.infrastructure.audit.audit_read_repository import AuditReadRepositorySQLAlchemy
 from app.infrastructure.audit.audit_operation_repository import (
     AuditOperationRepositorySQLAlchemy,
+)
+from app.infrastructure.audit.audit_read_repository import (
+    AuditReadRepositorySQLAlchemy,
 )
 from app.infrastructure.audit.audit_repository import AuditRepositorySQLAlchemy
 from app.infrastructure.auth.session_repository import (
