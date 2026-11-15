@@ -271,7 +271,7 @@ def get_repair_repository(
 
 def get_site_repository(
     session: Session = Depends(get_session),
-) -> SiteRepositoryRepository:
+) -> SiteRepository:
     """Provide Site repository."""
 
     return SiteRepositorySQLAlchemy(session)
