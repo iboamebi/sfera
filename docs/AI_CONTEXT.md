@@ -2132,3 +2132,12 @@ Implemented the administrator-facing Audit Journal UI against the existing read-
 Run frontend typecheck and production build after pulling `develop`. Then review `/audit` in the browser as an administrator: initial list, each filter, pagination, expanded details, empty/error states, and non-admin redirect behavior.
 
 No production deployment or backend restart is part of this stage.
+
+## Audit Journal — human-readable actor filter — 2026-11-15
+
+- Browser review by the user confirmed the ADMIN page load, filters, pagination, expanded details and empty state. Non-ADMIN browser access was not independently tested; it is provisionally accepted based on the backend Application authorization test and route guard.
+- User preference: operate on human-readable names rather than UUIDs wherever the data model supports it.
+- Audit actor presentation no longer appends UUIDs to the table/initiator labels. UUID remains available in expanded diagnostic details.
+- Replaced the frontend actor UUID filter with a free-text search by username or full name. Backend query uses case-insensitive partial matching against the current User row; the legacy actor_id API filter remains available for exact technical queries.
+- Audit entity references are polymorphic (entity_type + entity_id) and existing entity types are historically inconsistent. There is no universal entity display-name field or confirmed resolver in the current read contract, so entity UUIDs remain explicit for now; do not guess names from arbitrary changes payloads. A follow-up can add type-specific display projections after inventorying actual audited entity types and their name fields.
+- Focused backend test and frontend typecheck/build are required after pulling the change. No audit write path, migration, or Domain Event behavior changed.
