@@ -15,6 +15,9 @@ def test_user_mapper_to_domain_preserves_account_state() -> None:
     model = UserModel(
         id=user_id,
         username="test-user",
+        full_name="Иван Иванов",
+        phone="+7 900 000-00-00",
+        position="Метролог",
         password_hash="hash",
         role="operator",
         is_active=True,
@@ -26,6 +29,9 @@ def test_user_mapper_to_domain_preserves_account_state() -> None:
 
     assert entity.id == user_id
     assert entity.username == "test-user"
+    assert entity.full_name == "Иван Иванов"
+    assert entity.phone == "+7 900 000-00-00"
+    assert entity.position == "Метролог"
     assert entity.password_hash == "hash"
     assert entity.role is UserRole.OPERATOR
     assert entity.archived is False
@@ -55,6 +61,9 @@ def test_user_mapper_to_model_updates_authentication_fields() -> None:
     model = UserModel(
         id=user_id,
         username="old-user",
+        full_name="Old Name",
+        phone="old phone",
+        position="Old Position",
         password_hash="old-hash",
         role="operator",
         is_active=True,
@@ -65,6 +74,9 @@ def test_user_mapper_to_model_updates_authentication_fields() -> None:
     entity = User(
         id=user_id,
         username="new-user",
+        full_name="Новая фамилия",
+        phone="+7 911 111-11-11",
+        position="Инженер",
         password_hash="new-hash",
         role=UserRole.ADMIN,
         archived=True,
@@ -76,6 +88,9 @@ def test_user_mapper_to_model_updates_authentication_fields() -> None:
 
     assert result is model
     assert result.username == "new-user"
+    assert result.full_name == "Новая фамилия"
+    assert result.phone == "+7 911 111-11-11"
+    assert result.position == "Инженер"
     assert result.password_hash == "new-hash"
     assert result.role == "admin"
     assert result.archived is True
