@@ -13,6 +13,7 @@ from app.application.user.commands.reset_user_password import (
 )
 from app.application.user.commands.restore_user import RestoreUserCommand
 from app.application.user.commands.set_user_active import SetUserActiveCommand
+from app.application.user.commands.update_user_profile import UpdateUserProfileCommand
 from app.application.user.exceptions import (
     LastActiveAdministratorApplicationError,
     UserAlreadyExistsApplicationError,
@@ -172,6 +173,66 @@ def test_admin_can_include_archived_users() -> None:
     )
 
     assert users == [archived]
+
+
+def test_admin_can_update_employee_profile() -> None:
+    target = make_user("employee")
+    service, repository, uow = make_service([target])
+
+    updated = service.update_profile(
+        UpdateUserProfileCommand(
+            user_id=target.id,
+            full_name="Татьяна Петрова",
+            phone="+7 900 123-45-67",
+            position="Метролог",
+        ),
+        make_user("admin", UserRole.ADMIN),
+    )
+
+    assert updated.full_name == "Татьяна Петрова"
+    assert updated.phone == "+7 900 123-45-67"
+    assert updated.position == "Метролог"
+    assert repository.users == [updated]
+    assert uow.committed is True
+
+
+def test_update_employee_profile_requires_admin_role() -> None:
+    target = make_user("employee")
+    service, _, uow = make_service([target])
+
+    with pytest.raises(AuthorizationError, match="not authorized"):
+        service.update_profile(
+            UpdateUserProfileCommand(
+                user_id=target.id,
+                full_name="Татьяна Петрова",
+                phone=None,
+                position=None,
+            ),
+            make_user("operator", UserRole.OPERATOR),
+        )
+
+    assert target.full_name is None
+    assert uow.committed is False
+
+
+def test_update_employee_profile_can_edit_archived_account() -> None:
+    target = make_user("employee")
+    target.archive()
+    service, _, uow = make_service([target])
+
+    updated = service.update_profile(
+        UpdateUserProfileCommand(
+            user_id=target.id,
+            full_name="Алексей Иванов",
+            phone=None,
+            position="Техник",
+        ),
+        make_user("admin", UserRole.ADMIN),
+    )
+
+    assert updated.full_name == "Алексей Иванов"
+    assert updated.archived is True
+    assert uow.committed is True
 
 
 def test_change_role_updates_existing_user_and_commits() -> None:
@@ -372,11 +433,20 @@ def test_create_user_generates_temporary_password_and_requires_change() -> None:
     admin = make_user("admin", UserRole.ADMIN)
 
     user, temporary_password = service.create(
-        CreateUserCommand(username="new-user", role=UserRole.METROLOGIST),
+        CreateUserCommand(
+            username="new-user",
+            full_name="Иван Иванов",
+            phone="+7 900 000-00-00",
+            position="Инженер-метролог",
+            role=UserRole.METROLOGIST,
+        ),
         admin,
     )
 
     assert user.username == "new-user"
+    assert user.full_name == "Иван Иванов"
+    assert user.phone == "+7 900 000-00-00"
+    assert user.position == "Инженер-метролог"
     assert user.role is UserRole.METROLOGIST
     assert user.must_change_password is True
     assert user.password_hash == f"argon2-hash:{temporary_password}"
