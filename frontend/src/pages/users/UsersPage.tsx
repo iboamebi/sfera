@@ -1,9 +1,13 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import type { FormEvent } from "react";
 import {
   Alert,
   Button,
   Checkbox,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   FormControl,
   FormControlLabel,
   InputLabel,
@@ -20,7 +24,12 @@ import {
   Typography,
 } from "@mui/material";
 
-import type { UserCreated, UserRead, UserRole } from "../../features/users/model/types";
+import type {
+  UserCreateInput,
+  UserCreated,
+  UserRead,
+  UserRole,
+} from "../../features/users/model/types";
 import { useUserAdministration } from "../../features/users/model/useUserAdministration";
 import { useUsers } from "../../features/users/model/useUsers";
 
@@ -67,39 +76,103 @@ function userStatus(user: UserRead): string {
   return "Активен";
 }
 
+function employeeName(user: UserRead): string {
+  return user.fullName?.trim() || "ФИО не указано";
+}
+
+function matchesSearch(user: UserRead, query: string): boolean {
+  const normalized = query.trim().toLocaleLowerCase("ru-RU");
+  if (!normalized) return true;
+
+  return [
+    user.fullName,
+    user.username,
+    user.phone,
+    user.position,
+    roleLabels[user.role],
+  ].some((value) => value?.toLocaleLowerCase("ru-RU").includes(normalized));
+}
+
 export function UsersPage() {
   const [includeArchived, setIncludeArchived] = useState(false);
+  const [search, setSearch] = useState("");
+  const [fullName, setFullName] = useState("");
   const [username, setUsername] = useState("");
+  const [phone, setPhone] = useState("");
+  const [position, setPosition] = useState("");
   const [role, setRole] = useState<UserRole>("operator");
   const [createdUser, setCreatedUser] = useState<UserCreated | null>(null);
   const [copyStatus, setCopyStatus] = useState<"idle" | "success" | "error">("idle");
+  const [editingUser, setEditingUser] = useState<UserRead | null>(null);
+  const [editFullName, setEditFullName] = useState("");
+  const [editPhone, setEditPhone] = useState("");
+  const [editPosition, setEditPosition] = useState("");
 
   const { data: users, isLoading, isError } = useUsers(includeArchived);
   const administration = useUserAdministration();
+
   const activeAdminCount =
     users?.filter(
       (user) => user.role === "admin" && user.isActive && !user.archived,
     ).length ?? 0;
 
+  const visibleUsers = useMemo(
+    () => users?.filter((user) => matchesSearch(user, search)) ?? [],
+    [users, search],
+  );
+
   const handleCreate = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const normalizedUsername = username.trim();
-    if (!normalizedUsername) return;
+    const data: UserCreateInput = {
+      fullName: fullName.trim(),
+      username: username.trim(),
+      phone,
+      position,
+      role,
+    };
+    if (!data.fullName || !data.username) return;
 
-    administration.create.mutate(
-      { username: normalizedUsername, role },
+    administration.create.mutate(data, {
+      onSuccess: (user) => {
+        setCreatedUser(user);
+        setCopyStatus("idle");
+        setFullName("");
+        setUsername("");
+        setPhone("");
+        setPosition("");
+      },
+    });
+  };
+
+  const openProfile = (user: UserRead) => {
+    setEditingUser(user);
+    setEditFullName(user.fullName ?? "");
+    setEditPhone(user.phone ?? "");
+    setEditPosition(user.position ?? "");
+  };
+
+  const handleProfileSave = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!editingUser || !editFullName.trim()) return;
+
+    administration.updateProfile.mutate(
       {
-        onSuccess: (user) => {
-          setCreatedUser(user);
-          setCopyStatus("idle");
-          setUsername("");
+        userId: editingUser.id,
+        data: {
+          fullName: editFullName.trim(),
+          phone: editPhone,
+          position: editPosition,
         },
+      },
+      {
+        onSuccess: () => setEditingUser(null),
       },
     );
   };
 
   const mutationError =
     administration.create.isError ||
+    administration.updateProfile.isError ||
     administration.resetPassword.isError ||
     administration.changeRole.isError ||
     administration.changeStatus.isError ||
@@ -109,7 +182,6 @@ export function UsersPage() {
   const handleCopyPassword = async () => {
     if (!createdUser) return;
 
-    // Copy the exact value shown in the one-time password notice first.
     if (copyTextFallback(createdUser.temporaryPassword)) {
       setCopyStatus("success");
       return;
@@ -128,24 +200,50 @@ export function UsersPage() {
 
   return (
     <Stack spacing={3}>
-      <Typography variant="h4">Пользователи</Typography>
+      <Typography variant="h4">Сотрудники и пользователи</Typography>
 
       <Paper component="form" onSubmit={handleCreate} sx={{ p: 2 }}>
         <Stack spacing={2}>
-          <Typography variant="h6">Создать пользователя</Typography>
-          <TextField
-            label="Имя пользователя"
-            value={username}
-            onChange={(event) => setUsername(event.target.value)}
-            slotProps={{ htmlInput: { maxLength: 100 } }}
-            required
-            fullWidth
-          />
+          <Typography variant="h6">Создать учётную запись сотрудника</Typography>
+          <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
+            <TextField
+              label="ФИО"
+              value={fullName}
+              onChange={(event) => setFullName(event.target.value)}
+              slotProps={{ htmlInput: { maxLength: 255 } }}
+              required
+              fullWidth
+            />
+            <TextField
+              label="Логин для входа"
+              value={username}
+              onChange={(event) => setUsername(event.target.value)}
+              slotProps={{ htmlInput: { maxLength: 100 } }}
+              required
+              fullWidth
+            />
+          </Stack>
+          <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
+            <TextField
+              label="Телефон"
+              value={phone}
+              onChange={(event) => setPhone(event.target.value)}
+              slotProps={{ htmlInput: { maxLength: 50 } }}
+              fullWidth
+            />
+            <TextField
+              label="Должность"
+              value={position}
+              onChange={(event) => setPosition(event.target.value)}
+              slotProps={{ htmlInput: { maxLength: 255 } }}
+              fullWidth
+            />
+          </Stack>
           <FormControl fullWidth>
-            <InputLabel id="new-user-role-label">Роль</InputLabel>
+            <InputLabel id="new-user-role-label">Системная роль</InputLabel>
             <Select
               labelId="new-user-role-label"
-              label="Роль"
+              label="Системная роль"
               value={role}
               onChange={(event) => setRole(event.target.value as UserRole)}
             >
@@ -161,7 +259,7 @@ export function UsersPage() {
             variant="contained"
             disabled={administration.create.isPending}
           >
-            {administration.create.isPending ? "Создание..." : "Создать пользователя"}
+            {administration.create.isPending ? "Создание..." : "Создать сотрудника"}
           </Button>
         </Stack>
       </Paper>
@@ -174,14 +272,20 @@ export function UsersPage() {
               <Button color="inherit" onClick={handleCopyPassword}>
                 Копировать пароль
               </Button>
-              <Button color="inherit" onClick={() => { setCreatedUser(null); setCopyStatus("idle"); }}>
+              <Button
+                color="inherit"
+                onClick={() => {
+                  setCreatedUser(null);
+                  setCopyStatus("idle");
+                }}
+              >
                 Скрыть
               </Button>
             </Stack>
           }
         >
           <Typography sx={{ fontWeight: "bold" }}>
-            Временный пароль для пользователя {createdUser.username}.
+            Временный пароль для {employeeName(createdUser)} ({createdUser.username}).
           </Typography>
           <Typography>
             Временный пароль (показывается только в этом сообщении):
@@ -212,51 +316,80 @@ export function UsersPage() {
       )}
 
       <Stack spacing={1}>
-        <Typography variant="h6">Список пользователей</Typography>
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={includeArchived}
-              onChange={(event) => setIncludeArchived(event.target.checked)}
-            />
-          }
-          label="Показывать архивные аккаунты"
-        />
+        <Typography variant="h6">Список сотрудников</Typography>
+        <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+          <TextField
+            label="Поиск по ФИО, логину, телефону или должности"
+            size="small"
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            fullWidth
+          />
+          <FormControlLabel
+            sx={{ whiteSpace: "nowrap" }}
+            control={
+              <Checkbox
+                checked={includeArchived}
+                onChange={(event) => setIncludeArchived(event.target.checked)}
+              />
+            }
+            label="Показывать архивные"
+          />
+        </Stack>
       </Stack>
 
-      {isLoading && <Typography>Загрузка пользователей...</Typography>}
+      {isLoading && <Typography>Загрузка сотрудников...</Typography>}
       {isError && (
         <Alert severity="error">
           Не удалось загрузить пользователей. Убедитесь, что у вашей учётной записи есть права администратора.
         </Alert>
       )}
-      {!isLoading && !isError && users?.length === 0 && (
-        <Typography>Пользователи не найдены.</Typography>
+      {!isLoading && !isError && visibleUsers.length === 0 && (
+        <Typography color="text.secondary">
+          {users?.length ? "По запросу ничего не найдено." : "Пользователи не найдены."}
+        </Typography>
       )}
 
-      {users && users.length > 0 && (
+      {visibleUsers.length > 0 && (
         <Paper sx={{ overflowX: "auto" }}>
-          <Table size="small">
+          <Table size="small" sx={{ minWidth: 1050 }}>
             <TableHead>
               <TableRow>
-                <TableCell>Имя пользователя</TableCell>
-                <TableCell>Роль</TableCell>
+                <TableCell>Сотрудник</TableCell>
+                <TableCell>Телефон</TableCell>
+                <TableCell>Должность</TableCell>
+                <TableCell>Системная роль</TableCell>
                 <TableCell>Статус</TableCell>
                 <TableCell>Действия</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {users.map((user) => (
-                <TableRow key={user.id}>
-                  <TableCell>{user.username}</TableCell>
+              {visibleUsers.map((user) => (
+                <TableRow key={user.id} hover>
                   <TableCell sx={{ minWidth: 190 }}>
-                    <FormControl size="small" fullWidth disabled={
+                    <Typography variant="body2" fontWeight={600}>
+                      {employeeName(user)}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      Логин: {user.username}
+                    </Typography>
+                  </TableCell>
+                  <TableCell sx={{ whiteSpace: "nowrap" }}>
+                    {user.phone || "—"}
+                  </TableCell>
+                  <TableCell>{user.position || "—"}</TableCell>
+                  <TableCell sx={{ minWidth: 175 }}>
+                    <FormControl
+                      size="small"
+                      fullWidth
+                      disabled={
                         user.archived ||
                         (user.role === "admin" && user.isActive && activeAdminCount <= 1) ||
                         administration.changeRole.isPending
-                      }>
+                      }
+                    >
                       <Select
-                        aria-label={`Роль пользователя ${user.username}`}
+                        aria-label={`Системная роль сотрудника ${user.username}`}
                         value={user.role}
                         onChange={(event) =>
                           administration.changeRole.mutate({
@@ -273,14 +406,17 @@ export function UsersPage() {
                       </Select>
                     </FormControl>
                   </TableCell>
-                  <TableCell>{userStatus(user)}</TableCell>
+                  <TableCell sx={{ minWidth: 170 }}>{userStatus(user)}</TableCell>
                   <TableCell>
                     <Stack
                       direction="row"
                       spacing={1}
                       useFlexGap
-                      sx={{ flexWrap: "wrap" }}
+                      sx={{ flexWrap: "wrap", minWidth: 250 }}
                     >
+                      <Button size="small" onClick={() => openProfile(user)}>
+                        Сведения
+                      </Button>
                       {!user.archived && user.isActive && (
                         <Button
                           size="small"
@@ -329,7 +465,11 @@ export function UsersPage() {
                               (user.role === "admin" && user.isActive && activeAdminCount <= 1)
                             }
                             onClick={() => {
-                              if (window.confirm(`Архивировать пользователя ${user.username}?`)) {
+                              if (
+                                window.confirm(
+                                  `Архивировать пользователя ${user.username}?`,
+                                )
+                              ) {
                                 administration.archive.mutate(user.id);
                               }
                             }}
@@ -363,6 +503,58 @@ export function UsersPage() {
           </Table>
         </Paper>
       )}
+
+      <Dialog
+        open={editingUser !== null}
+        onClose={() => setEditingUser(null)}
+        fullWidth
+        maxWidth="sm"
+      >
+        <DialogTitle>Сведения о сотруднике</DialogTitle>
+        <form onSubmit={handleProfileSave}>
+          <DialogContent>
+            <Stack spacing={2} sx={{ pt: 1 }}>
+              <Typography variant="body2" color="text.secondary">
+                Логин: {editingUser?.username}. Изменение логина здесь не предусмотрено.
+              </Typography>
+              <TextField
+                label="ФИО"
+                value={editFullName}
+                onChange={(event) => setEditFullName(event.target.value)}
+                slotProps={{ htmlInput: { maxLength: 255 } }}
+                required
+                fullWidth
+              />
+              <TextField
+                label="Телефон"
+                value={editPhone}
+                onChange={(event) => setEditPhone(event.target.value)}
+                slotProps={{ htmlInput: { maxLength: 50 } }}
+                fullWidth
+              />
+              <TextField
+                label="Должность"
+                value={editPosition}
+                onChange={(event) => setEditPosition(event.target.value)}
+                slotProps={{ htmlInput: { maxLength: 255 } }}
+                fullWidth
+              />
+            </Stack>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setEditingUser(null)}>Отмена</Button>
+            <Button
+              type="submit"
+              variant="contained"
+              disabled={
+                !editFullName.trim() || administration.updateProfile.isPending
+              }
+            >
+              {administration.updateProfile.isPending ? "Сохранение..." : "Сохранить"}
+            </Button>
+          </DialogActions>
+        </form>
+      </Dialog>
     </Stack>
   );
 }
