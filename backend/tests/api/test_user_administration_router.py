@@ -383,7 +383,6 @@ def test_create_user_maps_duplicate_username_to_conflict() -> None:
     assert exc_info.value.detail == "Username already exists"
 
 
-
 @pytest.mark.parametrize(
     ("operation", "error_attribute"),
     [
