@@ -1,7 +1,7 @@
 """Add employee contact fields to users.
 
 Revision ID: c4e8a1d7b260
-Revises: 9f2a6c4d8e14
+Revises: f7c2a9e4b610
 Create Date: 2026-11-15
 """
 
