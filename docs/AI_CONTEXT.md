@@ -1984,3 +1984,11 @@ No production deployment, backend restart, or database migration was performed a
 - Commits: `f364e90`, `8b77438`, `afabdf2`.
 - Local frontend typecheck/build and browser revalidation are pending.
 - Archive state remains a read-only existing flag. No archive transition/action or business rule has been implemented; that requires a separate decision.
+
+
+### Local validation — return navigation correction
+
+- User pulled commits through `dbe11f2`.
+- Frontend `npm run typecheck`: passed.
+- Frontend `npm run build`: passed; Vite transformed 1319 modules.
+- Browser revalidation of the three return-navigation paths remains pending.
