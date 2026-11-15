@@ -584,3 +584,26 @@ The order-item device selector uses the selected Order Customer's Site list as a
 - if Site loading fails, the Site filter is unavailable but instrument search remains usable.
 
 Organization selection is not yet part of the order form. The current Order persistence/API contract does not store an Organization, and the business contract requires a separate cardinality/persistence decision before implementing the selection.
+
+### Verification — general list
+
+The general Verification read slice is available at:
+
+/verifications
+
+Flow:
+
+text:
+GET /verifications/
+  ↓
+Axios API adapter
+  ↓
+DTO → frontend model mapper
+  ↓
+React Query hook
+  ↓
+VerificationsPage
+
+The page provides client-side search and status/result filters and links each verification to its detail page. The backend read contract supplies Order, Customer and Instrument context so the page does not reconstruct that context through implicit Order collection lookups.
+
+The existing /verifications/:verificationId detail route remains the lifecycle/detail surface.
