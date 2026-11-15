@@ -14,6 +14,7 @@ export function mapAuditRecord(dto: AuditRecordApiDto): AuditRecord {
     action: dto.action,
     entityType: dto.entity_type,
     entityId: dto.entity_id,
+    entityDisplayName: dto.entity_display_name,
     changes: dto.changes,
     reason: dto.reason,
     relatedRecordId: dto.related_record_id,
