@@ -67,9 +67,7 @@ class FakeSiteRepository(SiteRepository):
         return list(self.sites.values())
 
     def get_by_customer_id(self, customer_id: UUID) -> list[Site]:
-        return [
-            site for site in self.sites.values() if site.customer_id == customer_id
-        ]
+        return [site for site in self.sites.values() if site.customer_id == customer_id]
 
     def save(self, site: Site) -> Site:
         self.sites[site.id] = site
