@@ -36,9 +36,8 @@ function formatDateTime(value: string): string {
   }).format(new Date(value));
 }
 
-function actorLabel(username: string | null, fullName: string | null, id: string): string {
-  const name = [fullName, username].filter(Boolean).join(" · ");
-  return name ? `${name} (${id})` : id;
+function actorLabel(username: string | null, fullName: string | null): string {
+  return [fullName, username].filter(Boolean).join(" · ") || "Неизвестный пользователь";
 }
 
 function AuditRecordDetails({ record }: { record: AuditRecord }) {
