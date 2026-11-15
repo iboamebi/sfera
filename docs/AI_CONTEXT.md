@@ -2211,3 +2211,25 @@ Implemented employee identity/contact details separately from login credentials 
 - Зафиксированы 21 предупреждение, не относящиеся к этому изменению: Starlette TestClient/httpx deprecation и существующие вызовы `datetime.utcnow()` в PriceList.
 - Ранее выявленные ошибки полного Ruff/format запуска находятся в неизменённых файлах; целевые проверки всех файлов PR проходят.
 - Backend slice Instrument–Site reassignment локально валидирован. PR #38 остаётся открытым; merge и production deployment не выполнялись.
+
+## Instrument–Site reassignment — backend merged and frontend slice implemented — 2026-11-15
+
+### Backend
+
+- PR #38 was squash-merged into `develop` as `cae51944f810bbb83af46fe77331cb046c728b8a`.
+- This supersedes the earlier checkpoint text that described PR #38 as open. Backend local validation remains: 377 passed, 2 skipped; scoped Ruff and format checks passed for all PR backend files.
+
+### Frontend implementation
+
+- Work is on `feat/device-site-assignment-ui`, based on the merged `develop`.
+- Added an API adapter for `PATCH /devices/{device_id}/site`, mapping the existing snake_case DTO through the current Device mapper.
+- Added a React Query mutation hook that updates the Device detail cache and invalidates the Device collection.
+- Added a dedicated Site assignment section to the existing Device card. It loads Sites for the Instrument's Customer, allows selecting an active Site or clearing the assignment, and requires a nonblank reason before enabling save.
+- The currently assigned archived Site remains visible/selectable as the current value; other archived Sites are not offered as targets.
+- Assignment remains separate from ordinary Device metadata editing. The backend is authoritative for Customer ownership, reason validation, and immutable audit recording.
+- The existing admin Audit Journal remains the historical read surface; this frontend slice does not add a second history store or alter audit data.
+- No backend, database, migration, or production changes are included in this frontend slice.
+
+### Validation
+
+- GitHub implementation is complete for the initial UI slice. Frontend `npm run typecheck`, `npm run build`, and browser review are pending local validation after synchronization.
