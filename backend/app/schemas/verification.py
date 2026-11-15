@@ -52,6 +52,33 @@ class VerificationRead(VerificationBase):
     archived: bool
 
 
+class VerificationListRead(BaseModel):
+    """Verification row for the general read-only list."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    order_item_id: UUID
+    order_id: UUID
+    order_number: str
+    customer_id: UUID
+    customer_name: str
+    instrument_id: UUID | None = None
+    instrument_name: str | None = None
+    instrument_type_id: UUID | None = None
+    instrument_type_name: str | None = None
+    serial_number: str | None = None
+    verification_date: date
+    verification_type: VerificationType
+    status: VerificationStatus
+    result: VerificationResult | None = None
+    valid_until: date | None = None
+    created_at: datetime
+    started_at: datetime | None = None
+    decision_at: datetime | None = None
+    archived: bool
+
+
 class VerificationCancellation(BaseModel):
     reason: str | None = None
 
