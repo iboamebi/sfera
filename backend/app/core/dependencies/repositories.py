@@ -4,6 +4,7 @@ from fastapi import Depends
 from sqlalchemy.orm import Session
 
 from app.core.dependencies.database import get_session
+from app.domains.audit.repositories.audit_read_repository import AuditReadRepository
 from app.domains.auth.repositories.session_repository import SessionRepository
 from app.domains.customer.repositories.customer_repository import (
     CustomerRepository,
@@ -59,6 +60,7 @@ from app.domains.workflow.repositories.workflow_repository import (
     WorkflowInstanceRepository,
     WorkflowRepository,
 )
+from app.infrastructure.audit.audit_read_repository import AuditReadRepositorySQLAlchemy
 from app.infrastructure.audit.audit_operation_repository import (
     AuditOperationRepositorySQLAlchemy,
 )
@@ -124,6 +126,14 @@ from app.shared.audit.repositories.audit_operation_repository import (
     AuditOperationRepository,
 )
 from app.shared.audit.repositories.audit_repository import AuditRepository
+
+
+def get_audit_read_repository(
+    session: Session = Depends(get_session),
+) -> AuditReadRepository:
+    """Provide read-only Audit repository."""
+
+    return AuditReadRepositorySQLAlchemy(session)
 
 
 def get_audit_repository(
