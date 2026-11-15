@@ -2005,3 +2005,71 @@ No production deployment, backend restart, or database migration was performed a
 - Files: `frontend/src/features/verifications/model/verificationSorting.ts`, `frontend/src/pages/verifications/VerificationsPage.tsx`.
 - Commits: `0482745`, `765cc1b`, `881e8a1`.
 - Local typecheck/build validation is pending.
+
+
+## Verification list sorting — local validation complete
+
+Пользователь подтвердил после синхронизации `develop`:
+
+- `npm run typecheck` — passed;
+- `npm run build` — passed, Vite transformed 1320 modules;
+- браузерная проверка трёх сценариев возврата из списка поверок ранее также прошла.
+
+Сортировка общего списка поверок завершена. Ошибка `cd frontend` в терминале возникла потому, что команда была запущена не из корня репозитория; последующие npm-команды успешно выполнились из каталога frontend. Production deployment не выполнялся.
+
+## Audit Trail and Domain Events — current-code analysis
+
+Анализ выполнен по текущему `develop`, без изменения бизнес-кода.
+
+### Persistent Audit Trail
+
+Фактически существуют:
+
+- immutable Application contracts: `AuditOperation`, `AuditRecord`;
+- repository interfaces и SQLAlchemy implementations;
+- persistence models `audit_operations`, `audit_records`;
+- DI providers используют текущий SQLAlchemy session;
+- миграция `9f2a6c4d8e10` защищает `audit_records` от UPDATE/DELETE;
+- записи добавляются через `flush()`; commit/rollback остаётся ответственностью общего Unit of Work.
+
+Подтверждённые места записи в Application services:
+
+- Verification: create, start, cancel, approve, reject и correction use cases (требуется отдельная проверка полного набора методов/записей);
+- Order: register; create/update/item mutations пока не пишут Audit Trail;
+- Repair: complete; create/start/cancel пока не пишут Audit Trail;
+- Diagnostic: complete; create/set_recommendation пока не пишут Audit Trail.
+
+Другие mutation services (Customer, Organization, Device, User administration, Warehouse, Workflow и др.) требуют отдельной полной инвентаризации; наличие Audit Trail в них не предполагается.
+
+### Domain Events
+
+- `DomainEvent` несёт отдельные `event_id`, `occurred_at`, optional `operation_id`.
+- `Order.register()` создаёт `OrderRegistered`.
+- `SqlAlchemyUnitOfWork.commit()` сначала коммитит DB transaction, затем собирает события агрегатов и отправляет их в in-memory `EventDispatcher`.
+- `operation_id` добавляется к событию после commit; событие не сохраняется в БД.
+- В текущем `EventDispatcher` нет persistence/read API. В проверенных DI и application wiring не обнаружена регистрация постоянных event handlers.
+- Следовательно, Domain Events нельзя использовать как исторический источник для административного журнала. Для истории доступен persistent Audit Trail; Domain Events выполняют отдельную post-commit coordination/notification роль.
+
+### Missing admin read/UI surface
+
+- В текущих backend routers и `main.py` нет Audit read router/endpoint.
+- Для Audit нет read repository contract, read model, query service или API schema.
+- Во frontend нет Audit feature/page/route/navigation item.
+- Текущий frontend admin-only route существует для `/users`; это подтверждённый пример, но правила доступа к будущему Audit endpoint должны быть закреплены на Application/API границе, не только скрытием ссылки.
+- Текущие Audit infrastructure tests проверяют преобразование и `add/flush` через mock session; read/query tests отсутствуют, поскольку read side не реализован.
+
+### Design constraints for the next slice
+
+- Административный журнал должен читать `audit_records` (и при необходимости join `audit_operations` / User), а не пытаться показывать ephemeral Domain Events как сохранённую историю.
+- Не менять append-only records и не вводить UPDATE/DELETE.
+- Не создавать event persistence или outbox без отдельного бизнес/архитектурного решения.
+- До реализации нужно определить минимальный список полей/фильтров и подтвердить authorization policy для чтения журнала.
+- Обнаружено расхождение формата `entity_type`: Verification writes `"Verification"`, другие проверенные области используют lowercase (`"order"`, `"repair"`, `"diagnostic"`), тогда как Audit Trail documentation задаёт стабильные lowercase identifiers. Исторические записи не переписывать; нормализацию применять только к новым writes после согласования.
+- `AuditOperation.initiated_by` и `AuditRecord.actor_id` сейчас обязательные UUID; описанная в документации поддержка system/background actor пока не реализована в контрактах.
+
+Current status:
+- Audit persistence foundation: COMPLETE.
+- Transactional writes: PARTIAL, limited to inspected use cases.
+- Domain Events: in-memory post-commit dispatch; no persistent event history.
+- Audit read/query: NOT IMPLEMENTED.
+- Admin Audit UI: NOT IMPLEMENTED.
