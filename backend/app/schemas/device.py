@@ -54,3 +54,18 @@ class DeviceRead(BaseModel):
         if isinstance(value, SerialNumber):
             return value.value
         return value
+
+
+class DeviceSiteChange(BaseModel):
+    """Request to change or clear an instrument's assigned site."""
+
+    site_id: UUID | None
+    reason: str = Field(min_length=1, max_length=1000)
+
+    @field_validator("reason")
+    @classmethod
+    def validate_reason(cls, value: str) -> str:
+        reason = value.strip()
+        if not reason:
+            raise ValueError("A reason is required")
+        return reason

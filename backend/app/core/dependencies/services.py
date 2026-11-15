@@ -25,6 +25,9 @@ from app.application.customer.services.customer_application_service import (
 from app.application.device.services.device_application_service import (
     DeviceApplicationService,
 )
+from app.application.device.services.device_site_assignment_application_service import (
+    DeviceSiteAssignmentApplicationService,
+)
 from app.application.diagnostic.services.diagnostic_application_service import (
     DiagnosticApplicationService,
 )
@@ -291,6 +294,25 @@ def get_device_service(
         customer_repository,
         site_repository,
         uow,
+    )
+
+
+def get_device_site_assignment_service(
+    device_repository: DeviceRepository = Depends(get_device_repository),
+    site_repository: SiteRepository = Depends(get_site_repository),
+    uow: UnitOfWork = Depends(get_unit_of_work),
+    audit_operation_repository: AuditOperationRepository = Depends(
+        get_audit_operation_repository,
+    ),
+    audit_repository: AuditRepository = Depends(get_audit_repository),
+) -> DeviceSiteAssignmentApplicationService:
+    """Provide controlled Device Site assignment service."""
+    return DeviceSiteAssignmentApplicationService(
+        device_repository,
+        site_repository,
+        uow,
+        audit_operation_repository,
+        audit_repository,
     )
 
 

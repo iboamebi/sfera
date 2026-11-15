@@ -11,6 +11,9 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from app.api.dependencies.auth import get_current_user
 from app.api.security.csrf import require_csrf
+from app.application.device.commands.change_device_site import (
+    ChangeDeviceSiteCommand,
+)
 from app.application.device.commands.connect_device import ConnectDeviceCommand
 from app.application.device.commands.create_device import CreateDeviceCommand
 from app.application.device.commands.disconnect_device import DisconnectDeviceCommand
@@ -20,6 +23,7 @@ from app.application.device.exceptions import (
     DeviceNotAvailableApplicationError,
     DeviceNotFoundApplicationError,
     DeviceNotInWorkApplicationError,
+    DeviceSiteChangeReasonRequiredApplicationError,
     DuplicateDeviceSerialNumberApplicationError,
     InstrumentTypeNotFoundApplicationError,
     SiteCustomerMismatchApplicationError,
@@ -28,8 +32,20 @@ from app.application.device.exceptions import (
 from app.application.device.services.device_application_service import (
     DeviceApplicationService,
 )
-from app.core.dependencies.services import get_device_service
-from app.schemas.device import DeviceCreate, DeviceRead, DeviceUpdate
+from app.application.device.services.device_site_assignment_application_service import (
+    DeviceSiteAssignmentApplicationService,
+)
+from app.core.dependencies.services import (
+    get_device_service,
+    get_device_site_assignment_service,
+)
+from app.domains.user.entities.user import User
+from app.schemas.device import (
+    DeviceCreate,
+    DeviceRead,
+    DeviceSiteChange,
+    DeviceUpdate,
+)
 from app.schemas.device_action import DeviceActionResponse
 
 router = APIRouter(
@@ -97,6 +113,44 @@ def create_device(
         raise HTTPException(
             status_code=409,
             detail="Site does not belong to customer",
+        ) from None
+
+
+@router.patch(
+    "/{device_id}/site",
+    response_model=DeviceRead,
+)
+def change_device_site(
+    device_id: UUID,
+    data: DeviceSiteChange,
+    user: User = Depends(get_current_user),
+    __: None = Depends(require_csrf),
+    service: DeviceSiteAssignmentApplicationService = Depends(
+        get_device_site_assignment_service,
+    ),
+):
+    try:
+        return service.change_site(
+            ChangeDeviceSiteCommand(
+                device_id=device_id,
+                site_id=data.site_id,
+                reason=data.reason,
+            ),
+            user,
+        )
+    except DeviceNotFoundApplicationError:
+        raise HTTPException(status_code=404, detail="Device not found") from None
+    except SiteNotFoundApplicationError:
+        raise HTTPException(status_code=404, detail="Site not found") from None
+    except SiteCustomerMismatchApplicationError:
+        raise HTTPException(
+            status_code=409,
+            detail="Site does not belong to device customer",
+        ) from None
+    except DeviceSiteChangeReasonRequiredApplicationError:
+        raise HTTPException(
+            status_code=422,
+            detail="A reason is required to change the instrument site",
         ) from None
 
 

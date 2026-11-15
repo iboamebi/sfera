@@ -35,6 +35,11 @@ class Device(AggregateRoot):
 
         self.name = name
 
+    def change_site(self, site_id: UUID | None) -> None:
+        """Change the instrument's assigned site."""
+
+        self.site_id = site_id
+
     def connect(self) -> None:
         """Connect device to work."""
 

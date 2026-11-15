@@ -4,6 +4,7 @@ from app.api.dependencies.auth import get_current_user
 from app.api.routers.device import (
     connect_device,
     create_device,
+    change_device_site,
     disconnect_device,
     router,
 )
@@ -35,6 +36,13 @@ def test_connect_device_requires_authentication_and_csrf() -> None:
 
 def test_disconnect_device_requires_authentication_and_csrf() -> None:
     dependencies = get_route_dependencies(disconnect_device)
+
+    assert get_current_user in dependencies
+    assert require_csrf in dependencies
+
+
+def test_change_device_site_requires_authentication_and_csrf() -> None:
+    dependencies = get_route_dependencies(change_device_site)
 
     assert get_current_user in dependencies
     assert require_csrf in dependencies
