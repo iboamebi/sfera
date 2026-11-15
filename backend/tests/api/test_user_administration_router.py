@@ -4,7 +4,6 @@ import pytest
 from fastapi import HTTPException
 
 from app.api.routers.users import (
-    update_user_profile,
     archive_user,
     change_user_role,
     create_user,
@@ -12,6 +11,7 @@ from app.api.routers.users import (
     reset_user_password,
     restore_user,
     set_user_active,
+    update_user_profile,
 )
 from app.application.user.exceptions import (
     LastActiveAdministratorApplicationError,
