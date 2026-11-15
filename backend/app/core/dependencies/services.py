@@ -54,6 +54,9 @@ from app.application.site.services.site_application_service import (
 from app.application.user.services.user_administration_application_service import (
     UserAdministrationApplicationService,
 )
+from app.application.verification.queries.verification_read_service import (
+    VerificationReadService,
+)
 from app.application.verification.services.verification_application_service import (
     VerificationApplicationService,
 )
@@ -115,6 +118,9 @@ from app.domains.price_list.repositories.price_list_repository import (
 from app.domains.repair.repositories.repair_repository import RepairRepository
 from app.domains.site.repositories.site_repository import SiteRepository
 from app.domains.user.repositories.user_repository import UserRepository
+from app.domains.verification.repositories.verification_read_repository import (
+    VerificationReadRepository,
+)
 from app.domains.verification.repositories.verification_repository import (
     VerificationRepository,
 )
@@ -230,6 +236,13 @@ def get_order_read_service(
 ) -> OrderReadService:
     """Provide Order read service."""
     return OrderReadService(repository)
+
+
+def get_verification_read_service(
+    repository: VerificationReadRepository = Depends(get_verification_read_repository),
+) -> VerificationReadService:
+    """Provide Verification read service."""
+    return VerificationReadService(repository)
 
 
 def get_verification_service(
