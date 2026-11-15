@@ -2246,3 +2246,13 @@ Implemented employee identity/contact details separately from login credentials 
 - Browser review сценария изменения Site ещё не выполнен.
 - На commit PR нет настроенных status checks (пустой список statuses).
 - Production deployment и backend restart не выполнялись.
+
+
+### Instrument–Site reassignment — UI behavior refinement — 2026-11-15
+
+- Browser review confirmed scenarios 1–4: reassignment to another active Site with a reason, clearing the Site with a reason, updated assignment display, and the corresponding `instrument.site_changed` record in the admin Audit Journal.
+- Review of the actual `DeviceCard` implementation identified that `DeviceSiteAssignment` was rendered in both view and metadata-edit modes.
+- The Site assignment operation is independent from ordinary Instrument metadata editing: it has its own endpoint, mandatory reason, and audit record. Therefore the assignment control is now shown only in the card view mode; metadata-edit mode edits only Instrument fields.
+- The archived-current-Site scenario remains unverified in the browser and is explicitly deferred. The implementation still retains the current archived Site in the available options while excluding other archived Sites.
+- Frontend typecheck/build and a short browser regression check after this refinement are pending.
+- No backend, database, migration, or production changes.
