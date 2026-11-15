@@ -1998,7 +1998,6 @@ No production deployment, backend restart, or database migration was performed a
 - Commits: `0482745`, `765cc1b`, `881e8a1`.
 - Local typecheck/build validation is pending.
 
-
 ## Verification list sorting — local validation complete
 
 Пользователь подтвердил после синхронизации `develop`:
@@ -2121,6 +2120,7 @@ Implemented the administrator-facing Audit Journal UI against the existing read-
 - `35f1631` — Audit Journal page.
 - `2046d33` — admin-only route.
 - `6606a6d` — admin navigation item.
+- `17fd6db` — stable React row keys and typed filter field.
 - `17fd6db` — stable React row keys and typed filter field.
 
 ### Local validation required
