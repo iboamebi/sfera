@@ -2200,3 +2200,14 @@ Implemented employee identity/contact details separately from login credentials 
 - Added Application and API regression tests, including cross-Customer rejection, clearing Site, reason validation, audit payload, and authenticated/CSRF route requirements.
 - Backend implementation is on branch `feat/device-site-assignment-history`. Local pytest/Ruff validation is pending.
 - Frontend controls for this operation are not part of this backend slice and remain a separate stage.
+
+### Instrument–Site reassignment — local validation complete — 2026-11-15
+
+Пользователь синхронизировал ветку и подтвердил локальную проверку backend:
+
+- Полный `pytest -q`: **377 passed, 2 skipped**.
+- Scoped `ruff check` по 10 файлам PR: **All checks passed**.
+- Scoped `ruff format --check` по тем же 10 файлам: **10 files already formatted**.
+- Зафиксированы 21 предупреждение, не относящиеся к этому изменению: Starlette TestClient/httpx deprecation и существующие вызовы `datetime.utcnow()` в PriceList.
+- Ранее выявленные ошибки полного Ruff/format запуска находятся в неизменённых файлах; целевые проверки всех файлов PR проходят.
+- Backend slice Instrument–Site reassignment локально валидирован. PR #38 остаётся открытым; merge и production deployment не выполнялись.
