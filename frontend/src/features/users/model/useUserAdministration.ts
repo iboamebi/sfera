@@ -7,8 +7,9 @@ import {
   restoreUser,
   resetUserPassword,
   setUserActive,
+  updateUserProfile,
 } from "../api/userAdministration";
-import type { UserRole } from "./types";
+import type { UserCreateInput, UserProfileInput, UserRole } from "./types";
 
 export function useUserAdministration() {
   const queryClient = useQueryClient();
@@ -17,8 +18,13 @@ export function useUserAdministration() {
     queryClient.invalidateQueries({ queryKey: ["users"] });
 
   const create = useMutation({
-    mutationFn: ({ username, role }: { username: string; role: UserRole }) =>
-      createUser(username, role),
+    mutationFn: (data: UserCreateInput) => createUser(data),
+    onSuccess: refreshUsers,
+  });
+
+  const updateProfile = useMutation({
+    mutationFn: ({ userId, data }: { userId: string; data: UserProfileInput }) =>
+      updateUserProfile(userId, data),
     onSuccess: refreshUsers,
   });
 
@@ -49,5 +55,13 @@ export function useUserAdministration() {
     onSuccess: refreshUsers,
   });
 
-  return { create, resetPassword, changeRole, changeStatus, archive, restore };
+  return {
+    create,
+    updateProfile,
+    resetPassword,
+    changeRole,
+    changeStatus,
+    archive,
+    restore,
+  };
 }
