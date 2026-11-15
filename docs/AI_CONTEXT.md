@@ -2256,3 +2256,12 @@ Implemented employee identity/contact details separately from login credentials 
 - The archived-current-Site scenario remains unverified in the browser and is explicitly deferred. The implementation still retains the current archived Site in the available options while excluding other archived Sites.
 - Frontend typecheck/build and a short browser regression check after this refinement are pending.
 - No backend, database, migration, or production changes.
+
+
+### Instrument–Site reassignment — final frontend validation — 2026-11-15
+
+- После последнего изменения DeviceCard пользователь повторно подтвердил локальные `npm run typecheck` и `npm run build` — оба завершились успешно; Vite преобразовал 1327 модулей.
+- Browser regression после изменения: сценарии 1–4 пройдены. Блок назначения Site виден в режиме просмотра, скрыт в режиме редактирования, сохранение обычных полей СИ не меняет Site, после выхода из режима редактирования блок снова виден.
+- Проверка уже назначенного архивного Site остаётся отложенной.
+- GitHub review PR #39: base `develop`, head `aef934e68f6a02a8aa3e01a0254505007f1c511c`, mergeable; review threads отсутствуют, submitted reviews отсутствуют. Между base и head 6 изменённых файлов.
+- No backend, database, migration, or production changes. Production deployment and backend restart were not performed.
