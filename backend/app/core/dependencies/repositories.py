@@ -1,4 +1,4 @@
-"""
+""" 
 Repository dependency providers.
 """
 
@@ -204,7 +204,6 @@ def get_customer_repository(
     """Provide Customer repository."""
 
     return CustomerRepositorySQLAlchemy(session)
-
 
 
 def get_device_repository(
