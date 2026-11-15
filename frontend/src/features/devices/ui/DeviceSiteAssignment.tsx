@@ -28,7 +28,6 @@ export function DeviceSiteAssignment({ device }: DeviceSiteAssignmentProps) {
   useEffect(() => {
     setSiteId(device.siteId ?? "");
     setReason("");
-    mutation.reset();
   }, [device.id, device.siteId]);
 
   const currentSite = sites?.find((site) => site.id === device.siteId);
