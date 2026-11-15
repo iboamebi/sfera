@@ -5,6 +5,9 @@ export function mapUser(dto: UserApiDto): UserRead {
   return {
     id: dto.id,
     username: dto.username,
+    fullName: dto.full_name,
+    phone: dto.phone,
+    position: dto.position,
     role: dto.role,
     isActive: dto.is_active,
     archived: dto.archived,
