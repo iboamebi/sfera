@@ -25,6 +25,16 @@ class User(BaseModel):
         nullable=True,
     )
 
+    phone: Mapped[str | None] = mapped_column(
+        String(50),
+        nullable=True,
+    )
+
+    position: Mapped[str | None] = mapped_column(
+        String(255),
+        nullable=True,
+    )
+
     password_hash: Mapped[str] = mapped_column(
         String(255),
         nullable=False,
