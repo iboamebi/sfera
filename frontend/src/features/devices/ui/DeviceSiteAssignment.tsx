@@ -28,6 +28,7 @@ export function DeviceSiteAssignment({ device }: DeviceSiteAssignmentProps) {
   useEffect(() => {
     setSiteId(device.siteId ?? "");
     setReason("");
+    mutation.reset();
   }, [device.id, device.siteId]);
 
   const currentSite = sites?.find((site) => site.id === device.siteId);
@@ -61,7 +62,10 @@ export function DeviceSiteAssignment({ device }: DeviceSiteAssignmentProps) {
           labelId="device-site-label"
           label="Объект"
           value={siteId}
-          onChange={(event) => setSiteId(event.target.value)}
+          onChange={(event) => {
+            setSiteId(event.target.value);
+            mutation.reset();
+          }}
         >
           <MenuItem value="">Без объекта</MenuItem>
           {availableSites.map((site) => (
@@ -75,10 +79,13 @@ export function DeviceSiteAssignment({ device }: DeviceSiteAssignmentProps) {
       <TextField
         label="Причина изменения"
         value={reason}
-        onChange={(event) => setReason(event.target.value)}
+        onChange={(event) => {
+          setReason(event.target.value);
+          mutation.reset();
+        }}
         multiline
         minRows={2}
-        inputProps={{ maxLength: 1000 }}
+        slotProps={{ htmlInput: { maxLength: 1000 } }}
         helperText="Причина обязательна и сохраняется в журнале аудита."
         disabled={mutation.isPending}
         fullWidth
