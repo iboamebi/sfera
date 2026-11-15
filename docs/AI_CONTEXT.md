@@ -1883,3 +1883,56 @@ Frontend:
 - corresponding frontend type/build validation.
 
 No implementation change has been made yet in this checkpoint.
+
+## General Verification Page — implementation checkpoint — 2026-11-15
+
+Implemented the first independent slice of the general Verification page.
+
+### Backend
+
+- Added a dedicated Verification read model and read repository contract.
+- Added SQLAlchemy read repository loading Verification together with OrderItem, Order, Customer, Instrument and InstrumentType context.
+- Added VerificationReadService and read mapper.
+- Added VerificationListRead API contract.
+- Added authenticated GET /verifications/.
+- Existing GET /verifications/{verification_id} and all lifecycle mutation contracts remain unchanged.
+- Added focused Application and API tests for the list read slice.
+
+### Frontend
+
+- Added Verification list DTO/model, mapper and React Query hook.
+- Added /verifications page with:
+  - search across order/customer/instrument/type/serial/status/result;
+  - status filter;
+  - result filter;
+  - verification/order navigation;
+  - verification date, order, customer, instrument, type, status, result and validity columns.
+- Added «Поверки» to the authenticated application navigation.
+- Existing /verifications/:verificationId detail route remains unchanged.
+
+### Confirmed design boundaries
+
+- The list is a read-only projection and does not change Verification lifecycle or business rules.
+- Search/filtering is client-side in this first slice; no speculative pagination or server-side query contract was introduced.
+- Cancelled and archived records remain available to the general list; hiding cancelled records remains specific to the OrderItem presentation rule.
+- No Arshin provenance field was invented.
+
+### Local validation required next
+
+Backend:
+- focused Verification read/Application/API tests;
+- Ruff check;
+- Ruff format check.
+
+Frontend:
+- npm run typecheck;
+- npm run build.
+
+Browser review after local validation:
+- /verifications;
+- search and status/result filters;
+- navigation to Verification detail;
+- navigation to source Order;
+- cancelled/archived rows remain distinguishable and do not appear as active work.
+
+No production deployment or backend restart is part of this stage.
