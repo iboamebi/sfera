@@ -186,7 +186,10 @@ export function AddOrderItemButton({
               ? "Не удалось загрузить группы СИ"
               : "Можно добавить позицию по группе без конкретного СИ"
           }
-          sx={{ minWidth: { xs: "100%", sm: 280 }, flex: { xs: "1 1 100%", sm: "0 1 auto" } }}
+          sx={{
+            minWidth: { xs: "100%", sm: 280 },
+            flex: { xs: "1 1 100%", sm: "0 1 auto" },
+          }}
         >
           <MenuItem value="">Не выбрана</MenuItem>
           {activeInstrumentTypes.map((instrumentType) => (
