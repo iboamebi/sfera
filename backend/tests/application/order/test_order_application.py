@@ -125,6 +125,22 @@ class FakeDeviceRepository(DeviceRepository):
     def list(self) -> list[Device]:
         return list(self.devices.values())
 
+    def exists_by_customer_type_and_serial_number(
+        self,
+        customer_id: UUID,
+        instrument_type_id: UUID,
+        serial_number: str,
+        exclude_device_id: UUID | None = None,
+    ) -> bool:
+        normalized_serial = serial_number.strip().casefold()
+        return any(
+            device.id != exclude_device_id
+            and device.customer_id == customer_id
+            and device.instrument_type_id == instrument_type_id
+            and device.serial_number.value.casefold() == normalized_serial
+            for device in self.devices.values()
+        )
+
     def save(self, device: Device) -> None:
         self.devices[device.id] = device
 
