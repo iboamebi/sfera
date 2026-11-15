@@ -23,7 +23,4 @@ class VerificationReadService:
 
     def list(self) -> list[VerificationListRead]:
         """List verifications using the read model."""
-        return [
-            self._mapper.to_schema(model)
-            for model in self._repository.list()
-        ]
+        return [self._mapper.to_schema(model) for model in self._repository.list()]
