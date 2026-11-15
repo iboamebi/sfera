@@ -10,7 +10,12 @@ from app.domains.audit.read_models.audit_read_models import AuditRecordReadData
 from app.domains.audit.repositories.audit_read_repository import AuditReadRepository
 from app.models.audit_operation import AuditOperationModel
 from app.models.audit_record import AuditRecordModel
+from app.models.instrument import Instrument
+from app.models.order import Order
+from app.models.order_item import OrderItem
+from app.models.repair import Repair
 from app.models.user import User
+from app.models.verification import Verification
 
 
 class AuditReadRepositorySQLAlchemy(AuditReadRepository):
@@ -34,8 +39,30 @@ class AuditReadRepositorySQLAlchemy(AuditReadRepository):
     ) -> tuple[list[AuditRecordReadData], int]:
         actor = aliased(User)
         initiator = aliased(User)
+        order = aliased(Order)
+        verification = aliased(Verification)
+        verification_item = aliased(OrderItem)
+        verification_order = aliased(Order)
+        verification_instrument = aliased(Instrument)
+        repair = aliased(Repair)
+        repair_item = aliased(OrderItem)
+        repair_order = aliased(Order)
+        repair_instrument = aliased(Instrument)
+
         query = (
-            self._session.query(AuditRecordModel, actor, AuditOperationModel, initiator)
+            self._session.query(
+                AuditRecordModel,
+                actor,
+                AuditOperationModel,
+                initiator,
+                order,
+                verification,
+                verification_order,
+                verification_instrument,
+                repair,
+                repair_order,
+                repair_instrument,
+            )
             .outerjoin(actor, actor.id == AuditRecordModel.actor_id)
             .outerjoin(
                 AuditOperationModel,
@@ -44,6 +71,43 @@ class AuditReadRepositorySQLAlchemy(AuditReadRepository):
             .outerjoin(
                 initiator,
                 initiator.id == AuditOperationModel.initiated_by,
+            )
+            .outerjoin(
+                order,
+                (AuditRecordModel.entity_type == "order")
+                & (order.id == AuditRecordModel.entity_id),
+            )
+            .outerjoin(
+                verification,
+                (AuditRecordModel.entity_type == "Verification")
+                & (verification.id == AuditRecordModel.entity_id),
+            )
+            .outerjoin(
+                verification_item,
+                verification_item.id == verification.order_item_id,
+            )
+            .outerjoin(
+                verification_order,
+                verification_order.id == verification_item.order_id,
+            )
+            .outerjoin(
+                verification_instrument,
+                verification_instrument.id
+                == func.coalesce(
+                    verification.instrument_id,
+                    verification_item.instrument_id,
+                ),
+            )
+            .outerjoin(
+                repair,
+                (AuditRecordModel.entity_type == "repair")
+                & (repair.id == AuditRecordModel.entity_id),
+            )
+            .outerjoin(repair_item, repair_item.id == repair.order_item_id)
+            .outerjoin(repair_order, repair_order.id == repair_item.order_id)
+            .outerjoin(
+                repair_instrument,
+                repair_instrument.id == repair_item.instrument_id,
             )
         )
 
@@ -76,24 +140,60 @@ class AuditReadRepositorySQLAlchemy(AuditReadRepository):
             .all()
         )
 
-        records = [
-            AuditRecordReadData(
-                id=record.id,
-                operation_id=record.operation_id,
-                actor_id=record.actor_id,
-                actor_username=actor.username if actor else None,
-                actor_full_name=actor.full_name if actor else None,
-                initiated_by=operation.initiated_by if operation else None,
-                initiator_username=initiator.username if initiator else None,
-                initiator_full_name=initiator.full_name if initiator else None,
-                action=record.action,
-                entity_type=record.entity_type,
-                entity_id=record.entity_id,
-                changes=record.changes,
-                reason=record.reason,
-                related_record_id=record.related_record_id,
-                occurred_at=record.occurred_at,
+        records = []
+        for (
+            record,
+            actor_row,
+            operation,
+            initiator_row,
+            order_row,
+            verification_row,
+            verification_order_row,
+            verification_instrument_row,
+            repair_row,
+            repair_order_row,
+            repair_instrument_row,
+        ) in rows:
+            entity_display_name = None
+            if record.entity_type == "order" and order_row is not None:
+                entity_display_name = f"Заказ № {order_row.number}"
+            elif record.entity_type == "Verification" and verification_row is not None:
+                parts = ["Поверка"]
+                if verification_order_row is not None:
+                    parts.append(f"заказ № {verification_order_row.number}")
+                if verification_instrument_row is not None:
+                    parts.append(f"СИ № {verification_instrument_row.serial_number}")
+                entity_display_name = " · ".join(parts)
+            elif record.entity_type == "repair" and repair_row is not None:
+                parts = ["Ремонт"]
+                if repair_order_row is not None:
+                    parts.append(f"заказ № {repair_order_row.number}")
+                if repair_instrument_row is not None:
+                    parts.append(f"СИ № {repair_instrument_row.serial_number}")
+                entity_display_name = " · ".join(parts)
+
+            records.append(
+                AuditRecordReadData(
+                    id=record.id,
+                    operation_id=record.operation_id,
+                    actor_id=record.actor_id,
+                    actor_username=actor_row.username if actor_row else None,
+                    actor_full_name=actor_row.full_name if actor_row else None,
+                    initiated_by=operation.initiated_by if operation else None,
+                    initiator_username=(
+                        initiator_row.username if initiator_row else None
+                    ),
+                    initiator_full_name=(
+                        initiator_row.full_name if initiator_row else None
+                    ),
+                    action=record.action,
+                    entity_type=record.entity_type,
+                    entity_id=record.entity_id,
+                    entity_display_name=entity_display_name,
+                    changes=record.changes,
+                    reason=record.reason,
+                    related_record_id=record.related_record_id,
+                    occurred_at=record.occurred_at,
+                )
             )
-            for record, actor, operation, initiator in rows
-        ]
         return records, total
