@@ -10,6 +10,7 @@ export interface AuditRecordApiDto {
   action: string;
   entity_type: string;
   entity_id: string | null;
+  entity_display_name: string | null;
   changes: Record<string, unknown>;
   reason: string | null;
   related_record_id: string | null;
