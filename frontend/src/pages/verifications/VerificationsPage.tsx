@@ -58,7 +58,7 @@ function getSearchValues(verification: VerificationListRead): string[] {
     TYPE_LABELS[verification.verificationType],
     STATUS_LABELS[verification.status],
     verification.result ? RESULT_LABELS[verification.result] : "Без решения",
-  ].filter(Boolean);
+  ].filter((value): value is string => value !== null);
 }
 
 export function VerificationsPage() {
