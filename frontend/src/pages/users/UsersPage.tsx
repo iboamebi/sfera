@@ -30,8 +30,9 @@ import type {
   UserRead,
   UserRole,
 } from "../../features/users/model/types";
-import { useUserAdministration } from
-  "../../features/users/model/useUserAdministration";
+import {
+  useUserAdministration,
+} from "../../features/users/model/useUserAdministration";
 import { useUsers } from "../../features/users/model/useUsers";
 
 const roles: UserRole[] = [
@@ -468,7 +469,9 @@ export function UsersPage() {
                             color="warning"
                             disabled={
                               administration.archive.isPending ||
-                              (user.role === "admin" && user.isActive && activeAdminCount <= 1)
+                              (user.role === "admin" &&
+                                user.isActive &&
+                                activeAdminCount <= 1)
                             }
                             onClick={() => {
                               if (
