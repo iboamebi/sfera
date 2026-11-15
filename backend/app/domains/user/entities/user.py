@@ -10,14 +10,30 @@ from app.shared.base.entity import Entity
 
 @dataclass(eq=False, kw_only=True)
 class User(Entity):
-    """User identity used by authentication and administration flows."""
+    """User identity and employee profile used by administration flows."""
 
     username: str
     password_hash: str
+    full_name: str | None = None
+    phone: str | None = None
+    position: str | None = None
     role: UserRole = UserRole.OPERATOR
     archived: bool = False
     is_active: bool = True
     must_change_password: bool = False
+
+    def update_profile(
+        self,
+        *,
+        full_name: str,
+        phone: str | None,
+        position: str | None,
+    ) -> None:
+        """Update employee contact and display information."""
+
+        self.full_name = full_name
+        self.phone = phone
+        self.position = position
 
     def archive(self) -> None:
         """Archive user and prevent authentication."""
