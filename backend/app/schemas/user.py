@@ -11,7 +11,18 @@ class UserCreate(BaseModel):
     """Fields accepted when an administrator creates a user."""
 
     username: str = Field(min_length=1, max_length=100)
+    full_name: str = Field(min_length=1, max_length=255)
+    phone: str | None = Field(default=None, max_length=50)
+    position: str | None = Field(default=None, max_length=255)
     role: UserRole
+
+
+class UserProfileUpdate(BaseModel):
+    """Employee profile fields accepted from user administration."""
+
+    full_name: str = Field(min_length=1, max_length=255)
+    phone: str | None = Field(default=None, max_length=50)
+    position: str | None = Field(default=None, max_length=255)
 
 
 class UserActiveUpdate(BaseModel):
@@ -27,12 +38,15 @@ class UserRoleUpdate(BaseModel):
 
 
 class UserRead(BaseModel):
-    """Public account state returned to administrators."""
+    """Public account and employee profile returned to administrators."""
 
     model_config = ConfigDict(from_attributes=True)
 
     id: UUID
     username: str
+    full_name: str | None
+    phone: str | None
+    position: str | None
     role: UserRole
     is_active: bool
     archived: bool
