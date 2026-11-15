@@ -26,7 +26,7 @@ export interface AuditRecordPage {
 export interface AuditFilters {
   occurredFrom: string;
   occurredTo: string;
-  actorId: string;
+  actorQuery: string;
   action: string;
   entityType: string;
   operationId: string;
