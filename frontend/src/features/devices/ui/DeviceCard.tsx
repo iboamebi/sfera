@@ -107,7 +107,7 @@ export function DeviceCard({
           const value = e.target.value;
           if (!value) {
             setField("manufactureYear", null);
-          } else if (/^\\d{1,4}$/.test(value)) {
+          } else if (/^\d{1,4}$/.test(value)) {
             setField("manufactureYear", Number(value));
           }
         }}
