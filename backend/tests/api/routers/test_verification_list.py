@@ -1,4 +1,4 @@
-from datetime import date, datetime, UTC
+from datetime import date, datetime
 from uuid import uuid4
 
 from fastapi.testclient import TestClient
@@ -6,7 +6,6 @@ from fastapi.testclient import TestClient
 from app.api.dependencies.auth import require_password_change_completed
 from app.core.dependencies.services import get_verification_read_service
 from app.main import app
-from app.schemas.verification import VerificationListRead
 from app.domains.verification.value_objects.verification_result import (
     VerificationResult,
 )
@@ -16,6 +15,8 @@ from app.domains.verification.value_objects.verification_status import (
 from app.domains.verification.value_objects.verification_type import (
     VerificationType,
 )
+from app.main import app
+from app.schemas.verification import VerificationListRead
 
 
 class FakeVerificationReadService:
@@ -50,8 +51,8 @@ def test_list_verifications_returns_read_models():
         archived=False,
     )
 
-    app.dependency_overrides[get_verification_read_service] = (
-        lambda: FakeVerificationReadService([verification])
+    app.dependency_overrides[get_verification_read_service] = lambda: (
+        FakeVerificationReadService([verification])
     )
     app.dependency_overrides[require_password_change_completed] = lambda: None
 
