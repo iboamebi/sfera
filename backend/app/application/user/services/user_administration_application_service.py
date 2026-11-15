@@ -10,6 +10,7 @@ from app.application.user.commands.create_user import CreateUserCommand
 from app.application.user.commands.reset_user_password import ResetUserPasswordCommand
 from app.application.user.commands.restore_user import RestoreUserCommand
 from app.application.user.commands.set_user_active import SetUserActiveCommand
+from app.application.user.commands.update_user_profile import UpdateUserProfileCommand
 from app.application.user.exceptions import (
     LastActiveAdministratorApplicationError,
     UserAlreadyExistsApplicationError,
