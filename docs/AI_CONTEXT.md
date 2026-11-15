@@ -1950,3 +1950,25 @@ Corrected in GitHub:
 - No business/API contract change was made.
 
 The user should rerun the same backend focused test/Ruff commands. Frontend validation remains pending.
+
+
+## General Verification Page — local validation checkpoint — 2026-11-15
+
+User-local validation completed for the general Verification page implementation:
+
+- Backend focused tests: **2 passed** (one existing warning).
+- Backend Ruff check: **All checks passed**.
+- Backend Ruff format check: **10 files already formatted**.
+- Frontend `npm run typecheck`: passed after correcting nullable search values in `VerificationsPage.tsx`.
+- Frontend `npm run build`: passed; Vite transformed 1319 modules.
+- Follow-up UI adjustment: the general list now displays an explicit «В архиве» marker for archived rows, using the existing `archived` field. Commit: `8e6a0494dbc8fe99e86409d3801fbd3c64124da6`.
+- After that adjustment, the user reran frontend typecheck and production build successfully (1319 modules transformed).
+
+Remaining validation is browser review only:
+- open `/verifications` and confirm list loading;
+- test search and combined status/result filters;
+- verify navigation to Verification detail and Order;
+- confirm CANCELLED entries remain in the general list;
+- confirm archived entries show «В архиве».
+
+No production deployment, backend restart, or database migration was performed as part of this general-list stage.
