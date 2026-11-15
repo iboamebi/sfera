@@ -21,6 +21,7 @@ class AuditRecordReadData:
     action: str
     entity_type: str
     entity_id: UUID | None
+    entity_display_name: str | None
     changes: dict[str, Any]
     reason: str | None
     related_record_id: UUID | None
