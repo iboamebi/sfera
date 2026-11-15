@@ -481,7 +481,13 @@ def test_create_user_rejects_existing_username_even_if_archived() -> None:
 
     with pytest.raises(UserAlreadyExistsApplicationError):
         service.create(
-            CreateUserCommand(username="existing", role=UserRole.OPERATOR),
+            CreateUserCommand(
+                username="existing",
+                full_name="Существующий сотрудник",
+                phone=None,
+                position=None,
+                role=UserRole.OPERATOR,
+            ),
             make_user("admin", UserRole.ADMIN),
         )
 
