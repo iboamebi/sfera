@@ -21,3 +21,26 @@ export interface VerificationRead {
   cancellationReason: string | null;
   archived: boolean;
 }
+
+export interface VerificationListRead {
+  id: string;
+  orderItemId: string;
+  orderId: string;
+  orderNumber: string;
+  customerId: string;
+  customerName: string;
+  instrumentId: string | null;
+  instrumentName: string | null;
+  instrumentTypeId: string | null;
+  instrumentTypeName: string | null;
+  serialNumber: string | null;
+  verificationDate: string;
+  verificationType: VerificationType;
+  status: VerificationStatus;
+  result: VerificationResult | null;
+  validUntil: string | null;
+  createdAt: string;
+  startedAt: string | null;
+  decisionAt: string | null;
+  archived: boolean;
+}
