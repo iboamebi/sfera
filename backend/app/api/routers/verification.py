@@ -17,17 +17,39 @@ from app.application.verification.exceptions import (
     VerificationNotFoundApplicationError,
     VerificationOrderItemNotFoundApplicationError,
 )
+from app.application.verification.queries.verification_read_service import (
+    VerificationReadService,
+)
 from app.application.verification.services.verification_application_service import (
     VerificationApplicationService,
 )
-from app.core.dependencies.services import get_verification_service
+from app.core.dependencies.services import (
+    get_verification_read_service,
+    get_verification_service,
+)
 from app.domains.user.entities.user import User
-from app.schemas.verification import VerificationCreate, VerificationRead
+from app.schemas.verification import (
+    VerificationCreate,
+    VerificationListRead,
+    VerificationRead,
+)
 
 router = APIRouter(
     prefix="/verifications",
     tags=["Verifications"],
 )
+
+
+@router.get(
+    "/",
+    response_model=list[VerificationListRead],
+)
+def get_verifications(
+    service: VerificationReadService = Depends(
+        get_verification_read_service,
+    ),
+):
+    return service.list()
 
 
 @router.get(
