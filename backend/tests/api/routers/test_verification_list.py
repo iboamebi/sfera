@@ -5,7 +5,6 @@ from fastapi.testclient import TestClient
 
 from app.api.dependencies.auth import require_password_change_completed
 from app.core.dependencies.services import get_verification_read_service
-from app.main import app
 from app.domains.verification.value_objects.verification_result import (
     VerificationResult,
 )
