@@ -25,6 +25,7 @@ class AuditReadRepositorySQLAlchemy(AuditReadRepository):
         occurred_from: datetime | None,
         occurred_to: datetime | None,
         actor_id: UUID | None,
+        actor_query: str | None,
         action: str | None,
         entity_type: str | None,
         operation_id: UUID | None,
