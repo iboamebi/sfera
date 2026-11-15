@@ -5,8 +5,7 @@ import {
 } from "@tanstack/react-query";
 
 import { changeDeviceSite } from "../api/changeDeviceSite";
-import type { DeviceRead } from "./types";
-import type { ChangeDeviceSiteInput } from "../api/changeDeviceSite";
+import type { ChangeDeviceSiteInput, DeviceRead } from "./types";
 
 export function useChangeDeviceSite(
   deviceId: string,
