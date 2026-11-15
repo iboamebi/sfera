@@ -132,10 +132,10 @@ export function AuditPage() {
               fullWidth
             />
             <TextField
-              label="ID пользователя"
+              label="Пользователь (имя или логин)"
               size="small"
-              value={filters.actorId}
-              onChange={(event) => updateFilter("actorId", event.target.value)}
+              value={filters.actorQuery}
+              onChange={(event) => updateFilter("actorQuery", event.target.value)}
               fullWidth
             />
           </Stack>
