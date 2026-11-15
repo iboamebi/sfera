@@ -41,6 +41,7 @@ def list_audit_records(
         occurred_from=occurred_from,
         occurred_to=occurred_to,
         actor_id=actor_id,
+        actor_query=actor_query.strip() if actor_query else None,
         action=action,
         entity_type=entity_type,
         operation_id=operation_id,
