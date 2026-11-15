@@ -1828,3 +1828,58 @@ Next: complete backend tests/CI, then implement the correction form in the Verif
 - Commits: `97e84ff`, `59d9090`, `3e57f1f`.
 - Local frontend validation and browser review are pending.
 
+## General Verification Page — analysis checkpoint — 2026-11-15
+
+Current develop state reviewed from GitHub after the completed verification cancellation/return-navigation work.
+
+### Confirmed current implementation
+
+- Verification API currently exposes only GET /verifications/{verification_id} and POST /verifications; there is no general Verification list endpoint.
+- Verification persistence is already isolated behind VerificationRepository, but its current contract contains only get, has_active_for_order_item, and save.
+- The existing VerificationRead contract contains the verification facts needed by the detail page, but does not contain Order/Customer display context.
+- Order read-side code already demonstrates the project's established read-model pattern: dedicated read model → read repository → application read service → API schema.
+- Existing frontend Verification slice contains detail read/mutations but no list query/page.
+- The current router has /verifications/:verificationId only; /verifications is not defined.
+- The existing OrderItem verification summary is intentionally a compact nested read contract and is not sufficient as the data source for a general Verification page.
+
+### Minimal proposed stage
+
+Introduce a dedicated Verification read slice for the general page:
+
+1. Domain read model + read repository interface for Verification list data.
+2. Infrastructure read repository using the existing Verification/OrderItem/Order/Customer/Instrument/InstrumentType relationships.
+3. Application VerificationReadService.
+4. GET /verifications/ read endpoint with a dedicated list response contract.
+5. Frontend list API/model/query and /verifications page.
+6. Search/filter by the fields actually exposed by the read contract; status/result filters must use current lifecycle/result values.
+7. Navigation from a row to the existing Verification detail page.
+
+The list is a read-only projection. It must not introduce business mutations, duplicate verification facts, or change lifecycle rules.
+
+### Confirmed gaps / unresolved questions
+
+- Server-side pagination is not currently required by an established business contract; do not add speculative pagination in this first slice.
+- Search/filter semantics should remain presentation/read concerns until a concrete need for server-side querying appears.
+- External/FGIS Arshin provenance is an approved future direction but is not implemented in the current Verification persistence/read contract; the general page must not invent an external-source field.
+- No authorization expansion is required: Verification read routes are already authenticated, and no new state-changing permission is introduced.
+- The current Verification detail page still receives source-order navigation through returnTo; the general list should navigate directly to /verifications/{id} without manufacturing a source Order context.
+
+### Files expected to be touched in this stage
+
+Backend:
+- backend/app/domains/verification/read_models/...
+- backend/app/domains/verification/repositories/...
+- backend/app/application/verification/queries/...
+- backend/app/infrastructure/verification/...
+- backend/app/schemas/verification.py
+- backend/app/api/routers/verification.py
+- corresponding focused tests.
+
+Frontend:
+- frontend/src/features/verifications/api/...
+- frontend/src/features/verifications/model/...
+- frontend/src/pages/verifications/VerificationsPage.tsx
+- frontend/src/app/router.tsx
+- corresponding frontend type/build validation.
+
+No implementation change has been made yet in this checkpoint.
