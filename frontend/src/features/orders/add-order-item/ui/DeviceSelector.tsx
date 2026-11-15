@@ -200,8 +200,6 @@ export function DeviceSelector({
         </Typography>
       )}
 
-
-
       {onCreateDevice && (
         <Stack spacing={0.5} sx={{ alignItems: "flex-start" }}>
           <Button
