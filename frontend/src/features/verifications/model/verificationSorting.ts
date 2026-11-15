@@ -54,13 +54,13 @@ export function sortVerifications(
       const comparison = compareByField(left, right, criterion.field);
 
       if (comparison !== 0) {
-        if (isNullableField(criterion.field)) {
-          const leftValue = getNullableValue(left, criterion.field);
-          const rightValue = getNullableValue(right, criterion.field);
-
-          if (leftValue === null || rightValue === null) {
-            return comparison;
-          }
+        if (
+          (criterion.field === "result" &&
+            (left.result === null || right.result === null)) ||
+          (criterion.field === "validUntil" &&
+            (left.validUntil === null || right.validUntil === null))
+        ) {
+          return comparison;
         }
 
         return criterion.direction === "asc" ? comparison : -comparison;
@@ -69,21 +69,6 @@ export function sortVerifications(
 
     return 0;
   });
-}
-
-function isNullableField(
-  field: VerificationSortField,
-): field is "result" | "validUntil" {
-  return field === "result" || field === "validUntil";
-}
-
-function getNullableValue(
-  verification: VerificationListRead,
-  field: "result" | "validUntil",
-): string | null {
-  return field === "result"
-    ? verification.result
-    : verification.validUntil;
 }
 
 function compareByField(
@@ -122,14 +107,17 @@ function compareByField(
       );
 
     case "result":
-      return (left.result ? RESULT_LABELS[left.result] : null)?.localeCompare(
-        right.result ? RESULT_LABELS[right.result] : "",
+      if (left.result === null) return right.result === null ? 0 : 1;
+      if (right.result === null) return -1;
+      return RESULT_LABELS[left.result].localeCompare(
+        RESULT_LABELS[right.result],
         "ru",
-      ) ?? (right.result === null ? 0 : -1);
+      );
 
     case "validUntil":
-      return left.validUntil?.localeCompare(right.validUntil ?? "") ??
-        (right.validUntil === null ? 0 : -1);
+      if (left.validUntil === null) return right.validUntil === null ? 0 : 1;
+      if (right.validUntil === null) return -1;
+      return left.validUntil.localeCompare(right.validUntil);
   }
 }
 
