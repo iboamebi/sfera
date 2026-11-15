@@ -29,9 +29,9 @@ from app.schemas.user import (
     UserCreate,
     UserCreated,
     UserPasswordReset,
+    UserProfileUpdate,
     UserRead,
     UserRoleUpdate,
-    UserProfileUpdate,
 )
 
 router = APIRouter(
