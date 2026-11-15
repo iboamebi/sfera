@@ -53,6 +53,11 @@ class AuditReadRepositorySQLAlchemy(AuditReadRepository):
             query = query.filter(AuditRecordModel.occurred_at <= occurred_to)
         if actor_id is not None:
             query = query.filter(AuditRecordModel.actor_id == actor_id)
+        if actor_query is not None:
+            pattern = f"%{actor_query}%"
+            query = query.filter(
+                or_(actor.username.ilike(pattern), actor.full_name.ilike(pattern))
+            )
         if action is not None:
             query = query.filter(AuditRecordModel.action == action)
         if entity_type is not None:
