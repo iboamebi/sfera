@@ -217,7 +217,18 @@ export function VerificationsPage() {
                   <TableCell>
                     {TYPE_LABELS[verification.verificationType]}
                   </TableCell>
-                  <TableCell>{STATUS_LABELS[verification.status]}</TableCell>
+                  <TableCell>
+                    <Stack spacing={0.25}>
+                      <Typography variant="body2">
+                        {STATUS_LABELS[verification.status]}
+                      </Typography>
+                      {verification.archived && (
+                        <Typography variant="caption" color="text.secondary">
+                          В архиве
+                        </Typography>
+                      )}
+                    </Stack>
+                  </TableCell>
                   <TableCell>
                     {verification.result
                       ? RESULT_LABELS[verification.result]
