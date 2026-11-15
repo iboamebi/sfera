@@ -12,6 +12,7 @@ from app.application.user.commands.create_user import CreateUserCommand
 from app.application.user.commands.reset_user_password import ResetUserPasswordCommand
 from app.application.user.commands.restore_user import RestoreUserCommand
 from app.application.user.commands.set_user_active import SetUserActiveCommand
+from app.application.user.commands.update_user_profile import UpdateUserProfileCommand
 from app.application.user.exceptions import (
     LastActiveAdministratorApplicationError,
     UserAlreadyExistsApplicationError,
@@ -30,6 +31,7 @@ from app.schemas.user import (
     UserPasswordReset,
     UserRead,
     UserRoleUpdate,
+    UserProfileUpdate,
 )
 
 router = APIRouter(
@@ -51,6 +53,41 @@ def get_users(
 ) -> list[User]:
     """List user accounts for administrators."""
     return service.get_all(user, include_archived=include_archived)
+
+
+@router.patch(
+    "/{user_id}/profile",
+    response_model=UserRead,
+    dependencies=[Depends(require_csrf)],
+)
+def update_user_profile(
+    user_id: UUID,
+    data: UserProfileUpdate,
+    actor: User = Depends(get_current_user),
+    service: UserAdministrationApplicationService = Depends(
+        get_user_administration_service,
+    ),
+) -> User:
+    """Update employee contact and display information."""
+    try:
+        return service.update_profile(
+            UpdateUserProfileCommand(
+                user_id=user_id,
+                full_name=data.full_name.strip(),
+                phone=data.phone.strip() if data.phone and data.phone.strip() else None,
+                position=(
+                    data.position.strip()
+                    if data.position and data.position.strip()
+                    else None
+                ),
+            ),
+            actor,
+        )
+    except UserNotFoundApplicationError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found",
+        ) from None
 
 
 @router.patch(
@@ -191,6 +228,9 @@ def reset_user_password(
     return UserPasswordReset(
         id=user.id,
         username=user.username,
+        full_name=user.full_name,
+        phone=user.phone,
+        position=user.position,
         role=user.role,
         is_active=user.is_active,
         archived=user.archived,
@@ -216,7 +256,14 @@ def create_user(
     try:
         user, temporary_password = service.create(
             CreateUserCommand(
-                username=data.username,
+                username=data.username.strip(),
+                full_name=data.full_name.strip(),
+                phone=data.phone.strip() if data.phone and data.phone.strip() else None,
+                position=(
+                    data.position.strip()
+                    if data.position and data.position.strip()
+                    else None
+                ),
                 role=UserRole(data.role),
             ),
             actor,
