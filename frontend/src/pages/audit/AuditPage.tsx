@@ -47,7 +47,7 @@ function AuditRecordDetails({ record }: { record: AuditRecord }) {
       <Typography variant="body2">
         <strong>Инициатор операции:</strong>{" "}
         {record.initiatedBy
-          ? actorLabel(record.initiatorUsername, record.initiatorFullName, record.initiatedBy)
+          ? actorLabel(record.initiatorUsername, record.initiatorFullName)
           : "—"}
       </Typography>
       <Typography variant="body2">
