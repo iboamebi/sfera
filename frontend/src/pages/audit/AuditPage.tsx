@@ -217,7 +217,7 @@ export function AuditPage() {
                           {formatDateTime(record.occurredAt)}
                         </TableCell>
                         <TableCell sx={{ minWidth: 220 }}>
-                          {actorLabel(record.actorUsername, record.actorFullName, record.actorId)}
+                          {actorLabel(record.actorUsername, record.actorFullName)}
                         </TableCell>
                         <TableCell>{record.action}</TableCell>
                         <TableCell>{record.entityType}</TableCell>
