@@ -279,52 +279,52 @@ export function DeviceSelector({
       >
         <Autocomplete
           fullWidth
-        options={availableDevices}
-        value={selectedDevice}
-        inputValue={inputValue}
-        loading={isLoading}
-        loadingText="Загрузка средств измерений…"
-        clearOnBlur={false}
-        noOptionsText={
-          normalizedInput
-            ? "СИ не найдено"
-            : "Начните вводить заводской номер."
-        }
-        getOptionLabel={(device) => device.serialNumber}
-        isOptionEqualToValue={(option, selected) => option.id === selected.id}
-        onInputChange={(_, nextValue, reason) => {
-          if (reason === "input" || reason === "clear") {
-            setInputValue(nextValue);
+          options={availableDevices}
+          value={selectedDevice}
+          inputValue={inputValue}
+          loading={isLoading}
+          loadingText="Загрузка средств измерений…"
+          clearOnBlur={false}
+          noOptionsText={
+            normalizedInput
+              ? "СИ не найдено"
+              : "Начните вводить заводской номер."
           }
-        }}
-        onChange={(_, device: DeviceRead | null) => {
-          onChange(device?.id ?? "");
-          if (device) setInputValue(device.serialNumber);
-        }}
-        renderOption={(props, device) => (
-          <li {...props} key={device.id}>
-            <Stack spacing={0.25}>
-              <Typography variant="body2">
-                {device.name ?? "СИ"} — № {device.serialNumber}
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                {device.siteId
-                  ? sites.find((site) => site.id === device.siteId)?.name ?? "Узел не найден"
-                  : "Без узла"}
-              </Typography>
-            </Stack>
-          </li>
-        )}
-          renderInput={(params) => (
-            <TextField
-              {...params}
-              fullWidth
-              label="Средство измерений"
-              placeholder="Введите серийный номер"
-            />
+          getOptionLabel={(device) => device.serialNumber}
+          isOptionEqualToValue={(option, selected) => option.id === selected.id}
+          onInputChange={(_, nextValue, reason) => {
+            if (reason === "input" || reason === "clear") {
+              setInputValue(nextValue);
+            }
+          }}
+          onChange={(_, device: DeviceRead | null) => {
+            onChange(device?.id ?? "");
+            if (device) setInputValue(device.serialNumber);
+          }}
+          renderOption={(props, device) => (
+            <li {...props} key={device.id}>
+              <Stack spacing={0.25}>
+                <Typography variant="body2">
+                  {device.name ?? "СИ"} — № {device.serialNumber}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {device.siteId
+                    ? sites.find((site) => site.id === device.siteId)?.name ?? "Узел не найден"
+                    : "Без узла"}
+                </Typography>
+              </Stack>
+            </li>
           )}
-          sx={{ flex: 1, minWidth: 0 }}
-        />
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                fullWidth
+                label="Средство измерений"
+                placeholder="Введите серийный номер"
+              />
+            )}
+            sx={{ flex: 1, minWidth: 0 }}
+          />
         {onCreateDevice && (
           <Stack spacing={0.5} sx={{ alignItems: "flex-start", flexShrink: 0 }}>
             <Button
