@@ -202,7 +202,11 @@ export function CustomerPage() {
                         spacing={1}
                         sx={{ alignItems: "baseline", flexWrap: "wrap" }}
                       >
-                        <Typography variant="subtitle1">{site.name}</Typography>
+                        <Typography variant="subtitle1">
+                          <Link to={`/sites/${site.id}?returnTo=${encodeURIComponent(deviceReturnTo)}`}>
+                            {site.name}
+                          </Link>
+                        </Typography>
                         {site.archived && (
                           <Typography color="text.secondary" variant="caption">
                             В архиве
