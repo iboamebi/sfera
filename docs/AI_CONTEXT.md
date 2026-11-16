@@ -2419,3 +2419,15 @@ Implemented employee identity/contact details separately from login credentials 
 - Audit Trail is not a substitute for a Quality Management process; Price Lists are not evidence of actual revenue or payments.
 - No application code or business behavior was changed. Historical requirements remain open/partially implemented as classified in the checkpoint; absence from the inspected code is not cancellation.
 - The next historical stage is Step 34 (integrations/import-export/operational infrastructure). It has not yet been audited.
+
+
+## Historical plan audit — Step 27: Verification — 2026-11-16
+
+- Added `docs/checkpoints/2026-11-16-step-27-verification.md`.
+- The checkpoint records the historical Step 27 requirements and compares them with the actual code in `develop` at `1cc7d6738cf261ef3f74adfaa92154ca79294271`.
+- The basic Verification aggregate, OrderItem/Instrument binding, CREATED → IN_PROGRESS → DECIDED lifecycle, suitable/unsuitable decisions, validity/reason invariants, audit integration, and frontend list/detail/actions are implemented.
+- Later architecture documents refine the original plan: Verification is a process aggregate; method-specific evidence and evaluation must support the decision; Method/MethodVersion/MethodVariant remain distinct from actual Verification execution; insufficient data is not an unsuitable result.
+- Current implementation does not yet persist method-specific operations/measurements/calculations, verification tools, or direct Verification document links/generation. Methodology persistence exists in multiple incomplete forms; Verification still stores an optional methodology string.
+- An ArshinExport persistence model exists, but the old per-record export flags were explicitly removed by migration `c5ce4959d90d`. The audit did not find a current Arshin export service/API/XLSM generation/eligibility workflow. The existing `docs/modules/arshin.md` describes intended behavior, not proof of implementation.
+- No application code, database schema, or API behavior was changed. Consult the Step 27 checkpoint before further Verification, methodology, document, or Arshin work.
+- Historical steps 28, 29 and 31 remain to be supplied/analyzed; Step 34 is also pending.
