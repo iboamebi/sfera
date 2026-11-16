@@ -315,16 +315,16 @@ export function DeviceSelector({
               </Stack>
             </li>
           )}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                fullWidth
-                label="Средство измерений"
-                placeholder="Введите серийный номер"
-              />
-            )}
-            sx={{ flex: 1, minWidth: 0 }}
-          />
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              fullWidth
+              label="Средство измерений"
+              placeholder="Введите серийный номер"
+            />
+          )}
+          sx={{ flex: 1, minWidth: 0 }}
+        />
         {onCreateDevice && (
           <Stack spacing={0.5} sx={{ alignItems: "flex-start", flexShrink: 0 }}>
             <Button
