@@ -2457,3 +2457,14 @@ Implemented employee identity/contact details separately from login credentials 
 - Price lists exist for service prices, but commercial proposals, customer acceptance, discounts, replacement offers, invoices/payments, and financial accounting were not found in the inspected paths. Consult Step 33 for finance/reporting limits.
 - The checkpoint records boundaries between Diagnostic, Repair, Verification, Order, recommendation, customer approval, stock lifecycle, and commercial proposal; no application code changed.
 - Historical Step 29 is now supplied and audited. Historical Step 31 remains to be supplied/analyzed; Step 34 remains pending.
+
+
+## Step 31 — Финансы и коммерческие предложения (2026-11-16)
+
+- Проведён GitHub-аудит фактического `develop` на `b1ddeea2ce9fcaecbfe04146f80438a5fabe9245`; код приложения не изменялся.
+- Существующий `price_list` реализован частично: DDD/ORM/API есть, но версии/история цен, расчёт, правила Organization и коммерческие предложения отсутствуют.
+- Обнаружен разрыв persistence: `PriceListMapper` не преобразует `items` между ORM и Domain; API read schema также не отдаёт позиции. Нужна отдельная проверка SQLAlchemy repository и интеграционные тесты.
+- Order связан с Customer, но не с Organization-плательщиком; это соответствует правилу выбирать Organization в финансовом/документном контексте, не делая её обязательной при приёмке.
+- Diagnostic Recommendation не создаёт Repair/КП автоматически; Repair не содержит операций, трудозатрат и материалов; складской контур не связан с потреблением в Repair; отдельная продажа материалов отсутствует.
+- Подробный аудит, статусы и открытые решения: `docs/checkpoints/2026-11-16-step-31-finance-commercial-offers.md`.
+- Следующий этап: согласовать минимальный коммерческий сценарий и правила фиксации цен до разработки Pricing/CommercialOffer.
