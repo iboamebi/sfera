@@ -137,7 +137,6 @@ export function AddOrderItemButton({
           setInitialDeviceSiteId(null);
           setInitialDeviceSiteName(null);
           setDeviceId(device.id);
-          setInstrumentTypeId(device.instrumentTypeId);
           setIsCreateDeviceOpen(false);
         },
       },
