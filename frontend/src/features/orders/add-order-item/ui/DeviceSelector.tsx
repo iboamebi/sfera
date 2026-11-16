@@ -323,7 +323,7 @@ export function DeviceSelector({
               placeholder="Введите серийный номер"
             />
           )}
-          sx={{ flex: 1, minWidth: 0 }}
+          sx={{ flex: 1, minWidth: "20ch" }}
         />
         {onCreateDevice && (
           <Stack spacing={0.5} sx={{ alignItems: "flex-start", flexShrink: 0 }}>
