@@ -31,7 +31,11 @@ interface DeviceSelectorProps {
   value: string;
   customerId: string;
   onChange: (deviceId: string) => void;
-  onCreateDevice?: (serialNumber: string) => void;
+  onCreateDevice?: (
+    serialNumber: string,
+    siteId: string | null,
+    siteName: string | null,
+  ) => void;
   instrumentTypeId?: string | null;
   requireUnmatchedSerial?: boolean;
   excludedInstrumentIds?: string[];
@@ -66,6 +70,8 @@ export function DeviceSelector({
           site,
         ],
       );
+      setSelectedSiteIds([site.id]);
+      setIncludeOtherSites(false);
       setIsCreateSiteOpen(false);
     },
   });
@@ -160,19 +166,23 @@ export function DeviceSelector({
   const matchingDeviceIsVisible = matchingDevice
     ? availableDevices.some((device) => device.id === matchingDevice.id)
     : false;
+  const hasMultipleSelectedSites = selectedSiteIds.length > 1;
   const createDeviceDisabled =
     isLoading ||
+    hasMultipleSelectedSites ||
     (requireUnmatchedSerial &&
       (!normalizedInput || Boolean(matchingDevice) || canExpandSiteSearch));
   const createDeviceDisabledReason = isLoading
     ? "Загружается список СИ. Создание станет доступно после завершения загрузки."
-    : !normalizedInput
-      ? "Введите заводской номер, чтобы создать новую карточку СИ."
-      : canExpandSiteSearch
-        ? "Сначала выполните поиск по всем площадкам — это исключит создание дубликата."
-        : matchingDevice
-          ? "Карточка с таким заводским номером уже существует. Выберите её в списке или проверьте найденную карточку."
-          : "";
+    : hasMultipleSelectedSites
+      ? "Для привязки нового СИ выберите одну площадку."
+      : !normalizedInput
+        ? "Введите заводской номер, чтобы создать новую карточку СИ."
+        : canExpandSiteSearch
+          ? "Сначала выполните поиск по всем площадкам — это исключит создание дубликата."
+          : matchingDevice
+            ? "Карточка с таким заводским номером уже существует. Выберите её в списке или проверьте найденную карточку."
+            : "";
 
   useEffect(() => {
     setSelectedSiteIds([]);
@@ -268,7 +278,13 @@ export function DeviceSelector({
             variant="outlined"
             size="small"
             disabled={createDeviceDisabled}
-            onClick={() => onCreateDevice(inputValue.trim())}
+            onClick={() => {
+              const siteId =
+                selectedSiteIds.length === 1 ? selectedSiteIds[0] : null;
+              const siteName =
+                sites.find((site) => site.id === siteId)?.name ?? null;
+              onCreateDevice(inputValue.trim(), siteId, siteName);
+            }}
           >
             Создать новое СИ
           </Button>
