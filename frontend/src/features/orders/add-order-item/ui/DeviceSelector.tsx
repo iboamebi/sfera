@@ -214,36 +214,35 @@ export function DeviceSelector({
             Площадки
           </InputLabel>
           <Select<string[]>
-          labelId="device-site-filter-label"
-          displayEmpty
-          multiple
-          value={selectedSiteIds}
-          label="Площадки"
-          onChange={(event) => {
-            const nextValue = event.target.value;
-            setSelectedSiteIds(
-              typeof nextValue === "string" ? nextValue.split(",") : nextValue,
-            );
-            setIncludeOtherSites(false);
-          }}
-          renderValue={(selected) =>
-            selected.length === 0
-              ? "Все площадки"
-              : sites
-                  .filter((site) => selected.includes(site.id))
-                  .map((site) => site.name)
-                  .join(", ")
-          }
-        >
-          {sites.map((site) => (
-            <MenuItem key={site.id} value={site.id}>
-              <Checkbox checked={selectedSiteIds.includes(site.id)} />
-              <ListItemText
-                primary={site.name}
-                secondary={site.address}
-              />
-            </MenuItem>
-          ))}
+            labelId="device-site-filter-label"
+            displayEmpty
+            multiple
+            value={selectedSiteIds}
+            label="Площадки"
+            onChange={(event) => {
+              const nextValue = event.target.value;
+              setSelectedSiteIds(
+                typeof nextValue === "string"
+                  ? nextValue.split(",")
+                  : nextValue,
+              );
+              setIncludeOtherSites(false);
+            }}
+            renderValue={(selected) =>
+              selected.length === 0
+                ? "Все площадки"
+                : sites
+                    .filter((site) => selected.includes(site.id))
+                    .map((site) => site.name)
+                    .join(", ")
+            }
+          >
+            {sites.map((site) => (
+              <MenuItem key={site.id} value={site.id}>
+                <Checkbox checked={selectedSiteIds.includes(site.id)} />
+                <ListItemText primary={site.name} secondary={site.address} />
+              </MenuItem>
+            ))}
           </Select>
         </FormControl>
         <Button
@@ -394,6 +393,7 @@ export function DeviceSelector({
               Объект будет создан для заказчика этого заказа.
             </Typography>
             <SiteForm
+              key={isCreateSiteOpen ? "open" : "closed"}
               onSubmit={handleCreateSite}
               isPending={createSiteMutation.isPending}
             />
