@@ -2431,3 +2431,16 @@ Implemented employee identity/contact details separately from login credentials 
 - An ArshinExport persistence model exists, but the old per-record export flags were explicitly removed by migration `c5ce4959d90d`. The audit did not find a current Arshin export service/API/XLSM generation/eligibility workflow. The existing `docs/modules/arshin.md` describes intended behavior, not proof of implementation.
 - No application code, database schema, or API behavior was changed. Consult the Step 27 checkpoint before further Verification, methodology, document, or Arshin work.
 - Historical steps 28, 29 and 31 remain to be supplied/analyzed; Step 34 is also pending.
+
+
+## Historical plan audit — Step 28: Documents, Instrument passports and duplicates — 2026-11-16
+
+- Added `docs/checkpoints/2026-11-16-step-28-documents-passports.md`.
+- The checkpoint compares the historical Step 28 plan with the actual `develop` implementation at `9ffdae1a6bfffaf5a4617246fc479b0b967e1661`.
+- Current code has only basic ORM models: `Document` (optional Order/template links, name, file_path, comment, inherited archive flag) and `DocumentTemplate` (name, type string, version label, optional template path/description).
+- No dedicated Document domain/Application/API/frontend workflow, Instrument passport model, Instrument↔Document association, duplicate relationship/reason model, document instance version history, or dedicated file-storage capability was found in the inspected tree.
+- Existing `InstrumentLabel` is for QR/barcode/DataMatrix identification and is not a passport/document record.
+- Immutable Audit Trail is available as a general traceability foundation, but does not store binary document versions or duplicate/version relations.
+- The checkpoint records key distinctions for future design: document type vs instance vs binary file vs revision vs relation vs business association; passport duplicate as a new issuance preserving original history; verification documents linked to a specific Verification; methodology normative documents linked to Method/MethodVersion and selected by Instrument Type/modification/production period.
+- No application code, database schema, API, or frontend behavior was changed. Consult this checkpoint before implementing document management, passports, duplicates, or file storage.
+- Historical Step 29 was supplied as a brief scope only (Diagnostics, Repair, recommendations, material consumption/warehouse link, repair/replacement proposals); its detailed plan and code audit are pending. Steps 28/29 must be considered alongside the existing Warehouse and Verification checkpoints.
