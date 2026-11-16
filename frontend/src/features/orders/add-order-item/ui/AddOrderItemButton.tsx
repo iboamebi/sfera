@@ -269,8 +269,8 @@ export function AddOrderItemButton({
           <Stack spacing={2} sx={{ pt: 1 }}>
             <Typography variant="body2" color="text.secondary">
               {initialDeviceSiteName
-                ? `Новый прибор будет закреплён за объектом «${initialDeviceSiteName}».`
-                : "Новый прибор будет создан без привязки к объекту."}
+                ? `Новый прибор будет закреплён за узлом «${initialDeviceSiteName}».`
+                : "Новый прибор будет создан без привязки к узлу."}
             </Typography>
             <CreateDeviceForm
               key={isCreateDeviceOpen ? "open" : "closed"}
