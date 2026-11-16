@@ -154,39 +154,12 @@ export function AddOrderItemButton({
   };
 
   return (
-      <CreateInstrumentTypeForm
-        isPending={createInstrumentTypeMutation.isPending}
-        onSubmit={handleCreateInstrumentType}
-        onCancel={() => setIsCreateInstrumentTypeOpen(false)}
-      />
-    );
-  }
-
-  if (isCreateDeviceOpen) {
-    return (
-      <Stack spacing={2}>
-        <CreateDeviceForm
-          instrumentTypeId={instrumentTypeId}
-          initialSerialNumber={initialDeviceSerialNumber}
-          isPending={createDeviceMutation.isPending}
-          onSubmit={handleCreateDevice}
-          onCreateInstrumentType={() => setIsCreateInstrumentTypeOpen(true)}
-        />
-        {createDeviceMutation.isError && (
-          <Typography color="error" variant="body2">
-            {getErrorMessage(
-              createDeviceMutation.error,
-              "Не удалось создать СИ",
-            )}
-          </Typography>
-        )}
-      </Stack>
-    );
-  }
-
-  return (
     <Stack spacing={2} sx={{ width: "100%", maxWidth: 760 }}>
-      <Stack direction="row" spacing={2} sx={{ alignItems: "flex-start", flexWrap: "wrap" }}>
+      <Stack
+        direction="row"
+        spacing={2}
+        sx={{ alignItems: "flex-start", flexWrap: "wrap" }}
+      >
         <TextField
           select
           label="Группа СИ"
