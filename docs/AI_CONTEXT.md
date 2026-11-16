@@ -2353,3 +2353,10 @@ Implemented employee identity/contact details separately from login credentials 
 - No behavior, API, domain, or database changes. User confirmed the initial directory browser scenarios 1–5 passed; terminology-only local smoke check remains after synchronization.
 
 - A follow-up review of the Instrument card found the same legacy wording in `DeviceSiteAssignment`; its title, current-value label, selector, empty option, error/success messages now consistently use `узел` / `узлы`.
+
+
+### Order Instrument selector layout — 2026-11-16
+
+- Moved `Создать новое СИ` from above the Instrument autocomplete to the right of the `Средство измерений` input, matching the adjacent `Все узлы` / `Создать узел` control pattern.
+- On narrow screens the controls stack vertically; create-button availability and serial-number/site assignment behavior remain unchanged.
+- User confirmed the Site directory and terminology local checks passed before this cosmetic adjustment; local typecheck/build and browser alignment check for this final layout are pending.
