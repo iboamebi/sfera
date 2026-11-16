@@ -2304,7 +2304,7 @@ Implemented employee identity/contact details separately from login credentials 
 - Added «Создать объект» to the Site filter in the Order item selector. The dialog creates the Site for the current Order Customer and updates the corresponding React Query cache so the new Site is immediately available in the filter.
 - Creation errors are displayed in the dialog; closing is disabled while the request is pending.
 - No permanent Instrument–Site assignment is performed by this flow. Binding a newly created Instrument to a known Site remains a separate task.
-- Branch: `feat/order-quick-create-site`. Local frontend typecheck/build and browser regression are pending.
+- PR #43 merged as `9d2b7784b7eb4b3222cea1a5ab9db4449322cb6e`. User confirmed local typecheck/build and browser scenarios 1–5 passed.
 - No backend, database, migration, or production changes.
 
 ## Order — create Instrument in Site context — 2026-11-16
