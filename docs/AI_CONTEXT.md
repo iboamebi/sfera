@@ -2327,3 +2327,16 @@ Implemented employee identity/contact details separately from login credentials 
 - Removed only the assignment that copied `device.instrumentTypeId` into the Order group field. The newly created Instrument remains selected in the Order item selector; the «Группа СИ» value is preserved and is not populated as a side effect.
 - Follow-up local typecheck/build and a focused browser regression (create Instrument from Order; verify it is selected while «Группа СИ» remains unchanged) are required before merging PR #44.
 - Next proposed product stage: a dedicated, reusable Site directory page, analogous to the Customers page, with search, create/edit and Customer association; assess Excel import or bulk transfer after inspecting the actual Site model, API and existing import capabilities. Sites already exist in the database, but no import contract or spreadsheet format is assumed.
+## Site directory — initial frontend slice — 2026-11-16
+
+- Base: `develop` at merge commit `44f555059fed3c2317aa6f1770a3c529b18eed14` (PR #44).
+- Read the current Site domain entity, repository interface/implementation, Application service, API router/schema, ORM model, frontend Site feature, Customer list/form/page, router, and AppShell.
+- Confirmed existing backend contracts: `GET /sites/` returns all Site records; `POST /sites/` creates a Site with `customer_id`, `name`, and `address`. The Application service checks Customer existence and requires OPERATOR/ADMIN for creation. No backend or database change is needed for this initial directory slice.
+- Added a dedicated `/sites` page with search across Site name, address, and Customer name; list columns show Site, address, Customer link, and active/archive status.
+- Added `/sites/new` with active Customer selection and reused the existing `SiteForm` / `useCreateSite` flow. Successful creation invalidates global and per-Customer Site queries.
+- Added the Site directory entry to the authenticated navigation.
+- Backend currently has no Site update use case or update endpoint. Editing Site name/address is therefore explicitly deferred to a separate backend Application/API/test slice; Customer ownership must not be editable through ordinary Site editing.
+- Excel import is not included. No spreadsheet has been supplied, and no existing import flow was confirmed. Inspect the actual workbook and define matching/duplicate behavior before implementing import.
+- Branch: `feat/site-directory`.
+- Frontend typecheck, build, and browser validation are pending local validation after synchronization.
+- No backend, database, migration, or production changes.
