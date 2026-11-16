@@ -20,7 +20,7 @@ export function CustomerPage() {
   const [searchParams] = useSearchParams();
   const requestedReturnTo = searchParams.get("returnTo");
   const returnTo =
-    requestedReturnTo && /^\\/orders\\/[^/?#]+$/.test(requestedReturnTo)
+    requestedReturnTo && new RegExp("^/orders/[^/?#]+$").test(requestedReturnTo)
       ? requestedReturnTo
       : "/customers";
   const [isEditing, setIsEditing] = useState(false);
@@ -207,7 +207,7 @@ export function CustomerPage() {
                         )}
                       </Stack>
                       <Typography color="text.secondary">{site.address}</Typography>
-                      {siteDevices.length === 0 ? (
+                      {devicesError ? null : siteDevices.length === 0 ? (
                         <Typography color="text.secondary" variant="body2">
                           Известные СИ не привязаны.
                         </Typography>
