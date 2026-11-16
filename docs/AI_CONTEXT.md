@@ -2345,3 +2345,9 @@ Implemented employee identity/contact details separately from login credentials 
 - Standardized user-facing terminology for the Site entity to `узел` / `узлы` across the Customer card, Site creation form, Device form, Order Site selector/filter, and instrument-creation dialog.
 - Replaced legacy labels `площадка` and `объект` in these Site-related flows. Domain/API identifiers (`Site`, `site_id`, `siteId`) remain unchanged.
 - User confirmed local checks and browser scenarios 1–5 passed before this terminology-only adjustment. Re-run frontend typecheck/build and a short browser smoke check after syncing the updated branch.
+
+
+### Site terminology — Order selector follow-up — 2026-11-16
+
+- Completed terminology normalization missed two helper/error messages in the Order item selector. Replaced `площадки` with `узлы` and `Объект будет создан` with `Узел будет создан`.
+- No behavior, API, domain, or database changes. User confirmed the initial directory browser scenarios 1–5 passed; terminology-only local smoke check remains after synchronization.
