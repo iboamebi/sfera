@@ -2398,3 +2398,13 @@ Implemented employee identity/contact details separately from login credentials 
 - Local frontend `npm run typecheck` and `npm run build` passed after synchronizing `feat/site-detail-page`.
 - Frontend-only change. No backend, API, database, migration, authorization, or production changes.
 - PR #47 was squash-merged into `develop` as `d19dc1dac52d0d0f996a31733a92160a06d7f18a` on 2026-11-16. Production deployment was not requested or performed.
+
+
+## Business rules — Order issue and notifications — 2026-11-16
+
+- Recorded the confirmed Order completion and partial issue rules, including whole-Site batches and default joint issue of Instruments without a Site, in `docs/business/ORDER_ISSUE_AND_NOTIFICATIONS.md`.
+- Partial issue of Instruments without a Site may be agreed with the Customer; a separate formal approval record is not mandatory, and an Order comment is usually sufficient. A reminder may be used when follow-up control is needed.
+- Reminders are a cross-cutting business capability for deadlines and notifications to employees/customers; mailings are a related but distinct delivery concern.
+- The document explicitly separates confirmed business rules from unverified implementation status. The current GitHub review did not find a dedicated reminder/scheduler/mailing implementation; existing in-memory Domain Events are not equivalent to that capability. Historical requirements may exist outside current repository documentation.
+- Before designing reminders or notification delivery, recover prior requirements and inspect actual current code. Do not create a duplicate subsystem or assume the feature was cancelled.
+- This document is the durable business checkpoint; consult it when working on Order lifecycle, issue/return, reminders, deadlines, notifications, or mailings.
