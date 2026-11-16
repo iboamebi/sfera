@@ -4,6 +4,10 @@ import { isAxiosError } from "axios";
 import {
   Button,
   Checkbox,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   FormControlLabel,
   MenuItem,
   Stack,
@@ -64,6 +68,12 @@ export function AddOrderItemButton({
   >(["verification"]);
   const [isCreateDeviceOpen, setIsCreateDeviceOpen] = useState(false);
   const [initialDeviceSerialNumber, setInitialDeviceSerialNumber] = useState("");
+  const [initialDeviceSiteId, setInitialDeviceSiteId] = useState<string | null>(
+    null,
+  );
+  const [initialDeviceSiteName, setInitialDeviceSiteName] = useState<
+    string | null
+  >(null);
   const [isCreateInstrumentTypeOpen, setIsCreateInstrumentTypeOpen] =
     useState(false);
   const addOrderItemMutation = useAddOrderItem(orderId);
@@ -119,10 +129,13 @@ export function AddOrderItemButton({
       {
         ...data,
         customerId,
+        siteId: initialDeviceSiteId,
       },
       {
         onSuccess: (device) => {
           setInitialDeviceSerialNumber("");
+          setInitialDeviceSiteId(null);
+          setInitialDeviceSiteName(null);
           setDeviceId(device.id);
           setInstrumentTypeId(device.instrumentTypeId);
           setIsCreateDeviceOpen(false);
@@ -140,8 +153,7 @@ export function AddOrderItemButton({
     });
   };
 
-  if (isCreateInstrumentTypeOpen) {
-    return (
+  return (
       <CreateInstrumentTypeForm
         isPending={createInstrumentTypeMutation.isPending}
         onSubmit={handleCreateInstrumentType}
@@ -220,8 +232,10 @@ export function AddOrderItemButton({
         instrumentTypeId={instrumentTypeId || null}
         excludedInstrumentIds={excludedInstrumentIds}
         onChange={setDeviceId}
-        onCreateDevice={(serialNumber) => {
+        onCreateDevice={(serialNumber, siteId, siteName) => {
           setInitialDeviceSerialNumber(serialNumber);
+          setInitialDeviceSiteId(siteId);
+          setInitialDeviceSiteName(siteName);
           setIsCreateDeviceOpen(true);
         }}
         requireUnmatchedSerial
@@ -267,6 +281,71 @@ export function AddOrderItemButton({
           )}
         </Typography>
       )}
+
+      <Dialog
+        open={isCreateDeviceOpen}
+        onClose={() => {
+          if (!createDeviceMutation.isPending) {
+            setIsCreateDeviceOpen(false);
+          }
+        }}
+        fullWidth
+        maxWidth="sm"
+      >
+        <DialogTitle>Создать новое СИ</DialogTitle>
+        <DialogContent>
+          <Stack spacing={2} sx={{ pt: 1 }}>
+            <Typography variant="body2" color="text.secondary">
+              {initialDeviceSiteName
+                ? `Новый прибор будет закреплён за объектом «${initialDeviceSiteName}».`
+                : "Новый прибор будет создан без привязки к объекту."}
+            </Typography>
+            <CreateDeviceForm
+              key={isCreateDeviceOpen ? "open" : "closed"}
+              instrumentTypeId={instrumentTypeId}
+              initialSerialNumber={initialDeviceSerialNumber}
+              isPending={createDeviceMutation.isPending}
+              onSubmit={handleCreateDevice}
+              onCreateInstrumentType={() => setIsCreateInstrumentTypeOpen(true)}
+            />
+            {createDeviceMutation.isError && (
+              <Typography color="error" variant="body2">
+                {getErrorMessage(
+                  createDeviceMutation.error,
+                  "Не удалось создать СИ",
+                )}
+              </Typography>
+            )}
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => setIsCreateDeviceOpen(false)}
+            disabled={createDeviceMutation.isPending}
+          >
+            Отмена
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={isCreateInstrumentTypeOpen}
+        onClose={() => {
+          if (!createInstrumentTypeMutation.isPending) {
+            setIsCreateInstrumentTypeOpen(false);
+          }
+        }}
+        fullWidth
+        maxWidth="sm"
+      >
+        <DialogContent>
+          <CreateInstrumentTypeForm
+            isPending={createInstrumentTypeMutation.isPending}
+            onSubmit={handleCreateInstrumentType}
+            onCancel={() => setIsCreateInstrumentTypeOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
     </Stack>
   );
 }
