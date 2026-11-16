@@ -2306,3 +2306,15 @@ Implemented employee identity/contact details separately from login credentials 
 - No permanent Instrument–Site assignment is performed by this flow. Binding a newly created Instrument to a known Site remains a separate task.
 - Branch: `feat/order-quick-create-site`. Local frontend typecheck/build and browser regression are pending.
 - No backend, database, migration, or production changes.
+
+## Order — create Instrument in Site context — 2026-11-16
+
+- Base includes quick Site creation from PR #43, merged to `develop` as `9d2b7784b7eb4b3222cea1a5ab9db4449322cb6e`.
+- Confirmed current frontend `createDevice` adapter already sends optional `site_id`; backend `DeviceCreate`, `CreateDeviceCommand`, and `DeviceApplicationService.create` already validate Site existence and Customer ownership and persist the binding. No backend/API/DB change is required.
+- New Instrument creation is now opened in a dialog instead of replacing the Order item form. DeviceSelector remains mounted, preserving selected Site, serial search text and other Order item fields.
+- When exactly one Site is selected, its ID is passed into `createDevice`; the dialog explicitly shows the target Site. When no Site is selected, the new Instrument remains unassigned. When multiple Sites are selected, creation is disabled until one Site is selected.
+- After successful creation, the returned Instrument is selected in the still-open Order item form; the user can immediately add the Order item. Site created from the same selector is automatically selected.
+- Existing Instrument on another Site is not reassigned automatically. Existing controlled Site reassignment remains the only way to move it, with reason and audit.
+- Added a dialog for creating a missing Instrument Type without unmounting the Order item form.
+- Branch: `feat/order-device-creation-site-context`. Local frontend typecheck/build and browser regression are pending.
+- No backend, database, migration, or production changes.
