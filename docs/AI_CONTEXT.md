@@ -2369,3 +2369,22 @@ Implemented employee identity/contact details separately from login credentials 
 - User confirmed local frontend typecheck/build and browser behavior, including the final width refinement, passed.
 - GitHub Backend CI for PR head `a8a7855259fbb2de859344abc4e886a945f94baf` completed successfully.
 - Frontend-only change: no backend/API/database/migration changes. Production deployment is explicitly requested and remains pending local deployment via `frontend/scripts/deploy-production.sh`; no backend restart is required.
+
+
+## Customer card — known Site and Instrument overview — 2026-11-16
+
+- Extended `frontend/src/pages/customers/CustomerPage.tsx` to show the Customer's registered Sites and known Instruments grouped by their current `siteId`.
+- Instruments without a Site association are shown in a separate section. Instrument names link to their existing detail routes.
+- The page reuses the existing `GET /devices/` read contract and filters by `customerId`; no backend, API, database, migration, or authorization changes.
+- The UI explicitly states that registered Instruments are not necessarily the complete physical composition of a Customer or Site. An empty registered list is not presented as proof that no physical Instruments exist.
+- Site detail navigation is not added because no frontend Site detail route exists yet. A separate Site card/detail slice remains future work.
+- Local frontend typecheck, build, and browser validation are pending after synchronization.
+
+
+### Customer → Instrument → Customer navigation context — 2026-11-16
+
+- Browser validation of PR #46 confirmed the direct flow Customer → Instrument → Customer.
+- Follow-up exposed a nested-context gap: when Customer was opened from an Order, opening an Instrument and returning to Customer discarded the Customer page's own `returnTo` Order parameter. The Customer back action then fell back to the Customer directory.
+- Customer Instrument links now pass the complete safe return path, including the originating Order when present. DevicePage accepts only the existing internal Order path or a Customer path with a validated encoded Order return path.
+- The intended chain is preserved: Order → Customer → Instrument → Customer → Order. Direct Customer navigation still returns to the Customer directory.
+- Frontend-only navigation refinement; no backend, API, database, migration, or production changes. Local typecheck/build and browser regression are pending.
