@@ -2397,4 +2397,4 @@ Implemented employee identity/contact details separately from login credentials 
 - Scenario for a Site with no registered Instruments and an archived Site could not be exercised in the current local test data/environment. This remains unverified and must not be treated as passed.
 - Local frontend `npm run typecheck` and `npm run build` passed after synchronizing `feat/site-detail-page`.
 - Frontend-only change. No backend, API, database, migration, authorization, or production changes.
-- PR #47 remains separate from production deployment; do not deploy as part of this validation checkpoint.
+- PR #47 was squash-merged into `develop` as `d19dc1dac52d0d0f996a31733a92160a06d7f18a` on 2026-11-16. Production deployment was not requested or performed.
