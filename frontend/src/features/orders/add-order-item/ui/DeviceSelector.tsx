@@ -93,7 +93,7 @@ export function DeviceSelector({
 
     return error instanceof Error && error.message
       ? error.message
-      : "Не удалось создать объект.";
+      : "Не удалось создать узел.";
   };
 
   const customerDevices = devices.filter(
@@ -159,8 +159,8 @@ export function DeviceSelector({
   );
   const matchingSerialIsAmbiguous = matchingDevices.length > 1;
   const matchingDeviceSite = matchingDevice?.siteId
-    ? sites.find((site) => site.id === matchingDevice.siteId)?.name ?? "Площадка не найдена"
-    : "Без площадки";
+    ? sites.find((site) => site.id === matchingDevice.siteId)?.name ?? "Узел не найден"
+    : "Без узла";
   const matchingDeviceTypeMatches =
     !instrumentTypeId || matchingDevice?.instrumentTypeId === instrumentTypeId;
   const matchingDeviceIsVisible = matchingDevice
@@ -175,11 +175,11 @@ export function DeviceSelector({
   const createDeviceDisabledReason = isLoading
     ? "Загружается список СИ. Создание станет доступно после завершения загрузки."
     : hasMultipleSelectedSites
-      ? "Для привязки нового СИ выберите одну площадку."
+      ? "Для привязки нового СИ выберите один узел."
       : !normalizedInput
         ? "Введите заводской номер, чтобы создать новую карточку СИ."
         : canExpandSiteSearch
-          ? "Сначала выполните поиск по всем площадкам — это исключит создание дубликата."
+          ? "Сначала выполните поиск по всем узлам — это исключит создание дубликата."
           : matchingDevice
             ? "Карточка с таким заводским номером уже существует. Выберите её в списке или проверьте найденную карточку."
             : "";
@@ -221,14 +221,14 @@ export function DeviceSelector({
           sx={{ flex: 1 }}
         >
           <InputLabel id="device-site-filter-label" shrink>
-            Площадки
+            Узлы
           </InputLabel>
           <Select<string[]>
             labelId="device-site-filter-label"
             displayEmpty
             multiple
             value={selectedSiteIds}
-            label="Площадки"
+            label="Узлы"
             onChange={(event) => {
               const nextValue = event.target.value;
               setSelectedSiteIds(
@@ -240,7 +240,7 @@ export function DeviceSelector({
             }}
             renderValue={(selected) =>
               selected.length === 0
-                ? "Все площадки"
+                ? "Все узлы"
                 : sites
                     .filter((site) => selected.includes(site.id))
                     .map((site) => site.name)
@@ -262,7 +262,7 @@ export function DeviceSelector({
           disabled={!customerId || isSitesLoading}
           sx={{ whiteSpace: "nowrap" }}
         >
-          Создать объект
+          Создать узел
         </Button>
       </Stack>
 
@@ -327,8 +327,8 @@ export function DeviceSelector({
               </Typography>
               <Typography variant="caption" color="text.secondary">
                 {device.siteId
-                  ? sites.find((site) => site.id === device.siteId)?.name ?? "Площадка не найдена"
-                  : "Без площадки"}
+                  ? sites.find((site) => site.id === device.siteId)?.name ?? "Узел не найден"
+                  : "Без узла"}
               </Typography>
             </Stack>
           </li>
@@ -356,7 +356,7 @@ export function DeviceSelector({
             </Button>
           }
         >
-          На выбранной площадке СИ не найдено. Можно проверить карточки на других площадках и без площадки.
+          На выбранном узле СИ не найдено. Можно проверить карточки на других узлах и без площадки.
         </Alert>
       )}
 
@@ -384,7 +384,7 @@ export function DeviceSelector({
             ? `В базе найдено несколько карточек СИ с заводским номером ${matchingDevice.serialNumber}. Выбор заблокирован: сначала необходимо устранить дубликаты карточек.`
             : matchingDeviceAlreadyInOrder
               ? `СИ с заводским номером ${matchingDevice.serialNumber} уже добавлено в этот заказ.`
-              : `СИ с таким заводским номером уже существует: ${matchingDevice.name ?? "без наименования"}, № ${matchingDevice.serialNumber}. Текущая площадка: ${matchingDeviceSite}.`}
+              : `СИ с таким заводским номером уже существует: ${matchingDevice.name ?? "без наименования"}, № ${matchingDevice.serialNumber}. Текущий узел: ${matchingDeviceSite}.`}
           {!matchingSerialIsAmbiguous && !matchingDeviceAlreadyInOrder &&
             (matchingDeviceTypeMatches
               ? " Выберите существующее СИ в списке. Создание дубликата недоступно."
@@ -402,7 +402,7 @@ export function DeviceSelector({
         fullWidth
         maxWidth="sm"
       >
-        <DialogTitle>Создать объект</DialogTitle>
+        <DialogTitle>Создать узел</DialogTitle>
         <DialogContent>
           <Stack spacing={2} sx={{ pt: 1 }}>
             <Typography variant="body2" color="text.secondary">
