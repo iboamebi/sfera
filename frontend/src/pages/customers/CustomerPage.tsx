@@ -207,7 +207,15 @@ export function CustomerPage() {
                         )}
                       </Stack>
                       <Typography color="text.secondary">{site.address}</Typography>
-                      {devicesError ? null : siteDevices.length === 0 ? (
+                      {devicesLoading ? (
+                        <Typography color="text.secondary" variant="body2">
+                          Загрузка СИ...
+                        </Typography>
+                      ) : devicesError ? (
+                        <Typography color="error" variant="body2">
+                          Не удалось загрузить список СИ.
+                        </Typography>
+                      ) : siteDevices.length === 0 ? (
                         <Typography color="text.secondary" variant="body2">
                           Известные СИ не привязаны.
                         </Typography>
@@ -244,7 +252,8 @@ export function CustomerPage() {
               }}
             >
               <Typography variant="h6">
-                СИ без привязки к узлу ({unassignedDevices.length})
+                СИ без привязки к узлу
+                {!devicesLoading && !devicesError && ` (${unassignedDevices.length})`}
               </Typography>
               {!data.archived && (
                 <Button
