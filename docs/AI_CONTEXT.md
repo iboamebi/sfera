@@ -2285,3 +2285,13 @@ Implemented employee identity/contact details separately from login credentials 
 - Customer detail page validates `returnTo` against the internal order path shape before using it. Its back button returns to that order when opened from an order; direct customer navigation retains the existing «Назад к клиентам» behavior.
 - No API, backend, database, or migration changes.
 - Branch: `feat/order-customer-card-navigation`. Local frontend typecheck/build and browser navigation regression are pending.
+
+
+## Device card save/cancel flow — 2026-11-16
+
+- Implemented the first UI refinement from the user notes on branch `fix/device-card-save-cancel-navigation`.
+- `DeviceCard`: «Сохранить» is enabled only when the form differs from the current Device data and required fields are valid.
+- `DeviceCard`: «Отмена» restores the current Device form state, exits edit mode, and calls the navigation callback without saving.
+- `DevicePage`: removed the separate «Назад» button. Both successful save and cancel now use the existing caller-return navigation: `returnToOrder` returns to the originating order; otherwise the existing browser-history fallback is used.
+- No backend, API, database, migration, or production changes.
+- Local frontend typecheck/build and browser regression are required after synchronization.
