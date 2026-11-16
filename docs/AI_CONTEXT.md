@@ -2408,3 +2408,14 @@ Implemented employee identity/contact details separately from login credentials 
 - The document explicitly separates confirmed business rules from unverified implementation status. The current GitHub review did not find a dedicated reminder/scheduler/mailing implementation; existing in-memory Domain Events are not equivalent to that capability. Historical requirements may exist outside current repository documentation.
 - Before designing reminders or notification delivery, recover prior requirements and inspect actual current code. Do not create a duplicate subsystem or assume the feature was cancelled.
 - This document is the durable business checkpoint; consult it when working on Order lifecycle, issue/return, reminders, deadlines, notifications, or mailings.
+
+
+## Historical plan audit — Step 33: reporting, analytics, quality — 2026-11-16
+
+- Added `docs/checkpoints/2026-11-16-step-33-reporting-analytics-quality.md`.
+- The checkpoint preserves the historical Step 33 plan and distinguishes it from the actual implementation found in `develop` at `96e51f3bb844a736d9125e6bcb34f48b704f24b8`.
+- Current code contains source data for Orders, Verifications, Repairs, Diagnostics, Warehouse, Users, Price Lists and Audit Trail, but the audit did not find a dedicated reporting/export/dashboard module, a Quality Management register, a complete finance model, or personal task workload/time tracking.
+- Existing source data does not automatically make every proposed metric reliable. The checkpoint records dependencies and data-quality limitations for order duration, employee workload, instrument failure frequency, repair fault analytics, repair costs, and revenue/profitability.
+- Audit Trail is not a substitute for a Quality Management process; Price Lists are not evidence of actual revenue or payments.
+- No application code or business behavior was changed. Historical requirements remain open/partially implemented as classified in the checkpoint; absence from the inspected code is not cancellation.
+- The next historical stage is Step 34 (integrations/import-export/operational infrastructure). It has not yet been audited.
