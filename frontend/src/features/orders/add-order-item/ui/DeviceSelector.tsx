@@ -1,8 +1,13 @@
+import { isAxiosError } from "axios";
 import {
   Alert,
   Autocomplete,
   Button,
   Checkbox,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   FormControl,
   InputLabel,
   ListItemText,
@@ -13,9 +18,13 @@ import {
   Typography,
 } from "@mui/material";
 import { useEffect, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 
 import type { DeviceRead } from "../../../devices/model/types";
 import { useDevices } from "../../../devices/model/useDevices";
+import { SiteForm } from "../../../sites/ui/SiteForm";
+import { useCreateSite } from "../../../sites/model/useCreateSite";
+import type { SiteRead } from "../../../sites/model/types";
 import { useCustomerSites } from "../../../sites/model/useCustomerSites";
 
 interface DeviceSelectorProps {
@@ -37,6 +46,7 @@ export function DeviceSelector({
   requireUnmatchedSerial = false,
   excludedInstrumentIds = [],
 }: DeviceSelectorProps) {
+  const queryClient = useQueryClient();
   const { data: devices = [], isLoading, error } = useDevices();
   const {
     data: sites = [],
@@ -46,6 +56,39 @@ export function DeviceSelector({
   const [selectedSiteIds, setSelectedSiteIds] = useState<string[]>([]);
   const [includeOtherSites, setIncludeOtherSites] = useState(false);
   const [inputValue, setInputValue] = useState("");
+  const [isCreateSiteOpen, setIsCreateSiteOpen] = useState(false);
+  const createSiteMutation = useCreateSite({
+    onSuccess: (site) => {
+      queryClient.setQueryData<SiteRead[]>(
+        ["sites", "customer", customerId],
+        (current = []) => [
+          ...current.filter((item) => item.id !== site.id),
+          site,
+        ],
+      );
+      setIsCreateSiteOpen(false);
+    },
+  });
+
+  const handleCreateSite = (data: { name: string; address: string }) => {
+    createSiteMutation.mutate({
+      customerId,
+      ...data,
+    });
+  };
+
+  const getSiteCreateErrorMessage = (error: unknown): string => {
+    if (isAxiosError(error)) {
+      const detail = error.response?.data?.detail;
+      if (typeof detail === "string" && detail.trim()) {
+        return detail;
+      }
+    }
+
+    return error instanceof Error && error.message
+      ? error.message
+      : "Не удалось создать объект.";
+  };
 
   const customerDevices = devices.filter(
     (device) => device.customerId === customerId,
@@ -156,11 +199,21 @@ export function DeviceSelector({
 
   return (
     <Stack spacing={1} sx={{ width: "100%" }}>
-      <FormControl fullWidth size="small" disabled={isSitesLoading}>
-        <InputLabel id="device-site-filter-label" shrink>
-          Площадки
-        </InputLabel>
-        <Select<string[]>
+      <Stack
+        direction={{ xs: "column", sm: "row" }}
+        spacing={1}
+        sx={{ width: "100%" }}
+      >
+        <FormControl
+          fullWidth
+          size="small"
+          disabled={isSitesLoading}
+          sx={{ flex: 1 }}
+        >
+          <InputLabel id="device-site-filter-label" shrink>
+            Площадки
+          </InputLabel>
+          <Select<string[]>
           labelId="device-site-filter-label"
           displayEmpty
           multiple
@@ -191,8 +244,18 @@ export function DeviceSelector({
               />
             </MenuItem>
           ))}
-        </Select>
-      </FormControl>
+          </Select>
+        </FormControl>
+        <Button
+          variant="outlined"
+          size="small"
+          onClick={() => setIsCreateSiteOpen(true)}
+          disabled={!customerId || isSitesLoading}
+          sx={{ whiteSpace: "nowrap" }}
+        >
+          Создать объект
+        </Button>
+      </Stack>
 
       {isSitesError && (
         <Typography color="error" variant="caption">
@@ -313,6 +376,43 @@ export function DeviceSelector({
               : " Тип найденного СИ не совпадает с типом позиции заказа. Проверьте выбранный тип СИ.")}
         </Alert>
       )}
+
+      <Dialog
+        open={isCreateSiteOpen}
+        onClose={() => {
+          if (!createSiteMutation.isPending) {
+            setIsCreateSiteOpen(false);
+          }
+        }}
+        fullWidth
+        maxWidth="sm"
+      >
+        <DialogTitle>Создать объект</DialogTitle>
+        <DialogContent>
+          <Stack spacing={2} sx={{ pt: 1 }}>
+            <Typography variant="body2" color="text.secondary">
+              Объект будет создан для заказчика этого заказа.
+            </Typography>
+            <SiteForm
+              onSubmit={handleCreateSite}
+              isPending={createSiteMutation.isPending}
+            />
+            {createSiteMutation.isError && (
+              <Alert severity="error">
+                {getSiteCreateErrorMessage(createSiteMutation.error)}
+              </Alert>
+            )}
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => setIsCreateSiteOpen(false)}
+            disabled={createSiteMutation.isPending}
+          >
+            Отмена
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Stack>
   );
 }
