@@ -1,4 +1,4 @@
-import { Stack, Typography } from "@mui/material";
+import { Button, Stack, Typography } from "@mui/material";
 import { useNavigate, useSearchParams, useParams } from "react-router";
 
 import { DeviceCard } from "../../features/devices/ui/DeviceCard";
@@ -10,10 +10,19 @@ export function DevicePage() {
   const navigate = useNavigate();
   const { data, isLoading, error } = useDevice(deviceId ?? "");
   const returnToOrderId = searchParams.get("returnToOrder");
+  const requestedReturnTo = searchParams.get("returnTo");
+  const returnTo =
+    requestedReturnTo && /^\/(customers|orders)\/[^/?#]+$/.test(requestedReturnTo)
+      ? requestedReturnTo
+      : null;
 
   const goBack = () => {
     if (returnToOrderId) {
       navigate(`/orders/${returnToOrderId}`);
+      return;
+    }
+    if (returnTo) {
+      navigate(returnTo);
       return;
     }
     navigate(-1);
@@ -29,6 +38,17 @@ export function DevicePage() {
 
   return (
     <Stack spacing={2}>
+      <Button
+        variant="outlined"
+        onClick={goBack}
+        sx={{ alignSelf: "flex-start" }}
+      >
+        {returnToOrderId || returnTo?.startsWith("/orders/")
+          ? "Назад к заказу"
+          : returnTo?.startsWith("/customers/")
+            ? "Назад к клиенту"
+            : "Назад"}
+      </Button>
       <DeviceCard
         device={data}
         initialEditing={searchParams.get("edit") === "1"}
