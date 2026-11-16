@@ -124,7 +124,7 @@ export function CustomerPage() {
                 flexWrap: "wrap",
               }}
             >
-              <Typography variant="h6">Объекты</Typography>
+              <Typography variant="h6">Узлы</Typography>
               <Stack direction="row" spacing={1}>
                 <Button
                   component={Link}
@@ -138,20 +138,20 @@ export function CustomerPage() {
                   to={`/customers/${data.id}/sites/new`}
                   variant="outlined"
                 >
-                  Добавить объект
+                  Добавить узел
                 </Button>
               </Stack>
             </Stack>
 
-            {sitesLoading && <Typography>Загрузка объектов...</Typography>}
+            {sitesLoading && <Typography>Загрузка узлов...</Typography>}
 
             {sitesError && (
-              <Typography>Не удалось загрузить объекты.</Typography>
+              <Typography>Не удалось загрузить узлы.</Typography>
             )}
 
             {!sitesLoading && !sitesError && (!sites || sites.length === 0) && (
               <Typography color="text.secondary">
-                Объекты пока не созданы.
+                Узлы пока не созданы.
               </Typography>
             )}
 

@@ -4,6 +4,8 @@ import { RequireAuth } from "../features/auth/ui/RequireAuth";
 import { LoginPage } from "../pages/auth/LoginPage";
 import { ChangePasswordPage } from "../pages/auth/ChangePasswordPage";
 import { CustomersPage } from "../pages/customers/CustomersPage";
+import { SitesPage } from "../pages/sites/SitesPage";
+import { CreateSiteDirectoryPage } from "../pages/sites/CreateSiteDirectoryPage";
 import { CustomerPage } from "../pages/customers/CustomerPage";
 import { CreateCustomerPage } from "../pages/customers/CreateCustomerPage";
 import { CreateSitePage } from "../pages/customers/CreateSitePage";
@@ -58,6 +60,14 @@ export const router = createBrowserRouter([
   {
     path: "/customers",
     element: <RequireAuth><CustomersPage /></RequireAuth>,
+  },
+  {
+    path: "/sites",
+    element: <RequireAuth><SitesPage /></RequireAuth>,
+  },
+  {
+    path: "/sites/new",
+    element: <RequireAuth><CreateSiteDirectoryPage /></RequireAuth>,
   },
   {
     path: "/customers/new",

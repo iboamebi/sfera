@@ -28,7 +28,7 @@ export function SiteForm({
     <form onSubmit={handleSubmit(onSubmit)}>
       <Stack spacing={2}>
         <TextField
-          label="Название объекта"
+          label="Название узла"
           {...register("name")}
           error={Boolean(errors.name)}
           helperText={errors.name?.message}
@@ -44,7 +44,7 @@ export function SiteForm({
         />
 
         <Button type="submit" variant="contained" disabled={isPending}>
-          {isPending ? "Создание..." : "Создать объект"}
+          {isPending ? "Создание..." : "Создать узел"}
         </Button>
       </Stack>
     </form>

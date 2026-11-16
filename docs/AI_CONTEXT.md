@@ -2327,3 +2327,37 @@ Implemented employee identity/contact details separately from login credentials 
 - Removed only the assignment that copied `device.instrumentTypeId` into the Order group field. The newly created Instrument remains selected in the Order item selector; the «Группа СИ» value is preserved and is not populated as a side effect.
 - Follow-up local typecheck/build and a focused browser regression (create Instrument from Order; verify it is selected while «Группа СИ» remains unchanged) are required before merging PR #44.
 - Next proposed product stage: a dedicated, reusable Site directory page, analogous to the Customers page, with search, create/edit and Customer association; assess Excel import or bulk transfer after inspecting the actual Site model, API and existing import capabilities. Sites already exist in the database, but no import contract or spreadsheet format is assumed.
+## Site directory — initial frontend slice — 2026-11-16
+
+- Base: `develop` at merge commit `44f555059fed3c2317aa6f1770a3c529b18eed14` (PR #44).
+- Read the current Site domain entity, repository interface/implementation, Application service, API router/schema, ORM model, frontend Site feature, Customer list/form/page, router, and AppShell.
+- Confirmed existing backend contracts: `GET /sites/` returns all Site records; `POST /sites/` creates a Site with `customer_id`, `name`, and `address`. The Application service checks Customer existence and requires OPERATOR/ADMIN for creation. No backend or database change is needed for this initial directory slice.
+- Added a dedicated `/sites` page with search across Site name, address, and Customer name; list columns show Site, address, Customer link, and active/archive status.
+- Added `/sites/new` with active Customer selection and reused the existing `SiteForm` / `useCreateSite` flow. Successful creation invalidates global and per-Customer Site queries.
+- Added the Site directory entry to the authenticated navigation.
+- Backend currently has no Site update use case or update endpoint. Editing Site name/address is therefore explicitly deferred to a separate backend Application/API/test slice; Customer ownership must not be editable through ordinary Site editing.
+- Excel import is not included. No spreadsheet has been supplied, and no existing import flow was confirmed. Inspect the actual workbook and define matching/duplicate behavior before implementing import.
+- Branch: `feat/site-directory`.
+- Frontend typecheck, build, and browser validation are pending local validation after synchronization.
+- No backend, database, migration, or production changes.
+### Terminology normalization — 2026-11-16
+
+- Standardized user-facing terminology for the Site entity to `узел` / `узлы` across the Customer card, Site creation form, Device form, Order Site selector/filter, and instrument-creation dialog.
+- Replaced legacy labels `площадка` and `объект` in these Site-related flows. Domain/API identifiers (`Site`, `site_id`, `siteId`) remain unchanged.
+- User confirmed local checks and browser scenarios 1–5 passed before this terminology-only adjustment. Re-run frontend typecheck/build and a short browser smoke check after syncing the updated branch.
+
+
+### Site terminology — Order selector follow-up — 2026-11-16
+
+- Completed terminology normalization missed two helper/error messages in the Order item selector. Replaced `площадки` with `узлы` and `Объект будет создан` with `Узел будет создан`.
+- No behavior, API, domain, or database changes. User confirmed the initial directory browser scenarios 1–5 passed; terminology-only local smoke check remains after synchronization.
+
+- A follow-up review of the Instrument card found the same legacy wording in `DeviceSiteAssignment`; its title, current-value label, selector, empty option, error/success messages now consistently use `узел` / `узлы`.
+
+
+### Order Instrument selector layout — 2026-11-16
+
+- Moved `Создать новое СИ` from above the Instrument autocomplete to the right of the `Средство измерений` input, matching the adjacent `Все узлы` / `Создать узел` control pattern.
+- Set the Autocomplete flex item minimum width to `20ch`, preventing the serial-number input from collapsing below approximately 20 characters when sharing a row with the create button. On narrow screens the controls continue to stack vertically.
+- Create-button availability and serial-number/Site assignment behavior remain unchanged.
+- User confirmed the previous checks passed. Local typecheck/build and browser alignment check for this width refinement are pending.

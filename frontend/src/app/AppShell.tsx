@@ -14,6 +14,7 @@ const navigation = [
   { label: "Заказы", path: "/orders" },
   { label: "Поверки", path: "/verifications" },
   { label: "Клиенты", path: "/customers" },
+  { label: "Узлы", path: "/sites" },
   { label: "Организации", path: "/organizations" },
   { label: "СИ", path: "/devices" },
   { label: "Материалы", path: "/materials" },

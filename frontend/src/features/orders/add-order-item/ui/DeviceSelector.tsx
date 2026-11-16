@@ -93,7 +93,7 @@ export function DeviceSelector({
 
     return error instanceof Error && error.message
       ? error.message
-      : "Не удалось создать объект.";
+      : "Не удалось создать узел.";
   };
 
   const customerDevices = devices.filter(
@@ -159,8 +159,8 @@ export function DeviceSelector({
   );
   const matchingSerialIsAmbiguous = matchingDevices.length > 1;
   const matchingDeviceSite = matchingDevice?.siteId
-    ? sites.find((site) => site.id === matchingDevice.siteId)?.name ?? "Площадка не найдена"
-    : "Без площадки";
+    ? sites.find((site) => site.id === matchingDevice.siteId)?.name ?? "Узел не найден"
+    : "Без узла";
   const matchingDeviceTypeMatches =
     !instrumentTypeId || matchingDevice?.instrumentTypeId === instrumentTypeId;
   const matchingDeviceIsVisible = matchingDevice
@@ -175,11 +175,11 @@ export function DeviceSelector({
   const createDeviceDisabledReason = isLoading
     ? "Загружается список СИ. Создание станет доступно после завершения загрузки."
     : hasMultipleSelectedSites
-      ? "Для привязки нового СИ выберите одну площадку."
+      ? "Для привязки нового СИ выберите один узел."
       : !normalizedInput
         ? "Введите заводской номер, чтобы создать новую карточку СИ."
         : canExpandSiteSearch
-          ? "Сначала выполните поиск по всем площадкам — это исключит создание дубликата."
+          ? "Сначала выполните поиск по всем узлам — это исключит создание дубликата."
           : matchingDevice
             ? "Карточка с таким заводским номером уже существует. Выберите её в списке или проверьте найденную карточку."
             : "";
@@ -221,14 +221,14 @@ export function DeviceSelector({
           sx={{ flex: 1 }}
         >
           <InputLabel id="device-site-filter-label" shrink>
-            Площадки
+            Узлы
           </InputLabel>
           <Select<string[]>
             labelId="device-site-filter-label"
             displayEmpty
             multiple
             value={selectedSiteIds}
-            label="Площадки"
+            label="Узлы"
             onChange={(event) => {
               const nextValue = event.target.value;
               setSelectedSiteIds(
@@ -240,7 +240,7 @@ export function DeviceSelector({
             }}
             renderValue={(selected) =>
               selected.length === 0
-                ? "Все площадки"
+                ? "Все узлы"
                 : sites
                     .filter((site) => selected.includes(site.id))
                     .map((site) => site.name)
@@ -262,86 +262,94 @@ export function DeviceSelector({
           disabled={!customerId || isSitesLoading}
           sx={{ whiteSpace: "nowrap" }}
         >
-          Создать объект
+          Создать узел
         </Button>
       </Stack>
 
       {isSitesError && (
         <Typography color="error" variant="caption">
-          Не удалось загрузить площадки. Фильтр по площадкам недоступен.
+          Не удалось загрузить узлы. Фильтр по узлам недоступен.
         </Typography>
       )}
 
-      {onCreateDevice && (
-        <Stack spacing={0.5} sx={{ alignItems: "flex-start" }}>
-          <Button
-            variant="outlined"
-            size="small"
-            disabled={createDeviceDisabled}
-            onClick={() => {
-              const siteId =
-                selectedSiteIds.length === 1 ? selectedSiteIds[0] : null;
-              const siteName =
-                sites.find((site) => site.id === siteId)?.name ?? null;
-              onCreateDevice(inputValue.trim(), siteId, siteName);
-            }}
-          >
-            Создать новое СИ
-          </Button>
-          {createDeviceDisabledReason && (
-            <Typography variant="caption" color="text.secondary">
-              {createDeviceDisabledReason}
-            </Typography>
-          )}
-        </Stack>
-      )}
-      <Autocomplete
-        fullWidth
-        options={availableDevices}
-        value={selectedDevice}
-        inputValue={inputValue}
-        loading={isLoading}
-        loadingText="Загрузка средств измерений…"
-        clearOnBlur={false}
-        noOptionsText={
-          normalizedInput
-            ? "СИ не найдено"
-            : "Начните вводить заводской номер."
-        }
-        getOptionLabel={(device) => device.serialNumber}
-        isOptionEqualToValue={(option, selected) => option.id === selected.id}
-        onInputChange={(_, nextValue, reason) => {
-          if (reason === "input" || reason === "clear") {
-            setInputValue(nextValue);
+      <Stack
+        direction={{ xs: "column", sm: "row" }}
+        spacing={1}
+        sx={{ width: "100%", alignItems: { xs: "stretch", sm: "flex-start" } }}
+      >
+        <Autocomplete
+          fullWidth
+          options={availableDevices}
+          value={selectedDevice}
+          inputValue={inputValue}
+          loading={isLoading}
+          loadingText="Загрузка средств измерений…"
+          clearOnBlur={false}
+          noOptionsText={
+            normalizedInput
+              ? "СИ не найдено"
+              : "Начните вводить заводской номер."
           }
-        }}
-        onChange={(_, device: DeviceRead | null) => {
-          onChange(device?.id ?? "");
-          if (device) setInputValue(device.serialNumber);
-        }}
-        renderOption={(props, device) => (
-          <li {...props} key={device.id}>
-            <Stack spacing={0.25}>
-              <Typography variant="body2">
-                {device.name ?? "СИ"} — № {device.serialNumber}
-              </Typography>
+          getOptionLabel={(device) => device.serialNumber}
+          isOptionEqualToValue={(option, selected) => option.id === selected.id}
+          onInputChange={(_, nextValue, reason) => {
+            if (reason === "input" || reason === "clear") {
+              setInputValue(nextValue);
+            }
+          }}
+          onChange={(_, device: DeviceRead | null) => {
+            onChange(device?.id ?? "");
+            if (device) setInputValue(device.serialNumber);
+          }}
+          renderOption={(props, device) => (
+            <li {...props} key={device.id}>
+              <Stack spacing={0.25}>
+                <Typography variant="body2">
+                  {device.name ?? "СИ"} — № {device.serialNumber}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {device.siteId
+                    ? sites.find((site) => site.id === device.siteId)?.name ?? "Узел не найден"
+                    : "Без узла"}
+                </Typography>
+              </Stack>
+            </li>
+          )}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              fullWidth
+              label="Средство измерений"
+              placeholder="Введите серийный номер"
+            />
+          )}
+          sx={{ flex: 1, minWidth: "20ch" }}
+        />
+        {onCreateDevice && (
+          <Stack spacing={0.5} sx={{ alignItems: "flex-start", flexShrink: 0 }}>
+            <Button
+              variant="outlined"
+              size="small"
+              disabled={createDeviceDisabled}
+              onClick={() => {
+                const siteId =
+                  selectedSiteIds.length === 1 ? selectedSiteIds[0] : null;
+                const siteName =
+                  sites.find((site) => site.id === siteId)?.name ?? null;
+                onCreateDevice(inputValue.trim(), siteId, siteName);
+              }}
+              sx={{ minHeight: 40, whiteSpace: "nowrap" }}
+            >
+              Создать новое СИ
+            </Button>
+            {createDeviceDisabledReason && (
               <Typography variant="caption" color="text.secondary">
-                {device.siteId
-                  ? sites.find((site) => site.id === device.siteId)?.name ?? "Площадка не найдена"
-                  : "Без площадки"}
+                {createDeviceDisabledReason}
               </Typography>
-            </Stack>
-          </li>
+            )}
+          </Stack>
         )}
-        renderInput={(params) => (
-          <TextField
-            {...params}
-            fullWidth
-            label="Средство измерений"
-            placeholder="Введите серийный номер"
-          />
-        )}
-      />
+      </Stack>
 
       {canExpandSiteSearch && (
         <Alert
@@ -356,7 +364,7 @@ export function DeviceSelector({
             </Button>
           }
         >
-          На выбранной площадке СИ не найдено. Можно проверить карточки на других площадках и без площадки.
+          На выбранном узле СИ не найдено. Можно проверить карточки на других узлах и без узла.
         </Alert>
       )}
 
@@ -384,7 +392,7 @@ export function DeviceSelector({
             ? `В базе найдено несколько карточек СИ с заводским номером ${matchingDevice.serialNumber}. Выбор заблокирован: сначала необходимо устранить дубликаты карточек.`
             : matchingDeviceAlreadyInOrder
               ? `СИ с заводским номером ${matchingDevice.serialNumber} уже добавлено в этот заказ.`
-              : `СИ с таким заводским номером уже существует: ${matchingDevice.name ?? "без наименования"}, № ${matchingDevice.serialNumber}. Текущая площадка: ${matchingDeviceSite}.`}
+              : `СИ с таким заводским номером уже существует: ${matchingDevice.name ?? "без наименования"}, № ${matchingDevice.serialNumber}. Текущий узел: ${matchingDeviceSite}.`}
           {!matchingSerialIsAmbiguous && !matchingDeviceAlreadyInOrder &&
             (matchingDeviceTypeMatches
               ? " Выберите существующее СИ в списке. Создание дубликата недоступно."
@@ -402,11 +410,11 @@ export function DeviceSelector({
         fullWidth
         maxWidth="sm"
       >
-        <DialogTitle>Создать объект</DialogTitle>
+        <DialogTitle>Создать узел</DialogTitle>
         <DialogContent>
           <Stack spacing={2} sx={{ pt: 1 }}>
             <Typography variant="body2" color="text.secondary">
-              Объект будет создан для заказчика этого заказа.
+              Узел будет создан для клиента этого заказа.
             </Typography>
             <SiteForm
               key={isCreateSiteOpen ? "open" : "closed"}
