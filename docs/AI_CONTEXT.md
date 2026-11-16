@@ -2361,3 +2361,11 @@ Implemented employee identity/contact details separately from login credentials 
 - Set the Autocomplete flex item minimum width to `20ch`, preventing the serial-number input from collapsing below approximately 20 characters when sharing a row with the create button. On narrow screens the controls continue to stack vertically.
 - Create-button availability and serial-number/Site assignment behavior remain unchanged.
 - User confirmed the previous checks passed. Local typecheck/build and browser alignment check for this width refinement are pending.
+
+## Site directory — merged and production deployment pending — 2026-11-16
+
+- PR #45 `Add dedicated Site directory` was squash-merged into `develop` as `d48b4c677f56e3277440a29050ff5c1f1eae4330`.
+- Includes the global Site directory, search by name/address/Customer, Customer association, create flow, consistent UI terminology `узел/узлы`, and Order Instrument selector layout with a `20ch` minimum width.
+- User confirmed local frontend typecheck/build and browser behavior, including the final width refinement, passed.
+- GitHub Backend CI for PR head `a8a7855259fbb2de859344abc4e886a945f94baf` completed successfully.
+- Frontend-only change: no backend/API/database/migration changes. Production deployment is explicitly requested and remains pending local deployment via `frontend/scripts/deploy-production.sh`; no backend restart is required.
