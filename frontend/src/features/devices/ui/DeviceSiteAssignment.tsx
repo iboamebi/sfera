@@ -45,28 +45,28 @@ export function DeviceSiteAssignment({ device }: DeviceSiteAssignmentProps) {
 
   return (
     <Stack spacing={1.5}>
-      <Typography variant="h6">Объект размещения</Typography>
+      <Typography variant="h6">Узел</Typography>
       <Typography color="text.secondary">
-        Текущий объект: {isLoading ? "Загрузка..." : currentSite?.name ?? "Не назначен"}
+        Текущий узел: {isLoading ? "Загрузка..." : currentSite?.name ?? "Не назначен"}
         {currentSite?.archived ? " (в архиве)" : ""}
       </Typography>
 
       {error && (
-        <Alert severity="error">Не удалось загрузить список объектов клиента.</Alert>
+        <Alert severity="error">Не удалось загрузить список узлов клиента.</Alert>
       )}
 
       <FormControl fullWidth disabled={isLoading || Boolean(error) || mutation.isPending}>
-        <InputLabel id="device-site-label">Объект</InputLabel>
+        <InputLabel id="device-site-label">Узел</InputLabel>
         <Select
           labelId="device-site-label"
-          label="Объект"
+          label="Узел"
           value={siteId}
           onChange={(event) => {
             setSiteId(event.target.value);
             mutation.reset();
           }}
         >
-          <MenuItem value="">Без объекта</MenuItem>
+          <MenuItem value="">Без узла</MenuItem>
           {availableSites.map((site) => (
             <MenuItem key={site.id} value={site.id}>
               {site.name}{site.archived ? " (в архиве)" : ""}
@@ -92,12 +92,12 @@ export function DeviceSiteAssignment({ device }: DeviceSiteAssignmentProps) {
 
       {mutation.isError && (
         <Alert severity="error">
-          Не удалось изменить объект. Проверьте данные и повторите попытку.
+          Не удалось изменить узел. Проверьте данные и повторите попытку.
         </Alert>
       )}
 
       {mutation.isSuccess && (
-        <Alert severity="success">Привязка к объекту обновлена.</Alert>
+        <Alert severity="success">Привязка к узлу обновлена.</Alert>
       )}
 
       <Button
