@@ -23,6 +23,9 @@ export function CustomerPage() {
     requestedReturnTo && new RegExp("^/orders/[^/?#]+$").test(requestedReturnTo)
       ? requestedReturnTo
       : "/customers";
+  const deviceReturnTo = returnTo.startsWith("/orders/")
+    ? `/customers/${customerId}?returnTo=${encodeURIComponent(returnTo)}`
+    : `/customers/${customerId}`;
   const [isEditing, setIsEditing] = useState(false);
   const { data, error, isLoading } = useCustomer(customerId ?? "");
   const {
@@ -223,7 +226,7 @@ export function CustomerPage() {
                         <Stack spacing={0.75} sx={{ pl: 1 }}>
                           {siteDevices.map((device) => (
                             <Typography key={device.id} variant="body2">
-                              <Link to={`/devices/${device.id}?returnTo=${encodeURIComponent(`/customers/${data.id}`)}`}>
+                              <Link to={`/devices/${device.id}?returnTo=${encodeURIComponent(deviceReturnTo)}`}>
                                 {device.name ?? "Без наименования"}
                               </Link>
                               {" · Зав. № "}
@@ -279,7 +282,7 @@ export function CustomerPage() {
               <Stack spacing={0.75}>
                 {unassignedDevices.map((device) => (
                   <Typography key={device.id} variant="body2">
-                    <Link to={`/devices/${device.id}?returnTo=${encodeURIComponent(`/customers/${data.id}`)}`}>
+                    <Link to={`/devices/${device.id}?returnTo=${encodeURIComponent(deviceReturnTo)}`}>
                       {device.name ?? "Без наименования"}
                     </Link>
                     {" · Зав. № "}
