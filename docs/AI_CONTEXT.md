@@ -2378,7 +2378,7 @@ Implemented employee identity/contact details separately from login credentials 
 - The page reuses the existing `GET /devices/` read contract and filters by `customerId`; no backend, API, database, migration, or authorization changes.
 - The UI explicitly states that registered Instruments are not necessarily the complete physical composition of a Customer or Site. An empty registered list is not presented as proof that no physical Instruments exist.
 - Site detail navigation is not added because no frontend Site detail route exists yet. A separate Site card/detail slice remains future work.
-- Local frontend typecheck, build, and browser validation are pending after synchronization.
+- Local frontend `npm run typecheck` and `npm run build` passed after synchronization; browser scenarios passed, including Customer → Instrument → Customer navigation.
 
 
 ### Customer → Instrument → Customer navigation context — 2026-11-16
@@ -2387,4 +2387,4 @@ Implemented employee identity/contact details separately from login credentials 
 - Follow-up exposed a nested-context gap: when Customer was opened from an Order, opening an Instrument and returning to Customer discarded the Customer page's own `returnTo` Order parameter. The Customer back action then fell back to the Customer directory.
 - Customer Instrument links now pass the complete safe return path, including the originating Order when present. DevicePage accepts only the existing internal Order path or a Customer path with a validated encoded Order return path.
 - The intended chain is preserved: Order → Customer → Instrument → Customer → Order. Direct Customer navigation still returns to the Customer directory.
-- Frontend-only navigation refinement; no backend, API, database, migration, or production changes. Local typecheck/build and browser regression are pending.
+- Frontend-only navigation refinement; no backend, API, database, migration, or production changes. Local typecheck/build and browser regression passed.
