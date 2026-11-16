@@ -2444,3 +2444,16 @@ Implemented employee identity/contact details separately from login credentials 
 - The checkpoint records key distinctions for future design: document type vs instance vs binary file vs revision vs relation vs business association; passport duplicate as a new issuance preserving original history; verification documents linked to a specific Verification; methodology normative documents linked to Method/MethodVersion and selected by Instrument Type/modification/production period.
 - No application code, database schema, API, or frontend behavior was changed. Consult this checkpoint before implementing document management, passports, duplicates, or file storage.
 - Historical Step 29 was supplied as a brief scope only (Diagnostics, Repair, recommendations, material consumption/warehouse link, repair/replacement proposals); its detailed plan and code audit are pending. Steps 28/29 must be considered alongside the existing Warehouse and Verification checkpoints.
+
+
+## Historical plan audit — Step 29: Diagnostics, Repair and recommendations — 2026-11-16
+
+- Added `docs/checkpoints/2026-11-16-step-29-diagnostics-repair.md`.
+- The checkpoint compares the historical Step 29 plan with actual `develop` code at `bb0d3279de58528cb8c8c12ef0d38862317af36d`.
+- Diagnostic and Repair aggregates already exist and are linked to OrderItem. Diagnostic supports conclusion and the controlled recommendation enum; Repair supports create/start/wait/complete/cancel. Both have basic APIs and detail pages; mutations are role-checked and completion writes Audit records.
+- Diagnostic has no structured result/Defect/severity model or assigned employee/date. Repair has no direct Diagnostic link, operations, labor/performer records, or timestamps.
+- Warehouse has stock/reserve/release/movement foundations, but no Repair-linked material requirements, issue-to-performer, consumption/write-off, or unused-material return workflow. Consult the Step 30 warehouse audit before any stock integration.
+- Verification exists independently and preserves separate records, but Repair completion does not create or hand off to a new Verification. Any post-repair Verification requirement must be determined from the applicable Instrument/method/regulatory rules, not assumed for every repair.
+- Price lists exist for service prices, but commercial proposals, customer acceptance, discounts, replacement offers, invoices/payments, and financial accounting were not found in the inspected paths. Consult Step 33 for finance/reporting limits.
+- The checkpoint records boundaries between Diagnostic, Repair, Verification, Order, recommendation, customer approval, stock lifecycle, and commercial proposal; no application code changed.
+- Historical Step 29 is now supplied and audited. Historical Step 31 remains to be supplied/analyzed; Step 34 remains pending.
