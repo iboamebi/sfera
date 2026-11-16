@@ -12,7 +12,7 @@ export function DevicePage() {
   const returnToOrderId = searchParams.get("returnToOrder");
   const requestedReturnTo = searchParams.get("returnTo");
   const returnTo =
-    requestedReturnTo && /^\/(customers|orders)\/[^/?#]+$/.test(requestedReturnTo)
+    requestedReturnTo && (/^\/orders\/[^/?#]+$/.test(requestedReturnTo) || /^\/customers\/[^/?#]+(?:\?returnTo=%2Forders%2F[^/?#]+)?$/.test(requestedReturnTo))
       ? requestedReturnTo
       : null;
 
