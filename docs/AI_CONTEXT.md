@@ -2351,3 +2351,5 @@ Implemented employee identity/contact details separately from login credentials 
 
 - Completed terminology normalization missed two helper/error messages in the Order item selector. Replaced `площадки` with `узлы` and `Объект будет создан` with `Узел будет создан`.
 - No behavior, API, domain, or database changes. User confirmed the initial directory browser scenarios 1–5 passed; terminology-only local smoke check remains after synchronization.
+
+- A follow-up review of the Instrument card found the same legacy wording in `DeviceSiteAssignment`; its title, current-value label, selector, empty option, error/success messages now consistently use `узел` / `узлы`.
