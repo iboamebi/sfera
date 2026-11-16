@@ -70,6 +70,8 @@ export function DeviceSelector({
           site,
         ],
       );
+      setSelectedSiteIds([site.id]);
+      setIncludeOtherSites(false);
       setIsCreateSiteOpen(false);
     },
   });
