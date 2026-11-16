@@ -10,6 +10,7 @@ interface DeviceCardProps {
   device: DeviceRead;
   initialEditing?: boolean;
   onSaved?: () => void;
+  onCancel?: () => void;
 }
 
 function toForm(device: DeviceRead): UpdateDeviceInput {
@@ -28,6 +29,7 @@ export function DeviceCard({
   device,
   initialEditing = false,
   onSaved,
+  onCancel,
 }: DeviceCardProps) {
   const { data: instrumentType } = useInstrumentType(device.instrumentTypeId);
   const updateMutation = useUpdateDevice(device.id);
@@ -37,6 +39,8 @@ export function DeviceCard({
   useEffect(() => {
     setForm(toForm(device));
   }, [device]);
+
+  const isDirty = JSON.stringify(form) !== JSON.stringify(toForm(device));
 
   const setField = <K extends keyof UpdateDeviceInput>(
     field: K,
@@ -131,6 +135,7 @@ export function DeviceCard({
         <Button
           variant="contained"
           disabled={
+            !isDirty ||
             !form.name.trim() ||
             !form.serialNumber.trim() ||
             updateMutation.isPending
@@ -144,6 +149,7 @@ export function DeviceCard({
           onClick={() => {
             setForm(toForm(device));
             setEditing(false);
+            onCancel?.();
           }}
         >
           Отмена

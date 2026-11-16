@@ -1,4 +1,4 @@
-import { Button, Stack, Typography } from "@mui/material";
+import { Stack, Typography } from "@mui/material";
 import { useNavigate, useSearchParams, useParams } from "react-router";
 
 import { DeviceCard } from "../../features/devices/ui/DeviceCard";
@@ -29,17 +29,11 @@ export function DevicePage() {
 
   return (
     <Stack spacing={2}>
-      <Button variant="outlined" onClick={goBack} sx={{ alignSelf: "flex-start" }}>
-        Назад
-      </Button>
       <DeviceCard
         device={data}
         initialEditing={searchParams.get("edit") === "1"}
-        onSaved={
-          returnToOrderId
-            ? () => navigate(`/orders/${returnToOrderId}`)
-            : undefined
-        }
+        onSaved={goBack}
+        onCancel={goBack}
       />
     </Stack>
   );
