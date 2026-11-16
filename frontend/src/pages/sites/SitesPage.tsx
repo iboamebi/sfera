@@ -105,7 +105,9 @@ export function SitesPage() {
             <TableBody>
               {sortedSites.map((site) => (
                 <TableRow key={site.id} hover>
-                  <TableCell>{site.name}</TableCell>
+                  <TableCell>
+                    <Link to={`/sites/${site.id}`}>{site.name}</Link>
+                  </TableCell>
                   <TableCell>{site.address}</TableCell>
                   <TableCell>
                     <Link to={`/customers/${site.customerId}`}>
