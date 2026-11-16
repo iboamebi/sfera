@@ -5,6 +5,7 @@ import { LoginPage } from "../pages/auth/LoginPage";
 import { ChangePasswordPage } from "../pages/auth/ChangePasswordPage";
 import { CustomersPage } from "../pages/customers/CustomersPage";
 import { SitesPage } from "../pages/sites/SitesPage";
+import { SitePage } from "../pages/sites/SitePage";
 import { CreateSiteDirectoryPage } from "../pages/sites/CreateSiteDirectoryPage";
 import { CustomerPage } from "../pages/customers/CustomerPage";
 import { CreateCustomerPage } from "../pages/customers/CreateCustomerPage";
@@ -68,6 +69,10 @@ export const router = createBrowserRouter([
   {
     path: "/sites/new",
     element: <RequireAuth><CreateSiteDirectoryPage /></RequireAuth>,
+  },
+  {
+    path: "/sites/:siteId",
+    element: <RequireAuth><SitePage /></RequireAuth>,
   },
   {
     path: "/customers/new",

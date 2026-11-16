@@ -2388,3 +2388,13 @@ Implemented employee identity/contact details separately from login credentials 
 - Customer Instrument links now pass the complete safe return path, including the originating Order when present. DevicePage accepts only the existing internal Order path or a Customer path with a validated encoded Order return path.
 - The intended chain is preserved: Order → Customer → Instrument → Customer → Order. Direct Customer navigation still returns to the Customer directory.
 - Frontend-only navigation refinement; no backend, API, database, migration, or production changes. Local typecheck/build and browser regression passed.
+
+
+## Site detail page — PR #47 browser validation — 2026-11-16
+
+- Added read-only Site detail route `/sites/:siteId`, showing Site information, its Customer, and registered Instruments associated through `siteId`.
+- Browser scenarios confirmed: Site directory → Site detail; Customer → Site → Customer; Site → Instrument → Site; and Order → Customer → Site → Instrument → Site → Customer → Order.
+- Scenario for a Site with no registered Instruments and an archived Site could not be exercised in the current local test data/environment. This remains unverified and must not be treated as passed.
+- Local frontend `npm run typecheck` and `npm run build` passed after synchronizing `feat/site-detail-page`.
+- Frontend-only change. No backend, API, database, migration, authorization, or production changes.
+- PR #47 remains separate from production deployment; do not deploy as part of this validation checkpoint.

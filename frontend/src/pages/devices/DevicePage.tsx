@@ -12,7 +12,10 @@ export function DevicePage() {
   const returnToOrderId = searchParams.get("returnToOrder");
   const requestedReturnTo = searchParams.get("returnTo");
   const returnTo =
-    requestedReturnTo && (/^\/orders\/[^/?#]+$/.test(requestedReturnTo) || /^\/customers\/[^/?#]+(?:\?returnTo=%2Forders%2F[^/?#]+)?$/.test(requestedReturnTo))
+    requestedReturnTo &&
+    (/^\/orders\/[^/?#]+$/.test(requestedReturnTo) ||
+      /^\/customers\/[^/?#]+(?:\?returnTo=%2Forders%2F[^/?#]+)?$/i.test(requestedReturnTo) ||
+      /^\/sites\/[^/?#]+(?:\?returnTo=%2Fcustomers%2F[^/?#]+(?:%3FreturnTo%3D%252Forders%252F[^/?#]+)?)?$/i.test(requestedReturnTo))
       ? requestedReturnTo
       : null;
 
@@ -47,7 +50,9 @@ export function DevicePage() {
           ? "Назад к заказу"
           : returnTo?.startsWith("/customers/")
             ? "Назад к клиенту"
-            : "Назад"}
+            : returnTo?.startsWith("/sites/")
+              ? "Назад к узлу"
+              : "Назад"}
       </Button>
       <DeviceCard
         device={data}
