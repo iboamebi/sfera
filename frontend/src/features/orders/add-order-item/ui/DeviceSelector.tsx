@@ -268,7 +268,7 @@ export function DeviceSelector({
 
       {isSitesError && (
         <Typography color="error" variant="caption">
-          Не удалось загрузить площадки. Фильтр по площадкам недоступен.
+          Не удалось загрузить узлы. Фильтр по узлам недоступен.
         </Typography>
       )}
 
@@ -406,7 +406,7 @@ export function DeviceSelector({
         <DialogContent>
           <Stack spacing={2} sx={{ pt: 1 }}>
             <Typography variant="body2" color="text.secondary">
-              Объект будет создан для заказчика этого заказа.
+              Узел будет создан для клиента этого заказа.
             </Typography>
             <SiteForm
               key={isCreateSiteOpen ? "open" : "closed"}
