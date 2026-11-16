@@ -2318,3 +2318,12 @@ Implemented employee identity/contact details separately from login credentials 
 - Added a dialog for creating a missing Instrument Type without unmounting the Order item form.
 - Branch: `feat/order-device-creation-site-context`. Local frontend typecheck/build and browser regression are pending.
 - No backend, database, migration, or production changes.
+
+
+### Order — separate Instrument Type from Order group — 2026-11-16
+
+- User confirmed frontend typecheck, production build, and browser scenarios for PR #44 passed.
+- Browser review found that after creating a new Instrument, the Order form's «Группа СИ» field was also populated with the new Instrument's type. This was caused by reusing the Order item's `instrumentTypeId` state for the created Instrument's type.
+- Removed only the assignment that copied `device.instrumentTypeId` into the Order group field. The newly created Instrument remains selected in the Order item selector; the «Группа СИ» value is preserved and is not populated as a side effect.
+- Follow-up local typecheck/build and a focused browser regression (create Instrument from Order; verify it is selected while «Группа СИ» remains unchanged) are required before merging PR #44.
+- Next proposed product stage: a dedicated, reusable Site directory page, analogous to the Customers page, with search, create/edit and Customer association; assess Excel import or bulk transfer after inspecting the actual Site model, API and existing import capabilities. Sites already exist in the database, but no import contract or spreadsheet format is assumed.
