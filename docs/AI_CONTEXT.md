@@ -2358,5 +2358,6 @@ Implemented employee identity/contact details separately from login credentials 
 ### Order Instrument selector layout — 2026-11-16
 
 - Moved `Создать новое СИ` from above the Instrument autocomplete to the right of the `Средство измерений` input, matching the adjacent `Все узлы` / `Создать узел` control pattern.
-- On narrow screens the controls stack vertically; create-button availability and serial-number/site assignment behavior remain unchanged.
-- User confirmed the Site directory and terminology local checks passed before this cosmetic adjustment; local typecheck/build and browser alignment check for this final layout are pending.
+- Set the Autocomplete flex item minimum width to `20ch`, preventing the serial-number input from collapsing below approximately 20 characters when sharing a row with the create button. On narrow screens the controls continue to stack vertically.
+- Create-button availability and serial-number/Site assignment behavior remain unchanged.
+- User confirmed the previous checks passed. Local typecheck/build and browser alignment check for this width refinement are pending.
