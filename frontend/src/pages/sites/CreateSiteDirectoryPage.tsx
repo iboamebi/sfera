@@ -70,10 +70,16 @@ export function CreateSiteDirectoryPage() {
                 </Alert>
               )}
 
-              <SiteForm
-                onSubmit={(data) => mutation.mutate({ ...data, customerId })}
-                isPending={mutation.isPending || !customerId}
-              />
+              {customerId ? (
+                <SiteForm
+                  onSubmit={(data) => mutation.mutate({ ...data, customerId })}
+                  isPending={mutation.isPending}
+                />
+              ) : (
+                <Typography color="text.secondary">
+                  Выберите клиента, чтобы заполнить данные узла.
+                </Typography>
+              )}
             </>
           )}
         </>
