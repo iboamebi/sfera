@@ -2456,7 +2456,7 @@ Implemented employee identity/contact details separately from login credentials 
 - Verification exists independently and preserves separate records, but Repair completion does not create or hand off to a new Verification. Any post-repair Verification requirement must be determined from the applicable Instrument/method/regulatory rules, not assumed for every repair.
 - Price lists exist for service prices, but commercial proposals, customer acceptance, discounts, replacement offers, invoices/payments, and financial accounting were not found in the inspected paths. Consult Step 33 for finance/reporting limits.
 - The checkpoint records boundaries between Diagnostic, Repair, Verification, Order, recommendation, customer approval, stock lifecycle, and commercial proposal; no application code changed.
-- Historical Step 29 is now supplied and audited. Historical Step 31 remains to be supplied/analyzed; Step 34 remains pending.
+- Historical Step 29 is now supplied and audited. Historical Step 31 supplied and audited; see `docs/checkpoints/2026-11-16-step-31-finance-commercial-offers.md`. Step 34 remains pending.
 
 
 ## Step 31 — Финансы и коммерческие предложения (2026-11-16)
