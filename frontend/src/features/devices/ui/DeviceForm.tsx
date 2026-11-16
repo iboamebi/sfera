@@ -69,16 +69,16 @@ export function DeviceForm({
         </FormControl>
 
         <FormControl disabled={isPending}>
-          <InputLabel id="site-label">Объект</InputLabel>
+          <InputLabel id="site-label">Узел</InputLabel>
           <Select
             labelId="site-label"
-            label="Объект"
+            label="Узел"
             value={siteId ?? ""}
             onChange={(event) =>
               setValue("siteId", event.target.value || null)
             }
           >
-            <MenuItem value="">Без объекта</MenuItem>
+            <MenuItem value="">Без узла</MenuItem>
             {sites?.filter((site) => !site.archived).map((site) => (
               <MenuItem key={site.id} value={site.id}>
                 {site.name}
