@@ -2295,3 +2295,14 @@ Implemented employee identity/contact details separately from login credentials 
 - `DevicePage`: removed the separate «Назад» button. Both successful save and cancel now use the existing caller-return navigation: `returnToOrder` returns to the originating order; otherwise the existing browser-history fallback is used.
 - No backend, API, database, migration, or production changes.
 - Local frontend typecheck/build and browser regression are required after synchronization.
+
+## Order — quick Site creation — 2026-11-16
+
+- Current base: `develop` at `57d809d0fd371b1d3d367dfaa4d6e00d10fd6f4a`.
+- Confirmed existing backend contract: authenticated/CSRF-protected `POST /sites/`; `SiteApplicationService.create` checks the Customer exists and allows OPERATOR/ADMIN. No backend/API/DB change is needed.
+- Reused the existing frontend `createSite` API adapter, `useCreateSite` mutation, Site DTO/mapper and `SiteForm`.
+- Added «Создать объект» to the Site filter in the Order item selector. The dialog creates the Site for the current Order Customer and updates the corresponding React Query cache so the new Site is immediately available in the filter.
+- Creation errors are displayed in the dialog; closing is disabled while the request is pending.
+- No permanent Instrument–Site assignment is performed by this flow. Binding a newly created Instrument to a known Site remains a separate task.
+- Branch: `feat/order-quick-create-site`. Local frontend typecheck/build and browser regression are pending.
+- No backend, database, migration, or production changes.
