@@ -33,11 +33,11 @@ export function CreateSitePage() {
         Назад к клиенту
       </Button>
 
-      <Typography variant="h4">Создание объекта</Typography>
+      <Typography variant="h4">Создание узла</Typography>
 
       {mutation.isError && (
         <Alert severity="error">
-          Не удалось создать объект. Проверьте данные и повторите попытку.
+          Не удалось создать узел. Проверьте данные и повторите попытку.
         </Alert>
       )}
 
