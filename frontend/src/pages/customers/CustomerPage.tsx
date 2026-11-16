@@ -1,5 +1,4 @@
 import { useMemo, useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
 import {
   Alert,
   Button,
@@ -18,7 +17,6 @@ import { useDevices } from "../../features/devices/model/useDevices";
 export function CustomerPage() {
   const { customerId } = useParams<{ customerId: string }>();
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
   const requestedReturnTo = searchParams.get("returnTo");
   const returnTo =
@@ -66,7 +64,6 @@ export function CustomerPage() {
   }, [customerDevices]);
 
   const unassignedDevices = customerDevices.filter((device) => !device.siteId);
-  const siteNames = new Map((sites ?? []).map((site) => [site.id, site.name]));
 
   if (isLoading) {
     return <Typography>Загрузка клиента...</Typography>;
