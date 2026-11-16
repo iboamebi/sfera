@@ -223,7 +223,7 @@ export function CustomerPage() {
                         <Stack spacing={0.75} sx={{ pl: 1 }}>
                           {siteDevices.map((device) => (
                             <Typography key={device.id} variant="body2">
-                              <Link to={`/devices/${device.id}`}>
+                              <Link to={`/devices/${device.id}?returnTo=${encodeURIComponent(`/customers/${data.id}`)}`}>
                                 {device.name ?? "Без наименования"}
                               </Link>
                               {" · Зав. № "}
@@ -279,7 +279,7 @@ export function CustomerPage() {
               <Stack spacing={0.75}>
                 {unassignedDevices.map((device) => (
                   <Typography key={device.id} variant="body2">
-                    <Link to={`/devices/${device.id}`}>
+                    <Link to={`/devices/${device.id}?returnTo=${encodeURIComponent(`/customers/${data.id}`)}`}>
                       {device.name ?? "Без наименования"}
                     </Link>
                     {" · Зав. № "}
