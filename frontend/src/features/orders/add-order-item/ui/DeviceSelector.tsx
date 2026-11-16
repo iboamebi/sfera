@@ -272,31 +272,13 @@ export function DeviceSelector({
         </Typography>
       )}
 
-      {onCreateDevice && (
-        <Stack spacing={0.5} sx={{ alignItems: "flex-start" }}>
-          <Button
-            variant="outlined"
-            size="small"
-            disabled={createDeviceDisabled}
-            onClick={() => {
-              const siteId =
-                selectedSiteIds.length === 1 ? selectedSiteIds[0] : null;
-              const siteName =
-                sites.find((site) => site.id === siteId)?.name ?? null;
-              onCreateDevice(inputValue.trim(), siteId, siteName);
-            }}
-          >
-            Создать новое СИ
-          </Button>
-          {createDeviceDisabledReason && (
-            <Typography variant="caption" color="text.secondary">
-              {createDeviceDisabledReason}
-            </Typography>
-          )}
-        </Stack>
-      )}
-      <Autocomplete
-        fullWidth
+      <Stack
+        direction={{ xs: "column", sm: "row" }}
+        spacing={1}
+        sx={{ width: "100%", alignItems: { xs: "stretch", sm: "flex-start" } }}
+      >
+        <Autocomplete
+          fullWidth
         options={availableDevices}
         value={selectedDevice}
         inputValue={inputValue}
@@ -333,15 +315,41 @@ export function DeviceSelector({
             </Stack>
           </li>
         )}
-        renderInput={(params) => (
-          <TextField
-            {...params}
-            fullWidth
-            label="Средство измерений"
-            placeholder="Введите серийный номер"
-          />
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              fullWidth
+              label="Средство измерений"
+              placeholder="Введите серийный номер"
+            />
+          )}
+          sx={{ flex: 1, minWidth: 0 }}
+        />
+        {onCreateDevice && (
+          <Stack spacing={0.5} sx={{ alignItems: "flex-start", flexShrink: 0 }}>
+            <Button
+              variant="outlined"
+              size="small"
+              disabled={createDeviceDisabled}
+              onClick={() => {
+                const siteId =
+                  selectedSiteIds.length === 1 ? selectedSiteIds[0] : null;
+                const siteName =
+                  sites.find((site) => site.id === siteId)?.name ?? null;
+                onCreateDevice(inputValue.trim(), siteId, siteName);
+              }}
+              sx={{ minHeight: 40, whiteSpace: "nowrap" }}
+            >
+              Создать новое СИ
+            </Button>
+            {createDeviceDisabledReason && (
+              <Typography variant="caption" color="text.secondary">
+                {createDeviceDisabledReason}
+              </Typography>
+            )}
+          </Stack>
         )}
-      />
+      </Stack>
 
       {canExpandSiteSearch && (
         <Alert
