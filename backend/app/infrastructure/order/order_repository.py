@@ -79,10 +79,7 @@ class OrderRepositorySQLAlchemy(OrderRepository):
                 ORMOrderItem.instrument_id == instrument_id,
                 ORMOrder.id != exclude_order_id,
                 ORMOrder.status.in_(
-                    [
-                        status.value
-                        for status in CONFLICTING_INSTRUMENT_ORDER_STATUSES
-                    ]
+                    [status.value for status in CONFLICTING_INSTRUMENT_ORDER_STATUSES]
                 ),
             )
             .first()
