@@ -1,3 +1,7 @@
+"""
+Import all models for SQLAlchemy metadata discovery.
+"""
+
 # ruff: noqa: F401
 
 from app.models.arshin_export import ArshinExport
