@@ -33,7 +33,6 @@ class OrderRepositorySQLAlchemy(OrderRepository):
         order_id: UUID,
     ) -> DomainOrder | None:
         """Get order by identifier."""
-
         model = self.session.query(ORMOrder).filter(ORMOrder.id == order_id).first()
 
         if model is None:
@@ -46,7 +45,6 @@ class OrderRepositorySQLAlchemy(OrderRepository):
         order_item_id: UUID,
     ) -> DomainOrder | None:
         """Get the order containing an order item."""
-
         model = (
             self.session.query(ORMOrder)
             .join(ORMOrderItem, ORMOrderItem.order_id == ORMOrder.id)
@@ -63,7 +61,6 @@ class OrderRepositorySQLAlchemy(OrderRepository):
         self,
     ) -> list[DomainOrder]:
         """List orders."""
-
         models = self.session.query(ORMOrder).all()
 
         return [self.mapper.to_domain(model) for model in models]
@@ -97,7 +94,6 @@ class OrderRepositorySQLAlchemy(OrderRepository):
         order: DomainOrder,
     ) -> None:
         """Save order."""
-
         model = self.session.query(ORMOrder).filter(ORMOrder.id == order.id).first()
 
         if model is None:
