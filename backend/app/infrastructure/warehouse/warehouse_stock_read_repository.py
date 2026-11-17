@@ -61,9 +61,7 @@ class WarehouseStockReadRepositorySQLAlchemy(
                 material_name=material_name,
                 quantity=stock.quantity,
                 reserved_quantity=stock.reserved_quantity,
-                available_quantity=(
-                    stock.quantity - stock.reserved_quantity
-                ),
+                available_quantity=stock.quantity - stock.reserved_quantity,
             )
             for stock, warehouse_name, material_name in rows
         ]
