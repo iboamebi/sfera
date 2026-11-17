@@ -25,6 +25,7 @@ import { PriceListPage } from "../pages/price-lists/PriceListPage";
 import { CreateOrderPage } from "../pages/orders/CreateOrderPage";
 import { OrderPage } from "../pages/orders/OrderPage";
 import { OrdersPage } from "../pages/orders/OrdersPage";
+import { DashboardPage } from "../pages/dashboard/DashboardPage";
 import { DevicePage } from "../pages/devices/DevicePage";
 import { DevicesPage } from "../pages/devices/DevicesPage";
 import { InstrumentTypePage } from "../pages/instrument-types/InstrumentTypePage";
@@ -44,7 +45,7 @@ export const router = createBrowserRouter([
   },
   {
     path: "/",
-    element: <RequireAuth><OrdersPage /></RequireAuth>,
+    element: <RequireAuth><DashboardPage /></RequireAuth>,
   },
   {
     path: "/orders",
