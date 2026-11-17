@@ -106,6 +106,7 @@ def upgrade() -> None:
     )
     op.execute("DELETE FROM users WHERE username <> 'alex'")
 
+
 def downgrade() -> None:
     """The deleted business data cannot be reconstructed by a schema downgrade."""
     raise RuntimeError(
