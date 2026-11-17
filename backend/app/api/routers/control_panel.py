@@ -1,4 +1,5 @@
 """Control-panel aggregate read API."""
+
 from fastapi import APIRouter, Depends
 
 from app.application.control_panel.queries.control_panel_overview_service import (
