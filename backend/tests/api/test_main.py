@@ -64,15 +64,7 @@ def test_authentication_and_health_routes_are_not_gated() -> None:
 
 
 def test_control_panel_overview_route_is_registered() -> None:
-    control_panel_contexts = [
-        route.include_context
-        for route in app.routes
-        if getattr(route, "include_context", None) is not None
-        and route.include_context.included_router.prefix == "/control-panel"
-    ]
+    schema = app.openapi()
 
-    assert control_panel_contexts
-    assert any(
-        isinstance(route, APIRoute) and route.path == "/overview"
-        for route in control_panel_contexts[0].included_router.routes
-    )
+    assert "/control-panel/overview" in schema["paths"]
+    assert "get" in schema["paths"]["/control-panel/overview"]
