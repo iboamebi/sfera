@@ -175,11 +175,11 @@ export function DashboardPage() {
               <Divider />
               <Stack spacing={0.5}>
                 {orderCounts.map(({ status, count }) => (
-                  <Stack key={status} direction="row" justifyContent="space-between">
+                  <Stack key={status} direction="row" sx={{ justifyContent: "space-between" }}>
                     <Typography variant="body2">
                       {ORDER_STATUS_LABELS[status] ?? status}
                     </Typography>
-                    <Typography variant="body2" fontWeight={600}>
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
                       {count}
                     </Typography>
                   </Stack>
@@ -198,24 +198,24 @@ export function DashboardPage() {
               <Divider />
               <Stack spacing={0.5}>
                 {verificationCounts.map(({ status, count }) => (
-                  <Stack key={status} direction="row" justifyContent="space-between">
+                  <Stack key={status} direction="row" sx={{ justifyContent: "space-between" }}>
                     <Typography variant="body2">
                       {VERIFICATION_STATUS_LABELS[status]}
                     </Typography>
-                    <Typography variant="body2" fontWeight={600}>
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
                       {count}
                     </Typography>
                   </Stack>
                 ))}
-                <Stack direction="row" justifyContent="space-between">
+                <Stack direction="row" sx={{ justifyContent: "space-between" }}>
                   <Typography variant="body2">Пригодно</Typography>
-                  <Typography variant="body2" fontWeight={600}>
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
                     {verifications.filter((item) => item.result === "SUITABLE").length}
                   </Typography>
                 </Stack>
-                <Stack direction="row" justifyContent="space-between">
+                <Stack direction="row" sx={{ justifyContent: "space-between" }}>
                   <Typography variant="body2">Непригодно</Typography>
-                  <Typography variant="body2" fontWeight={600}>
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
                     {verifications.filter((item) => item.result === "UNSUITABLE").length}
                   </Typography>
                 </Stack>
@@ -242,11 +242,11 @@ export function DashboardPage() {
               <Divider />
               <Stack spacing={0.5}>
                 {deviceCounts.map(({ status, count }) => (
-                  <Stack key={status} direction="row" justifyContent="space-between">
+                  <Stack key={status} direction="row" sx={{ justifyContent: "space-between" }}>
                     <Typography variant="body2">
                       {DEVICE_STATUS_LABELS[status] ?? status}
                     </Typography>
-                    <Typography variant="body2" fontWeight={600}>
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
                       {count}
                     </Typography>
                   </Stack>
