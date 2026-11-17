@@ -79,6 +79,9 @@ from app.infrastructure.device.device_repository import (
 from app.infrastructure.diagnostic.diagnostic_repository import (
     DiagnosticRepositorySQLAlchemy,
 )
+from app.infrastructure.integration.integration_log_repository import (
+    IntegrationLogRepositorySQLAlchemy,
+)
 from app.infrastructure.instrument_type.instrument_type_repository import (
     InstrumentTypeRepositorySQLAlchemy,
 )
@@ -128,6 +131,9 @@ from app.shared.audit.repositories.audit_operation_repository import (
     AuditOperationRepository,
 )
 from app.shared.audit.repositories.audit_repository import AuditRepository
+from app.shared.integration.repositories.integration_log_repository import (
+    IntegrationLogRepository,
+)
 
 
 def get_audit_read_repository(
@@ -152,6 +158,14 @@ def get_audit_operation_repository(
     """Provide Audit operation repository."""
 
     return AuditOperationRepositorySQLAlchemy(session)
+
+
+def get_integration_log_repository(
+    session: Session = Depends(get_session),
+) -> IntegrationLogRepository:
+    """Provide IntegrationLog repository."""
+
+    return IntegrationLogRepositorySQLAlchemy(session)
 
 
 def get_material_repository(
