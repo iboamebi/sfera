@@ -6,7 +6,6 @@ Create Date: 2026-09-22
 
 """
 
-
 # revision identifiers, used by Alembic.
 revision: str = "a7c9e2f4b610"
 down_revision: tuple[str, str] = (
