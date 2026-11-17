@@ -29,8 +29,8 @@ def upgrade() -> None:
                 HAVING COUNT(*) > 1
             ) THEN
                 RAISE EXCEPTION
-                    'Cannot enforce instrument serial uniqueness: duplicate serials exist '
-                    'for the same customer and instrument type';
+                    "Cannot enforce instrument serial uniqueness: duplicate serials "
+                    "exist for the same customer and instrument type";
             END IF;
         END
         $$;
