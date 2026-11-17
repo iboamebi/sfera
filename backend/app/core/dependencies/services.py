@@ -19,6 +19,9 @@ from app.application.auth.services.current_user_application_service import (
 from app.application.auth.services.session_application_service import (
     SessionApplicationService,
 )
+from app.application.control_panel.queries.control_panel_overview_service import (
+    ControlPanelOverviewService,
+)
 from app.application.customer.services.customer_application_service import (
     CustomerApplicationService,
 )
@@ -78,6 +81,7 @@ from app.core.dependencies.repositories import (
     get_audit_operation_repository,
     get_audit_read_repository,
     get_audit_repository,
+    get_control_panel_read_repository,
     get_customer_repository,
     get_device_repository,
     get_diagnostic_repository,
@@ -103,6 +107,9 @@ from app.core.dependencies.repositories import (
 from app.core.dependencies.uow import get_unit_of_work
 from app.domains.audit.repositories.audit_read_repository import AuditReadRepository
 from app.domains.auth.repositories.session_repository import SessionRepository
+from app.domains.control_panel.repositories.control_panel_read_repository import (
+    ControlPanelReadRepository,
+)
 from app.domains.customer.repositories.customer_repository import CustomerRepository
 from app.domains.device.repositories.device_repository import DeviceRepository
 from app.domains.diagnostic.repositories.diagnostic_repository import (
@@ -236,6 +243,15 @@ def get_order_service(
         audit_repository,
         event_dispatcher,
     )
+
+
+def get_control_panel_overview_service(
+    repository: ControlPanelReadRepository = Depends(
+        get_control_panel_read_repository,
+    ),
+) -> ControlPanelOverviewService:
+    """Provide the consolidated control-panel overview query service."""
+    return ControlPanelOverviewService(repository)
 
 
 def get_audit_read_service(
