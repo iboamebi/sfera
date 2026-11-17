@@ -5,6 +5,9 @@ from sqlalchemy.orm import Session
 
 from app.core.dependencies.database import get_session
 from app.domains.audit.repositories.audit_read_repository import AuditReadRepository
+from app.domains.control_panel.repositories.control_panel_read_repository import (
+    ControlPanelReadRepository,
+)
 from app.domains.auth.repositories.session_repository import SessionRepository
 from app.domains.customer.repositories.customer_repository import (
     CustomerRepository,
@@ -59,6 +62,9 @@ from app.domains.warehouse.repositories.warehouse_stock_repository import (
 from app.domains.workflow.repositories.workflow_repository import (
     WorkflowInstanceRepository,
     WorkflowRepository,
+)
+from app.infrastructure.control_panel.control_panel_read_repository import (
+    ControlPanelReadRepositorySQLAlchemy,
 )
 from app.infrastructure.audit.audit_operation_repository import (
     AuditOperationRepositorySQLAlchemy,
@@ -134,6 +140,13 @@ from app.shared.audit.repositories.audit_repository import AuditRepository
 from app.shared.integration.repositories.integration_log_repository import (
     IntegrationLogRepository,
 )
+
+
+def get_control_panel_read_repository(
+    session: Session = Depends(get_session),
+) -> ControlPanelReadRepository:
+    """Provide the consolidated control-panel read repository."""
+    return ControlPanelReadRepositorySQLAlchemy(session)
 
 
 def get_audit_read_repository(
