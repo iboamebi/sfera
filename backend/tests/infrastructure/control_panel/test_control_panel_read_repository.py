@@ -27,20 +27,22 @@ def test_control_panel_repository_uses_grouped_queries_and_preserves_archive_sco
 
     assert [query.all.call_count for query in queries] == [1, 1, 1, 1, 1]
     assert [query.group_by.call_count for query in queries] == [1, 1, 1, 1, 1]
-    assert [query.filter.call_count for query in queries] == [1, 1, 2, 0, 0]
+    assert [query.filter.call_count for query in queries] == [1, 1, 1, 0, 0]
     assert [(item.key, item.count) for item in result.order_status_counts] == [
         ("NEW", 2),
         ("IN_WORK", 3),
     ]
-    assert [
-        (item.key, item.count) for item in result.verification_status_counts
-    ] == [("CREATED", 4), ("DECIDED", 5)]
-    assert [
-        (item.key, item.count) for item in result.verification_result_counts
-    ] == [("SUITABLE", 3)]
-    assert [
-        (item.archived, item.count) for item in result.customer_archive_counts
-    ] == [(False, 7), (True, 2)]
+    assert [(item.key, item.count) for item in result.verification_status_counts] == [
+        ("CREATED", 4),
+        ("DECIDED", 5),
+    ]
+    assert [(item.key, item.count) for item in result.verification_result_counts] == [
+        ("SUITABLE", 3)
+    ]
+    assert [(item.archived, item.count) for item in result.customer_archive_counts] == [
+        (False, 7),
+        (True, 2),
+    ]
     assert [(item.key, item.count) for item in result.instrument_status_counts] == [
         ("AVAILABLE", 8)
     ]
