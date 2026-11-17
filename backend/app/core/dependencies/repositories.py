@@ -79,11 +79,11 @@ from app.infrastructure.device.device_repository import (
 from app.infrastructure.diagnostic.diagnostic_repository import (
     DiagnosticRepositorySQLAlchemy,
 )
-from app.infrastructure.integration.integration_log_repository import (
-    IntegrationLogRepositorySQLAlchemy,
-)
 from app.infrastructure.instrument_type.instrument_type_repository import (
     InstrumentTypeRepositorySQLAlchemy,
+)
+from app.infrastructure.integration.integration_log_repository import (
+    IntegrationLogRepositorySQLAlchemy,
 )
 from app.infrastructure.material.material_repository import (
     MaterialRepositorySQLAlchemy,
