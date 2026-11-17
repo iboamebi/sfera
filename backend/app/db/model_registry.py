@@ -16,6 +16,7 @@ from app.models.document_template import DocumentTemplate
 from app.models.instrument import Instrument
 from app.models.instrument_label import InstrumentLabel
 from app.models.instrument_type import InstrumentType
+from app.models.integration_log import IntegrationLogModel
 from app.models.material import Material
 from app.models.methodology import Methodology
 from app.models.order import Order

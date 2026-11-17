@@ -245,7 +245,7 @@ ZeroTier относится к сетевому доступу и эксплуа
 | Arshin export service | OPEN |
 | Arshin XLSM generation | OPEN |
 | Arshin eligibility validation | OPEN |
-| Integration logs | OPEN |
+| Integration logs | IMPLEMENTED — persistence boundary and lifecycle contract |
 | Import pipeline | OPEN |
 | External integration API | OPEN |
 | `GET /health` | IMPLEMENTED |
@@ -288,7 +288,24 @@ ZeroTier относится к сетевому доступу и эксплуа
 
 ---
 
-## 10. Источники
+## 10. Реализационный этап 1 — Integration Log
+
+На ветке `feat/integration-log-foundation` реализована первая минимальная граница Step 34:
+
+- общий контракт `IntegrationLog`;
+- статусы `STARTED/SUCCESS/WARNING/ERROR/CANCELLED`;
+- контролируемые переходы из `STARTED` в конечный статус;
+- repository interface;
+- SQLAlchemy persistence;
+- JSONB request/response payloads;
+- Alembic migration `d1e7b4c9a2f1`;
+- repository/domain tests.
+
+Граница не добавляет HTTP API и не смешивает Integration Log с Audit Trail. Следующий этап — использовать этот контракт в Arshin application flow.
+
+---
+
+## 11. Источники
 
 - `docs/modules/arshin.md` — исторически сохранённый целевой контракт Arshin.
 - `backend/app/models/arshin_export.py` — фактическая текущая persistence-модель.
