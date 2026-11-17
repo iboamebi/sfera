@@ -11,6 +11,7 @@ interface AppShellProps {
 }
 
 const navigation = [
+  { label: "Обзор", path: "/" },
   { label: "Заказы", path: "/orders" },
   { label: "Поверки", path: "/verifications" },
   { label: "Клиенты", path: "/customers" },
