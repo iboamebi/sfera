@@ -1,4 +1,5 @@
 """SQLAlchemy aggregate read repository for the control panel."""
+
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
@@ -30,12 +31,14 @@ class ControlPanelReadRepositorySQLAlchemy(ControlPanelReadRepository):
         order_rows = (
             self._session.query(Order.status, func.count(Order.id))
             .filter(Order.archived.is_(False))
-            .group_by(Order.status).all()
+            .group_by(Order.status)
+            .all()
         )
         verification_status_rows = (
             self._session.query(Verification.status, func.count(Verification.id))
             .filter(Verification.archived.is_(False))
-            .group_by(Verification.status).all()
+            .group_by(Verification.status)
+            .all()
         )
         verification_result_rows = (
             self._session.query(Verification.result, func.count(Verification.id))
@@ -43,15 +46,18 @@ class ControlPanelReadRepositorySQLAlchemy(ControlPanelReadRepository):
                 Verification.archived.is_(False),
                 Verification.result.is_not(None),
             )
-            .group_by(Verification.result).all()
+            .group_by(Verification.result)
+            .all()
         )
         customer_rows = (
             self._session.query(Customer.archived, func.count(Customer.id))
-            .group_by(Customer.archived).all()
+            .group_by(Customer.archived)
+            .all()
         )
         instrument_rows = (
             self._session.query(Instrument.device_status, func.count(Instrument.id))
-            .group_by(Instrument.device_status).all()
+            .group_by(Instrument.device_status)
+            .all()
         )
 
         return ControlPanelOverviewReadData(
