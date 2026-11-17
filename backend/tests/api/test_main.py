@@ -61,3 +61,10 @@ def test_authentication_and_health_routes_are_not_gated() -> None:
             dependency.call is not require_password_change_completed
             for dependency in route.dependant.dependencies
         ), route.path
+
+
+def test_control_panel_overview_route_is_registered() -> None:
+    assert any(
+        isinstance(route, APIRoute) and route.path == "/control-panel/overview"
+        for route in app.routes
+    )
