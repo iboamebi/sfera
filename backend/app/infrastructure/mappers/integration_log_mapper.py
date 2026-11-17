@@ -2,7 +2,8 @@
 
 from app.infrastructure.mappers.base_mapper import BaseMapper
 from app.models.integration_log import IntegrationLogModel, IntegrationLogStatus
-from app.shared.integration.models import IntegrationLog, IntegrationLogStatus as DomainStatus
+from app.shared.integration.models import IntegrationLog
+from app.shared.integration.models import IntegrationLogStatus as DomainStatus
 
 
 class IntegrationLogMapper(
