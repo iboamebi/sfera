@@ -1,4 +1,5 @@
 """Application query service for the consolidated control-panel overview."""
+
 from app.domains.control_panel.repositories.control_panel_read_repository import (
     ControlPanelReadRepository,
 )
@@ -48,7 +49,8 @@ class ControlPanelOverviewService:
         return ControlPanelOverviewRead(
             orders=EntityStatusCountsRead(
                 active_count=sum(
-                    count for key, count in order_counts.items()
+                    count
+                    for key, count in order_counts.items()
                     if key in active_order_statuses
                 ),
                 total_count=sum(order_counts.values()),
@@ -59,7 +61,8 @@ class ControlPanelOverviewService:
             ),
             verifications=VerificationResultCountsRead(
                 active_count=sum(
-                    count for key, count in verification_counts.items()
+                    count
+                    for key, count in verification_counts.items()
                     if key in active_verification_statuses
                 ),
                 total_count=sum(verification_counts.values()),
