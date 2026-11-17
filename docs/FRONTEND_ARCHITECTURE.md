@@ -518,7 +518,7 @@ npm run typecheck — passed
 npm run build     — passed
 ```
 
-Vite сообщает warning о bundle chunk > 500 kB. Это не является ошибкой сборки.
+Маршруты страниц загружаются лениво через `React.lazy` и `Suspense`, чтобы начальная загрузка не включала код всех рабочих разделов. Размер production chunks проверяется локальной сборкой; превышение 500 kB не скрывается настройкой порога.
 
 ---
 
@@ -607,3 +607,19 @@ VerificationsPage
 The page provides client-side search and status/result filters and links each verification to its detail page. The backend read contract supplies Order, Customer and Instrument context so the page does not reconstruct that context through implicit Order collection lookups.
 
 The existing /verifications/:verificationId detail route remains the lifecycle/detail surface.
+
+## 18. Route-level code splitting
+
+Все страницы, подключённые в `frontend/src/app/router.tsx`, загружаются через динамические `import()` и `React.lazy`. Для ожидания загрузки используется общий `Suspense` fallback.
+
+Это разделяет загрузку по маршрутам: пользователь получает код открытого раздела, а код остальных страниц загружается при переходе к ним. Общие зависимости могут оставаться в общих chunks.
+
+При изменении маршрутов необходимо сохранять lazy loading и проверять фактический размер production chunks командами:
+
+```bash
+npm run typecheck
+npm run build
+```
+
+Не следует устранять предупреждение Vite простым увеличением `chunkSizeWarningLimit`: нужно исправлять причину чрезмерно крупного chunk.
+
