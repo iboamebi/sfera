@@ -1,4 +1,5 @@
 """Read-only repository contract for the control-panel overview."""
+
 from abc import ABC, abstractmethod
 
 from app.domains.control_panel.read_models.control_panel_overview_read_model import (
