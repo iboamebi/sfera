@@ -13,6 +13,8 @@ const CreateSiteDirectoryPage = lazy(() => import("../pages/sites/CreateSiteDire
 const CustomerPage = lazy(() => import("../pages/customers/CustomerPage").then((module) => ({ default: module.CustomerPage })));
 const CreateCustomerPage = lazy(() => import("../pages/customers/CreateCustomerPage").then((module) => ({ default: module.CreateCustomerPage })));
 const CreateSitePage = lazy(() => import("../pages/customers/CreateSitePage").then((module) => ({ default: module.CreateSitePage })));
+const CreateCustomerDevicePage = lazy(() => import("../pages/customers/CreateDevicePage").then((module) => ({ default: module.CreateDevicePage })));
+const CreateStandaloneDevicePage = lazy(() => import("../pages/devices/CreateDevicePage").then((module) => ({ default: module.CreateDevicePage })));
 const MaterialsPage = lazy(() => import("../pages/materials/MaterialsPage").then((module) => ({ default: module.MaterialsPage })));
 const MaterialPage = lazy(() => import("../pages/materials/MaterialPage").then((module) => ({ default: module.MaterialPage })));
 const OrganizationsPage = lazy(() => import("../pages/organizations/OrganizationsPage").then((module) => ({ default: module.OrganizationsPage })));
@@ -43,165 +45,37 @@ function renderPage(page: ReactNode) {
   );
 }
 
-
-
-
-
-
-
-
-
-import { CreateDevicePage as CreateCustomerDevicePage } from "../pages/customers/CreateDevicePage";
-import { CreateDevicePage as CreateStandaloneDevicePage } from "../pages/devices/CreateDevicePage";
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 export const router = createBrowserRouter([
-  {
-    path: "/login",
-    element: renderPage(<LoginPage />,
-  },
-  {
-    path: "/change-password",
-    element: <RequireAuth><ChangePasswordPage /></RequireAuth>),
-  },
-  {
-    path: "/",
-    element: renderPage(<RequireAuth><DashboardPage /></RequireAuth>),
-  },
-  {
-    path: "/orders",
-    element: renderPage(<RequireAuth><OrdersPage /></RequireAuth>),
-  },
-  {
-    path: "/orders/new",
-    element: renderPage(<RequireAuth><CreateOrderPage /></RequireAuth>),
-  },
-  {
-    path: "/orders/:orderId",
-    element: renderPage(<RequireAuth><OrderPage /></RequireAuth>),
-  },
-  {
-    path: "/customers",
-    element: renderPage(<RequireAuth><CustomersPage /></RequireAuth>),
-  },
-  {
-    path: "/sites",
-    element: renderPage(<RequireAuth><SitesPage /></RequireAuth>),
-  },
-  {
-    path: "/sites/new",
-    element: renderPage(<RequireAuth><CreateSiteDirectoryPage /></RequireAuth>),
-  },
-  {
-    path: "/sites/:siteId",
-    element: renderPage(<RequireAuth><SitePage /></RequireAuth>),
-  },
-  {
-    path: "/customers/new",
-    element: renderPage(<RequireAuth><CreateCustomerPage /></RequireAuth>),
-  },
-  {
-    path: "/customers/:customerId",
-    element: renderPage(<RequireAuth><CustomerPage /></RequireAuth>),
-  },
-  {
-    path: "/customers/:customerId/sites/new",
-    element: renderPage(<RequireAuth><CreateSitePage /></RequireAuth>),
-  },
-  {
-    path: "/customers/:customerId/devices/new",
-    element: renderPage(<RequireAuth><CreateCustomerDevicePage /></RequireAuth>),
-  },
-  {
-    path: "/organizations",
-    element: renderPage(<RequireAuth><OrganizationsPage /></RequireAuth>),
-  },
-  {
-    path: "/organizations/new",
-    element: renderPage(<RequireAuth><CreateOrganizationPage /></RequireAuth>),
-  },
-  {
-    path: "/organizations/:organizationId",
-    element: renderPage(<RequireAuth><OrganizationPage /></RequireAuth>),
-  },
-  {
-    path: "/materials",
-    element: renderPage(<RequireAuth><MaterialsPage /></RequireAuth>),
-  },
-  {
-    path: "/materials/:materialId",
-    element: renderPage(<RequireAuth><MaterialPage /></RequireAuth>),
-  },
-  {
-    path: "/verifications",
-    element: renderPage(<RequireAuth><VerificationsPage /></RequireAuth>),
-  },
-  {
-    path: "/verifications/:verificationId",
-    element: renderPage(<RequireAuth><VerificationPage /></RequireAuth>),
-  },
-  {
-    path: "/diagnostics/:diagnosticId",
-    element: renderPage(<RequireAuth><DiagnosticPage /></RequireAuth>),
-  },
-  {
-    path: "/repairs/:repairId",
-    element: renderPage(<RequireAuth><RepairPage /></RequireAuth>),
-  },
-  {
-    path: "/price-lists/:priceListId",
-    element: renderPage(<RequireAuth><PriceListPage /></RequireAuth>),
-  },
-  {
-    path: "/devices/new",
-    element: renderPage(<RequireAuth><CreateStandaloneDevicePage /></RequireAuth>),
-  },
-  {
-    path: "/devices",
-    element: renderPage(<RequireAuth><DevicesPage /></RequireAuth>),
-  },
-  {
-    path: "/devices/:deviceId",
-    element: renderPage(<RequireAuth><DevicePage /></RequireAuth>),
-  },
-  {
-    path: "/instrument-types",
-    element: renderPage(<RequireAuth><InstrumentTypesPage /></RequireAuth>),
-  },
-  {
-    path: "/instrument-types/:instrumentTypeId",
-    element: renderPage(<RequireAuth><InstrumentTypePage /></RequireAuth>),
-  },
-  {
-    path: "/warehouses/:warehouseId/stocks",
-    element: renderPage(<RequireAuth><WarehouseStockPage /></RequireAuth>),
-  },
-  {
-    path: "/users",
-    element: renderPage(<RequireAuth adminOnly><UsersPage /></RequireAuth>),
-  },
-  {
-    path: "/audit",
-    element: renderPage(<RequireAuth adminOnly><AuditPage /></RequireAuth>),
-  },
+  { path: "/login", element: renderPage(<LoginPage />) },
+  { path: "/change-password", element: renderPage(<RequireAuth><ChangePasswordPage /></RequireAuth>) },
+  { path: "/", element: renderPage(<RequireAuth><DashboardPage /></RequireAuth>) },
+  { path: "/orders", element: renderPage(<RequireAuth><OrdersPage /></RequireAuth>) },
+  { path: "/orders/new", element: renderPage(<RequireAuth><CreateOrderPage /></RequireAuth>) },
+  { path: "/orders/:orderId", element: renderPage(<RequireAuth><OrderPage /></RequireAuth>) },
+  { path: "/customers", element: renderPage(<RequireAuth><CustomersPage /></RequireAuth>) },
+  { path: "/sites", element: renderPage(<RequireAuth><SitesPage /></RequireAuth>) },
+  { path: "/sites/new", element: renderPage(<RequireAuth><CreateSiteDirectoryPage /></RequireAuth>) },
+  { path: "/sites/:siteId", element: renderPage(<RequireAuth><SitePage /></RequireAuth>) },
+  { path: "/customers/new", element: renderPage(<RequireAuth><CreateCustomerPage /></RequireAuth>) },
+  { path: "/customers/:customerId", element: renderPage(<RequireAuth><CustomerPage /></RequireAuth>) },
+  { path: "/customers/:customerId/sites/new", element: renderPage(<RequireAuth><CreateSitePage /></RequireAuth>) },
+  { path: "/customers/:customerId/devices/new", element: renderPage(<RequireAuth><CreateCustomerDevicePage /></RequireAuth>) },
+  { path: "/organizations", element: renderPage(<RequireAuth><OrganizationsPage /></RequireAuth>) },
+  { path: "/organizations/new", element: renderPage(<RequireAuth><CreateOrganizationPage /></RequireAuth>) },
+  { path: "/organizations/:organizationId", element: renderPage(<RequireAuth><OrganizationPage /></RequireAuth>) },
+  { path: "/materials", element: renderPage(<RequireAuth><MaterialsPage /></RequireAuth>) },
+  { path: "/materials/:materialId", element: renderPage(<RequireAuth><MaterialPage /></RequireAuth>) },
+  { path: "/verifications", element: renderPage(<RequireAuth><VerificationsPage /></RequireAuth>) },
+  { path: "/verifications/:verificationId", element: renderPage(<RequireAuth><VerificationPage /></RequireAuth>) },
+  { path: "/diagnostics/:diagnosticId", element: renderPage(<RequireAuth><DiagnosticPage /></RequireAuth>) },
+  { path: "/repairs/:repairId", element: renderPage(<RequireAuth><RepairPage /></RequireAuth>) },
+  { path: "/price-lists/:priceListId", element: renderPage(<RequireAuth><PriceListPage /></RequireAuth>) },
+  { path: "/devices/new", element: renderPage(<RequireAuth><CreateStandaloneDevicePage /></RequireAuth>) },
+  { path: "/devices", element: renderPage(<RequireAuth><DevicesPage /></RequireAuth>) },
+  { path: "/devices/:deviceId", element: renderPage(<RequireAuth><DevicePage /></RequireAuth>) },
+  { path: "/instrument-types", element: renderPage(<RequireAuth><InstrumentTypesPage /></RequireAuth>) },
+  { path: "/instrument-types/:instrumentTypeId", element: renderPage(<RequireAuth><InstrumentTypePage /></RequireAuth>) },
+  { path: "/warehouses/:warehouseId/stocks", element: renderPage(<RequireAuth><WarehouseStockPage /></RequireAuth>) },
+  { path: "/users", element: renderPage(<RequireAuth adminOnly><UsersPage /></RequireAuth>) },
+  { path: "/audit", element: renderPage(<RequireAuth adminOnly><AuditPage /></RequireAuth>) },
 ]);
