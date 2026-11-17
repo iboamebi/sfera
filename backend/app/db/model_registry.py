@@ -1,7 +1,3 @@
-"""
-Import all models for SQLAlchemy metadata discovery.
-"""
-
 # ruff: noqa: F401
 
 from app.models.arshin_export import ArshinExport
@@ -14,9 +10,9 @@ from app.models.diagnostic import Diagnostic
 from app.models.document import Document
 from app.models.document_template import DocumentTemplate
 from app.models.instrument import Instrument
-from app.models.integration_log import IntegrationLogModel
 from app.models.instrument_label import InstrumentLabel
 from app.models.instrument_type import InstrumentType
+from app.models.integration_log import IntegrationLogModel
 from app.models.material import Material
 from app.models.methodology import Methodology
 from app.models.order import Order
