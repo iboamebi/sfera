@@ -5,10 +5,10 @@ from sqlalchemy.orm import Session
 
 from app.core.dependencies.database import get_session
 from app.domains.audit.repositories.audit_read_repository import AuditReadRepository
+from app.domains.auth.repositories.session_repository import SessionRepository
 from app.domains.control_panel.repositories.control_panel_read_repository import (
     ControlPanelReadRepository,
 )
-from app.domains.auth.repositories.session_repository import SessionRepository
 from app.domains.customer.repositories.customer_repository import (
     CustomerRepository,
 )
@@ -63,9 +63,6 @@ from app.domains.workflow.repositories.workflow_repository import (
     WorkflowInstanceRepository,
     WorkflowRepository,
 )
-from app.infrastructure.control_panel.control_panel_read_repository import (
-    ControlPanelReadRepositorySQLAlchemy,
-)
 from app.infrastructure.audit.audit_operation_repository import (
     AuditOperationRepositorySQLAlchemy,
 )
@@ -75,6 +72,9 @@ from app.infrastructure.audit.audit_read_repository import (
 from app.infrastructure.audit.audit_repository import AuditRepositorySQLAlchemy
 from app.infrastructure.auth.session_repository import (
     SessionRepositorySQLAlchemy,
+)
+from app.infrastructure.control_panel.control_panel_read_repository import (
+    ControlPanelReadRepositorySQLAlchemy,
 )
 from app.infrastructure.customer.customer_repository import (
     CustomerRepositorySQLAlchemy,
