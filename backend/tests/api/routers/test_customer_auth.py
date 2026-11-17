@@ -71,9 +71,7 @@ def test_update_customer_passes_authenticated_user_to_application_service() -> N
 
     result = update_customer(
         customer_id=customer_id,
-        data=CustomerUpdate(
-            name="Updated Customer",
-        ),
+        data=CustomerUpdate(name="Updated Customer"),
         user=user,
         service=service,
     )
