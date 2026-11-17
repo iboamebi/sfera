@@ -20,6 +20,12 @@ class VerificationResultCountsRead(EntityStatusCountsRead):
     by_result: list[KeyCountRead]
 
 
+class InstrumentOverviewRead(BaseModel):
+    """Instrument count and current status distribution."""
+    total_count: int
+    by_status: list[KeyCountRead]
+
+
 class CustomerOverviewRead(BaseModel):
     """Customer counts split by archive state."""
     active_count: int
@@ -31,4 +37,4 @@ class ControlPanelOverviewRead(BaseModel):
     orders: EntityStatusCountsRead
     verifications: VerificationResultCountsRead
     customers: CustomerOverviewRead
-    instruments: EntityStatusCountsRead
+    instruments: InstrumentOverviewRead
