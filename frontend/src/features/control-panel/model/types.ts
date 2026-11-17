@@ -10,9 +10,14 @@ export type VerificationCounts = EntityStatusCounts & {
   by_result: KeyCount[];
 };
 
+export type InstrumentCounts = {
+  total_count: number;
+  by_status: KeyCount[];
+};
+
 export type ControlPanelOverview = {
   orders: EntityStatusCounts;
   verifications: VerificationCounts;
   customers: { active_count: number; archived_count: number };
-  instruments: EntityStatusCounts;
+  instruments: InstrumentCounts;
 };
