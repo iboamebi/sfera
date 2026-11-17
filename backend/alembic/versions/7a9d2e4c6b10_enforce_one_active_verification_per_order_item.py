@@ -5,8 +5,9 @@ Revises: c2e5f7a9b310
 Create Date: 2026-11-14
 """
 
-from alembic import op
 from sqlalchemy import text
+
+from alembic import op
 
 revision = "7a9d2e4c6b10"
 down_revision = "c2e5f7a9b310"
@@ -28,7 +29,8 @@ def upgrade() -> None:
                 HAVING COUNT(*) > 1
             ) THEN
                 RAISE EXCEPTION
-                    'Cannot enforce one active verification per order item: duplicates exist';
+                    'Cannot enforce one active verification per order item: '
+                    'duplicates exist';
             END IF;
         END
         $$;

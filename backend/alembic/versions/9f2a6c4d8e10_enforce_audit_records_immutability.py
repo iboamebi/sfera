@@ -44,7 +44,5 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     """Remove audit record immutability enforcement."""
-    op.execute(
-        "DROP TRIGGER IF EXISTS trg_audit_records_immutable ON audit_records"
-    )
+    op.execute("DROP TRIGGER IF EXISTS trg_audit_records_immutable ON audit_records")
     op.execute("DROP FUNCTION IF EXISTS prevent_audit_records_mutation()")

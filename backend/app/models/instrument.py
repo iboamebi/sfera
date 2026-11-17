@@ -11,7 +11,6 @@ class Instrument(BaseModel):
 
     __tablename__ = "instruments"
 
-
     __table_args__ = (
         ForeignKeyConstraint(
             ["site_id", "customer_id"],
