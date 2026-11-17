@@ -32,7 +32,7 @@ export function RequireAuth({ children, adminOnly = false }: RequireAuthProps) {
   }
 
   if (adminOnly && user.role !== "admin") {
-    return <Navigate to="/orders" replace />;
+    return <Navigate to="/" replace />;
   }
 
   if (location.pathname === PASSWORD_CHANGE_PATH) {
