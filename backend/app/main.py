@@ -5,6 +5,7 @@ from fastapi.responses import JSONResponse
 from app.api.dependencies.auth import require_password_change_completed
 from app.api.routers import instrument_type, organization, site
 from app.api.routers.audit import router as audit_router
+from app.api.routers.control_panel import router as control_panel_router
 from app.api.routers.auth import router as auth_router
 from app.api.routers.customer import router as customer_router
 from app.api.routers.device import router as device_router
@@ -67,6 +68,10 @@ app.add_middleware(
 )
 
 app.include_router(auth_router)
+app.include_router(
+    control_panel_router,
+    dependencies=[Depends(require_password_change_completed)],
+)
 app.include_router(
     audit_router,
     dependencies=[Depends(require_password_change_completed)],
