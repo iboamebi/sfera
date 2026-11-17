@@ -1,3 +1,5 @@
+import type { ReactNode } from "react";
+
 import {
   Alert,
   Box,
@@ -71,7 +73,7 @@ function MetricCard({
   value: string | number;
   description: string;
   href: string;
-  children?: React.ReactNode;
+  children?: ReactNode;
 }) {
   return (
     <Card variant="outlined">
