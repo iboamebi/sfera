@@ -37,10 +37,7 @@ def upgrade() -> None:
     """Remove all existing business/master data except legal entities and RBAC."""
     bind = op.get_bind()
     alex_count = bind.execute(
-        sa.text(
-            "SELECT count(*) FROM users "
-            "WHERE username = 'alex' AND role = 'admin'"
-        )
+        sa.text("SELECT count(*) FROM users WHERE username = 'alex' AND role = 'admin'")
     ).scalar_one()
 
     if alex_count != 1:
