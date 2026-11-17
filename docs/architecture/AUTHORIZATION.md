@@ -242,3 +242,14 @@ Not yet introduced:
 - authorization rules for `Device`, `InstrumentType`, `PriceList` or `Workflow` without an explicit business requirement.
 
 Authorization will continue to be introduced incrementally from concrete application use cases.
+
+
+## Future Direction: Operation-Level Permissions
+
+The current authorization model uses a small set of persisted user roles and authorization checks for concrete Application use cases. It does not currently provide a general administrator-configurable permission matrix for every operation.
+
+The future direction is to allow administrators to assign permissions to specific operations independently of job-title labels or UI locations. A user may receive access to different combinations of interfaces and operations. The exact permission model, assignment targets (users, groups, or both), data scopes, and administration UI remain open design questions.
+
+Feature requirements must not hard-code provisional business examples such as "operator" and "manager" as permanent authorization boundaries. Until a more granular model is explicitly designed and implemented, each new use case must follow the current authorization contract and its server-side Application checks. Frontend visibility alone is never an authorization boundary.
+
+The Arshin module requirements provide a concrete example of this future direction; see `docs/modules/arshin.md`.
