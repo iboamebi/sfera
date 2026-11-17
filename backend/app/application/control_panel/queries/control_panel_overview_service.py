@@ -12,6 +12,7 @@ from app.schemas.control_panel import (
     ControlPanelOverviewRead,
     CustomerOverviewRead,
     EntityStatusCountsRead,
+    InstrumentOverviewRead,
     KeyCountRead,
     VerificationResultCountsRead,
 )
@@ -75,8 +76,7 @@ class ControlPanelOverviewService:
                 active_count=customer_counts.get(False, 0),
                 archived_count=customer_counts.get(True, 0),
             ),
-            instruments=EntityStatusCountsRead(
-                active_count=sum(instrument_counts.values()),
+            instruments=InstrumentOverviewRead(
                 total_count=sum(instrument_counts.values()),
                 by_status=[
                     KeyCountRead(key=item.key, count=item.count)
