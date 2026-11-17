@@ -12,17 +12,7 @@ import {
 } from "@mui/material";
 import { Link } from "react-router";
 
-import { useCustomers } from "../../features/customers/model/useCustomers";
-import { useDevices } from "../../features/devices/model/useDevices";
-import { useOrders } from "../../features/orders/model/useOrders";
-import { useVerifications } from "../../features/verifications/model/useVerifications";
-
-const ORDER_ACTIVE_STATUSES = new Set([
-  "NEW",
-  "REGISTERED",
-  "IN_WORK",
-  "WAITING",
-]);
+import { useControlPanelOverview } from "../../features/control-panel/model/useControlPanelOverview";
 
 const ORDER_STATUS_LABELS: Record<string, string> = {
   NEW: "Новые",
@@ -35,32 +25,20 @@ const ORDER_STATUS_LABELS: Record<string, string> = {
   CANCELLED: "Отменены",
 };
 
-const VERIFICATION_STATUS_LABELS = {
+const VERIFICATION_STATUS_LABELS: Record<string, string> = {
   CREATED: "Созданы",
   IN_PROGRESS: "В работе",
   DECIDED: "Решение принято",
   CANCELLED: "Отменены",
-} as const;
+};
 
-const DEVICE_STATUS_LABELS = {
+const DEVICE_STATUS_LABELS: Record<string, string> = {
   AVAILABLE: "Доступны",
   IN_WORK: "В работе",
   WAITING: "Ожидают",
   COMPLETED: "Завершены",
   BLOCKED: "Заблокированы",
-} as const;
-
-function countBy<T extends string>(
-  values: T[],
-): Array<{ status: T; count: number }> {
-  const counts = new Map<T, number>();
-
-  for (const value of values) {
-    counts.set(value, (counts.get(value) ?? 0) + 1);
-  }
-
-  return Array.from(counts, ([status, count]) => ({ status, count }));
-}
+};
 
 function MetricCard({
   title,
@@ -97,58 +75,29 @@ function MetricCard({
 }
 
 export function DashboardPage() {
-  const ordersQuery = useOrders();
-  const verificationsQuery = useVerifications();
-  const customersQuery = useCustomers();
-  const devicesQuery = useDevices();
+  const overviewQuery = useControlPanelOverview();
 
-  const orders = (ordersQuery.data ?? []).filter((order) => !order.archived);
-  const verifications = (verificationsQuery.data ?? []).filter(
-    (verification) => !verification.archived,
-  );
-  const customers = customersQuery.data ?? [];
-  const devices = devicesQuery.data ?? [];
-
-  const orderCounts = countBy(orders.map((order) => order.status));
-  const verificationCounts = countBy(
-    verifications.map((verification) => verification.status),
-  );
-  const deviceCounts = countBy(devices.map((device) => device.status));
-
-  const activeOrders = orders.filter((order) =>
-    ORDER_ACTIVE_STATUSES.has(order.status),
-  ).length;
-  const activeVerifications = verifications.filter(
-    (verification) =>
-      verification.status === "CREATED" ||
-      verification.status === "IN_PROGRESS",
-  ).length;
-  const activeCustomers = customers.filter((customer) => !customer.archived).length;
-  const archivedCustomers = customers.length - activeCustomers;
-
-  const queries = [
-    ordersQuery,
-    verificationsQuery,
-    customersQuery,
-    devicesQuery,
-  ];
-  const hasError = queries.some((query) => query.isError);
-  const isLoading = queries.some((query) => query.isPending);
-
-  if (isLoading) {
+  if (overviewQuery.isPending) {
     return <Typography>Загрузка сводных данных...</Typography>;
   }
+
+  if (overviewQuery.isError || !overviewQuery.data) {
+    return (
+      <Stack spacing={2}>
+        <Typography variant="h4">Контрольная панель</Typography>
+        <Alert severity="warning">
+          Не удалось получить сводные данные. Проверьте доступность backend и повторите
+          загрузку страницы.
+        </Alert>
+      </Stack>
+    );
+  }
+
+  const overview = overviewQuery.data;
 
   return (
     <Stack spacing={3}>
       <Typography variant="h4">Контрольная панель</Typography>
-
-      {hasError && (
-        <Alert severity="warning">
-          Не все источники данных доступны. Показатели ниже могут быть неполными.
-          Проверьте соответствующие рабочие разделы.
-        </Alert>
-      )}
 
       <Box>
         <Typography variant="h5" sx={{ mb: 2 }}>
@@ -165,95 +114,71 @@ export function DashboardPage() {
             gap: 2,
           }}
         >
-          {!ordersQuery.isError && (
-            <MetricCard
-              title="Заказы"
-              value={activeOrders}
-              description={`Активные из ${orders.length} неархивных заказов`}
-              href="/orders"
-            >
-              <Divider />
-              <Stack spacing={0.5}>
-                {orderCounts.map(({ status, count }) => (
-                  <Stack key={status} direction="row" sx={{ justifyContent: "space-between" }}>
-                    <Typography variant="body2">
-                      {ORDER_STATUS_LABELS[status] ?? status}
-                    </Typography>
-                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                      {count}
-                    </Typography>
-                  </Stack>
-                ))}
-              </Stack>
-            </MetricCard>
-          )}
-
-          {!verificationsQuery.isError && (
-            <MetricCard
-              title="Поверки"
-              value={activeVerifications}
-              description={`Созданы или выполняются; всего ${verifications.length} неархивных`}
-              href="/verifications"
-            >
-              <Divider />
-              <Stack spacing={0.5}>
-                {verificationCounts.map(({ status, count }) => (
-                  <Stack key={status} direction="row" sx={{ justifyContent: "space-between" }}>
-                    <Typography variant="body2">
-                      {VERIFICATION_STATUS_LABELS[status]}
-                    </Typography>
-                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                      {count}
-                    </Typography>
-                  </Stack>
-                ))}
-                <Stack direction="row" sx={{ justifyContent: "space-between" }}>
-                  <Typography variant="body2">Пригодно</Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                    {verifications.filter((item) => item.result === "SUITABLE").length}
-                  </Typography>
+          <MetricCard
+            title="Заказы"
+            value={overview.orders.active_count}
+            description={`Активные из ${overview.orders.total_count} неархивных заказов`}
+            href="/orders"
+          >
+            <Divider />
+            <Stack spacing={0.5}>
+              {overview.orders.by_status.map(({ key, count }) => (
+                <Stack key={key} direction="row" sx={{ justifyContent: "space-between" }}>
+                  <Typography variant="body2">{ORDER_STATUS_LABELS[key] ?? key}</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}>{count}</Typography>
                 </Stack>
-                <Stack direction="row" sx={{ justifyContent: "space-between" }}>
-                  <Typography variant="body2">Непригодно</Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                    {verifications.filter((item) => item.result === "UNSUITABLE").length}
-                  </Typography>
+              ))}
+            </Stack>
+          </MetricCard>
+
+          <MetricCard
+            title="Поверки"
+            value={overview.verifications.active_count}
+            description={`Созданы или выполняются; всего ${overview.verifications.total_count} неархивных`}
+            href="/verifications"
+          >
+            <Divider />
+            <Stack spacing={0.5}>
+              {overview.verifications.by_status.map(({ key, count }) => (
+                <Stack key={key} direction="row" sx={{ justifyContent: "space-between" }}>
+                  <Typography variant="body2">{VERIFICATION_STATUS_LABELS[key] ?? key}</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}>{count}</Typography>
                 </Stack>
-              </Stack>
-            </MetricCard>
-          )}
+              ))}
+              {overview.verifications.by_result.map(({ key, count }) => (
+                <Stack key={key} direction="row" sx={{ justifyContent: "space-between" }}>
+                  <Typography variant="body2">
+                    {key === "SUITABLE" ? "Пригодно" : key === "UNSUITABLE" ? "Непригодно" : key}
+                  </Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}>{count}</Typography>
+                </Stack>
+              ))}
+            </Stack>
+          </MetricCard>
 
-          {!customersQuery.isError && (
-            <MetricCard
-              title="Клиенты"
-              value={activeCustomers}
-              description={`Действующие; в архиве: ${archivedCustomers}`}
-              href="/customers"
-            />
-          )}
+          <MetricCard
+            title="Клиенты"
+            value={overview.customers.active_count}
+            description={`Действующие; в архиве: ${overview.customers.archived_count}`}
+            href="/customers"
+          />
 
-          {!devicesQuery.isError && (
-            <MetricCard
-              title="Средства измерений"
-              value={devices.length}
-              description="Всего учтено в справочнике СИ"
-              href="/devices"
-            >
-              <Divider />
-              <Stack spacing={0.5}>
-                {deviceCounts.map(({ status, count }) => (
-                  <Stack key={status} direction="row" sx={{ justifyContent: "space-between" }}>
-                    <Typography variant="body2">
-                      {DEVICE_STATUS_LABELS[status] ?? status}
-                    </Typography>
-                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                      {count}
-                    </Typography>
-                  </Stack>
-                ))}
-              </Stack>
-            </MetricCard>
-          )}
+          <MetricCard
+            title="Средства измерений"
+            value={overview.instruments.total_count}
+            description="Всего учтено в справочнике СИ"
+            href="/devices"
+          >
+            <Divider />
+            <Stack spacing={0.5}>
+              {overview.instruments.by_status.map(({ key, count }) => (
+                <Stack key={key} direction="row" sx={{ justifyContent: "space-between" }}>
+                  <Typography variant="body2">{DEVICE_STATUS_LABELS[key] ?? key}</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}>{count}</Typography>
+                </Stack>
+              ))}
+            </Stack>
+          </MetricCard>
         </Box>
       </Box>
 
