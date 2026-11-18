@@ -116,9 +116,7 @@ def test_issue_reduces_stock_and_records_movement() -> None:
     stocks.save(stock)
 
     service.create_movement(
-        CreateMovementCommand(
-            warehouse_id, material_id, MovementType.ISSUE, 4
-        ),
+        CreateMovementCommand(warehouse_id, material_id, MovementType.ISSUE, 4),
         make_user(),
     )
 
@@ -141,9 +139,7 @@ def test_issue_cannot_reduce_stock_below_reserved_quantity() -> None:
 
     with pytest.raises(InsufficientWarehouseStockDomainError):
         service.create_movement(
-            CreateMovementCommand(
-                warehouse_id, material_id, MovementType.ISSUE, 4
-            ),
+            CreateMovementCommand(warehouse_id, material_id, MovementType.ISSUE, 4),
             make_user(),
         )
 
@@ -156,9 +152,7 @@ def test_adjustment_is_rejected_until_its_direction_is_defined() -> None:
 
     with pytest.raises(UnsupportedWarehouseMovementApplicationError):
         service.create_movement(
-            CreateMovementCommand(
-                uuid4(), uuid4(), MovementType.ADJUSTMENT, 1
-            ),
+            CreateMovementCommand(uuid4(), uuid4(), MovementType.ADJUSTMENT, 1),
             make_user(),
         )
 
@@ -176,7 +170,6 @@ def test_stock_write_rejects_unauthorized_user() -> None:
 
     assert stocks.items == {}
     assert movements.items == []
-
 
 
 def test_reserve_and_release_update_balance_and_record_movements() -> None:
