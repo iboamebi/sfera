@@ -34,6 +34,7 @@ class FakeSessionTokenGenerator(SessionTokenGenerator):
     def generate(self) -> str:
         return "secure-session-token"
 
+
 def test_create_persists_session_with_expiration() -> None:
     now = datetime(2026, 8, 18, 20, 0, tzinfo=UTC)
     user_id = uuid4()
@@ -59,6 +60,7 @@ def test_create_persists_session_with_expiration() -> None:
     assert session.revoked is False
 
 
+
 def test_record_activity_updates_active_session() -> None:
     now = datetime(2026, 8, 18, 20, 0, tzinfo=UTC)
     repository = FakeSessionRepository()
@@ -78,6 +80,7 @@ def test_record_activity_updates_active_session() -> None:
     assert recorded is True
     assert session.last_activity_at == now + timedelta(minutes=5)
     assert session.expires_at == now + timedelta(hours=12)
+
 
 def test_record_activity_does_not_revive_idle_expired_session() -> None:
     now = datetime(2026, 8, 18, 20, 0, tzinfo=UTC)
