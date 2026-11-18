@@ -3,7 +3,6 @@ import type { ReactNode } from "react";
 import {
   Alert,
   Box,
-  Button,
   Card,
   CardContent,
   Divider,
@@ -60,14 +59,24 @@ function MetricCard({
           <Typography color="text.secondary" variant="subtitle2">
             {title}
           </Typography>
-          <Typography variant="h3">{value}</Typography>
+          <Typography
+            component={Link}
+            to={href}
+            variant="h3"
+            sx={{
+              alignSelf: "flex-start",
+              color: "inherit",
+              textDecoration: "none",
+              "&:hover": { textDecoration: "underline" },
+              "&:focus-visible": { textDecoration: "underline" },
+            }}
+          >
+            {value}
+          </Typography>
           <Typography color="text.secondary" variant="body2">
             {description}
           </Typography>
           {children}
-          <Button component={Link} to={href} size="small" sx={{ alignSelf: "flex-start" }}>
-            Открыть раздел
-          </Button>
         </Stack>
       </CardContent>
     </Card>
