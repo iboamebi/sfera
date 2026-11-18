@@ -1,5 +1,7 @@
 from datetime import UTC, datetime
 from unittest.mock import Mock
+
+import pytest
 from uuid import uuid4
 
 from app.domains.order.entities.order import Order
@@ -70,3 +72,16 @@ def test_commit_dispatches_order_registered_event():
 
     assert isinstance(dispatched_event, OrderRegistered)
     assert dispatched_event.order_id == order.id
+
+
+
+def test_context_manager_rolls_back_when_operation_fails():
+    session = Mock()
+    uow = SqlAlchemyUnitOfWork(session, Mock())
+
+    with pytest.raises(RuntimeError, match="operation failed"):
+        with uow:
+            raise RuntimeError("operation failed")
+
+    session.rollback.assert_called_once_with()
+    session.commit.assert_not_called()
