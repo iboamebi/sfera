@@ -49,8 +49,12 @@ export async function getWarehouseMovements(
         material_id: filters.materialId || undefined,
         order_id: filters.orderId || undefined,
         movement_type: filters.movementType || undefined,
-        date_from: filters.dateFrom || undefined,
-        date_to: filters.dateTo || undefined,
+        date_from: filters.dateFrom
+          ? `${filters.dateFrom}T00:00:00`
+          : undefined,
+        date_to: filters.dateTo
+          ? `${filters.dateTo}T23:59:59.999999`
+          : undefined,
         limit: filters.limit ?? 50,
         offset: filters.offset ?? 0,
       },
