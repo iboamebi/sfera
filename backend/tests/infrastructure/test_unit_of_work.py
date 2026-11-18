@@ -1,8 +1,9 @@
 from datetime import UTC, datetime
 from unittest.mock import Mock
 
-import pytest
 from uuid import uuid4
+
+import pytest
 
 from app.domains.order.entities.order import Order
 from app.domains.order.entities.order_item import OrderItem
@@ -72,7 +73,6 @@ def test_commit_dispatches_order_registered_event():
 
     assert isinstance(dispatched_event, OrderRegistered)
     assert dispatched_event.order_id == order.id
-
 
 
 def test_context_manager_rolls_back_when_operation_fails():
