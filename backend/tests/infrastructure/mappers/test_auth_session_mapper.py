@@ -32,4 +32,5 @@ def test_auth_session_mapper_round_trip() -> None:
     assert restored.user_id == user_id
     assert restored.session_id == session_id
     assert restored.expires_at == expires_at
+    assert restored.last_activity_at == entity.last_activity_at
     assert restored.revoked is False
