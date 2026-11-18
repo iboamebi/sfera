@@ -91,6 +91,13 @@ The session cookie is configured by the API layer according to the deployment se
 
 Authentication includes session invalidation on logout and session creation through the Application service.
 
+The authenticated session has two independent lifetime limits:
+
+- absolute session lifetime: `AUTH_SESSION_TTL_SECONDS` remains 12 hours;
+- inactivity timeout: 1 hour without user activity.
+
+Session activity is tracked as operational session state so it can later participate in the system monitoring/history layer. Individual requests must not be written to the audit trail merely to measure activity; the audit trail remains for significant authentication/session lifecycle events. When the inactivity timeout is exceeded, the session is no longer valid and the frontend must return the user to login so the identity is confirmed again. Activity must never extend the absolute 12-hour session lifetime.
+
 CSRF protection is required for state-changing cookie-authenticated requests and is implemented through the API security boundary.
 
 ---
