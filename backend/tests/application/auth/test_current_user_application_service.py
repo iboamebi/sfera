@@ -165,7 +165,6 @@ def test_get_rejects_archived_user() -> None:
         )
 
 
-
 def test_get_rejects_idle_expired_session() -> None:
     user = User(id=uuid4(), username="alice", password_hash="hash")
     session = Session(
