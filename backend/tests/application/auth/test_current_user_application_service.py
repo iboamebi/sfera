@@ -76,6 +76,7 @@ def test_get_returns_user_for_active_session() -> None:
         user_id=user.id,
         session_id="session-1",
         expires_at=datetime(2026, 8, 19, 20, tzinfo=UTC),
+        last_activity_at=datetime(2026, 8, 18, 20, tzinfo=UTC),
     )
     service = CurrentUserApplicationService(
         FakeSessionRepository(session),
