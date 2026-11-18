@@ -50,6 +50,7 @@ class FakeSessionService:
             user_id=command.user_id,
             session_id="session-token",
             expires_at=command.now + timedelta(hours=12),
+            last_activity_at=command.now,
         )
         return self.created
 
