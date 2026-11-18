@@ -70,6 +70,9 @@ from app.application.verification.services.verification_application_service impo
 from app.application.warehouse.queries.warehouse_stock_read_service import (
     WarehouseStockReadService,
 )
+from app.application.warehouse.queries.warehouse_movement_read_service import (
+    WarehouseMovementReadService,
+)
 from app.application.warehouse.services.warehouse_application_service import (
     WarehouseApplicationService,
 )
@@ -99,6 +102,7 @@ from app.core.dependencies.repositories import (
     get_verification_read_repository,
     get_verification_repository,
     get_warehouse_movement_repository,
+    get_warehouse_movement_read_repository,
     get_warehouse_repository,
     get_warehouse_stock_read_repository,
     get_warehouse_stock_repository,
@@ -141,6 +145,9 @@ from app.domains.verification.repositories.verification_repository import (
 )
 from app.domains.warehouse.repositories.warehouse_movement_repository import (
     WarehouseMovementRepository,
+)
+from app.domains.warehouse.repositories.warehouse_movement_read_repository import (
+    WarehouseMovementReadRepository,
 )
 from app.domains.warehouse.repositories.warehouse_repository import WarehouseRepository
 from app.domains.warehouse.repositories.warehouse_stock_read_repository import (
@@ -395,6 +402,15 @@ def get_warehouse_stock_read_service(
     ),
 ) -> WarehouseStockReadService:
     return WarehouseStockReadService(repository)
+
+
+def get_warehouse_movement_read_service(
+    repository: WarehouseMovementReadRepository = Depends(
+        get_warehouse_movement_read_repository,
+    ),
+) -> WarehouseMovementReadService:
+    """Provide warehouse movement history query service."""
+    return WarehouseMovementReadService(repository)
 
 
 def get_organization_service(
