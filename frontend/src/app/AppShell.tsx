@@ -33,6 +33,67 @@ export function AppShell({ user, children }: AppShellProps) {
   const logout = useLogout();
   const [showScrollTop, setShowScrollTop] = useState(false);
 
+  const queryClient = useQueryClient();
+  const lastActivityAt = useRef(Date.now());
+  const lastHeartbeatAt = useRef(0);
+
+  useEffect(() => {
+    let inactivityTimer: ReturnType<typeof setTimeout>;
+
+    const expireSession = () => {
+      queryClient.clear();
+      navigate("/login", { replace: true });
+    };
+
+    const scheduleInactivityCheck = () => {
+      window.clearTimeout(inactivityTimer);
+      const remaining = INACTIVITY_TIMEOUT_MS - (Date.now() - lastActivityAt.current);
+      inactivityTimer = window.setTimeout(expireSession, Math.max(remaining, 0));
+    };
+
+    const recordActivity = () => {
+      const now = Date.now();
+
+      if (now - lastActivityAt.current >= INACTIVITY_TIMEOUT_MS) {
+        expireSession();
+        return;
+      }
+
+      lastActivityAt.current = now;
+      scheduleInactivityCheck();
+
+      if (now - lastHeartbeatAt.current < ACTIVITY_HEARTBEAT_INTERVAL_MS) {
+        return;
+      }
+
+      lastHeartbeatAt.current = now;
+      void http.post("/auth/activity").catch((error: unknown) => {
+        if (isAxiosError(error) && error.response?.status === 401) {
+          expireSession();
+        }
+      });
+    };
+
+    const events: (keyof WindowEventMap)[] = [
+      "pointerdown",
+      "keydown",
+      "scroll",
+      "touchstart",
+      "mousemove",
+    ];
+
+    events.forEach((event) =>
+      window.addEventListener(event, recordActivity, { passive: true }),
+    );
+    scheduleInactivityCheck();
+
+    return () => {
+      window.clearTimeout(inactivityTimer);
+      events.forEach((event) => window.removeEventListener(event, recordActivity));
+    };
+  }, [navigate, queryClient]);
+
+
   useEffect(() => {
     const updateScrollTopVisibility = () => {
       setShowScrollTop(window.scrollY > 400);
