@@ -6,77 +6,43 @@ from uuid import UUID
 
 from sqlalchemy.orm import Session
 
-from app.domains.warehouse.entities.warehouse_stock import (
-    WarehouseStock,
-)
+from app.domains.warehouse.entities.warehouse_stock import WarehouseStock
 from app.domains.warehouse.repositories.warehouse_stock_repository import (
     WarehouseStockRepository,
 )
-from app.infrastructure.mappers.warehouse_stock_mapper import (
-    WarehouseStockMapper,
-)
-from app.models.warehouse_stock import (
-    WarehouseStock as WarehouseStockModel,
-)
+from app.infrastructure.mappers.warehouse_stock_mapper import WarehouseStockMapper
+from app.models.warehouse_stock import WarehouseStock as WarehouseStockModel
 
 
-class WarehouseStockRepositorySQLAlchemy(
-    WarehouseStockRepository,
-):
+class WarehouseStockRepositorySQLAlchemy(WarehouseStockRepository):
     """SQLAlchemy warehouse stock repository."""
 
-    def __init__(
-        self,
-        session: Session,
-    ) -> None:
+    def __init__(self, session: Session) -> None:
         self._session = session
         self._mapper = WarehouseStockMapper()
 
     def get_by_material(
-        self,
-        warehouse_id: UUID,
-        material_id: UUID,
+        self, warehouse_id: UUID, material_id: UUID
     ) -> WarehouseStock | None:
-        """Get stock by warehouse and material."""
-
+        """Get and lock stock row for the current transaction."""
         model = (
-            self._session.query(
-                WarehouseStockModel,
-            )
+            self._session.query(WarehouseStockModel)
             .filter(
                 WarehouseStockModel.warehouse_id == warehouse_id,
                 WarehouseStockModel.material_id == material_id,
             )
+            .with_for_update()
             .first()
         )
-
         if model is None:
             return None
+        return self._mapper.to_domain(model)
 
-        return self._mapper.to_domain(
-            model,
-        )
-
-    def save(
-        self,
-        stock: WarehouseStock,
-    ) -> None:
+    def save(self, stock: WarehouseStock) -> None:
         """Save warehouse stock."""
-
-        model = self._session.get(
-            WarehouseStockModel,
-            stock.id,
-        )
-
+        model = self._session.get(WarehouseStockModel, stock.id)
         if model is None:
-            model = WarehouseStockModel(
-                id=stock.id,
-            )
+            model = WarehouseStockModel(id=stock.id)
             self._session.add(model)
-
-        self._mapper.to_model(
-            stock,
-            model,
-        )
-
+        self._mapper.to_model(stock, model)
         self._session.flush()
