@@ -129,7 +129,7 @@ def test_receipt_rolls_back_when_movement_persistence_fails() -> None:
 
 
 def test_issue_reduces_stock_and_records_movement() -> None:
-    service, stocks, movements = make_service()
+    service, stocks, movements, _ = make_service()
     warehouse_id = uuid4()
     material_id = uuid4()
     stock = WarehouseStock(
