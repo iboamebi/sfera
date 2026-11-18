@@ -67,11 +67,11 @@ from app.application.verification.queries.verification_read_service import (
 from app.application.verification.services.verification_application_service import (
     VerificationApplicationService,
 )
-from app.application.warehouse.queries.warehouse_stock_read_service import (
-    WarehouseStockReadService,
-)
 from app.application.warehouse.queries.warehouse_movement_read_service import (
     WarehouseMovementReadService,
+)
+from app.application.warehouse.queries.warehouse_stock_read_service import (
+    WarehouseStockReadService,
 )
 from app.application.warehouse.services.warehouse_application_service import (
     WarehouseApplicationService,
