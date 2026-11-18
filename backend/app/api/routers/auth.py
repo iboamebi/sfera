@@ -174,7 +174,7 @@ def get_current_user(
 @router.post(
     "/activity",
     status_code=status.HTTP_204_NO_CONTENT,
-    dependencies=[Depends(require_csrf)],
+    dependencies=[Depends(require_csrf), Depends(get_authenticated_user)],
 )
 def record_session_activity(
     session_id: str | None = Cookie(default=None, alias=settings.AUTH_COOKIE_NAME),
