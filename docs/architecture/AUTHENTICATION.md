@@ -12,7 +12,7 @@ Implemented:
 - authenticated session domain contract and persistence;
 - session token generation;
 - authentication and password-change application services;
-- login, current-user, password-change, logout, and administrator password-reset API endpoints;
+- login, current-user, password-change, session-activity, logout, and administrator password-reset API endpoints;
 - mandatory first-login password change state and server-side business-route gate;
 - server-managed HttpOnly session cookie;
 - CSRF protection for state-changing cookie-authenticated requests;
@@ -111,6 +111,7 @@ AuthenticateUser
 CreateSession
 GetCurrentUser
 ChangePassword
+RecordSessionActivity
 RevokeSession
 LogoutUser
 ResetUserPassword (administrator-only)
@@ -130,6 +131,7 @@ The public authentication API is:
 POST /auth/login
 GET  /auth/me
 POST /auth/change-password
+POST /auth/activity
 POST /auth/logout
 ```
 
@@ -155,7 +157,11 @@ Requires the authenticated session and CSRF validation. Accepts `current_passwor
 
 `POST /users/{user_id}/reset-password` is an administrator-only, CSRF-protected operation. The Application service generates a cryptographically secure temporary password, stores only its Argon2 hash, sets `must_change_password = true`, and revokes all existing sessions for the target user in the same Unit of Work. The plaintext temporary password is returned only in this response and must not be logged or persisted. Only active, non-archived accounts can be reset; inactive or archived accounts must first be restored/activated by an administrator.
 
-### `POST /auth/activity`\n\nRequires the authenticated session and CSRF validation. Records the latest observed user activity. The operation rejects revoked, absolutely expired, or idle-expired sessions and never changes the absolute expiration timestamp. The frontend sends this heartbeat no more frequently than every five minutes while the user is active.\n\n### `POST /auth/logout`
+### `POST /auth/activity`
+
+Requires the authenticated session and CSRF validation. Records the latest observed user activity. The operation rejects revoked, absolutely expired, or idle-expired sessions and never changes the absolute expiration timestamp. The frontend sends this heartbeat no more frequently than every five minutes while the user is active.
+
+### `POST /auth/logout`
 
 Invalidates the current authenticated session and clears the session and CSRF cookies.
 
