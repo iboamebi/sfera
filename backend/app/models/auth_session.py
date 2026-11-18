@@ -34,6 +34,13 @@ class AuthSession(Base):
         index=True,
     )
 
+    last_activity_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=func.now(),
+        index=True,
+    )
+
     revoked: Mapped[bool] = mapped_column(
         Boolean,
         default=False,
