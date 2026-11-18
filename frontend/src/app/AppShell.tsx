@@ -1,7 +1,10 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Alert, AppBar, Box, Button, Fab, Stack, Toolbar, Typography } from "@mui/material";
+import { isAxiosError } from "axios";
+import { useQueryClient } from "@tanstack/react-query";
 import { Link, useLocation, useNavigate } from "react-router";
 
+import { http } from "../shared/api/http";
 import { useLogout } from "../features/auth/model/useLogout";
 import type { AuthenticatedUser } from "../features/auth/model/types";
 
@@ -9,6 +12,9 @@ interface AppShellProps {
   user: AuthenticatedUser;
   children: ReactNode;
 }
+
+const INACTIVITY_TIMEOUT_MS = 60 * 60 * 1000;
+const ACTIVITY_HEARTBEAT_INTERVAL_MS = 5 * 60 * 1000;
 
 const navigation = [
   { label: "Обзор", path: "/" },
