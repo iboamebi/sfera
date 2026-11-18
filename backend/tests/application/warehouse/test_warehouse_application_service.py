@@ -111,7 +111,6 @@ def test_receipt_updates_existing_stock_and_records_movement() -> None:
     assert [movement.quantity for movement in movements.items] == [10, 5]
 
 
-
 def test_receipt_rolls_back_when_movement_persistence_fails() -> None:
     service, stocks, movements, uow = make_service()
     movements.fail_on_save = True
