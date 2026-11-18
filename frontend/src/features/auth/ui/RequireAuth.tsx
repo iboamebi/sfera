@@ -3,6 +3,7 @@ import { Navigate, useLocation } from "react-router";
 
 import { useCurrentUser } from "../model/useCurrentUser";
 import { AppShell } from "../../../app/AppShell";
+import { SessionActivityTracker } from "./SessionActivityTracker";
 
 interface RequireAuthProps {
   children: ReactNode;
@@ -36,8 +37,18 @@ export function RequireAuth({ children, adminOnly = false }: RequireAuthProps) {
   }
 
   if (location.pathname === PASSWORD_CHANGE_PATH) {
-    return children;
+    return (
+      <>
+        <SessionActivityTracker />
+        {children}
+      </>
+    );
   }
 
-  return <AppShell user={user}>{children}</AppShell>;
+  return (
+    <>
+      <SessionActivityTracker />
+      <AppShell user={user}>{children}</AppShell>
+    </>
+  );
 }
