@@ -1,6 +1,5 @@
 from datetime import UTC, datetime
 from unittest.mock import Mock
-
 from uuid import uuid4
 
 import pytest
