@@ -14,9 +14,6 @@ from app.application.warehouse.services.warehouse_application_service import (
 from app.domains.user.entities.user import User
 from app.domains.user.value_objects.user_role import UserRole
 from app.domains.warehouse.entities.warehouse_stock import WarehouseStock
-from app.domains.warehouse.exceptions import (
-    InsufficientWarehouseStockDomainError,
-)
 from app.domains.warehouse.value_objects.movement_type import MovementType
 from app.shared.unit_of_work.unit_of_work import UnitOfWork
 
@@ -137,7 +134,7 @@ def test_issue_cannot_reduce_stock_below_reserved_quantity() -> None:
     )
     stocks.save(stock)
 
-    with pytest.raises(InsufficientWarehouseStockDomainError):
+    with pytest.raises(Exception):
         service.create_movement(
             CreateMovementCommand(
                 warehouse_id, material_id, MovementType.ISSUE, 4

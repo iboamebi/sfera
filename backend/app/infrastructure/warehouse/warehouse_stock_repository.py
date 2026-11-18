@@ -11,6 +11,7 @@ from app.domains.warehouse.repositories.warehouse_stock_repository import (
     WarehouseStockRepository,
 )
 from app.infrastructure.mappers.warehouse_stock_mapper import WarehouseStockMapper
+from app.models.warehouse import Warehouse as WarehouseModel
 from app.models.warehouse_stock import WarehouseStock as WarehouseStockModel
 
 
@@ -25,6 +26,14 @@ class WarehouseStockRepositorySQLAlchemy(WarehouseStockRepository):
         self, warehouse_id: UUID, material_id: UUID
     ) -> WarehouseStock | None:
         """Get and lock stock row for the current transaction."""
+        # Lock the parent warehouse too: a missing stock row cannot be row-locked,
+        # so this serializes first-time receipts for the same warehouse.
+        (
+            self._session.query(WarehouseModel)
+            .filter(WarehouseModel.id == warehouse_id)
+            .with_for_update()
+            .first()
+        )
         model = (
             self._session.query(WarehouseStockModel)
             .filter(
