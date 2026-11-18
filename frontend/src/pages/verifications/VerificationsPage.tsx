@@ -145,7 +145,12 @@ export function VerificationsPage() {
 
   return (
     <Stack spacing={3}>
-      <Typography variant="h4">Поверки</Typography>
+      <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+        <Button component={Link} to="/" size="small">
+          ← Обзор
+        </Button>
+        <Typography variant="h4">Поверки</Typography>
+      </Stack>
 
       <Stack
         direction={{ xs: "column", md: "row" }}
