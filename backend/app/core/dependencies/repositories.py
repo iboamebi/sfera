@@ -50,6 +50,9 @@ from app.domains.verification.repositories.verification_repository import (
 from app.domains.warehouse.repositories.warehouse_movement_repository import (
     WarehouseMovementRepository,
 )
+from app.domains.warehouse.repositories.warehouse_movement_read_repository import (
+    WarehouseMovementReadRepository,
+)
 from app.domains.warehouse.repositories.warehouse_repository import (
     WarehouseRepository,
 )
@@ -119,6 +122,9 @@ from app.infrastructure.verification.verification_repository import (
 )
 from app.infrastructure.warehouse.warehouse_movement_repository import (
     WarehouseMovementRepositorySQLAlchemy,
+)
+from app.infrastructure.warehouse.warehouse_movement_read_repository import (
+    WarehouseMovementReadRepositorySQLAlchemy,
 )
 from app.infrastructure.warehouse.warehouse_repository import (
     WarehouseRepositorySQLAlchemy,
@@ -217,6 +223,14 @@ def get_warehouse_movement_repository(
     """Provide WarehouseMovement repository."""
 
     return WarehouseMovementRepositorySQLAlchemy(session)
+
+
+def get_warehouse_movement_read_repository(
+    session: Session = Depends(get_session),
+) -> WarehouseMovementReadRepository:
+    """Provide read-only WarehouseMovement repository."""
+
+    return WarehouseMovementReadRepositorySQLAlchemy(session)
 
 
 def get_organization_repository(
