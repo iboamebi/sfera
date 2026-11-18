@@ -99,7 +99,12 @@ export function CustomersPage() {
           flexWrap: "wrap",
         }}
       >
-        <Typography variant="h4">Клиенты</Typography>
+        <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+          <Button component={Link} to="/" size="small">
+            ← Обзор
+          </Button>
+          <Typography variant="h4">Клиенты</Typography>
+        </Stack>
         <Button component={Link} to="/customers/new" variant="contained">
           Создать клиента
         </Button>
