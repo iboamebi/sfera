@@ -2,7 +2,7 @@
 Application service: Authenticated sessions.
 """
 
-from datetime import timedelta
+from datetime import datetime, timedelta
 from uuid import uuid4
 
 from app.application.auth.commands.create_session import CreateSessionCommand
@@ -39,7 +39,7 @@ class SessionApplicationService:
         )
         return self._repository.save(session)
 
-    def record_activity(self, session_id: str, now) -> bool:
+    def record_activity(self, session_id: str, now: datetime) -> bool:
         """Record activity only for a session that has not expired or gone idle."""
 
         session = self._repository.get_active(session_id, now)
