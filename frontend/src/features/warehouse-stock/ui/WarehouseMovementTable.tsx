@@ -177,7 +177,7 @@ export function WarehouseMovementTable({
               )}
             </TableBody>
           </Table>
-          <Stack direction="row" alignItems="center" justifyContent="flex-end" spacing={2}>
+          <Stack direction="row" spacing={2} sx={{ alignItems: "center", justifyContent: "flex-end" }}>
             <Typography variant="body2">
               {page?.total ?? 0} записей
             </Typography>
