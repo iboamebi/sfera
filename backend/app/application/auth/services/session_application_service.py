@@ -13,17 +13,19 @@ from app.domains.auth.services.session_token_generator import SessionTokenGenera
 
 
 class SessionApplicationService:
-    """Create and manage authenticated sessions."""
+    """Create, track, and revoke authenticated sessions."""
 
     def __init__(
         self,
         repository: SessionRepository,
         token_generator: SessionTokenGenerator,
         ttl: timedelta = timedelta(hours=12),
+        inactivity_timeout: timedelta = timedelta(hours=1),
     ) -> None:
         self._repository = repository
         self._token_generator = token_generator
         self._ttl = ttl
+        self._inactivity_timeout = inactivity_timeout
 
     def create(self, command: CreateSessionCommand) -> Session:
         """Create and persist an authenticated session."""
@@ -33,8 +35,20 @@ class SessionApplicationService:
             user_id=command.user_id,
             session_id=self._token_generator.generate(),
             expires_at=command.now + self._ttl,
+            last_activity_at=command.now,
         )
         return self._repository.save(session)
+
+    def record_activity(self, session_id: str, now) -> bool:
+        """Record activity only for a session that has not expired or gone idle."""
+
+        session = self._repository.get_active(session_id, now)
+        if session is None or not session.is_valid(now, self._inactivity_timeout):
+            return False
+
+        session.record_activity(now)
+        self._repository.save(session)
+        return True
 
     def revoke(self, command: RevokeSessionCommand) -> None:
         """Revoke an authenticated session."""
