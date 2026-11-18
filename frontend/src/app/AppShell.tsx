@@ -85,7 +85,7 @@ export function AppShell({ user, children }: AppShellProps) {
     events.forEach((event) =>
       window.addEventListener(event, recordActivity, { passive: true }),
     );
-    scheduleInactivityCheck();
+    recordActivity();
 
     return () => {
       window.clearTimeout(inactivityTimer);
