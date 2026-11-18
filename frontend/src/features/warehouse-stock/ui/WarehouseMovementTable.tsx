@@ -1,6 +1,8 @@
 import { useState } from "react";
+import { Link as RouterLink } from "react-router";
 import {
   Button,
+  Link,
   MenuItem,
   Stack,
   Table,
@@ -154,7 +156,15 @@ export function WarehouseMovementTable({
                   <TableCell>{item.materialName}</TableCell>
                   <TableCell>{movementLabels[item.movementType]}</TableCell>
                   <TableCell align="right">{item.quantity}</TableCell>
-                  <TableCell>{item.orderNumber ?? "—"}</TableCell>
+                  <TableCell>
+                    {item.orderId && item.orderNumber ? (
+                      <Link component={RouterLink} to={`/orders/${item.orderId}`}>
+                        № {item.orderNumber}
+                      </Link>
+                    ) : (
+                      "—"
+                    )}
+                  </TableCell>
                   <TableCell>{item.comment ?? "—"}</TableCell>
                 </TableRow>
               ))}
