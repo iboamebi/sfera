@@ -3,13 +3,15 @@
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from app.domains.warehouse.value_objects.movement_type import MovementType
 
 
 class WarehouseMovementListRead(BaseModel):
     """One warehouse movement in the history."""
+
+    model_config = ConfigDict(from_attributes=True)
 
     id: UUID
     warehouse_id: UUID
@@ -31,3 +33,4 @@ class WarehouseMovementPageRead(BaseModel):
     total: int
     limit: int
     offset: int
+}
