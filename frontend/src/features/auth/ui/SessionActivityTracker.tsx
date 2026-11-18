@@ -54,7 +54,7 @@ export function SessionActivityTracker() {
     };
 
     const sendHeartbeat = () => {
-      if (heartbeatInFlight || activityVersion <= heartbeatVersion) {
+      if (sessionExpired || heartbeatInFlight || activityVersion <= heartbeatVersion) {
         return;
       }
 
@@ -82,6 +82,7 @@ export function SessionActivityTracker() {
     };
 
     const recordActivity = () => {
+      if (sessionExpired) return;
       const now = Date.now();
 
       if (now - lastActivityAt.current >= INACTIVITY_TIMEOUT_MS) {
