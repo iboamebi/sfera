@@ -60,7 +60,6 @@ def test_create_persists_session_with_expiration() -> None:
     assert session.revoked is False
 
 
-
 def test_record_activity_updates_active_session() -> None:
     now = datetime(2026, 8, 18, 20, 0, tzinfo=UTC)
     repository = FakeSessionRepository()
