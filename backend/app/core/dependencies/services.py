@@ -76,6 +76,7 @@ from app.application.warehouse.services.warehouse_application_service import (
 from app.application.workflow.services.workflow_application_service import (
     WorkflowApplicationService,
 )
+from app.core.config import settings
 from app.core.dependencies.events import get_event_dispatcher
 from app.core.dependencies.repositories import (
     get_audit_operation_repository,
@@ -195,7 +196,12 @@ def get_session_service(
 ) -> SessionApplicationService:
     """Provide authenticated session application service."""
     return SessionApplicationService(
-        repository, token_generator, ttl=timedelta(hours=12)
+        repository,
+        token_generator,
+        ttl=timedelta(seconds=settings.AUTH_SESSION_TTL_SECONDS),
+        inactivity_timeout=timedelta(
+            seconds=settings.AUTH_SESSION_INACTIVITY_TIMEOUT_SECONDS
+        ),
     )
 
 
@@ -204,7 +210,13 @@ def get_current_user_service(
     user_repository: UserRepository = Depends(get_user_repository),
 ) -> CurrentUserApplicationService:
     """Provide CurrentUser application service."""
-    return CurrentUserApplicationService(session_repository, user_repository)
+    return CurrentUserApplicationService(
+        session_repository,
+        user_repository,
+        inactivity_timeout=timedelta(
+            seconds=settings.AUTH_SESSION_INACTIVITY_TIMEOUT_SECONDS
+        ),
+    )
 
 
 def get_user_administration_service(
