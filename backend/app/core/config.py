@@ -7,6 +7,7 @@ class Settings(BaseSettings):
     AUTH_COOKIE_SECURE: bool = False
     AUTH_COOKIE_SAMESITE: str = "lax"
     AUTH_SESSION_TTL_SECONDS: int = 60 * 60 * 12
+    AUTH_SESSION_INACTIVITY_TIMEOUT_SECONDS: int = 60 * 60
     CSRF_COOKIE_NAME: str = "sfera_csrf"
     CSRF_HEADER_NAME: str = "X-CSRF-Token"
 
