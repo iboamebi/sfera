@@ -65,7 +65,7 @@ function MetricCard({
             variant="h3"
             sx={{
               alignSelf: "flex-start",
-              color: "inherit",
+              color: "primary.main",
               textDecoration: "none",
               "&:hover": { textDecoration: "underline" },
               "&:focus-visible": { textDecoration: "underline" },
