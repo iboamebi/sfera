@@ -1,12 +1,12 @@
 from fastapi.routing import APIRoute
 
 from app.api.dependencies.auth import get_current_user
-from app.api.routers.warehouse import create_warehouse, router as warehouse_router
-from app.api.routers.warehouse_movement import (
-    create_movement,
-    router as movement_router,
-)
-from app.api.routers.warehouse_stock import add_stock, router as stock_router
+from app.api.routers.warehouse import create_warehouse
+from app.api.routers.warehouse import router as warehouse_router
+from app.api.routers.warehouse_movement import create_movement
+from app.api.routers.warehouse_movement import router as movement_router
+from app.api.routers.warehouse_stock import add_stock
+from app.api.routers.warehouse_stock import router as stock_router
 from app.api.security.csrf import require_csrf
 
 
