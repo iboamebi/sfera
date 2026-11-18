@@ -68,7 +68,6 @@ class FakeUserRepository(UserRepository):
         self.user = user
         return user
 
-
 def test_get_returns_user_for_active_session() -> None:
     user = User(id=uuid4(), username="alice", password_hash="hash")
     session = Session(
@@ -93,7 +92,6 @@ def test_get_returns_user_for_active_session() -> None:
     assert result.id == user.id
     assert result.username == "alice"
 
-
 def test_get_rejects_missing_session() -> None:
     service = CurrentUserApplicationService(
         FakeSessionRepository(),
@@ -107,7 +105,6 @@ def test_get_rejects_missing_session() -> None:
                 now=datetime(2026, 8, 18, 20, tzinfo=UTC),
             ),
         )
-
 
 def test_get_rejects_inactive_user() -> None:
     user = User(
@@ -136,7 +133,6 @@ def test_get_rejects_inactive_user() -> None:
             ),
         )
 
-
 def test_get_rejects_archived_user() -> None:
     user = User(
         id=uuid4(),
@@ -163,7 +159,6 @@ def test_get_rejects_archived_user() -> None:
                 now=datetime(2026, 8, 18, 20, tzinfo=UTC),
             ),
         )
-
 
 
 def test_get_rejects_idle_expired_session() -> None:
