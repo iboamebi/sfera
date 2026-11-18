@@ -16,8 +16,13 @@ def test_auth_session_mapper_round_trip() -> None:
         user_id=user_id,
         session_id=session_id,
         expires_at=expires_at,
+        last_activity_at=datetime(2026, 8, 18, tzinfo=UTC),
     )
-    model = AuthSession(id=entity.id, created_at=datetime.now(UTC))
+    model = AuthSession(
+        id=entity.id,
+        created_at=datetime.now(UTC),
+        last_activity_at=entity.last_activity_at,
+    )
     mapper = AuthSessionMapper()
 
     mapper.to_model(entity, model)
