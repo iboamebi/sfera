@@ -19,7 +19,9 @@ class FakeSessionRepository(SessionRepository):
         return session
 
     def get_active(self, session_id: str, now: datetime) -> Session | None:
-        return None
+        if self.saved is None or self.saved.session_id != session_id:
+            return None
+        return self.saved
 
     def revoke(self, session_id: str) -> None:
         pass
@@ -56,3 +58,45 @@ def test_create_persists_session_with_expiration() -> None:
     assert session.expires_at == now + timedelta(hours=12)
     assert session.last_activity_at == now
     assert session.revoked is False
+
+
+
+def test_record_activity_updates_active_session() -> None:
+    now = datetime(2026, 8, 18, 20, 0, tzinfo=UTC)
+    repository = FakeSessionRepository()
+    service = SessionApplicationService(
+        repository,
+        FakeSessionTokenGenerator(),
+    )
+    session = service.create(
+        CreateSessionCommand(user_id=uuid4(), now=now),
+    )
+
+    recorded = service.record_activity(
+        session.session_id,
+        now + timedelta(minutes=5),
+    )
+
+    assert recorded is True
+    assert session.last_activity_at == now + timedelta(minutes=5)
+    assert session.expires_at == now + timedelta(hours=12)
+
+
+def test_record_activity_does_not_revive_idle_expired_session() -> None:
+    now = datetime(2026, 8, 18, 20, 0, tzinfo=UTC)
+    repository = FakeSessionRepository()
+    service = SessionApplicationService(
+        repository,
+        FakeSessionTokenGenerator(),
+    )
+    session = service.create(
+        CreateSessionCommand(user_id=uuid4(), now=now),
+    )
+
+    recorded = service.record_activity(
+        session.session_id,
+        now + timedelta(hours=1),
+    )
+
+    assert recorded is False
+    assert session.last_activity_at == now
