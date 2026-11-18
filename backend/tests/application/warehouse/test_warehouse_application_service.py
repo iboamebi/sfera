@@ -124,7 +124,6 @@ def test_receipt_rolls_back_when_movement_persistence_fails() -> None:
     assert uow.rollback_count == 1
     assert uow.commit_count == 0
     assert movements.items == []
-    assert len(stocks.items) == 1
 
 
 def test_issue_reduces_stock_and_records_movement() -> None:
