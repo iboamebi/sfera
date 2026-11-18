@@ -27,9 +27,6 @@ export function AppShell({ user, children }: AppShellProps) {
   const logout = useLogout();
   const [showScrollTop, setShowScrollTop] = useState(false);
 
-  const queryClient = useQueryClient();
-  const lastActivityAt = useRef(Date.now());
-  const lastHeartbeatAt = useRef(0);
 
   useEffect(() => {
     const updateScrollTopVisibility = () => {
