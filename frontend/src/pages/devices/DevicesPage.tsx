@@ -96,7 +96,12 @@ export function DevicesPage() {
           flexWrap: "wrap",
         }}
       >
-        <Typography variant="h5">Средства измерений</Typography>
+        <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+          <Button component={Link} to="/" size="small">
+            ← Обзор
+          </Button>
+          <Typography variant="h5">Средства измерений</Typography>
+        </Stack>
         <Button component={Link} to="/devices/new" variant="contained">
           Создать СИ
         </Button>
