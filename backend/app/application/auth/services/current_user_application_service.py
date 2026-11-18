@@ -2,6 +2,8 @@
 Application service: Current authenticated user.
 """
 
+from datetime import timedelta
+
 from app.application.auth.commands.get_current_user import GetCurrentUserCommand
 from app.application.auth.exceptions import AuthenticationFailedApplicationError
 from app.domains.auth.repositories.session_repository import SessionRepository
@@ -16,9 +18,11 @@ class CurrentUserApplicationService:
         self,
         session_repository: SessionRepository,
         user_repository: UserRepository,
+        inactivity_timeout: timedelta = timedelta(hours=1),
     ) -> None:
         self._session_repository = session_repository
         self._user_repository = user_repository
+        self._inactivity_timeout = inactivity_timeout
 
     def get(
         self,
@@ -30,7 +34,10 @@ class CurrentUserApplicationService:
             command.session_id,
             command.now,
         )
-        if session is None:
+        if session is None or not session.is_valid(
+            command.now,
+            self._inactivity_timeout,
+        ):
             raise AuthenticationFailedApplicationError
 
         user = self._user_repository.get_by_id(session.user_id)
