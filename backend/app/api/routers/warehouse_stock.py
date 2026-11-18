@@ -9,10 +9,6 @@ from fastapi import APIRouter, Depends, HTTPException
 from app.api.dependencies.auth import get_current_user
 from app.api.security.csrf import require_csrf
 from app.application.warehouse.commands.add_stock import AddStockCommand
-from app.application.warehouse.exceptions import (
-    StockNotFoundApplicationError,
-    UnsupportedWarehouseMovementApplicationError,
-)
 from app.application.warehouse.queries.warehouse_stock_read_service import (
     WarehouseStockReadService,
 )
