@@ -103,9 +103,7 @@ export function WarehouseMovementTable({
           value={filters.dateFrom ?? ""}
           onChange={(event) =>
             updateFilter({
-              dateFrom: event.target.value
-                ? new Date(event.target.value).toISOString()
-                : undefined,
+              dateFrom: event.target.value || undefined,
             })
           }
           slotProps={{ inputLabel: { shrink: true } }}
@@ -114,12 +112,10 @@ export function WarehouseMovementTable({
           label="По дату"
           type="date"
           size="small"
-          value={filters.dateTo?.slice(0, 10) ?? ""}
+          value={filters.dateTo ?? ""}
           onChange={(event) =>
             updateFilter({
-              dateTo: event.target.value
-                ? new Date(`${event.target.value}T23:59:59`).toISOString()
-                : undefined,
+              dateTo: event.target.value || undefined,
             })
           }
           slotProps={{ inputLabel: { shrink: true } }}
