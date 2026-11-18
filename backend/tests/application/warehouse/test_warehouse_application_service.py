@@ -149,7 +149,7 @@ def test_issue_reduces_stock_and_records_movement() -> None:
 
 
 def test_issue_cannot_reduce_stock_below_reserved_quantity() -> None:
-    service, stocks, movements = make_service()
+    service, stocks, movements, _ = make_service()
     warehouse_id = uuid4()
     material_id = uuid4()
     stock = WarehouseStock(
@@ -184,7 +184,7 @@ def test_adjustment_is_rejected_until_its_direction_is_defined() -> None:
 
 
 def test_stock_write_rejects_unauthorized_user() -> None:
-    service, stocks, movements = make_service()
+    service, stocks, movements, _ = make_service()
 
     with pytest.raises(AuthorizationError):
         service.add_stock(
@@ -197,7 +197,7 @@ def test_stock_write_rejects_unauthorized_user() -> None:
 
 
 def test_reserve_and_release_update_balance_and_record_movements() -> None:
-    service, stocks, movements = make_service()
+    service, stocks, movements, _ = make_service()
     warehouse_id = uuid4()
     material_id = uuid4()
     stock = WarehouseStock(
