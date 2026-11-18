@@ -155,7 +155,7 @@ Requires the authenticated session and CSRF validation. Accepts `current_passwor
 
 `POST /users/{user_id}/reset-password` is an administrator-only, CSRF-protected operation. The Application service generates a cryptographically secure temporary password, stores only its Argon2 hash, sets `must_change_password = true`, and revokes all existing sessions for the target user in the same Unit of Work. The plaintext temporary password is returned only in this response and must not be logged or persisted. Only active, non-archived accounts can be reset; inactive or archived accounts must first be restored/activated by an administrator.
 
-### `POST /auth/logout`
+### `POST /auth/activity`\n\nRequires the authenticated session and CSRF validation. Records the latest observed user activity. The operation rejects revoked, absolutely expired, or idle-expired sessions and never changes the absolute expiration timestamp. The frontend sends this heartbeat no more frequently than every five minutes while the user is active.\n\n### `POST /auth/logout`
 
 Invalidates the current authenticated session and clears the session and CSRF cookies.
 
@@ -253,11 +253,11 @@ RequireAuth
   └── password changed → business routes
 ```
 
-The frontend uses the server-managed HttpOnly session cookie and sends credentials with Axios. The CSRF cookie is read by Axios and forwarded in `X-CSRF-Token` for cross-origin API requests.
+The frontend uses the server-managed HttpOnly session cookie and sends credentials with Axios. The authenticated application shell observes pointer, keyboard, scroll, touch, and mouse activity. It sends a throttled activity heartbeat and locally returns the user to login after one hour without activity. A `401` from the heartbeat also clears the client query cache and returns to login; transient network errors do not silently terminate the session. The CSRF cookie is read by Axios and forwarded in `X-CSRF-Token` for cross-origin API requests.
 
 The password-change screen submits the current and new passwords to `POST /auth/change-password`. After success, the current-user query is invalidated and the user is redirected to the orders page.
 
-The authenticated application header shows the current username and provides a logout action. A successful logout clears the client query cache before navigating to the login screen.
+The authenticated application header shows the current username and provides a logout action. Session validity is constrained independently by the 12-hour absolute lifetime and the one-hour inactivity timeout. A successful logout clears the client query cache before navigating to the login screen.
 
 Frontend route guards provide navigation behavior only. The backend business-route gate remains the security boundary.
 
