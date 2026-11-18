@@ -172,6 +172,30 @@ def get_current_user(
 
 
 @router.post(
+    "/activity",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(require_csrf)],
+)
+def record_session_activity(
+    session_id: str | None = Cookie(default=None, alias=settings.AUTH_COOKIE_NAME),
+    session_service: SessionApplicationService = Depends(get_session_service),
+    uow: UnitOfWork = Depends(get_unit_of_work),
+) -> None:
+    """Persist user activity without extending the absolute session lifetime."""
+
+    if session_id is None or not session_service.record_activity(
+        session_id,
+        datetime.now(UTC),
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication required",
+        )
+
+    uow.commit()
+
+
+@router.post(
     "/logout",
     status_code=status.HTTP_204_NO_CONTENT,
 )
