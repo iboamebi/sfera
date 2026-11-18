@@ -39,6 +39,11 @@ export function AppShell({ user, children }: AppShellProps) {
 
   useEffect(() => {
     let inactivityTimer: ReturnType<typeof setTimeout>;
+    let heartbeatTimer: ReturnType<typeof setTimeout>;
+    let heartbeatInFlight = false;
+    let activityVersion = 0;
+    let heartbeatVersion = 0;
+    let lastHeartbeatAt = 0;
 
     const expireSession = () => {
       queryClient.clear();
@@ -51,6 +56,49 @@ export function AppShell({ user, children }: AppShellProps) {
       inactivityTimer = window.setTimeout(expireSession, Math.max(remaining, 0));
     };
 
+    const scheduleHeartbeat = (retryDelay = 0) => {
+      if (activityVersion <= heartbeatVersion || heartbeatInFlight) {
+        return;
+      }
+
+      window.clearTimeout(heartbeatTimer);
+      const throttleDelay = Math.max(
+        lastHeartbeatAt + ACTIVITY_HEARTBEAT_INTERVAL_MS - Date.now(),
+        0,
+      );
+      heartbeatTimer = window.setTimeout(
+        () => sendHeartbeat(),
+        Math.max(throttleDelay, retryDelay),
+      );
+    };
+
+    const sendHeartbeat = () => {
+      if (heartbeatInFlight || activityVersion <= heartbeatVersion) {
+        return;
+      }
+
+      const sentActivityVersion = activityVersion;
+      heartbeatInFlight = true;
+
+      void http.post("/auth/activity")
+        .then(() => {
+          heartbeatVersion = sentActivityVersion;
+          lastHeartbeatAt = Date.now();
+          scheduleHeartbeat();
+        })
+        .catch((error: unknown) => {
+          if (isAxiosError(error) && error.response?.status === 401) {
+            expireSession();
+            return;
+          }
+          scheduleHeartbeat(30_000);
+        })
+        .finally(() => {
+          heartbeatInFlight = false;
+          scheduleHeartbeat();
+        });
+    };
+
     const recordActivity = () => {
       const now = Date.now();
 
@@ -60,18 +108,9 @@ export function AppShell({ user, children }: AppShellProps) {
       }
 
       lastActivityAt.current = now;
+      activityVersion += 1;
       scheduleInactivityCheck();
-
-      if (now - lastHeartbeatAt.current < ACTIVITY_HEARTBEAT_INTERVAL_MS) {
-        return;
-      }
-
-      lastHeartbeatAt.current = now;
-      void http.post("/auth/activity").catch((error: unknown) => {
-        if (isAxiosError(error) && error.response?.status === 401) {
-          expireSession();
-        }
-      });
+      scheduleHeartbeat();
     };
 
     const events: (keyof WindowEventMap)[] = [
@@ -89,10 +128,10 @@ export function AppShell({ user, children }: AppShellProps) {
 
     return () => {
       window.clearTimeout(inactivityTimer);
+      window.clearTimeout(heartbeatTimer);
       events.forEach((event) => window.removeEventListener(event, recordActivity));
     };
   }, [navigate, queryClient]);
-
 
   useEffect(() => {
     const updateScrollTopVisibility = () => {
