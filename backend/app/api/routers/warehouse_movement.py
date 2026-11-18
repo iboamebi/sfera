@@ -2,7 +2,10 @@
 Warehouse movement API router.
 """
 
-from fastapi import APIRouter, Depends, HTTPException
+from datetime import datetime
+from uuid import UUID
+
+from fastapi import APIRouter, Depends, HTTPException, Query
 
 from app.api.dependencies.auth import get_current_user
 from app.api.security.csrf import require_csrf
@@ -65,7 +68,6 @@ def create_movement(
         ) from None
     except WarehouseException as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from None
-
 
 
 @router.get(
