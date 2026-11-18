@@ -96,7 +96,12 @@ export function OrdersPage() {
           flexWrap: "wrap",
         }}
       >
-        <Typography variant="h4">Заказы</Typography>
+        <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+          <Button component={Link} to="/" size="small">
+            ← Обзор
+          </Button>
+          <Typography variant="h4">Заказы</Typography>
+        </Stack>
         <Button component={Link} to="/orders/new" variant="contained">
           Создать заказ
         </Button>
