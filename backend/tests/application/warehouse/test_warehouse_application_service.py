@@ -5,6 +5,8 @@ import pytest
 from app.application.authorization.authorization import AuthorizationError
 from app.application.warehouse.commands.add_stock import AddStockCommand
 from app.application.warehouse.commands.create_movement import CreateMovementCommand
+from app.application.warehouse.commands.release_stock import ReleaseStockCommand
+from app.application.warehouse.commands.reserve_stock import ReserveStockCommand
 from app.application.warehouse.exceptions import (
     UnsupportedWarehouseMovementApplicationError,
 )
@@ -174,3 +176,35 @@ def test_stock_write_rejects_unauthorized_user() -> None:
 
     assert stocks.items == {}
     assert movements.items == []
+
+
+
+def test_reserve_and_release_update_balance_and_record_movements() -> None:
+    service, stocks, movements = make_service()
+    warehouse_id = uuid4()
+    material_id = uuid4()
+    stock = WarehouseStock(
+        id=uuid4(),
+        warehouse_id=warehouse_id,
+        material_id=material_id,
+        quantity=20,
+    )
+    stocks.save(stock)
+    user = make_user()
+
+    service.reserve(
+        ReserveStockCommand(warehouse_id, material_id, 6),
+        user,
+    )
+    service.release(
+        ReleaseStockCommand(warehouse_id, material_id, 2),
+        user,
+    )
+
+    assert stock.quantity == 20
+    assert stock.reserved_quantity == 4
+    assert [movement.movement_type for movement in movements.items] == [
+        MovementType.RESERVATION,
+        MovementType.RELEASE,
+    ]
+    assert [movement.quantity for movement in movements.items] == [6, 2]
