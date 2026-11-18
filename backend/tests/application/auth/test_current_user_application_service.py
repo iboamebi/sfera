@@ -121,6 +121,7 @@ def test_get_rejects_inactive_user() -> None:
         user_id=user.id,
         session_id="session-1",
         expires_at=datetime(2026, 8, 19, 20, tzinfo=UTC),
+        last_activity_at=datetime(2026, 8, 18, 20, tzinfo=UTC),
     )
     service = CurrentUserApplicationService(
         FakeSessionRepository(session),
@@ -148,6 +149,7 @@ def test_get_rejects_archived_user() -> None:
         user_id=user.id,
         session_id="session-1",
         expires_at=datetime(2026, 8, 19, 20, tzinfo=UTC),
+        last_activity_at=datetime(2026, 8, 18, 20, tzinfo=UTC),
     )
     service = CurrentUserApplicationService(
         FakeSessionRepository(session),
