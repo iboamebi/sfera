@@ -47,6 +47,7 @@ def test_save_creates_model() -> None:
         user_id=user_id,
         session_id="session-1",
         expires_at=datetime.now(UTC) + timedelta(hours=1),
+        last_activity_at=datetime.now(UTC),
     )
     session = FakeSession()
 
