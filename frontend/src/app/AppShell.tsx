@@ -41,11 +41,15 @@ export function AppShell({ user, children }: AppShellProps) {
     let inactivityTimer: ReturnType<typeof setTimeout>;
     let heartbeatTimer: ReturnType<typeof setTimeout>;
     let heartbeatInFlight = false;
+    let heartbeatRetryDelay = 0;
+    let sessionExpired = false;
     let activityVersion = 0;
     let heartbeatVersion = 0;
     let lastHeartbeatAt = 0;
 
     const expireSession = () => {
+      if (sessionExpired) return;
+      sessionExpired = true;
       queryClient.clear();
       navigate("/login", { replace: true });
     };
@@ -57,7 +61,7 @@ export function AppShell({ user, children }: AppShellProps) {
     };
 
     const scheduleHeartbeat = (retryDelay = 0) => {
-      if (activityVersion <= heartbeatVersion || heartbeatInFlight) {
+      if (sessionExpired || activityVersion <= heartbeatVersion || heartbeatInFlight) {
         return;
       }
 
@@ -84,6 +88,7 @@ export function AppShell({ user, children }: AppShellProps) {
         .then(() => {
           heartbeatVersion = sentActivityVersion;
           lastHeartbeatAt = Date.now();
+          heartbeatRetryDelay = 0;
           scheduleHeartbeat();
         })
         .catch((error: unknown) => {
@@ -91,11 +96,12 @@ export function AppShell({ user, children }: AppShellProps) {
             expireSession();
             return;
           }
-          scheduleHeartbeat(30_000);
+          heartbeatRetryDelay = 30_000;
         })
         .finally(() => {
           heartbeatInFlight = false;
-          scheduleHeartbeat();
+          scheduleHeartbeat(heartbeatRetryDelay);
+          heartbeatRetryDelay = 0;
         });
     };
 
