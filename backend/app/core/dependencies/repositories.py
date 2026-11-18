@@ -47,11 +47,11 @@ from app.domains.verification.repositories.verification_read_repository import (
 from app.domains.verification.repositories.verification_repository import (
     VerificationRepository,
 )
-from app.domains.warehouse.repositories.warehouse_movement_repository import (
-    WarehouseMovementRepository,
-)
 from app.domains.warehouse.repositories.warehouse_movement_read_repository import (
     WarehouseMovementReadRepository,
+)
+from app.domains.warehouse.repositories.warehouse_movement_repository import (
+    WarehouseMovementRepository,
 )
 from app.domains.warehouse.repositories.warehouse_repository import (
     WarehouseRepository,
@@ -120,11 +120,11 @@ from app.infrastructure.verification.verification_read_repository import (
 from app.infrastructure.verification.verification_repository import (
     VerificationRepositorySQLAlchemy,
 )
-from app.infrastructure.warehouse.warehouse_movement_repository import (
-    WarehouseMovementRepositorySQLAlchemy,
-)
 from app.infrastructure.warehouse.warehouse_movement_read_repository import (
     WarehouseMovementReadRepositorySQLAlchemy,
+)
+from app.infrastructure.warehouse.warehouse_movement_repository import (
+    WarehouseMovementRepositorySQLAlchemy,
 )
 from app.infrastructure.warehouse.warehouse_repository import (
     WarehouseRepositorySQLAlchemy,
