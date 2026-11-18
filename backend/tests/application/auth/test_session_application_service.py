@@ -54,4 +54,5 @@ def test_create_persists_session_with_expiration() -> None:
     assert session.user_id == user_id
     assert session.session_id == "secure-session-token"
     assert session.expires_at == now + timedelta(hours=12)
+    assert session.last_activity_at == now
     assert session.revoked is False
