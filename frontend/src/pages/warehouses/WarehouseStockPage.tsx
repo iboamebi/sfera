@@ -2,6 +2,7 @@ import { useParams } from "react-router";
 
 import { useWarehouseStock } from "../../features/warehouse-stock/queries/useWarehouseStock";
 import { WarehouseStockTable } from "../../features/warehouse-stock/ui/WarehouseStockTable";
+import { WarehouseMovementTable } from "../../features/warehouse-stock/ui/WarehouseMovementTable";
 
 export function WarehouseStockPage() {
   const { warehouseId } = useParams<{ warehouseId: string }>();
@@ -16,5 +17,10 @@ export function WarehouseStockPage() {
     return <div>Loading...</div>;
   }
 
-  return <WarehouseStockTable items={data ?? []} />;
+  return (
+    <>
+      <WarehouseStockTable items={data ?? []} />
+      <WarehouseMovementTable warehouseId={warehouseId} stocks={data ?? []} />
+    </>
+  );
 }
