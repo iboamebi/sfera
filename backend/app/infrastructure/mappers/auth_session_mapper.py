@@ -21,6 +21,7 @@ class AuthSessionMapper(BaseMapper[Session, AuthSession]):
             user_id=model.user_id,
             session_id=model.session_id,
             expires_at=model.expires_at,
+            last_activity_at=model.last_activity_at,
             revoked=model.revoked,
         )
 
@@ -34,6 +35,7 @@ class AuthSessionMapper(BaseMapper[Session, AuthSession]):
         model.user_id = entity.user_id
         model.session_id = entity.session_id
         model.expires_at = entity.expires_at
+        model.last_activity_at = entity.last_activity_at
         model.revoked = entity.revoked
 
         return model
