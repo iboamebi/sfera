@@ -33,4 +33,3 @@ class WarehouseMovementPageRead(BaseModel):
     total: int
     limit: int
     offset: int
-}
